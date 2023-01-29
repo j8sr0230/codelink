@@ -12,13 +12,13 @@ class NodeGraphView(tk.Frame):
         self.columnconfigure(1, weight=0)
 
         self.node_graph_scene = tk.Canvas(self, bg="#FFFFFF", scrollregion=(0, 0, 10000, 10000))
-        self.node_graph_scene.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.node_graph_scene.grid(row=0, column=0, sticky=tk.N+tk.S+tk.W+tk.E)
 
         self.hor_bar = tk.Scrollbar(self, orient=tk.HORIZONTAL)
-        self.hor_bar.grid(row=1, column=0, sticky=tk.E + tk.W)
+        self.hor_bar.grid(row=1, column=0, sticky=tk.E+tk.W)
         self.hor_bar.config(command=self.node_graph_scene.xview)
         self.ver_bar = tk.Scrollbar(self, orient=tk.VERTICAL)
-        self.ver_bar.grid(row=0, column=1, sticky=tk.N + tk.S)
+        self.ver_bar.grid(row=0, column=1, sticky=tk.N+tk.S)
         self.ver_bar.config(command=self.node_graph_scene.yview)
         self.node_graph_scene.config(xscrollcommand=self.hor_bar.set, yscrollcommand=self.ver_bar.set)
 
