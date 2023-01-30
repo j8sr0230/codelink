@@ -6,7 +6,7 @@ SCENE_COLOR = "#1D1D1D"
 
 GRID_DOT_SIZE = 4
 GRID_STEP = 100
-GRID_COLOR = "#393939"
+GRID_COLOR = "white"  # "#393939"
 
 
 class NodeGraphView(tk.Frame):
@@ -30,6 +30,8 @@ class NodeGraphView(tk.Frame):
 
         self.controller = None
 
+        self.scene_scale = 1
+
     def set_controller(self, controller):
         self.controller = controller
 
@@ -51,4 +53,7 @@ class NodeGraphView(tk.Frame):
                 self.node_graph_scene.create_oval(x, y, x + GRID_DOT_SIZE, y + GRID_DOT_SIZE, width=0,
                                                   fill=GRID_COLOR, tags="grid")
 
-        # self.node_graph_scene.scale("all", 0, 0, .5, .5)
+    def scale_viewport(self, event):
+        local_scale = 1 + event.delta/3000
+        self.node_graph_scene.scale("all", event.x, event.y, local_scale, local_scale)
+        self.scene_scale += event.delta/3000
