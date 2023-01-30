@@ -23,11 +23,8 @@ class NodeGraphView(tk.Frame):
 
         self.hor_bar = tk.Scrollbar(self, orient=tk.HORIZONTAL)
         self.hor_bar.grid(row=1, column=0, sticky=tk.E+tk.W)
-        self.hor_bar.config(command=self.node_graph_scene.xview)
         self.ver_bar = tk.Scrollbar(self, orient=tk.VERTICAL)
         self.ver_bar.grid(row=0, column=1, sticky=tk.N+tk.S)
-        self.ver_bar.config(command=self.node_graph_scene.yview)
-        self.node_graph_scene.config(xscrollcommand=self.on_x_scroll, yscrollcommand=self.ver_bar.set)
 
         self.pack(fill="both", expand=True)
 
@@ -54,6 +51,4 @@ class NodeGraphView(tk.Frame):
                 self.node_graph_scene.create_oval(x, y, x + GRID_DOT_SIZE, y + GRID_DOT_SIZE, width=0,
                                                   fill=GRID_COLOR, tags="grid")
 
-    def on_x_scroll(self, first, last):
-        self.hor_bar.set(first, last)
-        self.draw_grid()
+        # self.node_graph_scene.scale("all", 0, 0, .5, .5)
