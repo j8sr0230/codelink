@@ -7,15 +7,14 @@ SCENE_COLOR = "#1D1D1D"
 MAJOR_DOT_SIZE = 4
 MAJOR_STEP = 100
 MINOR_DOT_SIZE = 2
-MINOR_STEP = 20
-GRID_COLOR = "white"  # "#282828"
+MINOR_DIV = 4
+GRID_COLOR = "#282828"
 
 
 class NodeGraphView(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.pack(fill="both", expand=True)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(1, weight=0)
         self.columnconfigure(0, weight=1)
@@ -30,27 +29,45 @@ class NodeGraphView(tk.Frame):
         self.ver_bar = tk.Scrollbar(self, orient=tk.VERTICAL)
         self.ver_bar.grid(row=0, column=1, sticky=tk.N+tk.S)
         self.ver_bar.config(command=self.node_graph_scene.yview)
-        self.node_graph_scene.config(xscrollcommand=self.hor_bar.set, yscrollcommand=self.ver_bar.set)
+        self.node_graph_scene.config(xscrollcommand=self.on_x_scroll, yscrollcommand=self.ver_bar.set)
 
-        self.draw_grid()
+        self.pack(fill="both", expand=True)
 
+        self.grid = []
         self.controller = None
 
     def set_controller(self, controller):
         self.controller = controller
 
     def draw_grid(self):
-        self.update()
-        # left_bound = int(self.node_graph_scene.xview()[0] * SCENE_SIZE)
+        if len(self.grid) > 0:
+            for grid_dot in self.grid:
+                self.node_graph_scene.delete(grid_dot)
+            self.grid = []
+
+        left_bound = int(self.node_graph_scene.xview()[0] * SCENE_SIZE)
         right_bound = int(self.node_graph_scene.xview()[1] * SCENE_SIZE)
-        # top_bound = int(self.node_graph_scene.yview()[0] * SCENE_SIZE)
+        top_bound = int(self.node_graph_scene.yview()[0] * SCENE_SIZE)
         bottom_bound = int(self.node_graph_scene.yview()[1] * SCENE_SIZE)
 
-        for x in range(right_bound):
-            for y in range(bottom_bound):
-                if (x % MAJOR_STEP == 0) and (y % MAJOR_STEP == 0):
-                    self.node_graph_scene.create_oval(x, y, x + MAJOR_DOT_SIZE, y + MAJOR_DOT_SIZE, width=0,
-                                                      fill=GRID_COLOR)
-                elif (x % MINOR_STEP == 0) and (y % MINOR_STEP == 0):
-                    self.node_graph_scene.create_oval(x, y, x + MINOR_DOT_SIZE, y + MINOR_DOT_SIZE, width=0,
-                                                      fill=GRID_COLOR)
+        left_pixel = MAJOR_STEP * (left_bound//MAJOR_STEP)
+        right_pixel = MAJOR_STEP * (right_bound//MAJOR_STEP) + MAJOR_STEP
+        top_pixel = MAJOR_STEP * (top_bound//MAJOR_STEP)
+        bottom_pixel = MAJOR_STEP * (bottom_bound//MAJOR_STEP) + MAJOR_STEP
+
+        for x in range(left_pixel, right_pixel, MAJOR_STEP):
+            for y in range(top_pixel, bottom_pixel, MAJOR_STEP):
+                grid_dot = self.node_graph_scene.create_oval(x, y, x + MAJOR_DOT_SIZE, y + MAJOR_DOT_SIZE,
+                                                             width=0, fill=GRID_COLOR)
+                self.grid.append(grid_dot)
+        for x in range(left_pixel, right_pixel, MAJOR_STEP//MINOR_DIV):
+            for y in range(top_pixel, bottom_pixel, MAJOR_STEP//MINOR_DIV):
+                grid_dot = self.node_graph_scene.create_oval(x, y, x + MINOR_DOT_SIZE, y + MINOR_DOT_SIZE,
+                                                             width=0, fill=GRID_COLOR)
+                self.grid.append(grid_dot)
+
+        # print(len(self.grid))
+
+    def on_x_scroll(self, first, last):
+        self.hor_bar.set(first, last)
+        self.draw_grid()
