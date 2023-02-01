@@ -3,18 +3,32 @@ class NodeGraphController:
         self.mode = model
         self.view = view
 
-        self.init_ui_controls()
+        self.selected_item = None
+        self.selected_item_origin = None
+        self.selected_position = None
 
-    def init_ui_controls(self):
-        self.view.hor_bar.config(command=self.view.node_graph_scene.xview)
-        self.view.ver_bar.config(command=self.view.node_graph_scene.yview)
-        self.view.node_graph_scene.config(xscrollcommand=self.scroll_viewport, yscrollcommand=self.view.ver_bar.set)
-        self.view.node_graph_scene.bind_all("<MouseWheel>", self.on_mousewheel)
+    def register_selection(self, event):
+        if not self.selected_item:
+            items = self.view.find_withtag("current")
+            if len(items) > 0:
+                self.selected_item = items[0]
+                self.selected_item_origin = self.view.coords(items[0])[:2]
+                self.selected_position = (self.view.canvasx(event.x), self.view.canvasy(event.y))
+            else:
+                self.selected_item = None
+                self.selected_item_origin = None
+                self.selected_position = None
 
-    def scroll_viewport(self, first, last):
-        self.view.hor_bar.set(first, last)
-        self.view.draw_grid()
+    def clear_selection(self, event):
+        self.selected_item = None
+        self.selected_item_origin = None
+        self.selected_position = None
 
-    def on_mousewheel(self, event):
-        if (self.view.scene_scale >= 0.8) and (self.view.scene_scale <= 1.2):
-            self.view.scale_viewport(event)
+    def move_selection(self, event):
+        if self.selected_item:
+            current_position = (self.view.canvasx(event.x), self.view.canvasy(event.y))
+            offset_x = self.selected_position[0] - self.selected_item_origin[0]
+            offset_y = self.selected_position[1] - self.selected_item_origin[1]
+
+            self.view.moveto(self.selected_item, current_position[0] - offset_x,
+                             current_position[1] - offset_y)
