@@ -8,6 +8,8 @@ GRID_COLOR = "#606060"
 GRID_STEP = 100
 GRID_DOT_SIZE = 6
 
+RESIZE_SQUARE = 20
+
 
 class NodeGraphView(tk.Canvas):
     def __init__(self, parent):
@@ -26,6 +28,8 @@ class NodeGraphView(tk.Canvas):
 
         # Draw test nodes
         self.create_rectangle([10, 10, 160, 110], fill="#292929", outline="#606060", width=1, tags="node")
+        # self.tag_bind('node', '<Enter>', print)
+
         self.create_rectangle([100, 100, 260, 210], fill="#292929", outline="#606060", width=1, tags="node")
 
     def set_controller(self, controller):

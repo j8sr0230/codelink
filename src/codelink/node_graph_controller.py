@@ -1,24 +1,26 @@
+from node_graph_view import RESIZE_SQUARE
+
+
 class NodeGraphController:
     def __init__(self, model, view):
         self.mode = model
         self.view = view
 
+        self.view_scale = 1.0
+
         self.left_mouse_down = False
         self.selected_item = None
-        self.selected_item_origin = None
-        self.event_start_position = None
-
-        self.view_scale = 1.0
+        self.item_event_offset = None
 
     def move_from(self, mouse_event):
         self.left_mouse_down = True
 
         items = self.view.find_withtag("current")
         if len(items) > 0 and "node" in self.view.gettags(items[0]):
-            # If selected item is node, save item, origin and event position on canvas
+            # If selected item is node, save item and offset between event and item origin
             self.selected_item = items[0]
-            self.selected_item_origin = self.view.coords(items[0])[:2]
-            self.event_start_position = (self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
+            self.item_event_offset = (self.view.canvasx(mouse_event.x) - self.view.coords(items[0])[0],
+                                      self.view.canvasy(mouse_event.y) - self.view.coords(items[0])[1])
 
             # Modify selected item
             self.view.tag_raise(items[0])
@@ -30,12 +32,25 @@ class NodeGraphController:
     def move(self, mouse_event):
         if self.left_mouse_down:
             if self.selected_item:
-                # If item selected, move it to current mouse position
+                # If node selected
                 current_mouse_position = (self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
-                item_origin_offset_x = self.event_start_position[0] - self.selected_item_origin[0]
-                item_origin_offset_y = self.event_start_position[1] - self.selected_item_origin[1]
-                self.view.moveto(self.selected_item, current_mouse_position[0] - item_origin_offset_x,
-                                 current_mouse_position[1] - item_origin_offset_y)
+
+                # Calculate current node and event data
+                item_coords = self.view.coords(self.selected_item)
+                current_item_width = item_coords[2] - item_coords[0]
+                current_item_height = item_coords[3] - item_coords[1]
+                resize_x_area_start = item_coords[0] + current_item_width - RESIZE_SQUARE
+                resize_y_area_start = item_coords[1] + current_item_height - RESIZE_SQUARE
+
+                if (current_mouse_position[0] > resize_x_area_start) and \
+                        (current_mouse_position[1] > resize_y_area_start):
+                    # If mouse position within resize area, resize node
+                    self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
+                                     current_mouse_position[1])
+                else:
+                    # If mouse position outside resize area, move node
+                    self.view.moveto(self.selected_item, current_mouse_position[0] - self.item_event_offset[0],
+                                     current_mouse_position[1] - self.item_event_offset[1])
             else:
                 # If nothing selected, move canvas to current mouse position
                 self.view.scan_dragto(mouse_event.x, mouse_event.y, gain=1)
@@ -50,8 +65,7 @@ class NodeGraphController:
 
             # Clear selection
             self.selected_item = None
-            self.selected_item_origin = None
-            self.event_start_position = None
+            self.item_event_offset = None
 
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
