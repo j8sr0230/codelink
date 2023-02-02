@@ -1,20 +1,26 @@
 import tkinter as tk
 
 
-SCENE_BACKGROUND_COLOR = "#1D1D1D"
-SCENE_SIZE = 5000
-
+BACKGROUND_COLOR = "#1D1D1D"
+FOREGROUND_COLOR = "#292929"
 GRID_COLOR = "#606060"
-GRID_STEP = 100
-GRID_DOT_SIZE = 6
 
+SCENE_SIZE = 1000
+MAJOR_TICK = 100
+MINOR_TICK = 20
+MARKER_SIZE = 6
 RESIZE_SQUARE = 20
+
+DEFAULT_FONT = "Helvetica 12"
 
 
 class NodeGraphView(tk.Canvas):
     def __init__(self, parent):
-        super().__init__(parent, bg=SCENE_BACKGROUND_COLOR)
+        super().__init__(parent, bg=BACKGROUND_COLOR)
         self.pack(fill="both", expand=True)
+
+        self.info_label = tk.Label(self, text="1.0", font=DEFAULT_FONT, bg=BACKGROUND_COLOR, fg=GRID_COLOR)
+        self.info_label.pack(side=tk.BOTTOM, anchor=tk.SW, padx=10, pady=10)
 
         self.bind("<Button-1>", self.on_mouse_left_down)
         self.bind("<ButtonRelease-1>", self.on_mouse_left_up)
@@ -22,15 +28,16 @@ class NodeGraphView(tk.Canvas):
         self.bind("<MouseWheel>", self.on_mouse_wheel)
 
         self.controller = None
+        self.scene_scale = 1.0
 
         # Draw background
-        self.draw_grid(SCENE_SIZE, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
+        self.draw_grid(SCENE_SIZE, GRID_COLOR, MAJOR_TICK, MARKER_SIZE)
 
         # Draw test nodes
-        self.create_rectangle([10, 10, 160, 110], fill="#292929", outline="#606060", width=1, tags="node")
+        self.create_rectangle([10, 10, 160, 110], fill=FOREGROUND_COLOR, outline=GRID_COLOR, width=1, tags="node")
         # self.tag_bind('node', '<Enter>', print)
 
-        self.create_rectangle([100, 100, 260, 210], fill="#292929", outline="#606060", width=1, tags="node")
+        self.create_rectangle([100, 100, 260, 210], fill=FOREGROUND_COLOR, outline=GRID_COLOR, width=1, tags="node")
 
     def set_controller(self, controller):
         self.controller = controller
@@ -57,3 +64,6 @@ class NodeGraphView(tk.Canvas):
                 x = i + grid_step // 2
                 y = j + grid_step // 2
                 self.create_oval((x, y, x + grid_dot_size, y + grid_dot_size), fill=color, tags="grid")
+
+    def set_info_text(self, msg):
+        self.info_label.config(text=msg)

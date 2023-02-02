@@ -1,12 +1,10 @@
-from node_graph_view import RESIZE_SQUARE
+from node_graph_view import RESIZE_SQUARE, MINOR_TICK
 
 
 class NodeGraphController:
     def __init__(self, model, view):
         self.mode = model
         self.view = view
-
-        self.view_scale = 1.0
 
         self.left_mouse_down = False
         self.selected_item = None
@@ -45,12 +43,16 @@ class NodeGraphController:
                 if (current_mouse_position[0] > resize_x_area_start) and \
                         (current_mouse_position[1] > resize_y_area_start):
                     # If mouse position within resize area, resize node
-                    self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
-                                     current_mouse_position[1])
+                    self.view.coords(self.selected_item,
+                                     item_coords[0],
+                                     item_coords[1],
+                                     current_mouse_position[0]//MINOR_TICK * MINOR_TICK,
+                                     current_mouse_position[1]//MINOR_TICK * MINOR_TICK)
                 else:
                     # If mouse position outside resize area, move node
-                    self.view.moveto(self.selected_item, current_mouse_position[0] - self.item_event_offset[0],
-                                     current_mouse_position[1] - self.item_event_offset[1])
+                    self.view.moveto(self.selected_item,
+                                     (current_mouse_position[0] - self.item_event_offset[0]) // MINOR_TICK * MINOR_TICK,
+                                     (current_mouse_position[1] - self.item_event_offset[1]) // MINOR_TICK * MINOR_TICK)
             else:
                 # If nothing selected, move canvas to current mouse position
                 self.view.scan_dragto(mouse_event.x, mouse_event.y, gain=1)
@@ -70,12 +72,14 @@ class NodeGraphController:
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
-            self.view_scale *= 1.1
+            self.view.scene_scale *= 1.1
         else:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
-            self.view_scale *= 0.9
+            self.view.scene_scale *= 0.9
 
-        if (self.view_scale < 0.8) or (self.view_scale > 1.2):
+        if self.view.scene_scale < 0.8:
             self.view.itemconfigure("grid", state='hidden')
         else:
             self.view.itemconfigure("grid", state='normal')
+
+        self.view.set_info_text("{0:.1f}".format(self.view.scene_scale))
