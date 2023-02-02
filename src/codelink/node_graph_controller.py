@@ -37,14 +37,13 @@ class NodeGraphController:
             else:
                 # If nothing selected, move canvas to current mouse position
                 self.view.scan_dragto(event.x, event.y, gain=1)
-                # self.view.draw_tk_grid(50, 4)
 
     # noinspection PyUnusedLocal
     def move_to(self, event):
         self.left_mouse_down = False
 
         if self.selected_item:
-            # Reset selected canvas item
+            # Reset selected item
             self.view.itemconfig(self.selected_item, width=1)
 
             # Clear selection
