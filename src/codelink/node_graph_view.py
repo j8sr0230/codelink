@@ -1,5 +1,4 @@
 import tkinter as tk
-from PIL import Image, ImageDraw, ImageTk
 
 
 SCENE_BACKGROUND_COLOR = "#1D1D1D"
@@ -23,9 +22,6 @@ class NodeGraphView(tk.Canvas):
         self.controller = None
 
         # Draw background
-        # self.grid_img = self.draw_grid_pil(SCENE_SIZE, SCENE_BACKGROUND_COLOR, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
-        # self.background_img = ImageTk.PhotoImage(self.grid_img)
-        # self.create_image(0, 0, anchor=tk.CENTER, image=self.background_img, tags="background")
         self.draw_grid(SCENE_SIZE, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
 
         # Draw test nodes
@@ -50,19 +46,6 @@ class NodeGraphView(tk.Canvas):
     def on_mouse_wheel(self, mouse_event):
         if self.controller:
             self.controller.zoom(mouse_event)
-
-    @staticmethod
-    def draw_grid_pil(size, background_color, foreground_color, grid_step, grid_dot_size):
-        grid_img = Image.new("RGB", (size, size), background_color)
-        grid_img_draw = ImageDraw.Draw(grid_img)
-
-        for j in range(0, size, grid_step):
-            for i in range(0, size, grid_step):
-                x = i + grid_step // 2
-                y = j + grid_step // 2
-                grid_img_draw.ellipse((x, y, x + grid_dot_size, y + grid_dot_size), fill=foreground_color)
-
-        return grid_img
 
     def draw_grid(self, size, color, grid_step, grid_dot_size):
         for j in range(-size//2, size//2, grid_step):

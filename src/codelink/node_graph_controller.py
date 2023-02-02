@@ -1,5 +1,5 @@
-SCENE_SCALE_MIN = 0.75
-SCENE_SCALE_MAX = 1.25
+SCENE_SCALE_MIN = 0.8
+SCENE_SCALE_MAX = 1.2
 
 
 class NodeGraphController:
@@ -61,13 +61,14 @@ class NodeGraphController:
         if mouse_event.delta > 0:
             self.scene_scale *= 1.1
             if self.scene_scale <= SCENE_SCALE_MAX:
+                # Clamp zoom
                 self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
             else:
                 self.scene_scale = SCENE_SCALE_MAX
         else:
             self.scene_scale *= 0.9
             if self.scene_scale >= SCENE_SCALE_MIN:
+                # Clamp zoom
                 self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
             else:
                 self.scene_scale = SCENE_SCALE_MIN
-        print(self.scene_scale)
