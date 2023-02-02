@@ -3,11 +3,11 @@ from PIL import Image, ImageDraw, ImageTk
 
 
 SCENE_BACKGROUND_COLOR = "#1D1D1D"
-SCENE_SIZE = 6000
+SCENE_SIZE = 5000
 
 GRID_COLOR = "#606060"
 GRID_STEP = 100
-GRID_DOT_SIZE = 4
+GRID_DOT_SIZE = 6
 
 
 class NodeGraphView(tk.Canvas):
@@ -18,14 +18,15 @@ class NodeGraphView(tk.Canvas):
         self.bind("<Button-1>", self.on_mouse_left_down)
         self.bind("<ButtonRelease-1>", self.on_mouse_left_up)
         self.bind("<Motion>", self.on_mouse_move)
+        self.bind("<MouseWheel>", self.on_mouse_wheel)
 
         self.controller = None
 
         # Draw background
-        self.background_img = ImageTk.PhotoImage(
-            self.draw_grid(SCENE_SIZE, SCENE_BACKGROUND_COLOR, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
-        )
-        self.create_image(0, 0, anchor=tk.CENTER, image=self.background_img, tags="background")
+        # self.grid_img = self.draw_grid_pil(SCENE_SIZE, SCENE_BACKGROUND_COLOR, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
+        # self.background_img = ImageTk.PhotoImage(self.grid_img)
+        # self.create_image(0, 0, anchor=tk.CENTER, image=self.background_img, tags="background")
+        self.draw_grid(SCENE_SIZE, GRID_COLOR, GRID_STEP, GRID_DOT_SIZE)
 
         # Draw test nodes
         self.create_rectangle([10, 10, 160, 110], fill="#292929", outline="#606060", width=1, tags="node")
@@ -46,8 +47,12 @@ class NodeGraphView(tk.Canvas):
         if self.controller:
             self.controller.move(mouse_event)
 
+    def on_mouse_wheel(self, mouse_event):
+        if self.controller:
+            self.controller.zoom(mouse_event)
+
     @staticmethod
-    def draw_grid(size, background_color, foreground_color, grid_step, grid_dot_size):
+    def draw_grid_pil(size, background_color, foreground_color, grid_step, grid_dot_size):
         grid_img = Image.new("RGB", (size, size), background_color)
         grid_img_draw = ImageDraw.Draw(grid_img)
 
@@ -58,3 +63,10 @@ class NodeGraphView(tk.Canvas):
                 grid_img_draw.ellipse((x, y, x + grid_dot_size, y + grid_dot_size), fill=foreground_color)
 
         return grid_img
+
+    def draw_grid(self, size, color, grid_step, grid_dot_size):
+        for j in range(-size//2, size//2, grid_step):
+            for i in range(-size//2, size//2, grid_step):
+                x = i + grid_step // 2
+                y = j + grid_step // 2
+                self.create_oval((x, y, x + grid_dot_size, y + grid_dot_size), fill=color)
