@@ -1,7 +1,3 @@
-SCENE_SCALE_MIN = 0.8
-SCENE_SCALE_MAX = 1.2
-
-
 class NodeGraphController:
     def __init__(self, model, view):
         self.mode = model
@@ -11,8 +7,6 @@ class NodeGraphController:
         self.selected_item = None
         self.selected_item_origin = None
         self.event_start_position = None
-
-        self.scene_scale = 1.0
 
     def move_from(self, mouse_event):
         self.left_mouse_down = True
@@ -59,16 +53,6 @@ class NodeGraphController:
 
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
-            self.scene_scale *= 1.1
-            if self.scene_scale <= SCENE_SCALE_MAX:
-                # Clamp zoom
-                self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
-            else:
-                self.scene_scale = SCENE_SCALE_MAX
+            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
         else:
-            self.scene_scale *= 0.9
-            if self.scene_scale >= SCENE_SCALE_MIN:
-                # Clamp zoom
-                self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
-            else:
-                self.scene_scale = SCENE_SCALE_MIN
+            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
