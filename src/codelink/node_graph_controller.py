@@ -12,17 +12,17 @@ class NodeGraphController:
         self.left_mouse_down = True
 
         items = self.view.find_withtag("current")
-        if len(items) > 0:
-            # If item selected, save item, origin and event position
+        if len(items) > 0 and "node" in self.view.gettags(items[0]):
+            # If selected item is node, save item, origin and event position on canvas
             self.selected_item = items[0]
             self.selected_item_origin = self.view.coords(items[0])[:2]
             self.event_start_position = (self.view.canvasx(event.x), self.view.canvasy(event.y))
 
-            # Modify selected canvas item
+            # Modify selected item
             self.view.tag_raise(items[0])
             self.view.itemconfig(items[0], width=3)
         else:
-            # If nothing selected, prepare for canvas dragging
+            # If no node selected, prepare for canvas dragging
             self.view.scan_mark(event.x, event.y)
 
     def move(self, event):
@@ -37,7 +37,7 @@ class NodeGraphController:
             else:
                 # If nothing selected, move canvas to current mouse position
                 self.view.scan_dragto(event.x, event.y, gain=1)
-        self.view.update()
+                # self.view.draw_tk_grid(50, 4)
 
     # noinspection PyUnusedLocal
     def move_to(self, event):
