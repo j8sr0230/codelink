@@ -52,4 +52,4 @@ class NodeGraphView(tk.Canvas):
             for i in range(-size//2, size//2, grid_step):
                 x = i + grid_step // 2
                 y = j + grid_step // 2
-                self.create_oval((x, y, x + grid_dot_size, y + grid_dot_size), fill=color)
+                self.create_oval((x, y, x + grid_dot_size, y + grid_dot_size), fill=color, tags="grid")

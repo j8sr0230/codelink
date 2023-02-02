@@ -8,6 +8,8 @@ class NodeGraphController:
         self.selected_item_origin = None
         self.event_start_position = None
 
+        self.zoom_level = 0
+
     def move_from(self, mouse_event):
         self.left_mouse_down = True
 
@@ -54,5 +56,12 @@ class NodeGraphController:
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
+            self.zoom_level += 1
         else:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
+            self.zoom_level -= 1
+
+        if self.zoom_level < -2:
+            self.view.itemconfigure("grid", state='hidden')
+        else:
+            self.view.itemconfigure("grid", state='normal')
