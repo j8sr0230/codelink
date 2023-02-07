@@ -1,4 +1,4 @@
-from node_graph_view import RESIZE_SQUARE, MINOR_TICK
+from node_graph_view import RESIZE_SQUARE, MINOR_TICK, MAJOR_TICK_FACTOR
 
 
 class NodeGraphController:
@@ -43,11 +43,13 @@ class NodeGraphController:
                 if (current_mouse_position[0] > resize_x_area_start) and \
                         (current_mouse_position[1] > resize_y_area_start):
                     # If mouse position within resize area, resize node
+                    scaled_minor_tick = self.view.get_minor_width()
+                    print(scaled_minor_tick)
                     self.view.coords(self.selected_item,
                                      item_coords[0],
                                      item_coords[1],
-                                     current_mouse_position[0]//MINOR_TICK * MINOR_TICK,
-                                     current_mouse_position[1]//MINOR_TICK * MINOR_TICK)
+                                     (current_mouse_position[0] // scaled_minor_tick) * scaled_minor_tick,
+                                     (current_mouse_position[1]) * (scaled_minor_tick/MINOR_TICK))
                 else:
                     # If mouse position outside resize area, move node
                     self.view.moveto(self.selected_item,
@@ -72,14 +74,14 @@ class NodeGraphController:
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 1.1, 1.1)
-            self.view.scene_scale *= 1.1
+            self.view.update_scale(1.1)
         else:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
-            self.view.scene_scale *= 0.9
+            self.view.update_scale(0.9)
+
+            self.view.get_minor_width()
 
         if self.view.scene_scale < 0.8:
-            self.view.itemconfigure("grid", state='hidden')
+            self.view.itemconfigure("grid", state="normal")
         else:
-            self.view.itemconfigure("grid", state='normal')
-
-        self.view.set_info_text("{0:.1f}".format(self.view.scene_scale))
+            self.view.itemconfigure("grid", state="normal")
