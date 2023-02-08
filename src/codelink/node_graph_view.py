@@ -34,7 +34,7 @@ class NodeGraphView(tk.Canvas):
         self.itemconfigure("minor_tick", state="hidden")
 
         # Draw background
-        self.paint_grid()
+        self.paint_grid(MARKER_RADIUS)
 
         # Draw test nodes
         self.create_rectangle([10, 10, 160, 110], fill=FOREGROUND, outline="red", width=1, tags="node")
@@ -83,12 +83,6 @@ class NodeGraphView(tk.Canvas):
         self.scene_scale *= multiplier
         self.set_info_text("{0:.1f}".format(self.scene_scale))
 
-    def paint_grid(self):
-        for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
-            for y in range(-GRID_WIDTH, GRID_WIDTH + 1, MINOR_TICK * MAJOR_TICK_FACTOR):
-                self.create_oval((x - MARKER_RADIUS, y - MARKER_RADIUS, x + MARKER_RADIUS, y + MARKER_RADIUS),
-                                 width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
-
     def set_info_text(self, msg):
         self.info_label.config(text=msg)
 
@@ -109,3 +103,17 @@ class NodeGraphView(tk.Canvas):
         x_snap = round((((position[0] - item_click_offset[0] - origin[0]) // minor) * minor) + origin[0], 0)
         y_snap = round((((position[1] - item_click_offset[1] - origin[1]) // minor) * minor) + origin[1], 0)
         return x_snap, y_snap
+
+    def set_grid_marker_size(self, radius=MARKER_RADIUS):
+        grid_items = self.find_withtag("grid")
+        for grid_marker in grid_items:
+            marker_coords = self.coords(grid_marker)
+            marker_center = ((marker_coords[0] + marker_coords[2]) / 2, (marker_coords[1] + marker_coords[3]) / 2)
+            self.coords(grid_marker, marker_center[0] - radius, marker_center[1] - radius, marker_center[0] + radius,
+                        marker_center[1] + radius)
+
+    def paint_grid(self, marker_radius=MARKER_RADIUS):
+        for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
+            for y in range(-GRID_WIDTH, GRID_WIDTH + 1, MINOR_TICK * MAJOR_TICK_FACTOR):
+                self.create_oval((x - marker_radius, y - marker_radius, x + marker_radius, y + marker_radius),
+                                 width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")

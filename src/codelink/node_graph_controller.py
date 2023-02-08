@@ -65,10 +65,12 @@ class NodeGraphController:
             self.view.itemconfig(self.selected_item, width=1)
 
             # Clear selection
-            self.mouse_mode = None
             self.selected_item = None
             self.item_click_offset = None
             self.view.config(cursor="arrow")
+
+        # Reset mouse mode
+        self.mouse_mode = None
 
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
@@ -77,6 +79,8 @@ class NodeGraphController:
         else:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
             self.view.set_scale(0.9)
+
+        # self.view.set_grid_marker_size()  # Too slow
 
         if self.view.scene_scale < 0.7:
             self.view.itemconfigure("grid", state="hidden")
