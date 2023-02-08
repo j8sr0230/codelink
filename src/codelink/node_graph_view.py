@@ -113,7 +113,7 @@ class NodeGraphView(tk.Canvas):
                         marker_center[1] + radius)
 
     def paint_grid(self, marker_radius=MARKER_RADIUS):
-        for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
-            for y in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
+        for x in range(-GRID_WIDTH, GRID_WIDTH+(MINOR_TICK * MAJOR_TICK_FACTOR), MINOR_TICK * MAJOR_TICK_FACTOR):
+            for y in range(-GRID_WIDTH, GRID_WIDTH+(MINOR_TICK * MAJOR_TICK_FACTOR), MINOR_TICK * MAJOR_TICK_FACTOR):
                 self.create_oval((x - marker_radius, y - marker_radius, x + marker_radius, y + marker_radius),
                                  width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
