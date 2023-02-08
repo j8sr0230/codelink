@@ -6,9 +6,9 @@ LIGHT_BACKGROUND = "#383838"
 FOREGROUND = "#292929"
 
 GRID_WIDTH = 5000
-MINOR_TICK = 20
-MAJOR_TICK_FACTOR = 5
-MARKER_RADIUS = 4
+MINOR_TICK = 5
+MAJOR_TICK_FACTOR = 20
+MARKER_RADIUS = 5
 
 RESIZE_BORDER_WIDTH = 50
 DEFAULT_FONT = "Helvetica 12"
@@ -34,10 +34,7 @@ class NodeGraphView(tk.Canvas):
         self.itemconfigure("minor_tick", state="hidden")
 
         # Draw background
-        for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
-            for y in range(-GRID_WIDTH, GRID_WIDTH + 1, MINOR_TICK * MAJOR_TICK_FACTOR):
-                self.create_oval((x - MARKER_RADIUS, y - MARKER_RADIUS, x + MARKER_RADIUS, y + MARKER_RADIUS),
-                                 width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
+        self.paint_grid()
 
         # Draw test nodes
         self.create_rectangle([10, 10, 160, 110], fill=FOREGROUND, outline="red", width=1, tags="node")
@@ -82,11 +79,17 @@ class NodeGraphView(tk.Canvas):
     def get_scale(self):
         return self.scene_scale
 
-    def update_scale(self, multiplier):
+    def set_scale(self, multiplier):
         self.scene_scale *= multiplier
-        self.update_info_text("{0:.1f}".format(self.scene_scale))
+        self.set_info_text("{0:.1f}".format(self.scene_scale))
 
-    def update_info_text(self, msg):
+    def paint_grid(self):
+        for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
+            for y in range(-GRID_WIDTH, GRID_WIDTH + 1, MINOR_TICK * MAJOR_TICK_FACTOR):
+                self.create_oval((x - MARKER_RADIUS, y - MARKER_RADIUS, x + MARKER_RADIUS, y + MARKER_RADIUS),
+                                 width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
+
+    def set_info_text(self, msg):
         self.info_label.config(text=msg)
 
     def get_minor_width(self):
@@ -103,6 +106,6 @@ class NodeGraphView(tk.Canvas):
         origin = self.get_grid_origin()
         minor = self.get_minor_width()
 
-        x_snap = round((((position[0] - item_click_offset[0] - origin[0]) // minor) * minor) + origin[0])
-        y_snap = round((((position[1] - item_click_offset[1] - origin[1]) // minor) * minor) + origin[1])
+        x_snap = round((((position[0] - item_click_offset[0] - origin[0]) // minor) * minor) + origin[0], 0)
+        y_snap = round((((position[1] - item_click_offset[1] - origin[1]) // minor) * minor) + origin[1], 0)
         return x_snap, y_snap
