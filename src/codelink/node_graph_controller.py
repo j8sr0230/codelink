@@ -1,4 +1,4 @@
-from node_graph_view import RESIZE_SQUARE, MINOR_TICK, MAJOR_TICK_FACTOR
+from node_graph_view import RESIZE_SQUARE
 
 
 class NodeGraphController:
@@ -22,7 +22,7 @@ class NodeGraphController:
 
             # Modify selected item
             self.view.tag_raise(items[0])
-            self.view.itemconfig(items[0], width=3)
+            self.view.itemconfig(items[0], width=1)
         else:
             # If no node selected, prepare for canvas dragging
             self.view.scan_mark(mouse_event.x, mouse_event.y)
@@ -43,18 +43,19 @@ class NodeGraphController:
                 if (current_mouse_position[0] > resize_x_area_start) and \
                         (current_mouse_position[1] > resize_y_area_start):
                     # If mouse position within resize area, resize node
-                    scaled_minor_tick = self.view.get_minor_width()
-                    print(scaled_minor_tick)
-                    self.view.coords(self.selected_item,
-                                     item_coords[0],
-                                     item_coords[1],
-                                     (current_mouse_position[0] // scaled_minor_tick) * scaled_minor_tick,
-                                     (current_mouse_position[1]) * (scaled_minor_tick/MINOR_TICK))
+                    self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
+                                     item_coords[3])
                 else:
                     # If mouse position outside resize area, move node
+                    origin = self.view.get_grid_origin()
+                    minor = self.view.get_minor_width()
+
                     self.view.moveto(self.selected_item,
-                                     (current_mouse_position[0] - self.item_event_offset[0]) // MINOR_TICK * MINOR_TICK,
-                                     (current_mouse_position[1] - self.item_event_offset[1]) // MINOR_TICK * MINOR_TICK)
+                                     round((((current_mouse_position[0] - self.item_event_offset[0] - origin[0]) //
+                                             minor) * minor) + origin[0]),
+                                     round((((current_mouse_position[1] - self.item_event_offset[1] - origin[1]) //
+                                             minor) * minor) + origin[1]))
+
             else:
                 # If nothing selected, move canvas to current mouse position
                 self.view.scan_dragto(mouse_event.x, mouse_event.y, gain=1)
@@ -79,9 +80,7 @@ class NodeGraphController:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
             self.view.update_scale(0.9)
 
-            self.view.get_minor_width()
-
         if self.view.scene_scale < 0.8:
-            self.view.itemconfigure("grid", state="normal")
+            self.view.itemconfigure("grid", state="hidden")
         else:
             self.view.itemconfigure("grid", state="normal")
