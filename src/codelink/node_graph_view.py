@@ -2,12 +2,12 @@ import tkinter as tk
 
 
 DARK_BACKGROUND = "#1D1D1D"
-LIGHT_BACKGROUND = "#383838"
+LIGHT_BACKGROUND = "#282828"
 FOREGROUND = "#292929"
 
 GRID_WIDTH = 5000
-MINOR_TICK = 5
-MAJOR_TICK_FACTOR = 20
+MINOR_TICK = 10
+MAJOR_TICK_FACTOR = 10
 MARKER_RADIUS = 5
 
 RESIZE_BORDER_WIDTH = 50
@@ -114,6 +114,6 @@ class NodeGraphView(tk.Canvas):
 
     def paint_grid(self, marker_radius=MARKER_RADIUS):
         for x in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
-            for y in range(-GRID_WIDTH, GRID_WIDTH + 1, MINOR_TICK * MAJOR_TICK_FACTOR):
+            for y in range(-GRID_WIDTH, GRID_WIDTH, MINOR_TICK * MAJOR_TICK_FACTOR):
                 self.create_oval((x - marker_radius, y - marker_radius, x + marker_radius, y + marker_radius),
                                  width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
