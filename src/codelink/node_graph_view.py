@@ -5,10 +5,10 @@ DARK_BACKGROUND = "#1D1D1D"
 LIGHT_BACKGROUND = "#282828"
 FOREGROUND = "#292929"
 
-GRID_WIDTH = 5000
-MINOR_TICK = 10
-MAJOR_TICK_FACTOR = 10
-MARKER_RADIUS = 5
+GRID_WIDTH = 4000
+MINOR_TICK = 5
+MAJOR_TICK_FACTOR = 20
+MARKER_SIZE = 10
 
 RESIZE_BORDER_WIDTH = 50
 DEFAULT_FONT = "Helvetica 12"
@@ -19,7 +19,8 @@ class NodeGraphView(tk.Canvas):
         super().__init__(parent, bg=DARK_BACKGROUND)
         self.pack(fill="both", expand=True)
 
-        self.info_label = tk.Label(self, text="1.0", font=DEFAULT_FONT, bg=DARK_BACKGROUND, fg=LIGHT_BACKGROUND)
+        self.info_label = tk.Label(self, text="Scale. 1.0, Minor tick: 5 px", font=DEFAULT_FONT, bg=DARK_BACKGROUND,
+                                   fg=LIGHT_BACKGROUND)
         self.info_label.pack(side=tk.BOTTOM, anchor=tk.SW, padx=10, pady=10)
         self.bind("<ButtonPress-1>", self.on_mouse_left_down)
         self.bind("<ButtonRelease-1>", self.on_mouse_left_up)
@@ -34,11 +35,13 @@ class NodeGraphView(tk.Canvas):
         self.itemconfigure("minor_tick", state="hidden")
 
         # Draw background
-        self.paint_grid(MARKER_RADIUS)
+        self.paint_grid()
 
         # Draw test nodes
-        self.create_rectangle([10, 10, 160, 110], fill=FOREGROUND, outline="red", width=1, tags="node")
-        self.create_rectangle([100, 100, 260, 210], fill=FOREGROUND, outline="green", width=1, tags="node")
+        n1 = self.create_rectangle([0, 0, 200, 100], fill=FOREGROUND, outline="red", width=1, tags="node")
+        n2 = self.create_rectangle([0, 0, 200, 100], fill=FOREGROUND, outline="green", width=1, tags="node")
+        self.moveto(n1, 0, 0)
+        self.moveto(n2, 300, 200)
         self.tag_bind('node', '<Enter>', self.on_enter_item)
         self.tag_bind('node', '<Leave>', self.on_leave_item)
 
@@ -81,7 +84,7 @@ class NodeGraphView(tk.Canvas):
 
     def set_scale(self, multiplier):
         self.scene_scale *= multiplier
-        self.set_info_text("{0:.1f}".format(self.scene_scale))
+        self.set_info_text("Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.get_scale(), self.get_minor_width()))
 
     def set_info_text(self, msg):
         self.info_label.config(text=msg)
@@ -93,27 +96,17 @@ class NodeGraphView(tk.Canvas):
     def get_grid_origin(self):
         grid_origin_item = self.find_withtag("grid")[0]
         item_coords = self.coords(grid_origin_item)
-        item_center = ((item_coords[0] + item_coords[2]) / 2, (item_coords[1] + item_coords[3]) / 2)
-        return item_center
+        return item_coords[0], item_coords[1]
 
     def snap_to_grid(self, position, item_click_offset):
         origin = self.get_grid_origin()
         minor = self.get_minor_width()
-
-        x_snap = round((((position[0] - item_click_offset[0] - origin[0]) // minor) * minor) + origin[0], 0)
-        y_snap = round((((position[1] - item_click_offset[1] - origin[1]) // minor) * minor) + origin[1], 0)
+        x_snap = (((position[0] - item_click_offset[0] - origin[0]) // minor) * minor) + origin[0]
+        y_snap = (((position[1] - item_click_offset[1] - origin[1]) // minor) * minor) + origin[1]
         return x_snap, y_snap
 
-    def set_grid_marker_size(self, radius=MARKER_RADIUS):
-        grid_items = self.find_withtag("grid")
-        for grid_marker in grid_items:
-            marker_coords = self.coords(grid_marker)
-            marker_center = ((marker_coords[0] + marker_coords[2]) / 2, (marker_coords[1] + marker_coords[3]) / 2)
-            self.coords(grid_marker, marker_center[0] - radius, marker_center[1] - radius, marker_center[0] + radius,
-                        marker_center[1] + radius)
-
-    def paint_grid(self, marker_radius=MARKER_RADIUS):
-        for x in range(-GRID_WIDTH, GRID_WIDTH+(MINOR_TICK * MAJOR_TICK_FACTOR), MINOR_TICK * MAJOR_TICK_FACTOR):
-            for y in range(-GRID_WIDTH, GRID_WIDTH+(MINOR_TICK * MAJOR_TICK_FACTOR), MINOR_TICK * MAJOR_TICK_FACTOR):
-                self.create_oval((x - marker_radius, y - marker_radius, x + marker_radius, y + marker_radius),
-                                 width=1, outline=LIGHT_BACKGROUND, fill=LIGHT_BACKGROUND, tags="grid")
+    def paint_grid(self):
+        major_step = MINOR_TICK * MAJOR_TICK_FACTOR
+        for x in range(-GRID_WIDTH, GRID_WIDTH + major_step, major_step):
+            for y in range(-GRID_WIDTH, GRID_WIDTH + major_step, major_step):
+                self.create_oval((x, y, x + MARKER_SIZE, y + MARKER_SIZE), fill=LIGHT_BACKGROUND, width=0, tags="grid")

@@ -22,7 +22,7 @@ class NodeGraphController:
 
                 # Modify selected item
                 self.view.tag_raise(items[0])
-                self.view.itemconfig(items[0], width=3)
+                self.view.itemconfig(items[0], width=2)
         else:
             # If no node selected, prepare for canvas dragging
             self.view.scan_mark(mouse_event.x, mouse_event.y)
@@ -51,7 +51,7 @@ class NodeGraphController:
                                  item_coords[3])
             elif self.mouse_mode == "move_item":
                 snapped_xy = self.view.snap_to_grid(current_mouse_position, self.item_click_offset)
-                self.view.moveto(self.selected_item, snapped_xy[0], snapped_xy[1])
+                self.view.moveto(self.selected_item, round(snapped_xy[0], 2), round(snapped_xy[1], 2))
         else:
             # If nothing selected, move canvas to current mouse position
             self.mouse_mode = "scroll_canvas"
@@ -79,8 +79,6 @@ class NodeGraphController:
         else:
             self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), 0.9, 0.9)
             self.view.set_scale(0.9)
-
-        # self.view.set_grid_marker_size()  # Too slow
 
         if self.view.scene_scale < 0.7:
             self.view.itemconfigure("grid", state="hidden")
