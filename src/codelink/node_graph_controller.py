@@ -51,7 +51,7 @@ class NodeGraphController:
                                  item_coords[3])
             elif self.mouse_mode == "move_item":
                 snapped_xy = self.view.snap_to_grid(current_mouse_position, self.item_click_offset)
-                self.view.moveto(self.selected_item, round(snapped_xy[0], 2), round(snapped_xy[1], 2))
+                self.view.moveto(self.selected_item, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
         else:
             # If nothing selected, move canvas to current mouse position
             self.mouse_mode = "scroll_canvas"
