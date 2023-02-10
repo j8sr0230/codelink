@@ -2,8 +2,9 @@ import tkinter as tk
 
 
 DARK_BACKGROUND = "#1D1D1D"
-LIGHT_BACKGROUND = "#282828"
-FOREGROUND = "#292929"
+LIGHT_BACKGROUND = "#383838"
+DARK_FOREGROUND = "#545454"
+LIGHT_FOREGROUND = "#E5E5E5"
 
 GRID_WIDTH = 4000
 MINOR_TICK = 5
@@ -21,7 +22,7 @@ class NodeGraphView(tk.Canvas):
         self.pack(fill="both", expand=True)
 
         self.info_label = tk.Label(self, text="Scale. 1.0, Minor tick: 5 px", font=DEFAULT_FONT, bg=DARK_BACKGROUND,
-                                   fg=LIGHT_BACKGROUND)
+                                   fg=LIGHT_FOREGROUND)
         self.info_label.pack(side=tk.BOTTOM, anchor=tk.SW, padx=10, pady=10)
         self.bind("<ButtonPress-1>", self.on_mouse_left_down)
         self.bind("<ButtonRelease-1>", self.on_mouse_left_up)
@@ -39,8 +40,8 @@ class NodeGraphView(tk.Canvas):
         self.paint_grid()
 
         # Draw test nodes
-        n1 = self.create_rectangle([0, 0, 200, 100], fill=FOREGROUND, outline="red", width=1, tags="node")
-        n2 = self.create_rectangle([0, 0, 200, 100], fill=FOREGROUND, outline="green", width=1, tags="node")
+        n1 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="red", width=1, tags="node")
+        n2 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="green", width=1, tags="node")
         self.moveto(n1, 0, 0)
         self.moveto(n2, 300, 200)
         self.tag_bind('node', '<Enter>', self.on_enter_item)
