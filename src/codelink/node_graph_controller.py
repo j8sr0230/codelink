@@ -24,7 +24,7 @@ class NodeGraphController:
                 self.view.tag_raise(items[0])
                 self.view.itemconfig(items[0], width=2)
         else:
-            # If no node selected, prepare for canvas dragging
+            # If nothing selected, prepare for canvas dragging
             self.view.scan_mark(mouse_event.x, mouse_event.y)
 
     def move(self, mouse_event):

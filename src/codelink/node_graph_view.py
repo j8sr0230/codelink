@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from node_view import NodeView
+
 
 DARK_BACKGROUND = "#1D1D1D"
 LIGHT_BACKGROUND = "#383838"
@@ -46,6 +48,9 @@ class NodeGraphView(tk.Canvas):
         self.moveto(n2, 300, 200)
         self.tag_bind('node', '<Enter>', self.on_enter_item)
         self.tag_bind('node', '<Leave>', self.on_leave_item)
+
+        n3 = NodeView(self)
+        n3.paint()
 
     def on_mouse_left_down(self, mouse_event):
         if self.controller:
