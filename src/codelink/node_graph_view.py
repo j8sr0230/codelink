@@ -49,8 +49,7 @@ class NodeGraphView(tk.Canvas):
         self.tag_bind('node', '<Enter>', self.on_enter_item)
         self.tag_bind('node', '<Leave>', self.on_leave_item)
 
-        n3 = NodeView(self)
-        n3.paint()
+        self.n3 = NodeView(self)
 
     def on_mouse_left_down(self, mouse_event):
         if self.controller:

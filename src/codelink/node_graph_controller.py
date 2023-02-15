@@ -82,6 +82,8 @@ class NodeGraphController:
                             1/ZOOM_STEP, 1/ZOOM_STEP)
             self.view.set_scale(1/ZOOM_STEP)
 
+        self.view.itemconfig("text", font=("Helvetica", round(self.view.scene_scale * 12)))
+
         if self.view.scene_scale < 0.7:
             self.view.itemconfigure("grid", state="hidden")
         else:
