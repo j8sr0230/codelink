@@ -30,12 +30,13 @@ class NodeGraphView(tk.Canvas):
         self.bind("<ButtonRelease-1>", self.on_mouse_left_up)
         self.bind("<B1-Motion>", self.on_mouse_move)
         self.bind("<MouseWheel>", self.on_mouse_wheel)
+        self.bind("<ButtonRelease-3>", self.on_mouse_right_up)
 
         self.controller = None
         self.scene_scale = 1.0
 
         # Draw (invisible) line to measure pixel distance of minor tick on scaled canvas
-        self.create_line((0, 0, MINOR_TICK, 0), tags="minor_tick")
+        self.create_line((0, 0, MINOR_TICK, 0), tags=("minor_tick", "grid"))
         self.itemconfigure("minor_tick", state="hidden")
 
         # Draw background
@@ -49,8 +50,6 @@ class NodeGraphView(tk.Canvas):
         self.tag_bind('node', '<Enter>', self.on_enter_item)
         self.tag_bind('node', '<Leave>', self.on_leave_item)
 
-        self.n3 = NodeView(self)
-
     def on_mouse_left_down(self, mouse_event):
         if self.controller:
             self.controller.move_from(mouse_event)
@@ -58,6 +57,10 @@ class NodeGraphView(tk.Canvas):
     def on_mouse_left_up(self, mouse_event):
         if self.controller:
             self.controller.move_to(mouse_event)
+
+    def on_mouse_right_up(self, mouse_event):
+        if self.controller:
+            self.controller.add_node(mouse_event)
 
     def on_mouse_move(self, mouse_event):
         if self.controller:
@@ -69,18 +72,9 @@ class NodeGraphView(tk.Canvas):
 
     def on_enter_item(self, enter_event):
         pass
-        # current_mouse_position = (self.canvasx(enter_event.x), self.canvasy(enter_event.y))
-        # selected_item = self.find_closest(current_mouse_position[0], current_mouse_position[1])[0]
-        # item_coords = self.coords(selected_item)
-        # item_width = item_coords[2] - item_coords[0]
-        # resize_x_area_start = item_coords[0] + item_width - self.get_scale() * RESIZE_BORDER_WIDTH
-        # if current_mouse_position[0] > resize_x_area_start:
-        #     self.config(cursor="size_we")
 
-    # noinspection PyUnusedLocal
     def on_leave_item(self, enter_event):
         pass
-        # self.config(cursor="arrow")
 
     def set_controller(self, controller):
         self.controller = controller

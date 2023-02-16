@@ -1,5 +1,9 @@
 from node_graph_view import RESIZE_BORDER_WIDTH, ZOOM_STEP
 
+from node_view import NodeView
+from node_controller import NodeController
+from node_model import NodeModel
+
 
 class NodeGraphController:
     def __init__(self, model, view):
@@ -72,17 +76,23 @@ class NodeGraphController:
         # Reset mouse mode
         self.mouse_mode = None
 
+    def add_node(self, mouse_event):
+        node_model = NodeModel()
+        node_view = NodeView(self.view, self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
+        node_controller = NodeController(node_model, node_view)
+        node_view.set_controller(node_controller)
+
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
-            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
+            self.view.scale("grid", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
                             ZOOM_STEP, ZOOM_STEP)
             self.view.set_scale(ZOOM_STEP)
         else:
-            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
+            self.view.scale("grid", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
                             1/ZOOM_STEP, 1/ZOOM_STEP)
             self.view.set_scale(1/ZOOM_STEP)
 
-        self.view.itemconfig("text", font=("Helvetica", round(self.view.scene_scale * 12)))
+        #self.view.itemconfig("text", font=("Helvetica", round(self.view.scene_scale * 12)))
 
         if self.view.scene_scale < 0.7:
             self.view.itemconfigure("grid", state="hidden")
