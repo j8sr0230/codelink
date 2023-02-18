@@ -84,17 +84,24 @@ class NodeGraphController:
 
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
-            self.view.scale("grid", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
+            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
                             ZOOM_STEP, ZOOM_STEP)
-            self.view.set_scale(ZOOM_STEP)
         else:
-            self.view.scale("grid", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
+            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
                             1/ZOOM_STEP, 1/ZOOM_STEP)
-            self.view.set_scale(1/ZOOM_STEP)
 
-        #self.view.itemconfig("text", font=("Helvetica", round(self.view.scene_scale * 12)))
+        self.view.set_info_text(
+            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_scale(), self.view.get_minor_width()))
 
-        if self.view.scene_scale < 0.7:
+        # Scale fonts and canvas window objects
+        self.view.scaled_font.config(size=round(self.view.get_scale() * 30))
+
+        win_obj_list = self.view.find_withtag("win")
+        for obj_id in win_obj_list:
+            self.view.itemconfig(obj_id, width=self.view.get_scale() * 200, height=self.view.get_scale() * 100)
+
+        # Toggle grid
+        if self.view.get_scale() < 0.7:
             self.view.itemconfigure("grid", state="hidden")
         else:
             self.view.itemconfigure("grid", state="normal")

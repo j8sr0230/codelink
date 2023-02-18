@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter.font import Font
 
 from node_view import NodeView
 
@@ -21,8 +22,13 @@ DEFAULT_FONT = "Helvetica 12"
 class NodeGraphView(tk.Canvas):
     def __init__(self, parent):
         super().__init__(parent, bg=DARK_BACKGROUND)
-        self.pack(fill="both", expand=True)
 
+        # Instance Attributes
+        self.controller = None
+        self.scaled_font = Font(family="Helvetica", size=30)
+
+        # Setup GUI
+        self.pack(fill="both", expand=True)
         self.info_label = tk.Label(self, text="Scale. 1.0, Minor tick: 5 px", font=DEFAULT_FONT, bg=DARK_BACKGROUND,
                                    fg=LIGHT_FOREGROUND)
         self.info_label.pack(side=tk.BOTTOM, anchor=tk.SW, padx=10, pady=10)
@@ -32,23 +38,24 @@ class NodeGraphView(tk.Canvas):
         self.bind("<MouseWheel>", self.on_mouse_wheel)
         self.bind("<ButtonRelease-3>", self.on_mouse_right_up)
 
-        self.controller = None
-        self.scene_scale = 1.0
-
-        # Draw (invisible) line to measure pixel distance of minor tick on scaled canvas
-        self.create_line((0, 0, MINOR_TICK, 0), tags=("minor_tick", "grid"))
+        # Draw (invisible) line to track size of scaled canvas items
+        self.create_line((0, 0, MINOR_TICK, 0), tags="minor_tick")
         self.itemconfigure("minor_tick", state="hidden")
+        self.create_line((0, 0, 100, 0), tags="scale_ref")
+        self.itemconfigure("scale_ref", state="hidden")
 
         # Draw background
         self.paint_grid()
 
-        # Draw test nodes
+        # Draw test items
         n1 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="red", width=1, tags="node")
         n2 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="green", width=1, tags="node")
         self.moveto(n1, 0, 0)
         self.moveto(n2, 300, 200)
         self.tag_bind('node', '<Enter>', self.on_enter_item)
         self.tag_bind('node', '<Leave>', self.on_leave_item)
+        btn = tk.Button(self, text="Quit", font=self.scaled_font)
+        self.create_window(10, 10, anchor=tk.NW, window=btn, width=200, height=100, tags="win")
 
     def on_mouse_left_down(self, mouse_event):
         if self.controller:
@@ -76,27 +83,19 @@ class NodeGraphView(tk.Canvas):
     def on_leave_item(self, enter_event):
         pass
 
-    def set_controller(self, controller):
-        self.controller = controller
-
     def get_scale(self):
-        return self.scene_scale
-
-    def set_scale(self, multiplier):
-        self.scene_scale *= multiplier
-        self.set_info_text("Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.get_scale(), self.get_minor_width()))
-
-    def set_info_text(self, msg):
-        self.info_label.config(text=msg)
+        scale_ref_line = self.find_withtag("scale_ref")[0]
+        return (self.coords(scale_ref_line)[2] - self.coords(scale_ref_line)[0]) / 100
 
     def get_minor_width(self):
         minor_tick_line = self.find_withtag("minor_tick")[0]
         return self.coords(minor_tick_line)[2] - self.coords(minor_tick_line)[0]
 
-    def get_grid_origin(self):
-        grid_origin_item = self.find_withtag("grid")[0]
-        item_coords = self.coords(grid_origin_item)
-        return item_coords[0], item_coords[1]
+    def set_controller(self, controller):
+        self.controller = controller
+
+    def set_info_text(self, msg):
+        self.info_label.config(text=msg)
 
     def snap_to_grid(self, position, item_click_offset):
         origin = self.get_grid_origin()
