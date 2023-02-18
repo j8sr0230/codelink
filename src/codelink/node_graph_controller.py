@@ -1,4 +1,4 @@
-from node_graph_view import RESIZE_BORDER_WIDTH, ZOOM_STEP
+from node_graph_view import RESIZE_BORDER_WIDTH
 
 from node_view import NodeView
 from node_controller import NodeController
@@ -38,7 +38,7 @@ class NodeGraphController:
             # Calculate current item and event data
             item_coords = self.view.coords(self.selected_item)
             current_item_width = item_coords[2] - item_coords[0]
-            resize_x_area_start = item_coords[0] + current_item_width - self.view.get_scale() * RESIZE_BORDER_WIDTH
+            resize_x_area_start = item_coords[0] + current_item_width - self.view.get_canvas_scale() * RESIZE_BORDER_WIDTH
 
             # Set mouse mode
             if current_mouse_position[0] > resize_x_area_start:
@@ -84,24 +84,15 @@ class NodeGraphController:
 
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
-            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
-                            ZOOM_STEP, ZOOM_STEP)
+            self.view.set_canvas_scale(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), True)
         else:
-            self.view.scale("all", self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y),
-                            1/ZOOM_STEP, 1/ZOOM_STEP)
+            self.view.set_canvas_scale(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), False)
 
         self.view.set_info_text(
-            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_scale(), self.view.get_minor_width()))
-
-        # Scale fonts and canvas window objects
-        self.view.scaled_font.config(size=round(self.view.get_scale() * 30))
-
-        win_obj_list = self.view.find_withtag("win")
-        for obj_id in win_obj_list:
-            self.view.itemconfig(obj_id, width=self.view.get_scale() * 200, height=self.view.get_scale() * 100)
+            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_canvas_scale(), self.view.get_minor_width()))
 
         # Toggle grid
-        if self.view.get_scale() < 0.7:
+        if self.view.get_canvas_scale() < 0.7:
             self.view.itemconfigure("grid", state="hidden")
         else:
             self.view.itemconfigure("grid", state="normal")

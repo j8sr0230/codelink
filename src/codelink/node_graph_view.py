@@ -14,7 +14,6 @@ MINOR_TICK = 5
 MAJOR_TICK_FACTOR = 20
 MARKER_SIZE = 10
 ZOOM_STEP = 1.1
-
 RESIZE_BORDER_WIDTH = 50
 DEFAULT_FONT = "Helvetica 12"
 
@@ -83,13 +82,30 @@ class NodeGraphView(tk.Canvas):
     def on_leave_item(self, enter_event):
         pass
 
-    def get_scale(self):
+    def get_canvas_scale(self):
         scale_ref_line = self.find_withtag("scale_ref")[0]
         return (self.coords(scale_ref_line)[2] - self.coords(scale_ref_line)[0]) / 100
+
+    def set_canvas_scale(self, x_offset, y_offset, scale_in):
+        if scale_in:
+            self.scale("all", x_offset, y_offset, ZOOM_STEP, ZOOM_STEP)
+        else:
+            self.scale("all", x_offset, y_offset, 1/ZOOM_STEP, 1/ZOOM_STEP)
+
+        self.scaled_font.config(size=round(self.get_canvas_scale() * 30))
+
+        win_obj_list = self.find_withtag("win")
+        for obj_id in win_obj_list:
+            self.itemconfig(obj_id, width=self.get_canvas_scale() * 200, height=self.get_canvas_scale() * 100)
 
     def get_minor_width(self):
         minor_tick_line = self.find_withtag("minor_tick")[0]
         return self.coords(minor_tick_line)[2] - self.coords(minor_tick_line)[0]
+
+    def get_grid_origin(self):
+        grid_origin_item = self.find_withtag("grid")[0]
+        item_coords = self.coords(grid_origin_item)
+        return item_coords[0], item_coords[1]
 
     def set_controller(self, controller):
         self.controller = controller
