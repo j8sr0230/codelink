@@ -99,7 +99,7 @@ class NodeGraphView(tk.Canvas):
         win_obj_bbox_list = [self.bbox(obj_id) for obj_id in win_obj_list]
 
         self.scale("all", x_offset, y_offset, scale, scale)
-        #self.default_node_font.config(size=round(scale * self.default_node_font.cget("size")))
+        # self.default_node_font.config(size=round(scale * self.default_node_font.cget("size")))
         self.default_node_font.config(size=round(self.get_scale() * DEFAULT_NODE_FONT_SIZE))
 
         for idx, obj_id in enumerate(win_obj_list):
