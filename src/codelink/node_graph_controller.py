@@ -38,7 +38,7 @@ class NodeGraphController:
             # Calculate current item and event data
             item_coords = self.view.coords(self.selected_item)
             current_item_width = item_coords[2] - item_coords[0]
-            resize_x_area_start = item_coords[0] + current_item_width - self.view.get_canvas_scale() * RESIZE_BORDER_WIDTH
+            resize_x_area_start = item_coords[0] + current_item_width - self.view.get_scale() * RESIZE_BORDER_WIDTH
 
             # Set mouse mode
             if current_mouse_position[0] > resize_x_area_start:
@@ -54,7 +54,7 @@ class NodeGraphController:
                 self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
                                  item_coords[3])
             elif self.mouse_mode == "move_item":
-                snapped_xy = self.view.snap_to_grid(current_mouse_position, self.item_click_offset)
+                snapped_xy = self.view.get_snapped_pos(current_mouse_position, self.item_click_offset)
                 self.view.moveto(self.selected_item, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
         else:
             # If nothing selected, move canvas to current mouse position
@@ -76,23 +76,17 @@ class NodeGraphController:
         # Reset mouse mode
         self.mouse_mode = None
 
-    def add_node(self, mouse_event):
-        node_model = NodeModel()
-        node_view = NodeView(self.view, self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
-        node_controller = NodeController(node_model, node_view)
-        node_view.set_controller(node_controller)
-
     def zoom(self, mouse_event):
         if mouse_event.delta > 0:
-            self.view.set_canvas_scale(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), True)
+            self.view.scale_in(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
         else:
-            self.view.set_canvas_scale(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y), False)
+            self.view.scale_out(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
 
         self.view.set_info_text(
-            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_canvas_scale(), self.view.get_minor_width()))
+            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_scale(), self.view.get_minor_width()))
 
         # Toggle grid
-        if self.view.get_canvas_scale() < 0.7:
+        if self.view.get_scale() < 0.7:
             self.view.itemconfigure("grid", state="hidden")
         else:
             self.view.itemconfigure("grid", state="normal")
