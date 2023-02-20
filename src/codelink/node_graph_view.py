@@ -11,7 +11,7 @@ LIGHT_FOREGROUND = "#E5E5E5"
 
 DEFAULT_FONT_FAMILY = "Helvetica"
 DEFAULT_FONT_SIZE = 12
-DEFAULT_NODE_FONT_SIZE = 30
+DEFAULT_NODE_FONT_SIZE = 12
 
 GRID_WIDTH = 4000
 MINOR_TICK = 5
@@ -55,8 +55,14 @@ class NodeGraphView(tk.Canvas):
         n2 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="green", width=1, tags="node")
         self.moveto(n1, 0, 0)
         self.moveto(n2, 300, 200)
-        btn = tk.Button(self, text="Quit", font=self.default_node_font)
-        self.create_window(10, 10, anchor=tk.NW, window=btn, width=200, height=100, tags="win_obj")
+
+        frame = tk.Frame(self)
+        lbl = tk.Label(frame, text="In 1", font=self.default_node_font)
+        lbl.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+        btn = tk.Button(frame, text="Ok", font=self.default_node_font)
+        btn.pack(fill=tk.BOTH, expand=True)
+
+        self.create_window(10, 10, anchor=tk.NW, window=frame, width=200, height=100, tags="win_obj")
 
     def set_controller(self, controller):
         self.controller = controller
@@ -93,7 +99,8 @@ class NodeGraphView(tk.Canvas):
         win_obj_bbox_list = [self.bbox(obj_id) for obj_id in win_obj_list]
 
         self.scale("all", x_offset, y_offset, scale, scale)
-        self.default_node_font.config(size=round(scale * self.default_node_font.cget("size")))
+        #self.default_node_font.config(size=round(scale * self.default_node_font.cget("size")))
+        self.default_node_font.config(size=round(self.get_scale() * DEFAULT_NODE_FONT_SIZE))
 
         for idx, obj_id in enumerate(win_obj_list):
             obj_width = win_obj_bbox_list[idx][2] - win_obj_bbox_list[idx][0]

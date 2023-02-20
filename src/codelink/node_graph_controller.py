@@ -82,8 +82,8 @@ class NodeGraphController:
         else:
             self.view.scale_out(self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
 
-        self.view.set_info_text(
-            "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_scale(), self.view.get_minor_width()))
+        msg = "Scale: {0:.1f}, Minor tick: {1:.1f} px".format(self.view.get_scale(), self.view.get_minor_width())
+        self.view.set_info_text(msg)
 
         # Toggle grid
         if self.view.get_scale() < 0.7:
