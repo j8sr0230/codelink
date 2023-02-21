@@ -4,15 +4,21 @@ from node_view import NodeView
 from node_controller import NodeController
 from node_model import NodeModel
 
+from node_view import NodeView
+from node_controller import NodeController
+from node_model import NodeModel
+
 
 class NodeGraphController:
     def __init__(self, model, view):
-        self.mode = model
+        self.model = model
         self.view = view
 
         self.mouse_mode = None
         self.selected_item = None
         self.item_click_offset = None
+
+        self.add_node()
 
     def move_from(self, mouse_event):
         items = self.view.find_withtag("current")
@@ -90,3 +96,10 @@ class NodeGraphController:
             self.view.itemconfigure("grid", state="hidden")
         else:
             self.view.itemconfigure("grid", state="normal")
+
+    def add_node(self):
+        node_model = NodeModel()
+        self.model.add_node(node_model)
+        node_view = NodeView(self.view, 100, 100)
+        node_controller = NodeController(node_model, node_view)
+        node_view.set_controller(node_controller)

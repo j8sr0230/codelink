@@ -56,13 +56,13 @@ class NodeGraphView(tk.Canvas):
         self.moveto(n1, 0, 0)
         self.moveto(n2, 300, 200)
 
-        frame = tk.Frame(self)
-        lbl = tk.Label(frame, text="In 1", font=self.default_node_font)
-        lbl.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
-        btn = tk.Button(frame, text="Ok", font=self.default_node_font)
-        btn.pack(fill=tk.BOTH, expand=True)
-
-        self.create_window(10, 10, anchor=tk.NW, window=frame, width=200, height=100, tags="win_obj")
+        # frame = tk.Frame(self)
+        # lbl = tk.Label(frame, text="In 1", font=self.default_node_font)
+        # lbl.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
+        # btn = tk.Button(frame, text="Ok", font=self.default_node_font)
+        # btn.pack(fill=tk.BOTH, expand=True)
+        #
+        # self.create_window(10, 10, anchor=tk.NW, window=frame, width=200, height=100, tags="win_obj")
 
     def set_controller(self, controller):
         self.controller = controller
