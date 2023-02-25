@@ -1,10 +1,16 @@
 import tkinter as tk
 
+NODE_BORDER_WHITE = "#E5E5E5"
+NODE_HEADER_RED = "#83314A"
+NODE_CONTENT = "#303030"
 
-NODE_BACKGROUND = "#545454"
-NODE_FOREGROUND = "#E5E5E5"
-NODE_FONT = "Helvetica 12"
-TITLE_FONT_SIZE = 12
+DEFAULT_HEADER_HEIGHT = 30
+DEFAULT_NODE_HEIGHT = 100
+DEFAULT_NODE_WIDTH = 200
+DEFAULT_BRODER_WIDTH = 5
+
+# NODE_FONT = "Helvetica 12"
+# TITLE_FONT_SIZE = 12
 
 
 class NodeView:
@@ -16,17 +22,28 @@ class NodeView:
         self.node_graph_view = node_graph_view
         self.pos_x = x
         self.pos_y = y
-        self.name = "Node"
-        self.width = 200
-        self.height = 100
 
-        self.id = node_graph_view.create_rectangle([0, 0, self.width, self.height], fill=NODE_BACKGROUND,
-                                                   outline="yellow", width=1, tags="node")
-        self.node_graph_view.moveto(self.id, self.pos_x, self.pos_y)
-        self.node_graph_view.create_text(self.pos_x, self.pos_y, font=(NODE_FONT, TITLE_FONT_SIZE), text=self.name,
-                                         fill=NODE_FOREGROUND, anchor=tk.NW, tags="text")
-        text = tk.Entry(self.node_graph_view, font=(NODE_FONT, TITLE_FONT_SIZE))
-        self.node_graph_view.create_window(300, 300, window=text, width=200, tags="txt")
+        self.border_rect = node_graph_view.create_rectangle([0, 0, DEFAULT_NODE_WIDTH, DEFAULT_NODE_HEIGHT],
+                                                            fill=NODE_BORDER_WHITE, outline=NODE_BORDER_WHITE,
+                                                            width=DEFAULT_BRODER_WIDTH, tags="border_rect")
+        self.node_graph_view.moveto(self.border_rect, self.pos_x, self.pos_y)
+
+        self.header_rect = node_graph_view.create_rectangle([0, 0, DEFAULT_NODE_WIDTH, DEFAULT_HEADER_HEIGHT],
+                                                            fill=NODE_HEADER_RED, width=0, tags="header_rect")
+        self.node_graph_view.moveto(self.header_rect, self.pos_x, self.pos_y)
+
+        self.content_rect = node_graph_view.create_rectangle([0, 0, DEFAULT_NODE_WIDTH,
+                                                              DEFAULT_NODE_HEIGHT - DEFAULT_HEADER_HEIGHT],
+                                                             fill=NODE_CONTENT, width=0, tags="content_rect")
+        self.node_graph_view.moveto(self.content_rect, self.pos_x, self.pos_y + DEFAULT_HEADER_HEIGHT)
+
+        self.node_graph_view.tag_bind(self.header_rect, '<ButtonPress-1>', self.on_mouse_left_down)
+        self.node_graph_view.tag_bind(self.content_rect, '<ButtonPress-1>', self.on_mouse_left_down)
+
+        # self.node_graph_view.create_text(self.pos_x, self.pos_y, font=(NODE_FONT, TITLE_FONT_SIZE), text=self.name,
+        #                                  fill=NODE_FOREGROUND, anchor=tk.NW, tags="text")
+        # text = tk.Entry(self.node_graph_view, font=(NODE_FONT, TITLE_FONT_SIZE))
+        # self.node_graph_view.create_window(300, 300, window=text, width=200, tags="txt")
 
         # frame = tk.Frame(self)
         # lbl = tk.Label(frame, text="In 1", font=self.default_node_font)
@@ -38,3 +55,11 @@ class NodeView:
 
     def set_controller(self, controller):
         self.controller = controller
+
+    def on_mouse_left_down(self, mouse_event):
+        if self.controller:
+            self.controller.set_selected_item(self, mouse_event)
+
+    def move_to(self, x, y):
+        pass
+

@@ -53,7 +53,7 @@ class NodeGraphView(tk.Canvas):
         # Draw test items
         n1 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="red", width=1, tags="node")
         n2 = self.create_rectangle([0, 0, 200, 100], fill=DARK_FOREGROUND, outline="green", width=1, tags="node")
-        self.moveto(n1, 0, 0)
+        self.moveto(n1, 300, 80)
         self.moveto(n2, 300, 200)
 
         # frame = tk.Frame(self)

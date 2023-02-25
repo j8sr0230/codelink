@@ -1,11 +1,6 @@
 from node_graph_view import RESIZE_BORDER_WIDTH
 
 from node_view import NodeView
-from node_controller import NodeController
-from node_model import NodeModel
-
-from node_view import NodeView
-from node_controller import NodeController
 from node_model import NodeModel
 
 
@@ -20,48 +15,51 @@ class NodeGraphController:
 
         self.add_node()
 
+    def set_selected_item(self, item, mouse_event):
+        self.selected_item = item
+        self.item_click_offset = (self.view.canvasx(mouse_event.x) - self.view.coords(self.selected_item.border_rect)[0],
+                                  self.view.canvasy(mouse_event.y) - self.view.coords(self.selected_item.border_rect)[1])
+
     def move_from(self, mouse_event):
-        items = self.view.find_withtag("current")
+        print(self.selected_item)
 
-        if len(items) > 0:
-            if "node" in self.view.gettags(items[0]):
-                # If selected item is node, save item and offset between click event and item origin
-                self.selected_item = items[0]
-                self.item_click_offset = (self.view.canvasx(mouse_event.x) - self.view.coords(items[0])[0],
-                                          self.view.canvasy(mouse_event.y) - self.view.coords(items[0])[1])
-
-                # Modify selected item
-                self.view.tag_raise(items[0])
-                self.view.itemconfig(items[0], width=2)
+        if self.selected_item:
+            # Modify selected item
+            self.view.tag_raise(self.selected_item.border_rect)
+            self.view.tag_raise(self.selected_item.header_rect)
+            self.view.tag_raise(self.selected_item.content_rect)
+            #self.view.itemconfig(items[0], width=2)
         else:
             # If nothing selected, prepare for canvas dragging
             self.view.scan_mark(mouse_event.x, mouse_event.y)
 
     def move(self, mouse_event):
         if self.selected_item:
+
             current_mouse_position = (self.view.canvasx(mouse_event.x), self.view.canvasy(mouse_event.y))
-
-            # Calculate current item and event data
-            item_coords = self.view.coords(self.selected_item)
-            current_item_width = item_coords[2] - item_coords[0]
-            resize_x_area_start = item_coords[0] + current_item_width - self.view.get_scale() * RESIZE_BORDER_WIDTH
-
-            # Set mouse mode
-            if current_mouse_position[0] > resize_x_area_start:
-                if not self.mouse_mode:
-                    self.mouse_mode = "resize_item"
-            else:
-                if not self.mouse_mode:
-                    self.mouse_mode = "move_item"
-
-            # Do action
-            if self.mouse_mode == "resize_item":
-                self.view.config(cursor="size_we")
-                self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
-                                 item_coords[3])
-            elif self.mouse_mode == "move_item":
-                snapped_xy = self.view.get_snapped_pos(current_mouse_position, self.item_click_offset)
-                self.view.moveto(self.selected_item, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
+            self.move_node_to(self.selected_item, current_mouse_position[0], current_mouse_position[1])
+            #
+            # # Calculate current item and event data
+            # item_coords = self.view.coords(self.selected_item)
+            # current_item_width = item_coords[2] - item_coords[0]
+            # resize_x_area_start = item_coords[0] + current_item_width - self.view.get_scale() * RESIZE_BORDER_WIDTH
+            #
+            # # Set mouse mode
+            # if current_mouse_position[0] > resize_x_area_start:
+            #     if not self.mouse_mode:
+            #         self.mouse_mode = "resize_item"
+            # else:
+            #     if not self.mouse_mode:
+            #         self.mouse_mode = "move_item"
+            #
+            # # Do action
+            # if self.mouse_mode == "resize_item":
+            #     self.view.config(cursor="size_we")
+            #     self.view.coords(self.selected_item, item_coords[0], item_coords[1], current_mouse_position[0],
+            #                      item_coords[3])
+            # elif self.mouse_mode == "move_item":
+            #     snapped_xy = self.view.get_snapped_pos(current_mouse_position, self.item_click_offset)
+            #     self.view.moveto(self.selected_item, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
         else:
             # If nothing selected, move canvas to current mouse position
             self.mouse_mode = "scroll_canvas"
@@ -71,9 +69,6 @@ class NodeGraphController:
     # noinspection PyUnusedLocal
     def move_to(self, mouse_event):
         if self.selected_item:
-            # Reset selected item
-            self.view.itemconfig(self.selected_item, width=1)
-
             # Clear selection
             self.selected_item = None
             self.item_click_offset = None
@@ -100,6 +95,25 @@ class NodeGraphController:
     def add_node(self):
         node_model = NodeModel()
         self.model.add_node(node_model)
-        node_view = NodeView(self.view, 100, 100)
-        node_controller = NodeController(node_model, node_view)
-        node_view.set_controller(node_controller)
+        node_view = NodeView(self.view, 300, 50)
+        #node_controller = NodeController(node_model, node_view)
+        node_view.set_controller(self)
+
+        n1 = self.view.create_rectangle([0, 0, 200, 100], fill="white", outline="red", width=1, tags="node")
+        self.view.moveto(n1, 300, 100)
+
+    def move_node_to(self, node, x, y):
+        snapped_xy = self.view.get_snapped_pos((x, y), self.item_click_offset)
+        #     self.view.moveto(self.selected_item, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
+
+        # self.view.moveto(node.border_rect, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
+        # self.view.moveto(node.header_rect, round(snapped_xy[0], 0), round(snapped_xy[1], 0))
+        # self.view.moveto(node.content_rect, round(snapped_xy[0], 0), round(snapped_xy[1] + 30, 0))
+
+        self.view.moveto(node.border_rect, x, y)
+        self.view.moveto(node.header_rect, x, y)
+        self.view.moveto(node.content_rect, x, y + 30)
+
+        #self.view.move(node.border_rect, 5, 0)
+        #self.view.move(node.header_rect, 5, 0)
+        #self.view.move(node.content_rect, 5, 0)
