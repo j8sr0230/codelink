@@ -84,7 +84,7 @@ class AddressWidget(QTabWidget):
                 address = addDialog.address
 
         address = {"name": name, "address": address}
-        addresses = self.tableModel.addresses[:]
+        addresses = self.tableModel.nodes[:]
 
         # The QT docs for this example state that what we're doing here
         # is checking if the entered name already exists. What they
@@ -118,7 +118,7 @@ class AddressWidget(QTabWidget):
             # The screenshot for the QT example shows nicely formatted
             # multiline cells, but the actual application doesn't behave
             # quite so nicely, at least on Ubuntu. Here we resize the newly
-            # created row so that multiline addresses look reasonable.
+            # created row so that multiline nodes look reasonable.
             tableView = self.currentWidget()
             tableView.resizeRowToContents(ix.row())
 
@@ -207,7 +207,7 @@ class AddressWidget(QTabWidget):
             self.addTab(tableView, group)
 
     # Note: the QT example uses a QDataStream for the saving and loading.
-    # Here we're using a python dictionary to store the addresses, which
+    # Here we're using a python dictionary to store the nodes, which
     # can't be streamed using QDataStream, so we just use cpickle for this
     # example.
     def readFromFile(self, filename):
@@ -230,7 +230,7 @@ class AddressWidget(QTabWidget):
         """ Save all contacts in the model to a file. """
         try:
             f = open(filename, "wb")
-            pickle.dump(self.tableModel.addresses, f)
+            pickle.dump(self.tableModel.nodes, f)
 
         except IOError:
             QMessageBox.information(self, "Unable to open file: %s" % filename)
