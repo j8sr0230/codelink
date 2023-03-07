@@ -103,6 +103,7 @@ G.add_node(t4)
 G.add_edge(t1, t3)
 G.add_edge(t2, t3)
 G.add_edge(t3, t4)
+G.add_edge(t1, t4)
 
 
 def resolve_di_graph(graph: nx.DiGraph, node, level: int = 0) -> None:
