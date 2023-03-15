@@ -118,7 +118,7 @@ class AddressWidget(QTabWidget):
             # The screenshot for the QT example shows nicely formatted
             # multiline cells, but the actual application doesn't behave
             # quite so nicely, at least on Ubuntu. Here we resize the newly
-            # created row so that multiline nodes look reasonable.
+            # created row so that multiline _nodes look reasonable.
             tableView = self.currentWidget()
             tableView.resizeRowToContents(ix.row())
 
@@ -207,7 +207,7 @@ class AddressWidget(QTabWidget):
             self.addTab(tableView, group)
 
     # Note: the QT example uses a QDataStream for the saving and loading.
-    # Here we're using a python dictionary to store the nodes, which
+    # Here we're using a python dictionary to store the _nodes, which
     # can't be streamed using QDataStream, so we just use cpickle for this
     # example.
     def readFromFile(self, filename):
