@@ -2,7 +2,8 @@ import sys
 from typing import Any, Optional
 
 from PySide2.QtCore import Qt, QObject, QAbstractListModel, QModelIndex, QMimeData
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QListView
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QAbstractItemView, QListView, QHBoxLayout
+from PySide2.QtGui import QDragEnterEvent, QDragLeaveEvent, QDragMoveEvent, QDropEvent
 
 
 class NodeGraphModel(QAbstractListModel):
@@ -54,7 +55,7 @@ class NodeGraphModel(QAbstractListModel):
         flags = super().flags(index)
 
         if index.isValid():
-            flags = flags | Qt.ItemIsEditable
+            flags = flags | Qt.ItemIsEditable | Qt.ItemIsDragEnabled
 
         return flags
 
@@ -62,9 +63,9 @@ class NodeGraphModel(QAbstractListModel):
         return Qt.MoveAction
 
     def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
-        print(data)
+        print("Data", data)
         if action == Qt.IgnoreAction:
-            return True
+            return False
         if not data.hasFormat(self.Mimetype):
             return False
         if column > 0:
@@ -78,12 +79,15 @@ class NodeGraphModel(QAbstractListModel):
         return True
 
     def mimeData(self, indexes: list) -> QMimeData:
-        sortedIndexes = sorted([index for index in indexes
-                                if index.isValid()], key=lambda index: index.row())
-        encodedData = '\n'.join(self.data(index, Qt.DisplayRole)
-                                for index in sortedIndexes)
-        mimeData = QMimeData()
-        mimeData.setData(self.Mimetype, encodedData)
+        # sortedIndexes = sorted([index for index in indexes
+        #                         if index.isValid()], key=lambda index: index.row())
+        # encodedData = '\n'.join(self.data(index, Qt.DisplayRole)
+        #                         for index in sortedIndexes)
+        # mimeData = QMimeData()
+        # mimeData.setData(self.Mimetype, encodedData)
+        # print(mimeData)
+        mimeData = super().mimeData(indexes)
+        print(mimeData.data("application/vnd.row.list"))
         return mimeData
 
     def mimeTypes(self):
@@ -96,43 +100,48 @@ class NodeGraphListView(QListView):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setDropIndicatorShown(True)
+        self.setSelectionMode(self.SingleSelection)
 
-        # self.setDragDropMode(QtWidgets.QAbstractItemView.DragDrop)
-        # self.setSelectionMode(self.ExtendedSelection)
-
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)
-        print(event)
+        # print("Drag enter", event)
 
-    def dragLeaveEvent(self, event):
+    def dragLeaveEvent(self, event: QDragLeaveEvent):
         super().dragLeaveEvent(event)
-        print(event)
+        # print("Drag leave", event)
 
-    def dragMoveEvent(self, event):
+    def dragMoveEvent(self, event: QDragMoveEvent):
         super().dragMoveEvent(event)
-        print(event)
+        # print("Drag move", event)
 
-    def dropEvent(self, event):
+    def dropEvent(self, event: QDropEvent):
         super().dropEvent(event)
-        print(event)
+        # print("Drop", event)
 
 
-class MainWindow(QMainWindow):
+class View(QWidget):
+
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
-        self.view = NodeGraphListView(parent=None)
-        # view.setSelectionMode(view.ExtendedSelection)
-        self.model = NodeGraphModel(parent=None, nodes=["Add", "Sub", "Mult", "Div", "Pow"])
-        self.view.setModel(self.model)
-        self.setCentralWidget(self.view)
+
+        self.model_one = NodeGraphModel(parent=None, nodes=["Add", "Sub", "Mult", "Div", "Pow"])
+        self.node_list_one = NodeGraphListView(parent=self)
+        self.node_list_one.setModel(self.model_one)
+
+        self.model_two = NodeGraphModel(parent=None, nodes=["Test"])
+        self.node_list_two = NodeGraphListView(parent=self)
+        self.node_list_two.setModel(self.model_two)
+
+        self.main_layout = QHBoxLayout()
+        self.main_layout.addWidget(self.node_list_one)
+        self.main_layout.addWidget(self.node_list_two)
+        self.setLayout(self.main_layout)
 
 
 if __name__ == "__main__":
-    app1 = QApplication(sys.argv)
-    main1 = MainWindow()
-    main1.show()
-
-    # main2 = MainWindow()
-    # main2.show()
-    sys.exit(app1.exec_())
+    app = QApplication(sys.argv)
+    view = View()
+    view.show()
+    sys.exit(app.exec_())
