@@ -1,14 +1,14 @@
 import sys
 from typing import Any, Optional
 
-from PySide2.QtCore import Qt, QObject, QAbstractListModel, QModelIndex, QMimeData
+from PySide2.QtCore import Qt, QObject, QAbstractListModel, QModelIndex, QMimeData, QByteArray
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QAbstractItemView, QListView, QHBoxLayout
 from PySide2.QtGui import QDragEnterEvent, QDragLeaveEvent, QDragMoveEvent, QDropEvent
 
 
 class NodeGraphModel(QAbstractListModel):
 
-    Mimetype = "application/vnd.row.list"
+    Mimetype = "text/plain"
 
     def __init__(self, parent: Optional[QObject] = None, nodes: Optional[list] = None) -> None:
         super().__init__(parent)
@@ -62,36 +62,31 @@ class NodeGraphModel(QAbstractListModel):
     def supportedDropActions(self):
         return Qt.MoveAction
 
-    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
-        print("Data", data)
-        if action == Qt.IgnoreAction:
-            return False
-        if not data.hasFormat(self.Mimetype):
-            return False
-        if column > 0:
-            return False
-
-        strings = str(data.data(self.Mimetype)).split("\n")
-        self.insertRows(row, len(strings))
-        for i, text in enumerate(strings):
-            self.setData(self.index(row + i, 0), text)
-
-        return True
-
-    def mimeData(self, indexes: list) -> QMimeData:
-        # sortedIndexes = sorted([index for index in indexes
-        #                         if index.isValid()], key=lambda index: index.row())
-        # encodedData = '\n'.join(self.data(index, Qt.DisplayRole)
-        #                         for index in sortedIndexes)
-        # mimeData = QMimeData()
-        # mimeData.setData(self.Mimetype, encodedData)
-        # print(mimeData)
-        mimeData = super().mimeData(indexes)
-        print(mimeData.data("application/vnd.row.list"))
-        return mimeData
-
     def mimeTypes(self):
         return [self.Mimetype]
+
+    def mimeData(self, indexes: list) -> QMimeData:
+        sortedIndexes = sorted([index for index in indexes if index.isValid()], key=lambda index: index.row())
+        encoded_data: bytes = bytes("\n".join(self.data(index, Qt.DisplayRole) for index in sortedIndexes), "utf-8")
+        mime_data = QMimeData()
+        mime_data.setData(self.Mimetype, QByteArray(encoded_data))
+        return mime_data
+
+    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
+        if action == Qt.IgnoreAction:
+            return False
+        elif not data.hasFormat(self.Mimetype):
+            return False
+        elif column > 0:
+            return False
+        else:
+            strings: list = str(QByteArray(data.data(self.Mimetype)).data(), encoding="utf-8").split("\n")
+            for i, text in enumerate(strings):
+                if row == -1:
+                    row = self.rowCount()
+                self.insertRow(row, parent)
+                self.setData(self.index(row + i, 0, parent), text)
+            return True
 
 
 class NodeGraphListView(QListView):
@@ -102,23 +97,34 @@ class NodeGraphListView(QListView):
         self.setAcceptDrops(True)
         self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setDropIndicatorShown(True)
-        self.setSelectionMode(self.SingleSelection)
+        self.setSelectionMode(self.ExtendedSelection)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)
-        # print("Drag enter", event)
+        # if not event.mimeData().hasText():
+        #     event.mimeData().setText(self.currentIndex().data())
+        event.accept()
 
     def dragLeaveEvent(self, event: QDragLeaveEvent):
         super().dragLeaveEvent(event)
-        # print("Drag leave", event)
+        # print("Drop", event)
+        event.accept()
 
     def dragMoveEvent(self, event: QDragMoveEvent):
         super().dragMoveEvent(event)
-        # print("Drag move", event)
+        # if event.mimeData().hasText():
+        #     event.accept()
+        # else:
+        #     event.ignore()
+        event.accept()
 
     def dropEvent(self, event: QDropEvent):
         super().dropEvent(event)
-        # print("Drop", event)
+        # if event.mimeData().hasText():
+        #     event.accept()
+        # else:
+        #     event.ignore()
+        event.accept()
 
 
 class View(QWidget):
@@ -130,7 +136,10 @@ class View(QWidget):
         self.node_list_one = NodeGraphListView(parent=self)
         self.node_list_one.setModel(self.model_one)
 
-        self.model_two = NodeGraphModel(parent=None, nodes=["Test"])
+        self.model_two = NodeGraphModel(parent=None, nodes=[])
+        # self.model_two.insertRow(1, QModelIndex())
+        # self.model_two.setData(self.model_two.index(1, 0, QModelIndex()), "Test")
+
         self.node_list_two = NodeGraphListView(parent=self)
         self.node_list_two.setModel(self.model_two)
 
