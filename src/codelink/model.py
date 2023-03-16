@@ -80,11 +80,12 @@ class NodeGraphModel(QAbstractListModel):
         elif column > 0:
             return False
         else:
-            strings: list = str(QByteArray(data.data(self.Mimetype)).data(), encoding="utf-8").split("\n")
+            strings: list = str(data.data(self.Mimetype).data(), encoding="utf-8").split("\n")
+            if row == -1:
+                row = self.rowCount()
+
             for i, text in enumerate(strings):
-                if row == -1:
-                    row = self.rowCount()
-                self.insertRow(row, parent)
+                self.insertRow(row + i, parent)
                 self.setData(self.index(row + i, 0, parent), text)
             return True
 
