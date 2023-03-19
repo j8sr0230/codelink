@@ -13,7 +13,7 @@ class NodeTableModel(QAbstractTableModel):
         else:
             self.nodes = nodes
 
-        self.node_properties = ["Name: list", "Task: object", "Predecessors: list", "Successors: list", "Value: object"]
+        self.node_properties = ["Name", "Task", "Predecessors", "Successors", "Value"]
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.nodes)
@@ -66,22 +66,17 @@ class NodeTableModel(QAbstractTableModel):
         #     return Qt.ItemIsEnabled
         return super().flags(index) | Qt.ItemIsEditable
 
-    def insertRows(self, row: int, count: int, parent: QModelIndex = Qt.DisplayRole) -> bool:
-        self.beginInsertRows(QModelIndex(), position, position + rows - 1)
+    def insertRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
+        self.beginInsertRows(QModelIndex(), row, row + count - 1)
 
-        for row in range(rows):
-            self.nodes.insert(position + row, {"name": "", "address": ""})
+        for i in range(count):
+            self.nodes.insert(row + i, {"Name": "", "Task": "", "Predecessor": "", "Successor": "", "Value": ""})
 
         self.endInsertRows()
         return True
 
-    def removeRows(self, position, rows=1, index=QModelIndex()):
-        """ Remove a row from the model. """
-        self.beginRemoveRows(QModelIndex(), position, position + rows - 1)
-
-        del self.nodes[position:position + rows]
-
+    def removeRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
+        self.beginRemoveRows(QModelIndex(), row, row + count - 1)
+        del self.nodes[row:row + count]
         self.endRemoveRows()
         return True
-
-
