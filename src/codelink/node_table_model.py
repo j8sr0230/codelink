@@ -1,6 +1,8 @@
+import sys
 from typing import Any, Optional, List, Dict
 
 from PySide2.QtCore import Qt, QObject, QModelIndex, QAbstractTableModel
+from PySide2.QtWidgets import QWidget, QTableView, QHBoxLayout, QApplication
 
 
 class NodeTableModel(QAbstractTableModel):
@@ -9,11 +11,11 @@ class NodeTableModel(QAbstractTableModel):
         super().__init__(parent)
 
         if nodes is None:
-            self.nodes = []
+            self.nodes: list = []
         else:
-            self.nodes = nodes
+            self.nodes: list = nodes
 
-        self.node_properties = ["Name", "Task", "Predecessors", "Successors", "Value"]
+        self.node_properties: list = ["Name", "Task", "Predecessors", "Successors", "Value"]
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.nodes)
@@ -45,7 +47,7 @@ class NodeTableModel(QAbstractTableModel):
             return None
 
         if orientation == Qt.Horizontal:
-            return self.node_properties[index.column()]
+            return self.node_properties[section]
 
         return None
 
@@ -70,7 +72,7 @@ class NodeTableModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), row, row + count - 1)
 
         for i in range(count):
-            self.nodes.insert(row + i, {"Name": "", "Task": "", "Predecessor": "", "Successor": "", "Value": ""})
+            self.nodes.insert(row + i, {"Name": "", "Task": "", "Predecessors": "", "Successors": "", "Value": ""})
 
         self.endInsertRows()
         return True
@@ -80,3 +82,64 @@ class NodeTableModel(QAbstractTableModel):
         del self.nodes[row:row + count]
         self.endRemoveRows()
         return True
+
+
+class NodeTableView(QTableView):
+
+    def __init__(self, parent: QWidget = None):
+        super().__init__(parent)
+        # self.setDragEnabled(True)
+        # self.setAcceptDrops(True)
+        # self.setDragDropMode(QAbstractItemView.DragDrop)
+        # self.setDropIndicatorShown(True)
+        # self.setSelectionMode(self.ExtendedSelection)
+
+    # def dragEnterEvent(self, event: QDragEnterEvent):
+    #     super().dragEnterEvent(event)
+    #     # if not event.mimeData().hasText():
+    #     #     event.mimeData().setText(self.currentIndex().data())
+    #     event.accept()
+    #
+    # def dragLeaveEvent(self, event: QDragLeaveEvent):
+    #     super().dragLeaveEvent(event)
+    #     # print("Drop", event)
+    #     event.accept()
+    #
+    # def dragMoveEvent(self, event: QDragMoveEvent):
+    #     super().dragMoveEvent(event)
+    #     # if event.mimeData().hasText():
+    #     #     event.accept()
+    #     # else:
+    #     #     event.ignore()
+    #     event.accept()
+    #
+    # def dropEvent(self, event: QDropEvent):
+    #     super().dropEvent(event)
+    #     # if event.mimeData().hasText():
+    #     #     event.accept()
+    #     # else:
+    #     #     event.ignore()
+    #     event.accept()
+
+
+class View(QWidget):
+
+    def __init__(self, parent: QWidget = None):
+        super().__init__(parent)
+
+        self.node_model = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
+                                                              "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                              "Value": "12"}])
+        self.node_table = NodeTableView(parent=self)
+        self.node_table.setModel(self.node_model)
+
+        self.main_layout = QHBoxLayout()
+        self.main_layout.addWidget(self.node_table)
+        self.setLayout(self.main_layout)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    view = View()
+    view.show()
+    sys.exit(app.exec_())
