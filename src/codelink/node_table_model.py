@@ -1,11 +1,14 @@
 import sys
 from typing import Any, Optional, List, Dict
 
-from PySide2.QtCore import Qt, QObject, QModelIndex, QAbstractTableModel
-from PySide2.QtWidgets import QWidget, QTableView, QHBoxLayout, QApplication
+from PySide2.QtCore import Qt, QObject, QModelIndex, QAbstractTableModel, QByteArray, QMimeData
+from PySide2.QtWidgets import QWidget, QTableView, QHBoxLayout, QApplication, QAbstractItemView
+from PySide2.QtGui import QDragEnterEvent, QDragLeaveEvent, QDragMoveEvent, QDropEvent
 
 
 class NodeTableModel(QAbstractTableModel):
+
+    Mimetype = "text/plain"
 
     def __init__(self, parent: QObject = None, nodes: Optional[List[Dict]] = None) -> None:
         super().__init__(parent)
@@ -34,8 +37,7 @@ class NodeTableModel(QAbstractTableModel):
             return None
 
         if role == Qt.DisplayRole:
-            key: str = self.node_properties[index.column()]
-            return self.nodes[index.row()][key]
+            return self.nodes[index.row()][self.node_properties[index.column()]]
 
         return None
 
@@ -56,8 +58,7 @@ class NodeTableModel(QAbstractTableModel):
             return False
 
         if index.isValid() and 0 <= index.row() < len(self.nodes) and 0 <= index.column() < len(self.node_properties):
-            key: str = self.node_properties[index.column()]
-            self.nodes[index.row()][key]: Any = value
+            self.nodes[index.row()][self.node_properties[index.column()]]: Any = value
             self.dataChanged.emit(index, index)
             return True
 
@@ -66,7 +67,7 @@ class NodeTableModel(QAbstractTableModel):
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
         # if not index.isValid():
         #     return Qt.ItemIsEnabled
-        return super().flags(index) | Qt.ItemIsEditable
+        return super().flags(index) | Qt.ItemIsEditable| Qt.ItemIsDragEnabled
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginInsertRows(QModelIndex(), row, row + count - 1)
@@ -83,43 +84,84 @@ class NodeTableModel(QAbstractTableModel):
         self.endRemoveRows()
         return True
 
+    def supportedDropActions(self):
+        return Qt.MoveAction
+
+    def mimeTypes(self):
+        return [self.Mimetype]
+
+    def mimeData(self, indexes: list) -> QMimeData:
+        sortedIndexes = sorted([index for index in indexes if index.isValid()], key=lambda index: index.row())
+
+        encoded_data: QByteArray = QByteArray()
+        for index in sortedIndexes:
+            encoded_data.append(self.nodes[index.row()])
+
+        # encoded_data: bytes = bytes("\n".join(self.data(index, Qt.DisplayRole) for index in sortedIndexes), "utf-8")
+        mime_data = QMimeData()
+        # mime_data.setData(self.Mimetype, QByteArray(encoded_data))
+        mime_data.setData(self.Mimetype, encoded_data)
+        return mime_data
+
+    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
+        if action == Qt.IgnoreAction:
+            return False
+        elif not data.hasFormat(self.Mimetype):
+            return False
+        elif column > len(self.node_properties):
+            return False
+        else:
+            # strings: str = str(data.data(self.Mimetype).data(), encoding="utf-8").split("\n")
+            # if row == -1:
+            #     row = self.rowCount()
+            #
+            # for i, text in enumerate(strings):
+            #     self.insertRow(row + i, parent)
+            #     self.setData(self.index(row + i, 0, parent), text)
+            data_stream: QByteArray = data.data(self.Mimetype).data()
+            for i, text in enumerate(data_stream):
+                self.insertRow(row + i, parent)
+                self.nodes[row + 1] = text
+
+            return True
+
 
 class NodeTableView(QTableView):
 
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
-        # self.setDragEnabled(True)
-        # self.setAcceptDrops(True)
-        # self.setDragDropMode(QAbstractItemView.DragDrop)
-        # self.setDropIndicatorShown(True)
-        # self.setSelectionMode(self.ExtendedSelection)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDragDropMode(QAbstractItemView.DragDrop)
+        self.setDropIndicatorShown(True)
+        self.setSelectionMode(self.ExtendedSelection)
 
-    # def dragEnterEvent(self, event: QDragEnterEvent):
-    #     super().dragEnterEvent(event)
-    #     # if not event.mimeData().hasText():
-    #     #     event.mimeData().setText(self.currentIndex().data())
-    #     event.accept()
-    #
-    # def dragLeaveEvent(self, event: QDragLeaveEvent):
-    #     super().dragLeaveEvent(event)
-    #     # print("Drop", event)
-    #     event.accept()
-    #
-    # def dragMoveEvent(self, event: QDragMoveEvent):
-    #     super().dragMoveEvent(event)
-    #     # if event.mimeData().hasText():
-    #     #     event.accept()
-    #     # else:
-    #     #     event.ignore()
-    #     event.accept()
-    #
-    # def dropEvent(self, event: QDropEvent):
-    #     super().dropEvent(event)
-    #     # if event.mimeData().hasText():
-    #     #     event.accept()
-    #     # else:
-    #     #     event.ignore()
-    #     event.accept()
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        super().dragEnterEvent(event)
+        # if not event.mimeData().hasText():
+        #     event.mimeData().setText(self.currentIndex().data())
+        event.accept()
+
+    def dragLeaveEvent(self, event: QDragLeaveEvent):
+        super().dragLeaveEvent(event)
+        # print("Drop", event)
+        event.accept()
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        super().dragMoveEvent(event)
+        # if event.mimeData().hasText():
+        #     event.accept()
+        # else:
+        #     event.ignore()
+        event.accept()
+
+    def dropEvent(self, event: QDropEvent):
+        super().dropEvent(event)
+        # if event.mimeData().hasText():
+        #     event.accept()
+        # else:
+        #     event.ignore()
+        event.accept()
 
 
 class View(QWidget):
@@ -129,7 +171,11 @@ class View(QWidget):
 
         self.node_model = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
                                                               "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                              "Value": "12"},
+                                                             {"Name": "Sub", "Task": "a + b",
+                                                              "Predecessors": "[1, 2, 3]", "Successors": "[6]",
                                                               "Value": "12"}])
+
         self.node_table = NodeTableView(parent=self)
         self.node_table.setModel(self.node_model)
 
