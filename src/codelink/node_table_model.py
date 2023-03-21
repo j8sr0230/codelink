@@ -8,6 +8,21 @@ from PySide2.QtWidgets import QApplication, QWidget, QAbstractItemView, QTableVi
 from networkx import DiGraph
 
 
+class DefaultTask:
+    def __init__(self, name: str = "Name") -> None:
+        self.name: str = name
+        self.value: Any = None
+
+
+class InputTask(DefaultTask):
+    def __init__(self, name: str = "Input", a: int = 0) -> None:
+        super().__init__(name)
+        self.a = a
+
+    def eval(self) -> int:
+        return self.a
+
+
 class NodeTableModel(QAbstractTableModel):
 
     Mimetype = "text/plain"
@@ -20,14 +35,17 @@ class NodeTableModel(QAbstractTableModel):
         else:
             self.nodes: list = nodes
 
-        self.node_properties: list = ["Name", "Task", "Predecessors", "Successors", "Value"]
+        self.node_properties: list = ["Name", "Value", "Predecessors", "Successors"]
 
         self.graph: DiGraph = DiGraph()
-        self.graph.add_node("Add", task="a + b", value="")
-        print(self.graph.nodes.data()["Add"])
+        t = InputTask("Input")
+        self.graph.add_node(t)
+        print(self.graph.nodes.data()[t])
+        print(self.graph.nodes())
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        return len(self.nodes)
+        # return len(self.nodes)
+        return len(self.graph.nodes())
 
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.node_properties)
@@ -43,7 +61,17 @@ class NodeTableModel(QAbstractTableModel):
             return None
 
         if role == Qt.DisplayRole:
-            return self.nodes[index.row()][self.node_properties[index.column()]]
+            task: DefaultTask = list(self.graph.nodes())[index.row()]
+            if index.column() == 0:
+                return task.name
+            elif index.column() == 1:
+                return task.value
+            elif index.column() == 2:
+                return self.graph.predecessors(task)
+            else:
+                return self.graph.successors(task)
+
+            # return self.nodes[index.row()][self.node_properties[index.column()]]
 
         return None
 
@@ -129,7 +157,7 @@ class NodeTableModel(QAbstractTableModel):
 
 class NodeTableView(QTableView):
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
@@ -157,7 +185,7 @@ class NodeTableView(QTableView):
 
 class View(QWidget):
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
 
         self.node_model_one = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
