@@ -38,6 +38,7 @@ class NodeTableModel(QAbstractTableModel):
         self.node_properties: list = ["Name", "Value", "Predecessors", "Successors"]
 
         self.graph: DiGraph = DiGraph()
+        print(self.supportedDragActions(), self.supportedDropActions())
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.graph.nodes())
@@ -110,13 +111,14 @@ class NodeTableModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), row, row + count - 1)
         print("Insert")
 
-        # for i in range(count):
-        #     self.nodes.insert(row + i, {prop_name: None for prop_name in self.node_properties})
+        for i in range(count):
+            self.nodes.insert(row + i, {prop_name: None for prop_name in self.node_properties})
 
         self.endInsertRows()
         return True
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
+        print("Remove")
         self.beginRemoveRows(QModelIndex(), row, row + count - 1)
 
         for i in range(count):
@@ -124,10 +126,13 @@ class NodeTableModel(QAbstractTableModel):
             self.graph.remove_node(task)
 
         self.endRemoveRows()
-        print("Remove")
+
         return True
 
-    def supportedDropActions(self):
+    def supportedDragActions(self) -> Qt.DropActions:
+        return Qt.MoveAction
+
+    def supportedDropActions(self) -> Qt.DropActions:
         return Qt.MoveAction
 
     def mimeTypes(self):
@@ -160,6 +165,7 @@ class NodeTableModel(QAbstractTableModel):
             for i, obj in enumerate(data_obj):
                 self.insertRow(row + i, parent)
                 self.graph.add_node(obj)
+                # self.setData(self.index(row + i, 0, parent), "test", Qt.EditRole)
 
             return True
 
@@ -170,10 +176,12 @@ class NodeTableView(QTableView):
         super().__init__(parent)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        self.setDragDropMode(QAbstractItemView.DragDrop)
+        #self.setDragDropMode(self.DragDrop)
         self.setDropIndicatorShown(True)
-        self.setSelectionMode(self.ExtendedSelection)
-        self.setAlternatingRowColors(True)
+        #self.setSelectionMode(self.ExtendedSelection)
+        #self.setSelectionBehavior(self.SelectRows)
+        #self.setDragDropOverwriteMode(False)
+        #self.setAlternatingRowColors(True)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)

@@ -16,6 +16,8 @@ class NodeGraphModel(QAbstractListModel):
             nodes = []
         self._nodes = nodes
 
+        print(self.supportedDragActions(), self.supportedDropActions())
+
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
         if role == Qt.DisplayRole:
             return "Nodes"
