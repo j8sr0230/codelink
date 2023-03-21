@@ -105,17 +105,18 @@ class NodeTableModel(QAbstractTableModel):
         elif not data.hasFormat(self.Mimetype):
             return False
         else:
-            if row < 0:
-                row = len(self.nodes)
+            insert_row_idx = parent.row()
+            if insert_row_idx < 0:
+                insert_row_idx = len(self.nodes)
 
             data_stream: QByteArray = data.data(self.Mimetype).data()
             data_list = list(eval(data_stream))
 
             for i, row_data in enumerate(data_list):
-                self.insertRow(row + i, parent)
+                self.insertRow(insert_row_idx + i, parent)
 
                 for j, node_prop in enumerate(self.node_properties):
-                    self.setData(self.index(row + i, j, parent), row_data[node_prop], Qt.EditRole)
+                    self.setData(self.index(insert_row_idx + i, j, parent), row_data[node_prop], Qt.EditRole)
 
             return True
 
@@ -129,6 +130,7 @@ class NodeTableView(QTableView):
         self.setDragDropMode(QAbstractItemView.DragDrop)
         self.setDropIndicatorShown(True)
         self.setSelectionMode(self.ExtendedSelection)
+        self.setAlternatingRowColors(True)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)
@@ -152,18 +154,30 @@ class View(QWidget):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
-        self.node_model = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
-                                                              "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                              "Value": "12"},
-                                                             {"Name": "Sub", "Task": "a - b",
-                                                              "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                              "Value": "12"}])
+        self.node_model_one = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
+                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                                  "Value": "12"},
+                                                                 {"Name": "Sub", "Task": "a - b",
+                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                                  "Value": "12"},
+                                                                 {"Name": "Mul", "Task": "a * b",
+                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                                  "Value": "12"},
+                                                                 {"Name": "Pow", "Task": "a ^ b",
+                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
+                                                                  "Value": "12"}])
+        self.node_table_view_one = NodeTableView(parent=self)
+        self.node_table_view_one.setModel(self.node_model_one)
 
-        self.node_table = NodeTableView(parent=self)
-        self.node_table.setModel(self.node_model)
+        self.node_model_two = NodeTableModel(parent=None, nodes=[])
+
+        self.node_table_view_two = NodeTableView(parent=self)
+        self.node_table_view_two.setModel(self.node_model_two)
 
         self.main_layout = QHBoxLayout()
-        self.main_layout.addWidget(self.node_table)
+        self.main_layout.addWidget(self.node_table_view_one)
+        self.main_layout.addWidget(self.node_table_view_two)
+
         self.setLayout(self.main_layout)
 
 
