@@ -5,6 +5,8 @@ from PySide2.QtCore import Qt, QObject, QModelIndex, QByteArray, QMimeData, QAbs
 from PySide2.QtGui import QDragEnterEvent, QDragLeaveEvent, QDragMoveEvent, QDropEvent
 from PySide2.QtWidgets import QApplication, QWidget, QAbstractItemView, QTableView, QHBoxLayout
 
+from networkx import DiGraph
+
 
 class NodeTableModel(QAbstractTableModel):
 
@@ -19,6 +21,10 @@ class NodeTableModel(QAbstractTableModel):
             self.nodes: list = nodes
 
         self.node_properties: list = ["Name", "Task", "Predecessors", "Successors", "Value"]
+
+        self.graph: DiGraph = DiGraph()
+        self.graph.add_node("Add", task="a + b", value="")
+        print(self.graph.nodes.data()["Add"])
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.nodes)
