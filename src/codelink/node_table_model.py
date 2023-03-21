@@ -1,4 +1,5 @@
-import sys, json, pickle
+import sys
+import pickle
 from typing import Any, Optional, List, Dict
 
 from PySide2.QtCore import Qt, QObject, QModelIndex, QByteArray, QMimeData, QAbstractTableModel
@@ -38,7 +39,6 @@ class NodeTableModel(QAbstractTableModel):
         self.node_properties: list = ["Name", "Value", "Predecessors", "Successors"]
 
         self.graph: DiGraph = DiGraph()
-        print(self.supportedDragActions(), self.supportedDropActions())
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.graph.nodes())
@@ -109,16 +109,10 @@ class NodeTableModel(QAbstractTableModel):
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginInsertRows(QModelIndex(), row, row + count - 1)
-        print("Insert")
-
-        for i in range(count):
-            self.nodes.insert(row + i, {prop_name: None for prop_name in self.node_properties})
-
         self.endInsertRows()
         return True
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
-        print("Remove")
         self.beginRemoveRows(QModelIndex(), row, row + count - 1)
 
         for i in range(count):
@@ -130,10 +124,10 @@ class NodeTableModel(QAbstractTableModel):
         return True
 
     def supportedDragActions(self) -> Qt.DropActions:
-        return Qt.MoveAction
+        return Qt.CopyAction
 
     def supportedDropActions(self) -> Qt.DropActions:
-        return Qt.MoveAction
+        return Qt.CopyAction
 
     def mimeTypes(self):
         return [self.Mimetype]
@@ -155,17 +149,23 @@ class NodeTableModel(QAbstractTableModel):
             return False
         elif not data.hasFormat(self.Mimetype):
             return False
+        elif row >= len(self.graph.nodes()):
+            return False
         else:
-            if row == -1:
-                row = len(self.graph.nodes())
-
             data_stream: QByteArray = data.data(self.Mimetype).data()
             data_obj: list = pickle.loads(data_stream)
 
-            for i, obj in enumerate(data_obj):
-                self.insertRow(row + i, parent)
-                self.graph.add_node(obj)
-                # self.setData(self.index(row + i, 0, parent), "test", Qt.EditRole)
+            if row == -1:
+                row = len(self.graph.nodes())
+
+                for i, obj in enumerate(data_obj):
+                    self.insertRow(row + i, parent)
+                    self.graph.add_node(obj)
+            else:
+                target_task: DefaultTask = list(self.graph.nodes())[row]
+                print(data)
+                for i, obj in enumerate(data_obj):
+                    self.graph.add_edge(obj, target_task)
 
             return True
 
@@ -174,14 +174,17 @@ class NodeTableView(QTableView):
 
     def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
+
+        self.setDragDropMode(self.DragDrop)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
-        #self.setDragDropMode(self.DragDrop)
         self.setDropIndicatorShown(True)
-        #self.setSelectionMode(self.ExtendedSelection)
-        #self.setSelectionBehavior(self.SelectRows)
-        #self.setDragDropOverwriteMode(False)
-        #self.setAlternatingRowColors(True)
+        self.setDragDropOverwriteMode(False)
+
+        self.setSelectionMode(self.ExtendedSelection)
+        self.setSelectionBehavior(self.SelectRows)
+
+        self.setAlternatingRowColors(True)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)
@@ -197,7 +200,7 @@ class NodeTableView(QTableView):
 
     def dropEvent(self, event: QDropEvent):
         super().dropEvent(event)
-        print(event.mimeData().data)
+        # print(event.mimeData().data)
         event.accept()
 
 
