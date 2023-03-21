@@ -1,4 +1,4 @@
-import sys
+import sys, json, pickle
 from typing import Any, Optional, List, Dict
 
 from PySide2.QtCore import Qt, QObject, QModelIndex, QByteArray, QMimeData, QAbstractTableModel
@@ -11,7 +11,7 @@ from networkx import DiGraph
 class DefaultTask:
     def __init__(self, name: str = "Name") -> None:
         self.name: str = name
-        self.value: Any = None
+        self.value: Any = 0
 
 
 class InputTask(DefaultTask):
@@ -38,13 +38,8 @@ class NodeTableModel(QAbstractTableModel):
         self.node_properties: list = ["Name", "Value", "Predecessors", "Successors"]
 
         self.graph: DiGraph = DiGraph()
-        t = InputTask("Input")
-        self.graph.add_node(t)
-        print(self.graph.nodes.data()[t])
-        print(self.graph.nodes())
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
-        # return len(self.nodes)
         return len(self.graph.nodes())
 
     def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
@@ -54,7 +49,7 @@ class NodeTableModel(QAbstractTableModel):
         if not index.isValid():
             return None
 
-        if not 0 <= index.row() < len(self.nodes):
+        if not 0 <= index.row() < len(self.graph.nodes()):
             return None
 
         if not 0 <= index.column() < len(self.node_properties):
@@ -64,14 +59,12 @@ class NodeTableModel(QAbstractTableModel):
             task: DefaultTask = list(self.graph.nodes())[index.row()]
             if index.column() == 0:
                 return task.name
-            elif index.column() == 1:
+            if index.column() == 1:
                 return task.value
-            elif index.column() == 2:
-                return self.graph.predecessors(task)
-            else:
-                return self.graph.successors(task)
-
-            # return self.nodes[index.row()][self.node_properties[index.column()]]
+            if index.column() == 2:
+                return str([pre.name for pre in self.graph.predecessors(task)])
+            if index.column() == 3:
+                return str([suc.name for suc in self.graph.successors(task)])
 
         return None
 
@@ -91,33 +84,51 @@ class NodeTableModel(QAbstractTableModel):
         if role != Qt.EditRole:
             return False
 
-        if index.isValid() and 0 <= index.row() < len(self.nodes) and 0 <= index.column() < len(self.node_properties):
-            self.nodes[index.row()][self.node_properties[index.column()]]: Any = value
+        if index.isValid() and 0 <= index.row() < len(self.graph.nodes()) and 0 <= index.column() < 2:
+            task: DefaultTask = list(self.graph.nodes())[index.row()]
+            if index.column() == 0:
+                task.name = value
+            else:
+                task.value = value
             self.dataChanged.emit(index, index)
             return True
 
         return False
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        return super().flags(index) | Qt.ItemIsEditable | Qt.ItemIsDragEnabled | Qt.ItemIsDropEnabled
+        flag = super().flags(index)
+
+        if index.column() == 0:
+            return flag | Qt.ItemIsEditable | Qt.ItemIsDragEnabled
+
+        if index.column() == 1:
+            return flag | Qt.ItemIsEditable
+
+        return flag
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginInsertRows(QModelIndex(), row, row + count - 1)
+        print("Insert")
 
-        for i in range(count):
-            self.nodes.insert(row + i, {prop_name: None for prop_name in self.node_properties})
+        # for i in range(count):
+        #     self.nodes.insert(row + i, {prop_name: None for prop_name in self.node_properties})
 
         self.endInsertRows()
         return True
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
         self.beginRemoveRows(QModelIndex(), row, row + count - 1)
-        del self.nodes[row:row + count]
+
+        for i in range(count):
+            task: DefaultTask = list(self.graph.nodes())[row + i]
+            self.graph.remove_node(task)
+
         self.endRemoveRows()
+        print("Remove")
         return True
 
     def supportedDropActions(self):
-        return Qt.CopyAction
+        return Qt.MoveAction
 
     def mimeTypes(self):
         return [self.Mimetype]
@@ -127,10 +138,11 @@ class NodeTableModel(QAbstractTableModel):
 
         encoded_data: list = []
         for index in sortedIndexes:
-            encoded_data.append(self.nodes[index.row()])
+            task: DefaultTask = list(self.graph.nodes())[index.row()]
+            encoded_data.append(task)
 
         mime_data = QMimeData()
-        mime_data.setData(self.Mimetype, QByteArray(bytes(str(encoded_data), "utf-8")))
+        mime_data.setData(self.Mimetype, QByteArray(pickle.dumps(encoded_data)))
         return mime_data
 
     def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
@@ -139,18 +151,15 @@ class NodeTableModel(QAbstractTableModel):
         elif not data.hasFormat(self.Mimetype):
             return False
         else:
-            insert_row_idx = parent.row()
-            if insert_row_idx < 0:
-                insert_row_idx = len(self.nodes)
+            if row == -1:
+                row = len(self.graph.nodes())
 
             data_stream: QByteArray = data.data(self.Mimetype).data()
-            data_list = list(eval(data_stream))
+            data_obj: list = pickle.loads(data_stream)
 
-            for i, row_data in enumerate(data_list):
-                self.insertRow(insert_row_idx + i, parent)
-
-                for j, node_prop in enumerate(self.node_properties):
-                    self.setData(self.index(insert_row_idx + i, j, parent), row_data[node_prop], Qt.EditRole)
+            for i, obj in enumerate(data_obj):
+                self.insertRow(row + i, parent)
+                self.graph.add_node(obj)
 
             return True
 
@@ -180,6 +189,7 @@ class NodeTableView(QTableView):
 
     def dropEvent(self, event: QDropEvent):
         super().dropEvent(event)
+        print(event.mimeData().data)
         event.accept()
 
 
@@ -188,18 +198,13 @@ class View(QWidget):
     def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
 
-        self.node_model_one = NodeTableModel(parent=None, nodes=[{"Name": "Add", "Task": "a + b",
-                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                                  "Value": "12"},
-                                                                 {"Name": "Sub", "Task": "a - b",
-                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                                  "Value": "12"},
-                                                                 {"Name": "Mul", "Task": "a * b",
-                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                                  "Value": "12"},
-                                                                 {"Name": "Pow", "Task": "a ^ b",
-                                                                  "Predecessors": "[1, 2, 3]", "Successors": "[6]",
-                                                                  "Value": "12"}])
+        self.node_model_one = NodeTableModel(parent=None, nodes=[])
+        t1 = InputTask("Input")
+        self.node_model_one.graph.add_node(t1)
+        t2 = InputTask("Add")
+        self.node_model_one.graph.add_node(t2)
+        self.node_model_one.graph.add_edge(t1, t2)
+
         self.node_table_view_one = NodeTableView(parent=self)
         self.node_table_view_one.setModel(self.node_model_one)
 

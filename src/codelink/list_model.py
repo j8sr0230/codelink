@@ -46,6 +46,7 @@ class NodeGraphModel(QAbstractListModel):
         self.beginRemoveRows(QModelIndex(), row, row + count - 1)
         del self._nodes[row:row + count]
         self.endRemoveRows()
+        print("Remove")
         return True
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
