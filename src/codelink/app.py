@@ -4,8 +4,10 @@ import pickle
 from typing import Any, Optional
 
 
-from PySide2.QtCore import QAbstractItemModel, QAbstractTableModel, QObject, QModelIndex, Qt, QMimeData, QByteArray
-from PySide2.QtWidgets import QApplication, QTableView, QWidget, QHBoxLayout
+from PySide2.QtCore import Qt, QObject, QPoint, QByteArray, QMimeData, QAbstractItemModel, QAbstractTableModel, \
+    QModelIndex, QItemSelectionModel
+from PySide2.QtWidgets import QApplication, QWidget, QTableView, QListView, QHeaderView, QHBoxLayout, QSplitter
+from PySide2.QtGui import QCursor, QIcon
 
 
 class CodeSnippet:
@@ -131,6 +133,10 @@ class CodeSnippetTableModel(QAbstractTableModel):
                 return "Successors"
             else:
                 return None
+
+        if orientation == Qt.Vertical:
+            return section
+
         return None
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = QModelIndex()) -> bool:
@@ -175,7 +181,7 @@ class CodeSnippetTableModel(QAbstractTableModel):
             return super().flags(index)
 
     def supportedDropActions(self) -> Qt.DropActions:
-        return super().supportedDropActions()  # Qt.CopyAction
+        return Qt.MoveAction
 
     def mimeData(self, indexes: list) -> QMimeData:
         sortedIndexes = sorted([index for index in indexes if index.isValid()], key=lambda index: index.row())
@@ -201,12 +207,14 @@ class CodeSnippetTableModel(QAbstractTableModel):
                     for idx in idx_list:
                         source_code_snippet: CodeSnippet = self.code_snippets[idx]
                         source_code_snippet.successors.append(row)
+                        self.dataChanged.emit(self.index(idx, 3), self.index(idx, 3))
 
                 elif column == 3:
                     target_code_snippet.successors.extend(idx_list)
                     for idx in idx_list:
                         source_code_snippet: CodeSnippet = self.code_snippets[idx]
                         source_code_snippet.predecessors.append(row)
+                        self.dataChanged.emit(self.index(idx, 2), self.index(idx, 2))
 
                 self.dataChanged.emit(self.index(row, column), self.index(row, column))
                 return True
@@ -219,16 +227,12 @@ class CodeSnippetTableView(QTableView):
     def __init__(self, parent: QWidget = None):
         super().__init__(parent)
 
-        self.setDragDropMode(self.DragDrop)
         self.setDragEnabled(True)
         self.setAcceptDrops(True)
         self.setDropIndicatorShown(True)
-        self.setDragDropOverwriteMode(False)
-
         self.setSelectionMode(self.ExtendedSelection)
-        # self.setSelectionBehavior(self.SelectRows)
-
         self.setAlternatingRowColors(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         super().dragEnterEvent(event)
@@ -239,6 +243,9 @@ class CodeSnippetTableView(QTableView):
         event.accept()
 
     def dragMoveEvent(self, event: QDragMoveEvent):
+        item: QModelIndex = self.indexAt(event.pos())
+        self.selectionModel().select(item, QItemSelectionModel.ClearAndSelect)
+
         super().dragMoveEvent(event)
         event.accept()
 
@@ -247,26 +254,44 @@ class CodeSnippetTableView(QTableView):
         event.accept()
 
 
+class View(QWidget):
+
+    def __init__(self, parent: QWidget = None) -> None:
+        super().__init__(parent)
+
+        data_model: CodeSnippetTableModel = CodeSnippetTableModel(code_snippets=[
+            CodeSnippet("Add", 1),
+            CodeSnippet("Sub", 2),
+            CodeSnippet("Mul", 3),
+            CodeSnippet("Pow", 4)
+        ])
+        data_model.dataChanged.connect(lambda i, j: print("Changed cell:", i.row(), i.column()))
+
+        splitter: QSplitter = QSplitter()
+        splitter.addWidget(QListView(parent=splitter))
+
+        data_view: CodeSnippetTableView = CodeSnippetTableView(parent=splitter)
+        data_view.setModel(data_model)
+        splitter.addWidget(data_view)
+
+        prop_view = CodeSnippetTableView(parent=splitter)
+        prop_view.setModel(data_model)
+        splitter.addWidget(prop_view)
+
+        splitter.setSizes([200, 800, 200])
+
+        main_layout = QHBoxLayout()
+        main_layout.addWidget(splitter)
+
+        self.setWindowTitle("Codelink")
+        self.setLayout(main_layout)
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    model = CodeSnippetTableModel(code_snippets=[
-        CodeSnippet("Add", 1),
-        CodeSnippet("Sub", 2),
-        CodeSnippet("Mul", 3),
-        CodeSnippet("Pow", 4)
-    ])
-    # model.dataChanged.connect(lambda i, j: print(i.row(), i.column()))
-
-    view = CodeSnippetTableView()
-    view.setModel(model)
-
-    view.setDragDropMode(view.DragDrop)
-    view.setDragEnabled(True)
-    view.setAcceptDrops(True)
-    view.setDropIndicatorShown(True)
-
-    view.setAlternatingRowColors(True)
+    view = View()
+    view.resize(1200, 400)
     view.show()
 
     sys.exit(app.exec_())
