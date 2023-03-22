@@ -1,25 +1,27 @@
 from __future__ import annotations
 import sys
-from typing import Any
+import pickle
+from typing import Any, Optional
 
-from PySide2.QtCore import QAbstractTableModel, QObject, QModelIndex, Qt
+
+from PySide2.QtCore import QAbstractItemModel, QAbstractTableModel, QObject, QModelIndex, Qt, QMimeData, QByteArray
 from PySide2.QtWidgets import QApplication, QTableView, QWidget, QHBoxLayout
 
 
 class CodeSnippet:
-    def __init__(self, name: str = "Name", data_cache: object = -1, predecessors: list[QModelIndex] = None,
-                 successors: list[QModelIndex] = None) -> None:
+    def __init__(self, name: str = "Name", data_cache: object = -1, predecessors: Optional[list[int]] = None,
+                 successors: Optional[list[int]] = None) -> None:
 
         self.name: str = name
         self.data_cache: object = data_cache
 
         if predecessors is None:
-            predecessors: list[QModelIndex] = []
-        self.predecessors: list[QModelIndex] = predecessors
+            predecessors: Optional[list[int]] = []
+        self.predecessors: Optional[list[int]] = predecessors
 
         if successors is None:
-            successors: list[QModelIndex] = []
-        self.successors: list[QModelIndex] = successors
+            successors: Optional[list[int]] = []
+        self.successors: Optional[list[int]] = successors
 
     @property
     def name(self) -> str:
@@ -38,15 +40,15 @@ class CodeSnippet:
         self._data_cache = value
 
     @property
-    def predecessors(self) -> list[QModelIndex]:
+    def predecessors(self) -> Optional[list[int]]:
         return self._predecessors
 
     @predecessors.setter
-    def predecessors(self, value: list[QModelIndex]) -> None:
+    def predecessors(self, value: list[int]) -> None:
         self._predecessors = value
 
     @property
-    def successors(self) -> list[QModelIndex]:
+    def successors(self) -> Optional[list[int]]:
         return self._successors
 
     @successors.setter
@@ -167,18 +169,103 @@ class CodeSnippetTableModel(QAbstractTableModel):
         if not index.isValid():
             return Qt.ItemIsEditable
 
-        return super().flags(index) | Qt.ItemIsEditable
+        if index.column() == 0:
+            return super().flags(index) | Qt.ItemIsEditable | Qt.ItemIsDragEnabled
+        else:
+            return super().flags(index)
+
+    def supportedDropActions(self) -> Qt.DropActions:
+        return super().supportedDropActions()  # Qt.CopyAction
+
+    def mimeData(self, indexes: list) -> QMimeData:
+        sortedIndexes = sorted([index for index in indexes if index.isValid()], key=lambda index: index.row())
+
+        mime_data = QMimeData()
+        mime_data.setData(self.mimeTypes()[0], QByteArray(pickle.dumps([index.row() for index in sortedIndexes])))
+        return mime_data
+
+    def dropMimeData(self, data: QMimeData, action: Qt.DropAction, row: int, column: int, parent: QModelIndex) -> bool:
+        if action == Qt.IgnoreAction:
+            return False
+        elif not data.hasFormat(self.mimeTypes()[0]):
+            return False
+        elif row >= len(self.code_snippets):
+            return False
+        else:
+            data_stream: QByteArray = data.data(self.mimeTypes()[0]).data()
+            idx_list: list = pickle.loads(data_stream)
+            target_code_snippet: CodeSnippet = self.code_snippets[row]
+            if row not in idx_list:
+                if column == 2:
+                    target_code_snippet.predecessors.extend(idx_list)
+                    for idx in idx_list:
+                        source_code_snippet: CodeSnippet = self.code_snippets[idx]
+                        source_code_snippet.successors.append(row)
+
+                elif column == 3:
+                    target_code_snippet.successors.extend(idx_list)
+                    for idx in idx_list:
+                        source_code_snippet: CodeSnippet = self.code_snippets[idx]
+                        source_code_snippet.predecessors.append(row)
+
+                self.dataChanged.emit(self.index(row, column), self.index(row, column))
+                return True
+            else:
+                return False
+
+
+class CodeSnippetTableView(QTableView):
+
+    def __init__(self, parent: QWidget = None):
+        super().__init__(parent)
+
+        self.setDragDropMode(self.DragDrop)
+        self.setDragEnabled(True)
+        self.setAcceptDrops(True)
+        self.setDropIndicatorShown(True)
+        self.setDragDropOverwriteMode(False)
+
+        self.setSelectionMode(self.ExtendedSelection)
+        # self.setSelectionBehavior(self.SelectRows)
+
+        self.setAlternatingRowColors(True)
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        super().dragEnterEvent(event)
+        event.accept()
+
+    def dragLeaveEvent(self, event: QDragLeaveEvent):
+        super().dragLeaveEvent(event)
+        event.accept()
+
+    def dragMoveEvent(self, event: QDragMoveEvent):
+        super().dragMoveEvent(event)
+        event.accept()
+
+    def dropEvent(self, event: QDropEvent):
+        super().dropEvent(event)
+        event.accept()
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    model = CodeSnippetTableModel(code_snippets=[CodeSnippet("Add", 1), CodeSnippet("Sub", 8)])
-    model.dataChanged.connect(lambda i, j: print(i.row(), i.column()))
-    print(model.code_snippets)
+    model = CodeSnippetTableModel(code_snippets=[
+        CodeSnippet("Add", 1),
+        CodeSnippet("Sub", 2),
+        CodeSnippet("Mul", 3),
+        CodeSnippet("Pow", 4)
+    ])
+    # model.dataChanged.connect(lambda i, j: print(i.row(), i.column()))
 
-    view = QTableView()
+    view = CodeSnippetTableView()
     view.setModel(model)
+
+    view.setDragDropMode(view.DragDrop)
+    view.setDragEnabled(True)
+    view.setAcceptDrops(True)
+    view.setDropIndicatorShown(True)
+
     view.setAlternatingRowColors(True)
     view.show()
 
