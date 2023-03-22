@@ -174,10 +174,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     model = CodeSnippetTableModel(code_snippets=[CodeSnippet("Add", 1), CodeSnippet("Sub", 8)])
+    model.dataChanged.connect(lambda i, j: print(i.row(), i.column()))
     print(model.code_snippets)
 
     view = QTableView()
     view.setModel(model)
+    view.setAlternatingRowColors(True)
     view.show()
 
     sys.exit(app.exec_())
