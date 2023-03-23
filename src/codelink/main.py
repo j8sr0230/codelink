@@ -4,8 +4,9 @@ import pickle
 from typing import Any, Optional
 
 from PySide2.QtCore import (Qt, QObject, QPoint, QByteArray, QMimeData, QAbstractItemModel, QAbstractTableModel,
-                            QAbstractListModel, QModelIndex, QItemSelectionModel)
-from PySide2.QtWidgets import QApplication, QWidget, QTableView, QListView, QHeaderView, QHBoxLayout, QSplitter
+                            QAbstractListModel, QModelIndex, QItemSelectionModel, QSortFilterProxyModel, QRegExp)
+from PySide2.QtWidgets import (QApplication, QWidget, QTableView, QListView, QHeaderView, QHBoxLayout, QVBoxLayout,
+                               QSplitter, QLineEdit)
 from PySide2.QtGui import QCursor, QIcon
 
 
@@ -428,15 +429,29 @@ class View(QWidget):
         code_key_model.dataChanged.connect(lambda i, j: print("code_key_model changed:", i.row(), i.column(), "\n",
                                                               code_key_model.code_item_keys))
 
+        self.code_key_proxy_model: QSortFilterProxyModel = QSortFilterProxyModel()
+        self.code_key_proxy_model.setDynamicSortFilter(True)
+        self.code_key_proxy_model.setSourceModel(code_key_model)
+
         code_item_model: CodeItemTableModel = CodeItemTableModel(code_items=[])
         code_item_model.dataChanged.connect(lambda i, j: print("code_item_model changed:", i.row(), i.column(), "\n",
                                                                code_item_model.code_items))
 
         splitter: QSplitter = QSplitter()
 
-        code_key_view: CodeKeyListView = CodeKeyListView(parent=splitter)
+        right_container: QWidget = QWidget()
+        vertical_layout: QVBoxLayout = QVBoxLayout()
+        self.filter_line_edit: QLineEdit = QLineEdit(parent=right_container)
+        self.filter_line_edit.textChanged.connect(self.filter_reg_exp_changed)
+        code_key_view: CodeKeyListView = CodeKeyListView(parent=right_container)
         code_key_view.setModel(code_key_model)
-        splitter.addWidget(code_key_view)
+        code_key_proxy_view: CodeKeyListView = CodeKeyListView(parent=right_container)
+        code_key_proxy_view.setModel(self.code_key_proxy_model)
+        vertical_layout.addWidget(self.filter_line_edit)
+        vertical_layout.addWidget(code_key_view)
+        vertical_layout.addWidget(code_key_proxy_view)
+        right_container.setLayout(vertical_layout)
+        splitter.addWidget(right_container)
 
         data_view: CodeItemTableView = CodeItemTableView(parent=splitter)
         data_view.setModel(code_item_model)
@@ -446,7 +461,7 @@ class View(QWidget):
         prop_view.setModel(code_item_model)
         splitter.addWidget(prop_view)
 
-        splitter.setSizes([200, 800, 200])
+        splitter.setSizes([200, 500, 500])
 
         main_layout = QHBoxLayout()
         main_layout.addWidget(splitter)
@@ -454,11 +469,15 @@ class View(QWidget):
         self.setWindowTitle("Codelink")
         self.setLayout(main_layout)
 
+    def filter_reg_exp_changed(self) -> None:
+        regExp = QRegExp(self.filter_line_edit.text(), Qt.CaseInsensitive, QRegExp.PatternSyntax.RegExp)
+        self.code_key_proxy_model.setFilterRegExp(regExp)
+
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
+    app: QApplication = QApplication(sys.argv)
 
-    view = View()
+    view: QWidget = View()
     view.resize(1200, 400)
     view.show()
 
