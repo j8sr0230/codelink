@@ -402,7 +402,7 @@ class CodeItemTableView(QTableView):
         event.accept()
 
     def dropEvent(self, event: QDropEvent):
-        if event.source() is self:
+        if event.source().__class__ is CodeItemTableView:
             super().dropEvent(event)
             event.accept()
         else:
