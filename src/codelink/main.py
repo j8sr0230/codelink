@@ -4,7 +4,8 @@ import pickle
 from typing import Any, Optional
 
 from PySide2.QtCore import (Qt, QObject, QPoint, QByteArray, QMimeData, QAbstractItemModel, QAbstractTableModel,
-                            QAbstractListModel, QModelIndex, QItemSelectionModel, QSortFilterProxyModel, QRegExp)
+                            QAbstractListModel, QModelIndex, QItemSelectionModel, QSortFilterProxyModel, QRegExp,
+                            QAbstractProxyModel)
 from PySide2.QtWidgets import (QApplication, QWidget, QTableView, QListView, QHeaderView, QHBoxLayout, QVBoxLayout,
                                QSplitter, QLineEdit)
 from PySide2.QtGui import QCursor, QIcon
@@ -325,6 +326,7 @@ class CodeItemTableModel(QAbstractTableModel):
             if row not in source_rows:
                 if column == 2:
                     target_code_item.predecessors.extend(source_rows)
+                    self.dataChanged.emit(self.index(row, 2), self.index(row, 2))
                     for idx in source_rows:
                         source_code_snippet: AbstractCodeItem = self.code_items[idx]
                         source_code_snippet.successors.append(row)
@@ -332,15 +334,57 @@ class CodeItemTableModel(QAbstractTableModel):
 
                 elif column == 3:
                     target_code_item.successors.extend(source_rows)
+                    self.dataChanged.emit(self.index(row, 3), self.index(row, 3))
                     for idx in source_rows:
                         source_code_snippet: AbstractCodeItem = self.code_items[idx]
                         source_code_snippet.predecessors.append(row)
                         self.dataChanged.emit(self.index(idx, 2), self.index(idx, 2))
 
-                self.dataChanged.emit(self.index(row, column), self.index(row, column))
                 return True
             else:
                 return False
+
+
+class CodeItemPropertyProxy(QSortFilterProxyModel):
+
+    def __init__(self, parent: QObject = None) -> None:
+        super().__init__(parent)
+
+    def mapFromSource(self, source_index: QModelIndex) -> QModelIndex:
+        return self.index(source_index.column(), source_index.row(), QModelIndex())
+
+    def mapToSource(self, proxy_index: QModelIndex) -> QModelIndex:
+        if self.sourceModel():
+            return self.sourceModel().index(proxy_index.column(), proxy_index.row(), QModelIndex())
+        else:
+            return QModelIndex()
+
+    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        if not self.sourceModel():
+            return 0
+        return self.sourceModel().rowCount()
+
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
+        if not self.sourceModel():
+            return 0
+        return self.sourceModel().columnCount()
+
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
+        return self.createIndex(row, column)
+
+    def parent(self, child: QModelIndex = QModelIndex()) -> QModelIndex:
+        return QModelIndex()
+
+    def headerData(self, section: int, orientation: Qt.Orientation, role: int = Qt.DisplayRole) -> Any:
+        if not self.sourceModel():
+            return None
+
+        if orientation == Qt.Vertical:
+            orientation = Qt.Horizontal
+        else:
+            orientation = Qt.Vertical
+
+        return self.sourceModel().headerData(section, orientation, role)
 
 
 class CodeKeyListView(QListView):
@@ -417,7 +461,8 @@ class CodeItemTableView(QTableView):
             for idx, key in enumerate(code_key_list):
                 self.model().insertRow(target_row + idx, QModelIndex())
                 self.model().code_items[target_row + idx] = registered_item_classes[key]()
-                self.model().dataChanged.emit(self.model().index(target_row, 0), self.model().index(target_row, 0))
+                self.model().dataChanged.emit(self.model().index(target_row, 0),
+                                              self.model().index(target_row, self.model().columnCount() - 1))
 
 
 class View(QWidget):
@@ -433,11 +478,14 @@ class View(QWidget):
         self.code_key_proxy_model.setDynamicSortFilter(True)
         self.code_key_proxy_model.setSourceModel(code_key_model)
 
-        code_item_model: CodeItemTableModel = CodeItemTableModel(code_items=[])
-        code_item_model.dataChanged.connect(lambda i, j: print("code_item_model changed:", i.row(), i.column(), "\n",
+        code_item_model: CodeItemTableModel = CodeItemTableModel(code_items=[AbstractCodeItem(), AddCodeItem()])
+        code_item_model.dataChanged.connect(lambda i, j: print("code_item_model changed:", i.row(), i.column(),
                                                                code_item_model.code_items))
 
-        splitter: QSplitter = QSplitter()
+        self.code_item_proxy_model: CodeItemPropertyProxy = CodeItemPropertyProxy()
+        self.code_item_proxy_model.setSourceModel(code_item_model)
+
+        self.splitter: QSplitter = QSplitter()
 
         right_container: QWidget = QWidget()
         vertical_layout: QVBoxLayout = QVBoxLayout()
@@ -451,20 +499,21 @@ class View(QWidget):
         vertical_layout.addWidget(code_key_view)
         vertical_layout.addWidget(code_key_proxy_view)
         right_container.setLayout(vertical_layout)
-        splitter.addWidget(right_container)
+        self.splitter.addWidget(right_container)
 
-        data_view: CodeItemTableView = CodeItemTableView(parent=splitter)
+        data_view: CodeItemTableView = CodeItemTableView(parent=self.splitter)
         data_view.setModel(code_item_model)
-        splitter.addWidget(data_view)
+        self.splitter.addWidget(data_view)
 
-        prop_view = CodeItemTableView(parent=splitter)
-        prop_view.setModel(code_item_model)
-        splitter.addWidget(prop_view)
+        self.prop_view = CodeItemTableView(parent=self.splitter)
+        self.prop_view.setModel(self.code_item_proxy_model)
+        #code_item_model.dataChanged.connect(lambda: self.reset_prop_view_model())
+        self.splitter.addWidget(self.prop_view)
 
-        splitter.setSizes([200, 500, 500])
+        self.splitter.setSizes([200, 500, 500])
 
         main_layout = QHBoxLayout()
-        main_layout.addWidget(splitter)
+        main_layout.addWidget(self.splitter)
 
         self.setWindowTitle("Codelink")
         self.setLayout(main_layout)
@@ -472,6 +521,10 @@ class View(QWidget):
     def filter_reg_exp_changed(self) -> None:
         regExp = QRegExp(self.filter_line_edit.text(), Qt.CaseInsensitive, QRegExp.PatternSyntax.RegExp)
         self.code_key_proxy_model.setFilterRegExp(regExp)
+
+    def reset_prop_view_model(self) -> None:
+        self.prop_view.setModel(None)
+        self.prop_view.setModel(self.code_item_proxy_model)
 
 
 if __name__ == "__main__":
