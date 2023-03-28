@@ -5,7 +5,6 @@ from typing import Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
-import Qt
 
 
 class CLGraphicsView(QtWidgets.QGraphicsView):
@@ -33,7 +32,6 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        print(self.mapToScene(event.x(), event.y()))
         if event.button() == QtCore.Qt.MiddleButton:
             event.accept()
 
