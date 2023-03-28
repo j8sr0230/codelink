@@ -11,33 +11,80 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         super().__init__(scene, parent)
 
         self._middle_mouse_pressed: bool = False
-        self._pan_start_x: float = 0.0
-        self._pan_start_y: float = 0.0
+        self._last_view_pos: QtCore.QPoint = QtCore.QPoint()
 
-    def mousePressEvent(self, event: QtGui.QMouseEvent):
+        self._zoom: int = 10
+        self._zoom_step: int = 1
+        self._zoom_step_range: list = [1, 10]
+        self._zoom_in_factor: float = 1.25
+
+        self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
+                            QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
+
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+        self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        self.setAcceptDrops(True)
+
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.MiddleButton:
-            self._middle_mouse_pressed: bool = True
-            self._pan_start_x: float = event.x()
-            self._pan_start_y: float = event.y()
-            self.setCursor(QtCore.Qt.ClosedHandCursor)
-            # self.middleMouseButtonPress(event)
-            print("Drag", self._pan_start_x, self._pan_start_y)
             event.accept()
+
+            self._middle_mouse_pressed: bool = True
+            self._last_view_pos: QtCore.QPoint = event.pos()
+            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+
+            # Faking events for enabling dragging the scene with middle button
+            left_btn_event = QtGui.QMouseEvent(event.type(), event.localPos(), QtCore.Qt.LeftButton,
+                                               event.buttons() | QtCore.Qt.LeftButton, event.modifiers())
+            super().mousePressEvent(left_btn_event)
         else:
             super().mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event: QtGui.QMouseEvent):
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         if event.button() == QtCore.Qt.MiddleButton:
-            # self.middleMouseButtonRelease(event)
-            self.setCursor(QtCore.Qt.ArrowCursor)
             event.accept()
+
+            self._middle_mouse_pressed: bool = False
+            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+
+            # Faking events for disabling dragging the scene with middle button
+            left_btn_event = QtGui.QMouseEvent(event.type(), event.localPos(), QtCore.Qt.LeftButton,
+                                               event.buttons() | QtCore.Qt.LeftButton, event.modifiers())
+            super().mouseReleaseEvent(left_btn_event)
         else:
             super().mouseReleaseEvent(event)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        event.accept()
+
+        zoom_out_factor = 1 / self._zoom_in_factor
+        if event.angleDelta().y() > 0:
+            zoom_factor: float = self._zoom_in_factor
+            self._zoom += self._zoom_step
+        else:
+            zoom_factor: float = zoom_out_factor
+            self._zoom -= self._zoom_step
+
+        _zoom_clamped: bool = False
+        if self._zoom < self._zoom_step_range[0]:
+            self._zoom = self._zoom_step_range[0]
+            _zoom_clamped: bool = True
+        if self._zoom > self._zoom_step_range[1]:
+            self._zoom = self._zoom_step_range[1]
+            _zoom_clamped: bool = True
+
+        if not _zoom_clamped:
+            self.scale(zoom_factor, zoom_factor)
 
 
 class CLGraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: QtCore.QObject = None):
-        super().__init__(QtCore.QRectF(0, 0, 5000, 5000), parent)
+        super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
         self._major_grid_spacing = 20
         self._minor_grid_spacing = 5
@@ -61,8 +108,8 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         bound_box_top: int = int(math.floor(rect.top()))
         bound_box_bottom: int = int(math.ceil(rect.bottom()))
 
-        first_left = bound_box_left - (bound_box_left % self._major_grid_spacing)
-        first_top = bound_box_top - (bound_box_top % self._major_grid_spacing)
+        first_left: int = bound_box_left - (bound_box_left % self._major_grid_spacing)
+        first_top: int = bound_box_top - (bound_box_top % self._major_grid_spacing)
 
         light_lines: list = []
         dark_lines: list = []
@@ -86,13 +133,15 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
 
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
-    # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
+    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+    app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
 
     cl_graphics_: CLGraphicsScene = CLGraphicsScene()
     cl_graphics_view: CLGraphicsView = CLGraphicsView()
 
     cl_graphics_view.setScene(cl_graphics_)
-    cl_graphics_view.resize(1200, 400)
+    cl_graphics_view.resize(600, 400)
     cl_graphics_view.show()
 
     sys.exit(app.exec_())
