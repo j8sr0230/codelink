@@ -5,6 +5,7 @@ from typing import Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
+import Qt
 
 
 class CLGraphicsView(QtWidgets.QGraphicsView):
@@ -32,6 +33,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        print(self.mapToScene(event.x(), event.y()))
         if event.button() == QtCore.Qt.MiddleButton:
             event.accept()
 
@@ -99,6 +101,8 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         self._pen_dark: QtGui.QPen = QtGui.QPen(self._background_color_medium)
         self._pen_dark.setWidth(2)
 
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
 
@@ -140,10 +144,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setAcceptHoverEvents(True)
 
+    def boundingRect(self) -> QtCore.QRectF:
+        return QtCore.QRectF(32000 - 100, 32000 - 50, 32000 + 100, 32000 + 50)
+
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
-        painter.setPen(QtCore.QColor("#000"))
-        painter.drawEllipse(0, 0, 200, 100)
+        painter.setPen(QtGui.QPen(QtGui.QColor("white")))
+        painter.setBrush(QtGui.QColor("red"))
+        painter.drawEllipse(32000, 32000, 200, 100)
 
 
 if __name__ == "__main__":
@@ -159,10 +167,8 @@ if __name__ == "__main__":
     cl_graphics_view.resize(1200, 600)
     cl_graphics_view.show()
 
-    item = QtWidgets.QGraphicsEllipseItem(0, 0, 200, 100)  # MyGraphicsItem()
-    item.setPen(QtGui.QPen(QtGui.QColor("white")))
-    print(item)
-    cl_graphics_scene.addItem(item)
-    item.show()
+    my_item = MyGraphicsItem()
+    cl_graphics_scene.addItem(my_item)
+    cl_graphics_scene.addItem(MyGraphicsItem())
 
     sys.exit(app.exec_())
