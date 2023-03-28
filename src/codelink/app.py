@@ -1,5 +1,6 @@
 import sys
 import math
+from typing import Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -7,7 +8,7 @@ import PySide2.QtGui as QtGui
 
 
 class CLGraphicsView(QtWidgets.QGraphicsView):
-    def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: QtWidgets.QWidget = None) -> None:
+    def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
         self._middle_mouse_pressed: bool = False
@@ -83,7 +84,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
 
 class CLGraphicsScene(QtWidgets.QGraphicsScene):
-    def __init__(self, parent: QtCore.QObject = None):
+    def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
         self._major_grid_spacing = 20
@@ -98,7 +99,7 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         self._pen_dark: QtGui.QPen = QtGui.QPen(self._background_color_medium)
         self._pen_dark.setWidth(2)
 
-    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF):
+    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
 
         self.setBackgroundBrush(self._background_color_dark)
@@ -131,17 +132,37 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         painter.drawLines(dark_lines)
 
 
+class MyGraphicsItem(QtWidgets.QGraphicsItem):
+    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent)
+
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+        self.setAcceptHoverEvents(True)
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: Optional[QtWidgets.QWidget] = None) -> None:
+        painter.setPen(QtCore.QColor("#000"))
+        painter.drawEllipse(0, 0, 200, 100)
+
+
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
-    app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
+    # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
 
-    cl_graphics_: CLGraphicsScene = CLGraphicsScene()
+    cl_graphics_scene: CLGraphicsScene = CLGraphicsScene()
     cl_graphics_view: CLGraphicsView = CLGraphicsView()
 
-    cl_graphics_view.setScene(cl_graphics_)
-    cl_graphics_view.resize(600, 400)
+    cl_graphics_view.setScene(cl_graphics_scene)
+    cl_graphics_view.resize(1200, 600)
     cl_graphics_view.show()
+
+    item = QtWidgets.QGraphicsEllipseItem(0, 0, 200, 100)  # MyGraphicsItem()
+    item.setPen(QtGui.QPen(QtGui.QColor("white")))
+    print(item)
+    cl_graphics_scene.addItem(item)
+    item.show()
 
     sys.exit(app.exec_())
