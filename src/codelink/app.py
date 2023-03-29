@@ -119,6 +119,13 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        self._default_background_color: QtGui.QColor = QtGui.QColor("#303030")
+        self._default_border_color: QtGui.QColor = QtGui.QColor("black")
+        self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
+
+        self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
+        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
+
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
@@ -131,18 +138,22 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
             new_pos: QtCore.QPointF = value
-            x_snap = new_pos.x() // 50 * 50
-            y_snap = new_pos.y() // 50 * 50
+
+            snapping_step: int = 10
+            x_snap = new_pos.x() // snapping_step * snapping_step
+            y_snap = new_pos.y() // snapping_step * snapping_step
             return QtCore.QPointF(x_snap, y_snap)
         else:
             return super().itemChange(change, value)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
-        pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("black"))
-        pen.setWidth(2)
-        painter.setPen(pen)
-        painter.setBrush(QtGui.QColor("#303030"))
+
+        painter.setBrush(self._default_background_color)
+        if self.isSelected():
+            painter.setPen(self._selected_border_pen)
+        else:
+            painter.setPen(self._default_border_pen)
 
         painter.drawRoundedRect(self.boundingRect(), 10, 10)
 
