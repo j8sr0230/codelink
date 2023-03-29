@@ -12,19 +12,16 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         super().__init__(scene, parent)
 
         self._middle_mouse_pressed: bool = False
-        self._last_view_pos: QtCore.QPoint = QtCore.QPoint()
+        self._last_scene_pos: QtCore.QPoint = QtCore.QPoint()
 
-        self._zoom: int = 10
-        self._zoom_step: int = 1
-        self._zoom_step_range: list = [1, 10]
-        self._zoom_in_factor: float = 1.25
+        self._zoom_level: int = 10
+        self._zoom_level_range: list = [5, 10]
 
         self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
                             QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setAcceptDrops(True)
@@ -32,63 +29,60 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mousePressEvent(event)
+
+        self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
+
         if event.button() == QtCore.Qt.MiddleButton:
-            event.accept()
-
             self._middle_mouse_pressed: bool = True
-            self._last_view_pos: QtCore.QPoint = event.pos()
-            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+            self.setCursor(QtCore.Qt.SizeAllCursor)
 
-            # Faking events for enabling dragging the scene with middle button
-            left_btn_event = QtGui.QMouseEvent(event.type(), event.localPos(), QtCore.Qt.LeftButton,
-                                               event.buttons() | QtCore.Qt.LeftButton, event.modifiers())
-            super().mousePressEvent(left_btn_event)
-        else:
-            super().mousePressEvent(event)
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseMoveEvent(event)
+
+        if self._middle_mouse_pressed:
+            current_pos: QtCore.QPoint = self.mapToScene(event.pos())
+            pos_delta: QtCore.QPoint = current_pos - self._last_scene_pos
+            self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+            self.translate(pos_delta.x(), pos_delta.y())
+            self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+            self._last_scene_pos = self.mapToScene(event.pos())
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+
         if event.button() == QtCore.Qt.MiddleButton:
-            event.accept()
-
             self._middle_mouse_pressed: bool = False
-            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-
-            # Faking events for disabling dragging the scene with middle button
-            left_btn_event = QtGui.QMouseEvent(event.type(), event.localPos(), QtCore.Qt.LeftButton,
-                                               event.buttons() | QtCore.Qt.LeftButton, event.modifiers())
-            super().mouseReleaseEvent(left_btn_event)
-        else:
-            super().mouseReleaseEvent(event)
+            self.setCursor(QtCore.Qt.ArrowCursor)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
 
-        zoom_out_factor = 1 / self._zoom_in_factor
+        self._last_scene_pos = self.mapToScene(event.pos())
+
         if event.angleDelta().y() > 0:
-            zoom_factor: float = self._zoom_in_factor
-            self._zoom += self._zoom_step
+            if self._zoom_level < self._zoom_level_range[1]:
+                self._zoom_level += 1
+                self.scale(1.25, 1.25)
         else:
-            zoom_factor: float = zoom_out_factor
-            self._zoom -= self._zoom_step
+            if self._zoom_level > self._zoom_level_range[0]:
+                self._zoom_level -= 1
+                self.scale(1 / 1.25, 1 / 1.25)
 
-        _zoom_clamped: bool = False
-        if self._zoom < self._zoom_step_range[0]:
-            self._zoom = self._zoom_step_range[0]
-            _zoom_clamped: bool = True
-        if self._zoom > self._zoom_step_range[1]:
-            self._zoom = self._zoom_step_range[1]
-            _zoom_clamped: bool = True
-
-        if not _zoom_clamped:
-            self.scale(zoom_factor, zoom_factor)
+        # Hack: Fixes the scene drifting while zooming
+        drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
+        pos_delta: QtCore.QPoint = drifted_pos - self._last_scene_pos
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+        self.translate(pos_delta.x(), pos_delta.y())
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
 
 class CLGraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._major_grid_spacing = 20
-        self._minor_grid_spacing = 5
+        self._major_grid_spacing: int = 20
+        self._minor_grid_spacing: int = 5
 
         self._background_color_dark: QtGui.QColor = QtGui.QColor("#393939")
         self._background_color_medium: QtGui.QColor = QtGui.QColor("#292929")
@@ -143,13 +137,13 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(32000 - 100, 32000 - 50, 32000 + 100, 32000 + 50)
+        return QtCore.QRectF(0, 0, 200, 100)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
         painter.setPen(QtGui.QPen(QtGui.QColor("white")))
         painter.setBrush(QtGui.QColor("red"))
-        painter.drawEllipse(32000, 32000, 200, 100)
+        painter.drawEllipse(self.boundingRect())
 
 
 if __name__ == "__main__":
@@ -167,6 +161,6 @@ if __name__ == "__main__":
 
     my_item = MyGraphicsItem()
     cl_graphics_scene.addItem(my_item)
-    cl_graphics_scene.addItem(MyGraphicsItem())
+    my_item.setPos(QtCore.QPointF(32000, 32000))
 
     sys.exit(app.exec_())
