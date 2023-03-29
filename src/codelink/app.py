@@ -81,17 +81,13 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._major_grid_spacing: int = 20
-        self._minor_grid_spacing: int = 5
+        self._major_grid_spacing: int = 50
 
-        self._background_color_dark: QtGui.QColor = QtGui.QColor("#393939")
-        self._background_color_medium: QtGui.QColor = QtGui.QColor("#292929")
-        self._background_color_light: QtGui.QColor = QtGui.QColor("#2f2f2f")
+        self._background_color_dark: QtGui.QColor = QtGui.QColor("#1D1D1D")
+        self._background_color_light: QtGui.QColor = QtGui.QColor("#282828")
 
         self._pen_light: QtGui.QPen = QtGui.QPen(self._background_color_light)
-        self._pen_light.setWidth(1)
-        self._pen_dark: QtGui.QPen = QtGui.QPen(self._background_color_medium)
-        self._pen_dark.setWidth(2)
+        self._pen_light.setWidth(5)
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
@@ -108,24 +104,13 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         first_left: int = bound_box_left - (bound_box_left % self._major_grid_spacing)
         first_top: int = bound_box_top - (bound_box_top % self._major_grid_spacing)
 
-        light_lines: list = []
-        dark_lines: list = []
+        points: list = []
         for x in range(first_left, bound_box_right, self._major_grid_spacing):
-            if x % (self._major_grid_spacing * self._minor_grid_spacing) != 0:
-                light_lines.append(QtCore.QLine(x, bound_box_top, x, bound_box_bottom))
-            else:
-                dark_lines.append(QtCore.QLine(x, bound_box_top, x, bound_box_bottom))
-
-        for y in range(first_top, bound_box_bottom, self._major_grid_spacing):
-            if y % (self._major_grid_spacing * self._minor_grid_spacing) != 0:
-                light_lines.append(QtCore.QLine(bound_box_left, y, bound_box_right, y))
-            else:
-                dark_lines.append(QtCore.QLine(bound_box_left, y, bound_box_right, y))
+            for y in range(first_top, bound_box_bottom, self._major_grid_spacing):
+                points.append(QtCore.QPoint(x, y))
 
         painter.setPen(self._pen_light)
-        painter.drawLines(light_lines)
-        painter.setPen(self._pen_dark)
-        painter.drawLines(dark_lines)
+        painter.drawPoints(points)
 
 
 class MyGraphicsItem(QtWidgets.QGraphicsItem):
@@ -141,9 +126,12 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
-        painter.setPen(QtGui.QPen(QtGui.QColor("white")))
-        painter.setBrush(QtGui.QColor("red"))
-        painter.drawEllipse(self.boundingRect())
+        pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("black"))
+        pen.setWidth(2)
+        painter.setPen(pen)
+        painter.setBrush(QtGui.QColor("#303030"))
+
+        painter.drawRoundedRect(self.boundingRect(), 5, 5)
 
 
 if __name__ == "__main__":
@@ -159,8 +147,12 @@ if __name__ == "__main__":
     cl_graphics_view.resize(1200, 600)
     cl_graphics_view.show()
 
-    my_item = MyGraphicsItem()
-    cl_graphics_scene.addItem(my_item)
-    my_item.setPos(QtCore.QPointF(32000, 32000))
+    my_item_1 = MyGraphicsItem()
+    cl_graphics_scene.addItem(my_item_1)
+    my_item_1.setPos(QtCore.QPointF(32000, 32000))
+
+    my_item_2 = MyGraphicsItem()
+    cl_graphics_scene.addItem(my_item_2)
+    my_item_2.setPos(QtCore.QPointF(32100, 32100))
 
     sys.exit(app.exec_())
