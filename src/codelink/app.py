@@ -131,7 +131,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         painter.setPen(pen)
         painter.setBrush(QtGui.QColor("#303030"))
 
-        painter.drawRoundedRect(self.boundingRect(), 5, 5)
+        painter.drawRoundedRect(self.boundingRect(), 10, 10)
 
 
 if __name__ == "__main__":
