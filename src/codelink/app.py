@@ -126,6 +126,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
 
+        self._width: int = 200
+        self._mode: str = ""
+
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
@@ -133,7 +136,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, 200, 100)
+        return QtCore.QRectF(0, 0, self._width, 100)
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -145,6 +148,47 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             return QtCore.QPointF(x_snap, y_snap)
         else:
             return super().itemChange(change, value)
+
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        super().mousePressEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            if event.pos().x() > self.boundingRect().width() - 10:
+                self._mode: str = "RESIZE"
+                self.setCursor(QtCore.Qt.SizeHorCursor)
+
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        if self._mode == "RESIZE":
+            old_x_left: float = self.boundingRect().x()
+            old_y_top: float = self.boundingRect().y()
+
+            old_top_left_local: QtCore.QPointF = QtCore.QPointF(old_x_left, old_y_top)
+            old_top_left_global: QtCore.QPointF = self.mapToScene(old_top_left_local)
+
+            current_x: int = self.mapToScene(event.pos()).x()
+            new_width: float = current_x - old_top_left_global.x()
+            self._width = new_width
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+        self._mode = ""
+        self.setCursor(QtCore.Qt.ArrowCursor)
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+
+    def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverMoveEvent(event)
+        if event.pos().x() > self.boundingRect().width() - 10:
+            self.setCursor(QtCore.Qt.SizeHorCursor)
+        else:
+            self.setCursor(QtCore.Qt.ArrowCursor)
+
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverLeaveEvent(event)
+        self.setCursor(QtCore.Qt.ArrowCursor)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
