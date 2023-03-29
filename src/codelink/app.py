@@ -1,6 +1,6 @@
 import sys
 import math
-from typing import Optional
+from typing import Optional, Any
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -27,6 +27,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setAcceptDrops(True)
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+
+        self.setStyleSheet("selection-background-color: black")
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)
@@ -117,12 +119,23 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
+                      QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
         self.setAcceptHoverEvents(True)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, 200, 100)
+
+    def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            new_pos: QtCore.QPointF = value
+            x_snap = new_pos.x() // 50 * 50
+            y_snap = new_pos.y() // 50 * 50
+            return QtCore.QPointF(x_snap, y_snap)
+        else:
+            return super().itemChange(change, value)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
