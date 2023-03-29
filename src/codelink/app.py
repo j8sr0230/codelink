@@ -119,7 +119,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._default_background_color: QtGui.QColor = QtGui.QColor("#303030")
+        self._default_background_color: QtGui.QColor = QtGui.QColor("#282828")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
 
