@@ -154,21 +154,27 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
-        self._pixmap_down = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarUnshadeButton)
-        self._pixmap_down = self._pixmap_down.scaledToWidth(15)
-        self._pixmap_down = self.change_pixmap_color(self._pixmap_down, QtGui.QColor("black"), self._default_font_color)
-        self._pixmap_up = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarShadeButton)
-        self._pixmap_up = self._pixmap_up.scaledToWidth(15)
-        self._pixmap_up = self.change_pixmap_color(self._pixmap_up, QtGui.QColor("black"), self._default_font_color)
+        # self._pixmap_down = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarUnshadeButton)
+        # self._pixmap_down = self._pixmap_down.scaledToWidth(15)
+        # self._pixmap_down = self.change_pixmap_color(self._pixmap_down, QtGui.QColor("black"), self._default_font_color)
+        # self._pixmap_up = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarShadeButton)
+        # self._pixmap_up = self._pixmap_up.scaledToWidth(15)
+        # self._pixmap_up = self.change_pixmap_color(self._pixmap_up, QtGui.QColor("black"), self._default_font_color)
+        #
+        # self._header_icon: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem(self)
+        # self._header_icon.setPos(7, 5)
+        # self._header_icon.setPixmap(self._pixmap_down)
 
-        self._header_icon: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem(self)
-        self._header_icon.setPos(7, 5)
-        self._header_icon.setPixmap(self._pixmap_down)
+        self._collapse_item = QtWidgets.QGraphicsTextItem(self)
+        self._collapse_item.setDefaultTextColor(self._default_font_color)
+        self._collapse_item.setFont(self._default_font)
+        self._collapse_item.setPos(5, 1)
+        self._collapse_item.setPlainText(">")
 
         self._title_item = QtWidgets.QGraphicsTextItem(self)
         self._title_item.setDefaultTextColor(self._default_font_color)
         self._title_item.setFont(self._default_font)
-        self._title_item.setPos(25, 1)
+        self._title_item.setPos(20, 2)
         self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
         # self._title_item.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
 
@@ -187,21 +193,21 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
         return cropped_text
 
-    @staticmethod
-    def change_pixmap_color(pixmap: QtGui.QPixmap, color_from: QtGui.QColor,
-                            color_to: QtGui.QColor) -> QtGui.QPixmap:
-        img: QtGui.QImage = pixmap.toImage()
-        color_to: QtGui.QColor = QtGui.QColor(color_to)
-        color_from: QtGui.QColor = QtGui.QColor(color_from)
-
-        for i in range(img.height()):
-            for j in range(img.width()):
-                color_to.setAlpha(img.pixelColor(i, j).alpha())
-                color_from.setAlpha(img.pixelColor(i, j).alpha())
-                if img.pixelColor(i, j) == color_from:
-                    img.setPixelColor(i, j, color_to)
-
-        return QtGui.QPixmap().fromImage(img)
+    # @staticmethod
+    # def change_pixmap_color(pixmap: QtGui.QPixmap, color_from: QtGui.QColor,
+    #                         color_to: QtGui.QColor) -> QtGui.QPixmap:
+    #     img: QtGui.QImage = pixmap.toImage()
+    #     color_to: QtGui.QColor = QtGui.QColor(color_to)
+    #     color_from: QtGui.QColor = QtGui.QColor(color_from)
+    #
+    #     for i in range(img.height()):
+    #         for j in range(img.width()):
+    #             color_to.setAlpha(img.pixelColor(i, j).alpha())
+    #             color_from.setAlpha(img.pixelColor(i, j).alpha())
+    #             if img.pixelColor(i, j) == color_from:
+    #                 img.setPixelColor(i, j, color_to)
+    #
+    #     return QtGui.QPixmap().fromImage(img)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -225,19 +231,19 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 self._mode: str = "RESIZE"
                 self.setCursor(QtCore.Qt.SizeHorCursor)
 
-            header_icon_left: float = self._header_icon.x()
-            header_icon_right: float = self._header_icon.x() + self._header_icon.boundingRect().width()
-            header_icon_top: float = self._header_icon.y()
-            header_icon_bottom: float = self._header_icon.y() + self._header_icon.boundingRect().height()
+            collapse_item_left: float = self._collapse_item.x()
+            collapse_item_right: float = self._collapse_item.x() + self._collapse_item.boundingRect().width()
+            collapse_item_top: float = self._collapse_item.y()
+            collapse_item_bottom: float = self._collapse_item.y() + self._collapse_item.boundingRect().height()
 
-            if header_icon_left <= event.pos().x() <= header_icon_right:
-                if header_icon_top <= event.pos().y() <= header_icon_bottom:
+            if collapse_item_left <= event.pos().x() <= collapse_item_right:
+                if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
                     self._mode: str = "COLLAPSE"
                     if not self._is_collapsed:
-                        self._header_icon.setPixmap(self._pixmap_up)
+                        self._collapse_item.setPlainText("<")
                         self._height = self._min_height
                     else:
-                        self._header_icon.setPixmap(self._pixmap_down)
+                        self._collapse_item.setPlainText(">")
                         self._height = self._max_height
                     self._is_collapsed = not self._is_collapsed
 
