@@ -129,11 +129,16 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._width: int = 200
         self._mode: str = ""
 
+        self._shadow = QtWidgets.QGraphicsDropShadowEffect()
+        self._shadow.setColor(QtGui.QColor("black"))
+        self._shadow.setBlurRadius(20)
+        self._shadow.setOffset(1)
+        self.setGraphicsEffect(self._shadow)
+
+        self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-
-        self.setAcceptHoverEvents(True)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, 100)
@@ -168,6 +173,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             current_x: int = self.mapToScene(event.pos()).x()
             new_width: float = current_x - old_top_left_global.x()
             self._width = new_width
+            self._shadow.updateBoundingRect()
         else:
             super().mouseMoveEvent(event)
 
