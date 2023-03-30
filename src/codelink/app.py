@@ -119,7 +119,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._title: str = "My very ling title"
+        self._title: str = "My very long node title"
         self._width: int = 160
         self._min_width: int = 80
         self._height: int = 80
