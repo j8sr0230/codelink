@@ -119,17 +119,23 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._default_background_color: QtGui.QColor = QtGui.QColor("#282828")
+        self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
+        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
 
-        self._width: int = 200
+        self._width: int = 160
+        self._min_width: int = 80
+        self._height: int = 80
+        self._header_height: int = 25
+        self._corner_radius: int = 5
+
         self._mode: str = ""
 
-        self._shadow = QtWidgets.QGraphicsDropShadowEffect()
+        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
         self._shadow.setColor(QtGui.QColor("black"))
         self._shadow.setBlurRadius(20)
         self._shadow.setOffset(1)
@@ -141,7 +147,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, 100)
+        return QtCore.QRectF(0, 0, self._width, self._height)
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -172,6 +178,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
             current_x: int = self.mapToScene(event.pos()).x()
             new_width: float = current_x - old_top_left_global.x()
+            if new_width < self._min_width:
+                new_width: float = self._min_width
             self._width = new_width
             self._shadow.updateBoundingRect()
         else:
@@ -199,13 +207,20 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
-        painter.setBrush(self._default_background_color)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(self._node_background_color)
+        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+
+        rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
+        painter.setBrush(QtGui.QColor("#1D1D1D"))
+        painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
+
+        painter.setBrush(QtCore.Qt.NoBrush)
         if self.isSelected():
             painter.setPen(self._selected_border_pen)
         else:
             painter.setPen(self._default_border_pen)
-
-        painter.drawRoundedRect(self.boundingRect(), 10, 10)
+        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
 
 if __name__ == "__main__":
