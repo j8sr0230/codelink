@@ -132,6 +132,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._height: int = self._max_height
         self._header_height: int = 25
         self._corner_radius: int = 5
+        self._content_padding: int = 10
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -170,11 +171,51 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._title_item.setPos(self._title_x,
                                 (self._header_height - self._title_item.boundingRect().height()) / 2)
 
+        self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
+        self._content_widget.setStyleSheet("background-color: transparent")
+        self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        self._content_layout.setMargin(0)
+        self._content_layout.setSpacing(5)
+
+        self._content_widget.setLayout(self._content_layout)
+
+        self._line_edit_1: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
+        self._line_edit_1.setPlaceholderText("Enter value")
+        self._line_edit_1.setMinimumWidth(10)
+        self._line_edit_1.setFont(self._default_font)
+        self._line_edit_1.setStyleSheet("background-color: #545454; color: #E5E5E5;")
+        self._content_layout.addWidget(self._line_edit_1)
+
+        self._line_edit_2: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
+        self._line_edit_2.setPlaceholderText("Enter value")
+        self._line_edit_2.setMinimumWidth(10)
+        self._line_edit_2.setFont(self._default_font)
+        self._line_edit_2.setStyleSheet("background-color: #545454; color: #E5E5E5;")
+        self._content_layout.addWidget(self._line_edit_2)
+
+        self._line_edit_3: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
+        self._line_edit_3.setPlaceholderText("Enter value")
+        self._line_edit_3.setMinimumWidth(10)
+        self._line_edit_3.setFont(self._default_font)
+        self._line_edit_3.setStyleSheet("background-color: #545454; color: #E5E5E5;")
+        self._content_layout.addWidget(self._line_edit_3)
+
+        self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+        self._content.setWidget(self._content_widget)
+        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
+                                                          self._header_height + self._content_padding,
+                                                          self._width - 2 * self._content_padding,
+                                                          self._content_widget.height())
+        self._content.setGeometry(self._content_rect)
+
+        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
+                        self._content_padding)
+
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
         font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
 
-        cropped_text: str = " ..."
+        cropped_text: str = "..."
         string_idx: int = 0
         while font_metrics.horizontalAdvance(cropped_text) < width and string_idx < len(text):
             cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
@@ -217,10 +258,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                     self._mode: str = "COLLAPSE"
                     if not self._is_collapsed:
                         self._collapse_item.setPlainText("<")
+                        self._content.hide()
                         self._height = self._min_height
                     else:
                         self._collapse_item.setPlainText(">")
-                        self._height = self._max_height
+                        self._content.show()
+                        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
+                                        self._content_padding)
+
                     self._is_collapsed = not self._is_collapsed
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
@@ -235,9 +280,15 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             new_width: float = current_x - old_top_left_global.x()
             if new_width < self._min_width:
                 new_width: float = self._min_width
+
             self._width = new_width
             self._shadow.updateBoundingRect()
             self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
+            self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
+                                                              self._header_height + self._content_padding,
+                                                              self._width - 2 * self._content_padding,
+                                                              self._content_widget.height())
+            self._content.setGeometry(self._content_rect)
         else:
             super().mouseMoveEvent(event)
 
