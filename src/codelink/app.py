@@ -123,6 +123,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._is_collapsed: bool = False
 
         self._title: str = "Curve"
+        self._title_x: int = 20
 
         self._min_width: int = 80
         self._width: int = 160
@@ -158,13 +159,16 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._collapse_item.setDefaultTextColor(self._default_font_color)
         self._collapse_item.setFont(self._default_font)
         self._collapse_item.setPlainText(">")
-        self._collapse_item.setPos(3, (self._header_height - self._collapse_item.boundingRect().height()) / 2)
+        collapse_item_x = (self._title_x - QtGui.QFontMetrics(self._default_font).horizontalAdvance(">")) / 2
+        self._collapse_item.setPos(collapse_item_x,
+                                   (self._header_height - self._collapse_item.boundingRect().height()) / 2)
 
         self._title_item = QtWidgets.QGraphicsTextItem(self)
         self._title_item.setDefaultTextColor(self._default_font_color)
         self._title_item.setFont(self._default_font)
         self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
-        self._title_item.setPos(20, (self._header_height - self._title_item.boundingRect().height()) / 2)
+        self._title_item.setPos(self._title_x,
+                                (self._header_height - self._title_item.boundingRect().height()) / 2)
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
