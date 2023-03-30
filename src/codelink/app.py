@@ -138,7 +138,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._default_font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
-        self._default_font: QtGui.QFont = QtGui.QFont("Sans Serif", 6)
+        self._default_font: QtGui.QFont = QtGui.QFont()  # QtGui.QFont("Sans Serif", 6)
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
@@ -157,14 +157,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._collapse_item = QtWidgets.QGraphicsTextItem(self)
         self._collapse_item.setDefaultTextColor(self._default_font_color)
         self._collapse_item.setFont(self._default_font)
-        self._collapse_item.setPos(5, 1)
         self._collapse_item.setPlainText(">")
+        self._collapse_item.setPos(3, self._header_height - self._collapse_item.boundingRect().height())
 
         self._title_item = QtWidgets.QGraphicsTextItem(self)
         self._title_item.setDefaultTextColor(self._default_font_color)
         self._title_item.setFont(self._default_font)
-        self._title_item.setPos(20, 2)
         self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
+        self._title_item.setPos(20, self._header_height - self._title_item.boundingRect().height())
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
