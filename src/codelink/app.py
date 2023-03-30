@@ -119,14 +119,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
-        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
-        self._default_border_color: QtGui.QColor = QtGui.QColor("black")
-        self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
-
-        self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
-        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
-
+        self._title: str = "My very ling title"
         self._width: int = 160
         self._min_width: int = 80
         self._height: int = 80
@@ -134,6 +127,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._corner_radius: int = 5
 
         self._mode: str = ""
+
+        self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
+        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
+        self._default_border_color: QtGui.QColor = QtGui.QColor("black")
+        self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
+
+        self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
+        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
 
         self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
         self._shadow.setColor(QtGui.QColor("black"))
@@ -145,6 +146,27 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
+        self._title_item = QtWidgets.QGraphicsTextItem(self)
+        self._title_item.setDefaultTextColor(QtGui.QColor("white"))
+        self._title_item.setPos(25, 0)
+        self._title_item.setPlainText(self.crop_text(self._title, self._width - 50))
+        # self._title_item.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+
+    @staticmethod
+    def crop_text(text: str = "Test", width: float = 30) -> str:
+        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(QtGui.QFont())
+
+        cropped_text: str = " ..."
+        string_idx: int = 0
+        while font_metrics.horizontalAdvance(cropped_text) < width and string_idx < len(text):
+            cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
+            string_idx += 1
+
+        if string_idx == len(text):
+            cropped_text: str = cropped_text[:len(text)]
+
+        return cropped_text
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -182,6 +204,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 new_width: float = self._min_width
             self._width = new_width
             self._shadow.updateBoundingRect()
+            self._title_item.setPlainText(self.crop_text(self._title, self._width - 50))
         else:
             super().mouseMoveEvent(event)
 
