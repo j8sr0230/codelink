@@ -119,20 +119,26 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._title: str = "My very long node title"
-        self._width: int = 160
+        self._mode: str = ""
+        self._is_collapsed: bool = False
+
+        self._title: str = "Curve"
+
         self._min_width: int = 80
-        self._height: int = 80
+        self._width: int = 160
+        self._min_height: int = 25
+        self._max_height: int = 80
+        self._height: int = self._max_height
         self._header_height: int = 25
         self._corner_radius: int = 5
-
-        self._mode: str = ""
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
-        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._default_font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+
+        self._default_font: QtGui.QFont = QtGui.QFont("Sans Serif", 6)
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
@@ -148,22 +154,27 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
+        self._pixmap_down = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarUnshadeButton)
+        self._pixmap_down = self._pixmap_down.scaledToWidth(15)
+        self._pixmap_down = self.change_pixmap_color(self._pixmap_down, QtGui.QColor("black"), self._default_font_color)
+        self._pixmap_up = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarShadeButton)
+        self._pixmap_up = self._pixmap_up.scaledToWidth(15)
+        self._pixmap_up = self.change_pixmap_color(self._pixmap_up, QtGui.QColor("black"), self._default_font_color)
+
         self._header_icon: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem(self)
-        self._header_icon.setPos(5, 5)
-        self._pixmap = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarUnshadeButton)
-        self._pixmap = self._pixmap.scaledToWidth(15)
-        self._pixmap = self.change_pixmap_color(self._pixmap, QtGui.QColor("black"), self._font_color)
-        self._header_icon.setPixmap(self._pixmap)
+        self._header_icon.setPos(7, 5)
+        self._header_icon.setPixmap(self._pixmap_down)
 
         self._title_item = QtWidgets.QGraphicsTextItem(self)
-        self._title_item.setDefaultTextColor(self._font_color)
-        self._title_item.setPos(25, 0)
-        self._title_item.setPlainText(self.crop_text(self._title, self._width - 50))
+        self._title_item.setDefaultTextColor(self._default_font_color)
+        self._title_item.setFont(self._default_font)
+        self._title_item.setPos(25, 1)
+        self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
         # self._title_item.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
 
     @staticmethod
-    def crop_text(text: str = "Test", width: float = 30) -> str:
-        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(QtGui.QFont())
+    def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
+        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
 
         cropped_text: str = " ..."
         string_idx: int = 0
@@ -214,6 +225,22 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 self._mode: str = "RESIZE"
                 self.setCursor(QtCore.Qt.SizeHorCursor)
 
+            header_icon_left: float = self._header_icon.x()
+            header_icon_right: float = self._header_icon.x() + self._header_icon.boundingRect().width()
+            header_icon_top: float = self._header_icon.y()
+            header_icon_bottom: float = self._header_icon.y() + self._header_icon.boundingRect().height()
+
+            if header_icon_left <= event.pos().x() <= header_icon_right:
+                if header_icon_top <= event.pos().y() <= header_icon_bottom:
+                    self._mode: str = "COLLAPSE"
+                    if not self._is_collapsed:
+                        self._header_icon.setPixmap(self._pixmap_up)
+                        self._height = self._min_height
+                    else:
+                        self._header_icon.setPixmap(self._pixmap_down)
+                        self._height = self._max_height
+                    self._is_collapsed = not self._is_collapsed
+
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
             old_x_left: float = self.boundingRect().x()
@@ -228,7 +255,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 new_width: float = self._min_width
             self._width = new_width
             self._shadow.updateBoundingRect()
-            self._title_item.setPlainText(self.crop_text(self._title, self._width - 50))
+            self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
         else:
             super().mouseMoveEvent(event)
 
