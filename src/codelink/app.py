@@ -131,7 +131,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
-        self._selected_border_color: QtGui.QColor = QtGui.QColor("white")
+        self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
@@ -147,8 +148,15 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
+        self._header_icon: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem(self)
+        self._header_icon.setPos(5, 5)
+        self._pixmap = QtWidgets.QApplication.style().standardPixmap(QtWidgets.QStyle.SP_TitleBarUnshadeButton)
+        self._pixmap = self._pixmap.scaledToWidth(15)
+        self._pixmap = self.change_pixmap_color(self._pixmap, QtGui.QColor("black"), self._font_color)
+        self._header_icon.setPixmap(self._pixmap)
+
         self._title_item = QtWidgets.QGraphicsTextItem(self)
-        self._title_item.setDefaultTextColor(QtGui.QColor("white"))
+        self._title_item.setDefaultTextColor(self._font_color)
         self._title_item.setPos(25, 0)
         self._title_item.setPlainText(self.crop_text(self._title, self._width - 50))
         # self._title_item.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
@@ -167,6 +175,22 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             cropped_text: str = cropped_text[:len(text)]
 
         return cropped_text
+
+    @staticmethod
+    def change_pixmap_color(pixmap: QtGui.QPixmap, color_from: QtGui.QColor,
+                            color_to: QtGui.QColor) -> QtGui.QPixmap:
+        img: QtGui.QImage = pixmap.toImage()
+        color_to: QtGui.QColor = QtGui.QColor(color_to)
+        color_from: QtGui.QColor = QtGui.QColor(color_from)
+
+        for i in range(img.height()):
+            for j in range(img.width()):
+                color_to.setAlpha(img.pixelColor(i, j).alpha())
+                color_from.setAlpha(img.pixelColor(i, j).alpha())
+                if img.pixelColor(i, j) == color_from:
+                    img.setPixelColor(i, j, color_to)
+
+        return QtGui.QPixmap().fromImage(img)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -235,7 +259,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
-        painter.setBrush(QtGui.QColor("#1D1D1D"))
+        painter.setBrush(self._header_background_color)
         painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
 
         painter.setBrush(QtCore.Qt.NoBrush)
