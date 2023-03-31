@@ -187,42 +187,42 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
         self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         self._content_widget.setStyleSheet("background-color: transparent")
-        self._content_layout: QtWidgets.QGridLayout = QtWidgets.QGridLayout()
+        self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         self._content_layout.setMargin(0)
         self._content_layout.setSpacing(5)
 
         self._content_widget.setLayout(self._content_layout)
 
-        self._content_layout.addWidget(Socket(), 0, 0)
-        self._content_layout.addWidget(Socket(), 1, 0)
-        self._content_layout.addWidget(Socket(), 2, 2)
+        # self._content_layout.addWidget(Socket(), 0, 0)
+        # self._content_layout.addWidget(Socket(), 1, 0)
+        # self._content_layout.addWidget(Socket(), 2, 2)
 
         self._line_edit_1: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
         self._line_edit_1.setPlaceholderText("Enter value")
         self._line_edit_1.setMinimumWidth(10)
         self._line_edit_1.setFont(self._default_font)
         self._line_edit_1.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_1, 0, 1)
+        self._content_layout.addWidget(self._line_edit_1)
 
         self._line_edit_2: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
         self._line_edit_2.setPlaceholderText("Enter value")
         self._line_edit_2.setMinimumWidth(10)
         self._line_edit_2.setFont(self._default_font)
         self._line_edit_2.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_2, 1, 1)
+        self._content_layout.addWidget(self._line_edit_2)
 
         self._line_edit_3: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
         self._line_edit_3.setPlaceholderText("Enter value")
         self._line_edit_3.setMinimumWidth(10)
         self._line_edit_3.setFont(self._default_font)
         self._line_edit_3.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_3, 2, 1)
+        self._content_layout.addWidget(self._line_edit_3)
 
         self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content.setWidget(self._content_widget)
-        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding-20,
+        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
                                                           self._header_height + self._content_padding,
-                                                          self._width - 2 * self._content_padding + 40,
+                                                          self._width - 2 * self._content_padding,
                                                           self._content_widget.height())
         self._content.setGeometry(self._content_rect)
 
@@ -347,13 +347,25 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
+        if not self._is_collapsed:
+            pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
+            pen_green.setWidth(10)
+            painter.setPen(pen_green)
+            socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
+                                                          self._content_padding + self._line_edit_1.height()/2)
+            socket_pos_2: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_2.y() + self._header_height +
+                                                          self._content_padding + self._line_edit_1.height()/2)
+            socket_pos_3: QtCore.QPointF = QtCore.QPointF(self._width, self._line_edit_3.y() + self._header_height +
+                                                          self._content_padding + self._line_edit_1.height()/2)
+            painter.drawPoints([socket_pos_1, socket_pos_2, socket_pos_3])
 
-class MyGraphicsWidget(QtWidgets.QGraphicsWidget):
-    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None,
-                 wFlags: QtCore.Qt.WindowFlags = QtCore.Qt.Window):
-        super().__init__(parent, wFlags)
 
-        self.setGeometry(QtCore.QRectF(0, 0, 200, 100))
+# class MyGraphicsWidget(QtWidgets.QGraphicsWidget):
+#     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None,
+#                  wFlags: QtCore.Qt.WindowFlags = QtCore.Qt.Window):
+#         super().__init__(parent, wFlags)
+#
+#         self.setGeometry(QtCore.QRectF(0, 0, 200, 100))
 
     # def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
     #           widget: Optional[QtWidgets.QWidget] = None) -> None:
@@ -361,11 +373,11 @@ class MyGraphicsWidget(QtWidgets.QGraphicsWidget):
     #     painter.setPen(QtGui.QPen(QtGui.QColor("red")))
     #     painter.drawRoundedRect(0, 0, 200, 100, 5, 5)
 
-    def paintWindowFrame(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-                         widget: Optional[QtWidgets.QWidget] = None) -> None:
-        super().paintWindowFrame(painter, option, widget)
-        painter.setPen(QtGui.QPen(QtGui.QColor("red")))
-        painter.drawRoundedRect(20, 20, self.boundingRect().width() - 40, self.boundingRect().height() - 40, 5, 5)
+    # def paintWindowFrame(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+    #                      widget: Optional[QtWidgets.QWidget] = None) -> None:
+    #     super().paintWindowFrame(painter, option, widget)
+    #     painter.setPen(QtGui.QPen(QtGui.QColor("red")))
+    #     painter.drawRoundedRect(20, 20, self.boundingRect().width() - 40, self.boundingRect().height() - 40, 5, 5)
 
 
 if __name__ == "__main__":
@@ -388,9 +400,5 @@ if __name__ == "__main__":
     my_item_2 = MyGraphicsItem()
     cl_graphics_scene.addItem(my_item_2)
     my_item_2.setPos(QtCore.QPointF(32200, 32050))
-
-    my_item_3 = MyGraphicsWidget(None)
-    cl_graphics_scene.addItem(my_item_3)
-    my_item_3.setPos(31700, 31900)
 
     sys.exit(app.exec_())
