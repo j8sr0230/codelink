@@ -115,18 +115,35 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         painter.drawPoints(points)
 
 
-class Socket(QtWidgets.QLabel):
-    def __init__(self, parent: QtWidgets.QWidget = None) -> None:
-        super().__init__("   ", parent)
-        self.setStyleSheet("color: white;")
+class SocketWidget(QtWidgets.QWidget):
+    def __init__(self, socket_type: object = int, parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+
+        self._socket_type: object = socket_type
+        self._parent_graphics_item: QtWidgets.QGraphicsItem = parent_graphics_item
+
+        self._socket_pin_default_background_color: QtGui.QColor = QtGui.QColor("#00D6A3")
+        self._socket_pin_default_border_color: QtGui.QColor = QtGui.QColor("black")
+
+        self._socket_pin_brush: QtGui.QBrush = QtGui.QBrush(self._socket_pin_default_background_color)
+        self._socket_pin_pen: QtGui.QPen = QtGui.QPen(self._socket_pin_default_border_color)
+
+        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self.setLayout(self._layout)
+
+        self._socket_pin_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(0, 0, 15, 15)
+        self._socket_pin_item.setBrush(self._socket_pin_brush)
+        self._socket_pin_item.setPen(self._socket_pin_pen)
+        self._socket_pin_item.setParentItem(self._parent_graphics_item)
+        self._socket_pin_item.setPos(0, 0)
+
+        self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+        self._socket_input_widget.setPlaceholderText("Enter integer")
+        self._layout.addWidget(self._socket_input_widget)
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
-
-        painter: QtGui.QPainter = QtGui.QPainter(self)
-        painter.setPen(QtGui.QPen(QtGui.QColor("#E5E5E5")))
-        painter.setBrush(QtGui.QColor("#00D6A3"))
-        painter.drawEllipse(QtCore.QRectF(0, 0, self.width(), self.width()))
 
 
 class MyGraphicsItem(QtWidgets.QGraphicsItem):
@@ -193,10 +210,6 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
         self._content_widget.setLayout(self._content_layout)
 
-        # self._content_layout.addWidget(Socket(), 0, 0)
-        # self._content_layout.addWidget(Socket(), 1, 0)
-        # self._content_layout.addWidget(Socket(), 2, 2)
-
         self._line_edit_1: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
         self._line_edit_1.setPlaceholderText("Enter value")
         self._line_edit_1.setMinimumWidth(10)
@@ -217,6 +230,10 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._line_edit_3.setFont(self._default_font)
         self._line_edit_3.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
         self._content_layout.addWidget(self._line_edit_3)
+
+        self._socket_widget: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self,
+                                                         parent=self._content_widget)
+        self._content_layout.addWidget(self._socket_widget)
 
         self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content.setWidget(self._content_widget)
@@ -358,26 +375,6 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             socket_pos_3: QtCore.QPointF = QtCore.QPointF(self._width, self._line_edit_3.y() + self._header_height +
                                                           self._content_padding + self._line_edit_1.height()/2)
             painter.drawPoints([socket_pos_1, socket_pos_2, socket_pos_3])
-
-
-# class MyGraphicsWidget(QtWidgets.QGraphicsWidget):
-#     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None,
-#                  wFlags: QtCore.Qt.WindowFlags = QtCore.Qt.Window):
-#         super().__init__(parent, wFlags)
-#
-#         self.setGeometry(QtCore.QRectF(0, 0, 200, 100))
-
-    # def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-    #           widget: Optional[QtWidgets.QWidget] = None) -> None:
-    #     super().paint(painter, option, widget)
-    #     painter.setPen(QtGui.QPen(QtGui.QColor("red")))
-    #     painter.drawRoundedRect(0, 0, 200, 100, 5, 5)
-
-    # def paintWindowFrame(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-    #                      widget: Optional[QtWidgets.QWidget] = None) -> None:
-    #     super().paintWindowFrame(painter, option, widget)
-    #     painter.setPen(QtGui.QPen(QtGui.QColor("red")))
-    #     painter.drawRoundedRect(20, 20, self.boundingRect().width() - 40, self.boundingRect().height() - 40, 5, 5)
 
 
 if __name__ == "__main__":
