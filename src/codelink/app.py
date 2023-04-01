@@ -116,12 +116,16 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, socket_type: object = int, parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
+    def __init__(self, socket_type: object = int, is_input: bool = True,
+                 parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
         self._socket_type: object = socket_type
+        self._is_input: bool = is_input
         self._parent_graphics_item: QtWidgets.QGraphicsItem = parent_graphics_item
+
+        self._socket_pin_size: int = 12
 
         self._socket_pin_default_background_color: QtGui.QColor = QtGui.QColor("#00D6A3")
         self._socket_pin_default_border_color: QtGui.QColor = QtGui.QColor("black")
@@ -130,17 +134,28 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_pin_pen: QtGui.QPen = QtGui.QPen(self._socket_pin_default_border_color)
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self._layout.setMargin(0)
+        self._layout.setSpacing(0)
         self.setLayout(self._layout)
 
-        self._socket_pin_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(0, 0, 15, 15)
+        socket_pin_item_rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._socket_pin_size, self._socket_pin_size)
+        self._socket_pin_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(socket_pin_item_rect)
         self._socket_pin_item.setBrush(self._socket_pin_brush)
         self._socket_pin_item.setPen(self._socket_pin_pen)
         self._socket_pin_item.setParentItem(self._parent_graphics_item)
-        self._socket_pin_item.setPos(0, 0)
 
         self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
         self._socket_input_widget.setPlaceholderText("Enter integer")
+        self.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
+
         self._layout.addWidget(self._socket_input_widget)
+
+    def set_socket_pin_item_y(self, y_pos: float = 0) -> None:
+        if self._is_input:
+            self._socket_pin_item.setPos(-self._socket_pin_size / 2, y_pos)
+        else:
+            self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() - self._socket_pin_size / 2,
+                                         y_pos)
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
@@ -162,8 +177,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._max_height: int = 80
         self._height: int = self._max_height
         self._header_height: int = 25
-        self._corner_radius: int = 5
         self._content_padding: int = 10
+        self._content_y_offset: int = self._header_height + self._content_padding
+        self._corner_radius: int = 5
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -217,32 +233,28 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._line_edit_1.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
         self._content_layout.addWidget(self._line_edit_1)
 
-        self._line_edit_2: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
-        self._line_edit_2.setPlaceholderText("Enter value")
-        self._line_edit_2.setMinimumWidth(10)
-        self._line_edit_2.setFont(self._default_font)
-        self._line_edit_2.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_2)
-
-        self._line_edit_3: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
-        self._line_edit_3.setPlaceholderText("Enter value")
-        self._line_edit_3.setMinimumWidth(10)
-        self._line_edit_3.setFont(self._default_font)
-        self._line_edit_3.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_3)
-
-        self._socket_widget: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self,
-                                                         parent=self._content_widget)
-        self._content_layout.addWidget(self._socket_widget)
+        self._socket_widget_1: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self)
+        self._content_layout.addWidget(self._socket_widget_1)
+        self._socket_widget_2: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self)
+        self._content_layout.addWidget(self._socket_widget_2)
+        self._socket_widget_3: SocketWidget = SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self)
+        self._content_layout.addWidget(self._socket_widget_3)
 
         self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content.setWidget(self._content_widget)
+
+        y_pos_1 = self._content_y_offset + self._socket_widget_1.y() + (self._socket_widget_1.height() - 12) / 2
+        self._socket_widget_1.set_socket_pin_item_y(y_pos_1)
+        y_pos_2 = self._content_y_offset + self._socket_widget_2.y() + (self._socket_widget_2.height() - 12) / 2
+        self._socket_widget_2.set_socket_pin_item_y(y_pos_2)
+        y_pos_3 = self._content_y_offset + self._socket_widget_3.y() + (self._socket_widget_3.height() - 12) / 2
+        self._socket_widget_3.set_socket_pin_item_y(y_pos_3)
+
         self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
                                                           self._header_height + self._content_padding,
                                                           self._width - 2 * self._content_padding,
                                                           self._content_widget.height())
         self._content.setGeometry(self._content_rect)
-
         self._height = (self._header_height + self._content_padding + self._content_widget.height() +
                         self._content_padding)
 
@@ -295,11 +307,26 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                         self._collapse_item.setPlainText("<")
                         self._content.hide()
                         self._height = self._min_height
+
+                        self._socket_widget_1.set_socket_pin_item_y((25 - 12) / 2)
+                        self._socket_widget_2.set_socket_pin_item_y((25 - 12) / 2)
+                        self._socket_widget_3.set_socket_pin_item_y((25 - 12) / 2)
+
                     else:
                         self._collapse_item.setPlainText(">")
                         self._content.show()
                         self._height = (self._header_height + self._content_padding + self._content_widget.height() +
                                         self._content_padding)
+
+                        y_pos_1 = self._content_y_offset + self._socket_widget_1.y() + (
+                                self._socket_widget_1.height() - 12) / 2
+                        self._socket_widget_1.set_socket_pin_item_y(y_pos_1)
+                        y_pos_2 = self._content_y_offset + self._socket_widget_2.y() + (
+                                self._socket_widget_2.height() - 12) / 2
+                        self._socket_widget_2.set_socket_pin_item_y(y_pos_2)
+                        y_pos_3 = self._content_y_offset + self._socket_widget_3.y() + (
+                                self._socket_widget_3.height() - 12) / 2
+                        self._socket_widget_3.set_socket_pin_item_y(y_pos_3)
 
                     self._is_collapsed = not self._is_collapsed
 
@@ -365,16 +392,13 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
         if not self._is_collapsed:
-            pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
-            pen_green.setWidth(10)
-            painter.setPen(pen_green)
-            socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
-                                                          self._content_padding + self._line_edit_1.height()/2)
-            socket_pos_2: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_2.y() + self._header_height +
-                                                          self._content_padding + self._line_edit_1.height()/2)
-            socket_pos_3: QtCore.QPointF = QtCore.QPointF(self._width, self._line_edit_3.y() + self._header_height +
-                                                          self._content_padding + self._line_edit_1.height()/2)
-            painter.drawPoints([socket_pos_1, socket_pos_2, socket_pos_3])
+            pass
+            # pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
+            # pen_green.setWidth(10)
+            # painter.setPen(pen_green)
+            # socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
+            #                                               self._content_padding + self._line_edit_1.height()/2)
+            # painter.drawPoints([socket_pos_1])
 
 
 if __name__ == "__main__":
