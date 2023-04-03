@@ -129,7 +129,6 @@ class SocketWidget(QtWidgets.QWidget):
 
         self._socket_pin_default_background_color: QtGui.QColor = QtGui.QColor("#00D6A3")
         self._socket_pin_default_border_color: QtGui.QColor = QtGui.QColor("black")
-
         self._socket_pin_brush: QtGui.QBrush = QtGui.QBrush(self._socket_pin_default_background_color)
         self._socket_pin_pen: QtGui.QPen = QtGui.QPen(self._socket_pin_default_border_color)
 
@@ -144,10 +143,37 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_pin_item.setPen(self._socket_pin_pen)
         self._socket_pin_item.setParentItem(self._parent_graphics_item)
 
-        self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-        self._socket_input_widget.setPlaceholderText("Enter integer")
-        self.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 5px;")
+        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel("In", self)
+        self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
+        self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
+        self._socket_label_widget.setStyleSheet(
+            "margin: 1px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "padding-left: 10px;"
+            "padding-right: 10px;"
+            "border-top-left-radius: 5px;"
+            "border-bottom-left-radius: 5px;"
+            "color: #E5E5E5;"
+            "background-color: #545454;"
+        )
+        self._layout.addWidget(self._socket_label_widget)
 
+        self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+        self._socket_input_widget.setFont(self._parent_graphics_item.default_font)
+        self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
+        self._socket_input_widget.setPlaceholderText("Enter integer")
+        self._socket_input_widget.setStyleSheet(
+            "margin: 1px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "padding-left: 10px;"
+            "padding-right: 10px;"
+            "border-top-right-radius: 5px;"
+            "border-bottom-right-radius: 5px;"
+            "color: #E5E5E5;"
+            "background-color: #545454;"
+        )
         self._layout.addWidget(self._socket_input_widget)
 
     def update_socket_pin_item(self) -> None:
@@ -190,7 +216,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._max_height: int = 80
         self._height: int = self._max_height
         self._header_height: int = 25
-        self._content_padding: int = 10
+        self._content_padding: int = 8
         self._content_y_pos: int = self._header_height + self._content_padding
         self._corner_radius: int = 5
 
@@ -200,7 +226,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._default_font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
-        self._default_font: QtGui.QFont = QtGui.QFont()  # QtGui.QFont("Sans Serif", 6)
+        self._default_font: QtGui.QFont = QtGui.QFont("Sans Serif", 7)
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
@@ -239,6 +265,22 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content_layout.setMargin(0)
         self._content_layout.setSpacing(5)
         self._content_widget.setLayout(self._content_layout)
+
+        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox(self._content_widget)
+        self._option_box.setFont(self._default_font)
+
+        self._option_box.addItems(["Option 1", "Option 2"])
+        self._option_box.setStyleSheet(
+            "margin: 1px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "padding-left: 10px;"
+            "padding-right: 10px;"
+            "border-radius: 5px;"
+            "color: #E5E5E5;"
+            "background-color: #282828;"
+        )
+        self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
             SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self, parent=self._content_widget),
@@ -285,6 +327,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
     @ property
     def content_y_pos(self) -> float:
         return self._content_y_pos
+
+    @ property
+    def default_font(self) -> QtGui.QFont:
+        return self._default_font
+
+    @property
+    def default_font_color(self) -> QtGui.QColor:
+        return self._default_font_color
 
     def update_socket_pin_items(self) -> None:
         for widget in self._socket_widgets:
