@@ -146,16 +146,29 @@ class SocketWidget(QtWidgets.QWidget):
 
         self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
         self._socket_input_widget.setPlaceholderText("Enter integer")
-        self.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
+        self.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 5px;")
 
         self._layout.addWidget(self._socket_input_widget)
 
-    def set_socket_pin_item_y(self, y_pos: float = 0) -> None:
-        if self._is_input:
-            self._socket_pin_item.setPos(-self._socket_pin_size / 2, y_pos)
+    def update_socket_pin_item(self) -> None:
+        if not self._parent_graphics_item.is_collapsed:
+            y_pos: float = (self._parent_graphics_item.content_y_pos + self.y() +
+                            (self.height() - self._socket_pin_size) / 2)
+            if self._is_input:
+                self._socket_pin_item.setPos(-self._socket_pin_size / 2, y_pos)
+            else:
+                self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
+                                             self._socket_pin_size / 2, y_pos)
+            # self._socket_pin_item.show()
+
         else:
-            self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() - self._socket_pin_size / 2,
-                                         y_pos)
+            y_pos: float = (self._parent_graphics_item.header_height - self._socket_pin_size) / 2
+            if self._is_input:
+                self._socket_pin_item.setPos(-self._socket_pin_size / 2, y_pos)
+            else:
+                self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
+                                             self._socket_pin_size / 2, y_pos)
+            # self._socket_pin_item.hide()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
@@ -178,7 +191,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._height: int = self._max_height
         self._header_height: int = 25
         self._content_padding: int = 10
-        self._content_y_offset: int = self._header_height + self._content_padding
+        self._content_y_pos: int = self._header_height + self._content_padding
         self._corner_radius: int = 5
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
@@ -191,6 +204,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
+
+        self._socket_widgets: list = []
 
         self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
         self._shadow.setColor(QtGui.QColor("black"))
@@ -223,40 +238,26 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         self._content_layout.setMargin(0)
         self._content_layout.setSpacing(5)
-
         self._content_widget.setLayout(self._content_layout)
 
-        self._line_edit_1: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
-        self._line_edit_1.setPlaceholderText("Enter value")
-        self._line_edit_1.setMinimumWidth(10)
-        self._line_edit_1.setFont(self._default_font)
-        self._line_edit_1.setStyleSheet("background-color: #545454; color: #E5E5E5; border: 0px; border-radius: 3px;")
-        self._content_layout.addWidget(self._line_edit_1)
-
-        self._socket_widget_1: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self)
-        self._content_layout.addWidget(self._socket_widget_1)
-        self._socket_widget_2: SocketWidget = SocketWidget(socket_type=int, parent_graphics_item=self)
-        self._content_layout.addWidget(self._socket_widget_2)
-        self._socket_widget_3: SocketWidget = SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self)
-        self._content_layout.addWidget(self._socket_widget_3)
+        self._socket_widgets: list = [
+            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self, parent=self._content_widget),
+            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self, parent=self._content_widget),
+            SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self, parent=self._content_widget)
+        ]
+        for widget in self._socket_widgets:
+            self._content_layout.addWidget(widget)
 
         self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content.setWidget(self._content_widget)
-
-        y_pos_1 = self._content_y_offset + self._socket_widget_1.y() + (self._socket_widget_1.height() - 12) / 2
-        self._socket_widget_1.set_socket_pin_item_y(y_pos_1)
-        y_pos_2 = self._content_y_offset + self._socket_widget_2.y() + (self._socket_widget_2.height() - 12) / 2
-        self._socket_widget_2.set_socket_pin_item_y(y_pos_2)
-        y_pos_3 = self._content_y_offset + self._socket_widget_3.y() + (self._socket_widget_3.height() - 12) / 2
-        self._socket_widget_3.set_socket_pin_item_y(y_pos_3)
-
         self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
                                                           self._header_height + self._content_padding,
                                                           self._width - 2 * self._content_padding,
                                                           self._content_widget.height())
+
         self._content.setGeometry(self._content_rect)
-        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
-                        self._content_padding)
+        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+        self.update_socket_pin_items()
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
@@ -272,6 +273,22 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             cropped_text: str = cropped_text[:len(text)]
 
         return cropped_text
+
+    @ property
+    def header_height(self) -> int:
+        return self._header_height
+
+    @ property
+    def is_collapsed(self) -> bool:
+        return self._is_collapsed
+
+    @ property
+    def content_y_pos(self) -> float:
+        return self._content_y_pos
+
+    def update_socket_pin_items(self) -> None:
+        for widget in self._socket_widgets:
+            widget.update_socket_pin_item()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -308,27 +325,14 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                         self._content.hide()
                         self._height = self._min_height
 
-                        self._socket_widget_1.set_socket_pin_item_y((25 - 12) / 2)
-                        self._socket_widget_2.set_socket_pin_item_y((25 - 12) / 2)
-                        self._socket_widget_3.set_socket_pin_item_y((25 - 12) / 2)
-
                     else:
                         self._collapse_item.setPlainText(">")
                         self._content.show()
                         self._height = (self._header_height + self._content_padding + self._content_widget.height() +
                                         self._content_padding)
 
-                        y_pos_1 = self._content_y_offset + self._socket_widget_1.y() + (
-                                self._socket_widget_1.height() - 12) / 2
-                        self._socket_widget_1.set_socket_pin_item_y(y_pos_1)
-                        y_pos_2 = self._content_y_offset + self._socket_widget_2.y() + (
-                                self._socket_widget_2.height() - 12) / 2
-                        self._socket_widget_2.set_socket_pin_item_y(y_pos_2)
-                        y_pos_3 = self._content_y_offset + self._socket_widget_3.y() + (
-                                self._socket_widget_3.height() - 12) / 2
-                        self._socket_widget_3.set_socket_pin_item_y(y_pos_3)
-
                     self._is_collapsed = not self._is_collapsed
+                    self.update_socket_pin_items()
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
@@ -351,6 +355,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                                                               self._width - 2 * self._content_padding,
                                                               self._content_widget.height())
             self._content.setGeometry(self._content_rect)
+
+            self.update_socket_pin_items()
+
         else:
             super().mouseMoveEvent(event)
 
