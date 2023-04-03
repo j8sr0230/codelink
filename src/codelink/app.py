@@ -310,7 +310,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 border-bottom-left-radius: 0px;
             }
             QComboBox::down-arrow {
-                image: url(qss:./icons/down_arrow_light.svg);
+                image: url(qss:images_dark-light/down_arrow_light.svg);
             }
         """)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
