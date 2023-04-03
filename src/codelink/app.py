@@ -147,15 +147,20 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
         self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
         self._socket_label_widget.setStyleSheet(
-            "margin: 1px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "padding-left: 10px;"
-            "padding-right: 10px;"
-            "border-top-left-radius: 5px;"
-            "border-bottom-left-radius: 5px;"
             "color: #E5E5E5;"
             "background-color: #545454;"
+            "margin-left: 0px;"
+            "margin-right: 1px;"
+            "margin-top: 0px;"
+            "margin-bottom: 0px;"
+            "padding-left: 10px;"
+            "padding-right: 10px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "border-top-left-radius: 5px;"
+            "border-bottom-left-radius: 5px;"
+            "border-top-right-radius: 0px;"
+            "border-bottom-right-radius: 0px;"
         )
         self._layout.addWidget(self._socket_label_widget)
 
@@ -165,15 +170,20 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
         self._socket_input_widget.setPlaceholderText("Enter integer")
         self._socket_input_widget.setStyleSheet(
-            "margin: 1px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "padding-left: 10px;"
-            "padding-right: 10px;"
-            "border-top-right-radius: 5px;"
-            "border-bottom-right-radius: 5px;"
             "color: #E5E5E5;"
             "background-color: #545454;"
+            "margin-left: 1px;"
+            "margin-right: 0px;"
+            "margin-top: 0px;"
+            "margin-bottom: 0px;"
+            "padding-left: 10px;"
+            "padding-right: 10px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "border-top-left-radius: 0px;"
+            "border-bottom-left-radius: 0px;"
+            "border-top-right-radius: 5px;"
+            "border-bottom-right-radius: 5px;"
         )
         self._layout.addWidget(self._socket_input_widget)
 
@@ -272,23 +282,42 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._default_font)
         self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
+        # self._option_box.setItemDelegate(QtWidgets.QStyledItemDelegate())
         self._option_box.setStyleSheet(
             "color: #E5E5E5;"
             "background-color: #282828;"
             "border-radius: 5px;"
             "padding-left: 10px;"
+            "padding-right: 0px;"
+            "padding-top: 0px;"
+            "padding-bottom: 0px;"
+            "margin: 0px"
         )
-
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
-        item_list_view.setStyleSheet(
-            "color: #E5E5E5;"
-            "selection-color: #E5E5E5;"
-            "background-color:  #282828;"
-            "selection-background-color:  #4772B3;"
-            "border-radius: 5px;"
-            "padding-left: 5px;"
-        )
+        item_list_view.setStyleSheet("""
+            QAbstractItemView {
+                color: #E5E5E5;
+                selection-color: #E5E5E5;
+                background-color: #282828;
+                selection-background-color: #4772B3;
+                border-radius: 5px;
+                padding-left: 5px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px
+            }
+        """)
+
+        #     QAbstractItemView::item {
+        #         color: #E5E5E5;
+        #         background-color: #282828;
+        #         border-radius: 0px;
+        #         padding-left: 0px;
+        #     }
+        # """)
+
         self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
