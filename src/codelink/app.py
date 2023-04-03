@@ -279,7 +279,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             "border-radius: 5px;"
             "color: #E5E5E5;"
             "background-color: #282828;"
+            "selection-background-color: lightgray;"
         )
+
         self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
