@@ -1,6 +1,0 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-    <qresource prefix="icons">
-        <file alias="down_arrow.svg">.\src\codelink\images_dark-light\down_arrow_light.svg</file>
-    </qresource>
-</RCC>
