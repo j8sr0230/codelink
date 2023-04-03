@@ -173,6 +173,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_input_widget.setStyleSheet(
             "color: #E5E5E5;"
             "background-color: #545454;"
+            "min-width: 5px;"
             "margin-left: 1px;"
             "margin-right: 0px;"
             "margin-top: 0px;"
@@ -290,6 +291,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 color: #E5E5E5;
                 background-color: #282828;
                 border-radius: 5px;
+                min-width: 5px;
                 padding-left: 10px;
                 padding-right: 0px;
                 padding-top: 0px;
@@ -308,7 +310,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 border-bottom-left-radius: 0px;
             }
             QComboBox::down-arrow {
-                image: url(icons/down_arrow_light.svg);
+                image: url(./icons/down_arrow_light.svg);
             }
         """)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
@@ -320,6 +322,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 background-color: #282828;
                 selection-background-color: #4772B3;
                 border-radius: 5px;
+                min-width: 20px;
                 padding-left: 5px;
                 padding-right: 0px;
                 padding-top: 0px;
