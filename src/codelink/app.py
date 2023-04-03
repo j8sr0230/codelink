@@ -285,17 +285,32 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._option_box.setFont(self._default_font)
         self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
         # self._option_box.setItemDelegate(QtWidgets.QStyledItemDelegate())
-        self._option_box.setStyleSheet(
-            "color: #E5E5E5;"
-            "background-color: #282828;"
-            "border-radius: 5px;"
-            "padding-left: 10px;"
-            "padding-right: 0px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "margin: 0px;"
-            "border: 0px;"
-        )
+        self._option_box.setStyleSheet("""
+            QComboBox {
+                color: #E5E5E5;
+                background-color: #282828;
+                border-radius: 5px;
+                padding-left: 10px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: 0px;
+            }
+            QComboBox::drop-down {
+                background-color: #545454;
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                width: 20px;
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-top-left-radius: 0px;
+                border-bottom-left-radius: 0px;
+            }
+            QComboBox::down-arrow {
+                image: url(icons/down_arrow_light.svg);
+            }
+        """)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
         item_list_view.setStyleSheet("""
