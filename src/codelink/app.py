@@ -161,6 +161,7 @@ class SocketWidget(QtWidgets.QWidget):
             "border-bottom-left-radius: 5px;"
             "border-top-right-radius: 0px;"
             "border-bottom-right-radius: 0px;"
+            "border: 0px;"
         )
         self._layout.addWidget(self._socket_label_widget)
 
@@ -184,6 +185,7 @@ class SocketWidget(QtWidgets.QWidget):
             "border-bottom-left-radius: 0px;"
             "border-top-right-radius: 5px;"
             "border-bottom-right-radius: 5px;"
+            "border: 0px;"
         )
         self._layout.addWidget(self._socket_input_widget)
 
@@ -291,7 +293,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
             "padding-right: 0px;"
             "padding-top: 0px;"
             "padding-bottom: 0px;"
-            "margin: 0px"
+            "margin: 0px;"
+            "border: 0px;"
         )
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
@@ -306,7 +309,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 padding-right: 0px;
                 padding-top: 0px;
                 padding-bottom: 0px;
-                margin: 0px
+                margin: 0px;
+                border: 0px;
             }
         """)
 
