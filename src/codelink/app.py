@@ -160,6 +160,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._layout.addWidget(self._socket_label_widget)
 
         self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+        self._socket_input_widget.setMinimumWidth(5)
         self._socket_input_widget.setFont(self._parent_graphics_item.default_font)
         self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
         self._socket_input_widget.setPlaceholderText("Enter integer")
@@ -207,7 +208,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._mode: str = ""
         self._is_collapsed: bool = False
 
-        self._title: str = "Curve"
+        self._title: str = "Sample Curve"
         self._title_x: int = 20
 
         self._min_width: int = 80
@@ -255,7 +256,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._title_item = QtWidgets.QGraphicsTextItem(self)
         self._title_item.setDefaultTextColor(self._default_font_color)
         self._title_item.setFont(self._default_font)
-        self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
+        self._title_item.setPlainText(self.crop_text(self._title, self._width - self._title_x - self._content_padding,
+                                                     self._default_font))
         self._title_item.setPos(self._title_x,
                                 (self._header_height - self._title_item.boundingRect().height()) / 2)
 
@@ -266,28 +268,33 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content_layout.setSpacing(5)
         self._content_widget.setLayout(self._content_layout)
 
-        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox(self._content_widget)
+        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._default_font)
-
-        self._option_box.addItems(["Option 1", "Option 2"])
+        self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
         self._option_box.setStyleSheet(
-            "margin: 1px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "padding-left: 10px;"
-            "padding-right: 10px;"
-            "border-radius: 5px;"
             "color: #E5E5E5;"
             "background-color: #282828;"
-            "selection-background-color: lightgray;"
+            "border-radius: 5px;"
+            "padding-left: 10px;"
         )
 
+        item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
+        item_list_view.setSpacing(2)
+        item_list_view.setStyleSheet(
+            "color: #E5E5E5;"
+            "selection-color: #E5E5E5;"
+            "background-color:  #282828;"
+            "selection-background-color:  #4772B3;"
+            "border-radius: 5px;"
+            "padding-left: 5px;"
+        )
         self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
-            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self, parent=self._content_widget),
-            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self, parent=self._content_widget),
-            SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self, parent=self._content_widget)
+            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self),
+            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self),
+            SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
@@ -309,7 +316,8 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
         cropped_text: str = "..."
         string_idx: int = 0
-        while font_metrics.horizontalAdvance(cropped_text) < width and string_idx < len(text):
+        while all([font_metrics.horizontalAdvance(cropped_text) < width - font_metrics.horizontalAdvance("..."),
+                   string_idx < len(text)]):
             cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
             string_idx += 1
 
@@ -401,7 +409,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
 
             self._width = new_width
             self._shadow.updateBoundingRect()
-            self._title_item.setPlainText(self.crop_text(self._title, self._width - 50, self._default_font))
+            self._title_item.setPlainText(
+                self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._default_font)
+            )
             self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
                                                               self._header_height + self._content_padding,
                                                               self._width - 2 * self._content_padding,
