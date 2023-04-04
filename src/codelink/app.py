@@ -96,11 +96,17 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 self._temp_edge[1] = self._last_item
                 print("Add edge (validate edge here)!")
 
-                if self._temp_edge[0].parentItem() is self._temp_edge[1].parentItem():
-                    print("Can't connect sockets of th same node!")
-
+                socket_type_start: object = self._temp_edge[0].parent_widget.socket_type
+                socket_type_end: object = self._temp_edge[1].parent_widget.socket_type
+                if socket_type_start == socket_type_end:
+                    if self._temp_edge[0].parentItem() is self._temp_edge[1].parentItem():
+                        print("Can't connect sockets of the same node!")
+                    else:
+                        print("Can connect!")
+                else:
+                    print("Can't connect!")
             else:
-                print("Remove temporary edge!")
+                print("No target - remove temporary edge!")
 
             self.scene().removeItem(temp_target_item)
             self._temp_edge = [None, None]
@@ -169,9 +175,11 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
 
 
 class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
-    def __init__(self, socket_color: str = "#00D6A3", parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(parent)
+    def __init__(self, socket_color: str = "#00D6A3", parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
+                 parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent_graphics_item)
 
+        self._parent_widget: Optional[QtWidgets.QWidget] = parent_widget
         self._socket_background_color: QtGui.QColor = QtGui.QColor(socket_color)
         self._socket_border_color: QtGui.QColor = QtGui.QColor("black")
 
@@ -190,6 +198,10 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
     @property
     def socket_size(self) -> int:
         return self._socket_size
+
+    @property
+    def parent_widget(self) -> QtWidgets.QWidget:
+        return self._parent_widget
 
     def boundingRect(self) -> QtCore.QRectF:
         # return QtCore.QRectF(0, 0, self._socket_size, self._socket_size)
@@ -240,7 +252,8 @@ class IntSocketWidget(QtWidgets.QWidget):
         self.setLayout(self._layout)
 
         self._socket_pin_item: SocketPinGraphicsItem = SocketPinGraphicsItem(socket_color="#00D6A3",
-                                                                             parent=parent_graphics_item)
+                                                                             parent_graphics_item=parent_graphics_item,
+                                                                             parent_widget=self)
 
         self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._socket_label, self)
         self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
@@ -303,6 +316,10 @@ class IntSocketWidget(QtWidgets.QWidget):
                 "border: 0px;"
             )
             self._layout.addWidget(self._socket_input_widget)
+
+    @property
+    def socket_type(self) -> object:
+        return self._socket_type
 
     def update_socket_pin_item(self) -> None:
         if not self._parent_graphics_item.is_collapsed:
