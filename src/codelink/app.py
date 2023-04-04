@@ -63,18 +63,21 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
+        self._last_scene_pos: QtCore.QPointF = self.mapToScene(event.pos())
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if self._mode == "EDGE_DRAG":
             if type(self._last_item) == SocketPinGraphicsItem:
                 snapping_pos: QtCore.QPointF = self._last_item.parentItem().mapToScene(self._last_item.pos())
-                self._temp_edge[1].setPos(snapping_pos)
+                snap_x: float = snapping_pos.x() + self._last_item.socket_size / 2
+                snap_y: float = snapping_pos.y() + self._last_item.socket_size / 2
+
+                self._temp_edge[1].setPos(snap_x, snap_y)
             else:
                 self._temp_edge[1].setPos(self._last_scene_pos)
 
         if self._mode == "SCENE_DRAG":
-            current_pos: QtCore.QPoint = self.mapToScene(event.pos())
+            current_pos: QtCore.QPointF = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_scene_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
@@ -91,10 +94,13 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
             temp_target_item: QtWidgets.QGraphicsItem = self._temp_edge[1]
             if type(self._last_item) == SocketPinGraphicsItem:
                 self._temp_edge[1] = self._last_item
-                # Validate edge here
-                print("Add edge")
+                print("Add edge (validate edge here)!")
+
+                if self._temp_edge[0].parentItem() is self._temp_edge[1].parentItem():
+                    print("Can't connect sockets of th same node!")
+
             else:
-                print("Remove temp edge")
+                print("Remove temporary edge!")
 
             self.scene().removeItem(temp_target_item)
             self._temp_edge = [None, None]
@@ -213,7 +219,7 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(self._socket_pen)
         painter.setBrush(self._socket_brush)
-        painter.drawEllipse(self.boundingRect())  # Snapping area
+        # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
         painter.drawEllipse(0, 0, self._socket_size, self._socket_size)
 
 
@@ -307,7 +313,7 @@ class IntSocketWidget(QtWidgets.QWidget):
             else:
                 self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
                                              self._socket_pin_item.socket_size / 2, y_pos)
-            # self._socket_pin_item.show()
+            self._socket_pin_item.show()
 
         else:
             y_pos: float = (self._parent_graphics_item.header_height - self._socket_pin_item.socket_size) / 2
@@ -316,7 +322,7 @@ class IntSocketWidget(QtWidgets.QWidget):
             else:
                 self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
                                              self._socket_pin_item.socket_size / 2, y_pos)
-            # self._socket_pin_item.hide()
+            self._socket_pin_item.hide()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
@@ -542,10 +548,12 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
                 self._mode: str = "RESIZE"
                 self.setCursor(QtCore.Qt.SizeHorCursor)
 
-            collapse_item_left: float = self._collapse_item.x()
-            collapse_item_right: float = self._collapse_item.x() + self._collapse_item.boundingRect().width()
-            collapse_item_top: float = self._collapse_item.y()
-            collapse_item_bottom: float = self._collapse_item.y() + self._collapse_item.boundingRect().height()
+            collapse_item_left: float = 0  # self._collapse_item.x()
+            collapse_item_right: float = self._title_x
+            # collapse_item_right: float = self._collapse_item.x() + self._collapse_item.boundingRect().width()
+            collapse_item_top: float = 0  # self._collapse_item.y()
+            collapse_item_bottom: float = self._header_height
+            # collapse_item_bottom: float = self._collapse_item.y() + self._collapse_item.boundingRect().height()
 
             if collapse_item_left <= event.pos().x() <= collapse_item_right:
                 if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
