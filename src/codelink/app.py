@@ -116,12 +116,13 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         painter.drawPoints(points)
 
 
-class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, socket_type: object = int, is_input: bool = True,
+class IntSocketWidget(QtWidgets.QWidget):
+    def __init__(self, socket_label: str = "In", socket_type: object = int, is_input: bool = True,
                  parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
+        self._socket_label: str = socket_label
         self._socket_type: object = socket_type
         self._is_input: bool = is_input
         self._parent_graphics_item: QtWidgets.QGraphicsItem = parent_graphics_item
@@ -144,52 +145,67 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_pin_item.setPen(self._socket_pin_pen)
         self._socket_pin_item.setParentItem(self._parent_graphics_item)
 
-        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel("In", self)
+        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._socket_label, self)
         self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
-        self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
-        self._socket_label_widget.setStyleSheet(
-            "color: #E5E5E5;"
-            "background-color: #545454;"
-            "margin-left: 0px;"
-            "margin-right: 1px;"
-            "margin-top: 0px;"
-            "margin-bottom: 0px;"
-            "padding-left: 10px;"
-            "padding-right: 10px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "border-top-left-radius: 5px;"
-            "border-bottom-left-radius: 5px;"
-            "border-top-right-radius: 0px;"
-            "border-bottom-right-radius: 0px;"
-            "border: 0px;"
-        )
+        if self._is_input:
+            self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._socket_label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #545454;"
+                "margin-left: 0px;"
+                "margin-right: 1px;"
+                "margin-top: 0px;"
+                "margin-bottom: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-top-left-radius: 5px;"
+                "border-bottom-left-radius: 5px;"
+                "border-top-right-radius: 0px;"
+                "border-bottom-right-radius: 0px;"
+                "border: 0px;"
+            )
+        else:
+            self._socket_label_widget.setAlignment(QtCore.Qt.AlignRight)
+            self._socket_label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #303030;"
+                "margin: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-radius: 0px;"
+                "border: 0px;"
+            )
         self._layout.addWidget(self._socket_label_widget)
 
-        self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-        self._socket_input_widget.setMinimumWidth(5)
-        self._socket_input_widget.setFont(self._parent_graphics_item.default_font)
-        self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
-        self._socket_input_widget.setPlaceholderText("Enter integer")
-        self._socket_input_widget.setStyleSheet(
-            "color: #E5E5E5;"
-            "background-color: #545454;"
-            "min-width: 5px;"
-            "margin-left: 1px;"
-            "margin-right: 0px;"
-            "margin-top: 0px;"
-            "margin-bottom: 0px;"
-            "padding-left: 10px;"
-            "padding-right: 10px;"
-            "padding-top: 0px;"
-            "padding-bottom: 0px;"
-            "border-top-left-radius: 0px;"
-            "border-bottom-left-radius: 0px;"
-            "border-top-right-radius: 5px;"
-            "border-bottom-right-radius: 5px;"
-            "border: 0px;"
-        )
-        self._layout.addWidget(self._socket_input_widget)
+        if self._is_input:
+            self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+            self._socket_input_widget.setMinimumWidth(5)
+            self._socket_input_widget.setFont(self._parent_graphics_item.default_font)
+            self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._socket_input_widget.setPlaceholderText("Enter integer")
+            self._socket_input_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #545454;"
+                "min-width: 5px;"
+                "margin-left: 1px;"
+                "margin-right: 0px;"
+                "margin-top: 0px;"
+                "margin-bottom: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-top-left-radius: 0px;"
+                "border-bottom-left-radius: 0px;"
+                "border-top-right-radius: 5px;"
+                "border-bottom-right-radius: 5px;"
+                "border: 0px;"
+            )
+            self._layout.addWidget(self._socket_input_widget)
 
     def update_socket_pin_item(self) -> None:
         if not self._parent_graphics_item.is_collapsed:
@@ -215,25 +231,27 @@ class SocketWidget(QtWidgets.QWidget):
         super().paintEvent(event)
 
 
-class MyGraphicsItem(QtWidgets.QGraphicsItem):
+class GraphicsNodeItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         self._mode: str = ""
         self._is_collapsed: bool = False
 
-        self._title: str = "Sample Curve"
+        self._title: str = "Skalar Math"
         self._title_x: int = 20
 
         self._min_width: int = 80
         self._width: int = 160
-        self._min_height: int = 25
+
         self._max_height: int = 80
-        self._height: int = self._max_height
         self._header_height: int = 25
+        self._height: int = self._max_height
+        self._min_height: int = self._header_height
+
         self._content_padding: int = 8
-        self._content_y_pos: int = self._header_height + self._content_padding
         self._corner_radius: int = 5
+        self._content_y_pos: int = self._header_height + self._content_padding
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -259,13 +277,17 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
-        self._collapse_item = QtWidgets.QGraphicsTextItem(self)
-        self._collapse_item.setDefaultTextColor(self._default_font_color)
-        self._collapse_item.setFont(self._default_font)
-        self._collapse_item.setPlainText(">")
-        collapse_item_x = (self._title_x - QtGui.QFontMetrics(self._default_font).horizontalAdvance(">")) / 2
-        self._collapse_item.setPos(collapse_item_x,
-                                   (self._header_height - self._collapse_item.boundingRect().height()) / 2)
+        self._collapse_image_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
+        self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_image_down)
+        self._collapse_image_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_image_up)
+
+        self._collapse_item: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
+        self._collapse_item.setParentItem(self)
+        self._collapse_item.setPixmap(self._collapse_pixmap_down)
+        item_x = ((self._title_x + self._collapse_item.boundingRect().width() / 2) -
+                  self._collapse_item.boundingRect().width()) / 2
+        self._collapse_item.setPos(item_x, (self._header_height - self._collapse_item.boundingRect().height()) / 2)
 
         self._title_item = QtWidgets.QGraphicsTextItem(self)
         self._title_item.setDefaultTextColor(self._default_font_color)
@@ -285,7 +307,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._default_font)
-        self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
+        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Power"])
         # self._option_box.setItemDelegate(QtWidgets.QStyledItemDelegate())
         self._option_box.setStyleSheet("""
             QComboBox {
@@ -293,6 +315,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 background-color: #282828;
                 border-radius: 5px;
                 min-width: 5px;
+                min-height:  24px;
                 padding-left: 10px;
                 padding-right: 0px;
                 padding-top: 0px;
@@ -325,6 +348,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 selection-background-color: #4772B3;
                 border-radius: 5px;
                 min-width: 20px;
+                min-height: 24px;
                 padding-left: 5px;
                 padding-right: 0px;
                 padding-top: 0px;
@@ -345,9 +369,9 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
-            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self),
-            SocketWidget(socket_type=int, is_input=True, parent_graphics_item=self),
-            SocketWidget(socket_type=int, is_input=False, parent_graphics_item=self)
+            IntSocketWidget(socket_label="A", socket_type=int, is_input=True, parent_graphics_item=self),
+            IntSocketWidget(socket_label="B", socket_type=int, is_input=True, parent_graphics_item=self),
+            IntSocketWidget(socket_label="Res", socket_type=int, is_input=False, parent_graphics_item=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
@@ -362,7 +386,6 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content.setGeometry(self._content_rect)
         self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
         self.update_socket_pin_items()
-        print(self._option_box.height(), self._socket_widgets[0].height(), self._socket_widgets[1].height())
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
@@ -435,12 +458,12 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
                     self._mode: str = "COLLAPSE"
                     if not self._is_collapsed:
-                        self._collapse_item.setPlainText("<")
+                        self._collapse_item.setPixmap(self._collapse_pixmap_up)
                         self._content.hide()
                         self._height = self._min_height
 
                     else:
-                        self._collapse_item.setPlainText(">")
+                        self._collapse_item.setPixmap(self._collapse_pixmap_down)
                         self._content.show()
                         self._height = (self._header_height + self._content_padding + self._content_widget.height() +
                                         self._content_padding)
@@ -538,11 +561,11 @@ if __name__ == "__main__":
     cl_graphics_view.resize(1200, 600)
     cl_graphics_view.show()
 
-    my_item_1 = MyGraphicsItem()
+    my_item_1 = GraphicsNodeItem()
     cl_graphics_scene.addItem(my_item_1)
     my_item_1.setPos(QtCore.QPointF(31900, 32000))
 
-    my_item_2 = MyGraphicsItem()
+    my_item_2 = GraphicsNodeItem()
     cl_graphics_scene.addItem(my_item_2)
     my_item_2.setPos(QtCore.QPointF(32200, 32050))
 
