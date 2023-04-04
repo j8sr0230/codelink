@@ -1,3 +1,4 @@
+import os
 import sys
 import math
 from typing import Optional, Any
@@ -310,7 +311,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
                 border-bottom-left-radius: 0px;
             }
             QComboBox::down-arrow {
-                image: url(images_dark-light/down_arrow_light.svg);
+                image: url(icon:images_dark-light/down_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
             }
         """)
@@ -527,6 +528,7 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
+    QtCore.QDir.addSearchPath('icon', os.path.abspath(os.path.dirname(__file__)))
 
     cl_graphics_scene: CLGraphicsScene = CLGraphicsScene()
     cl_graphics_view: CLGraphicsView = CLGraphicsView()
