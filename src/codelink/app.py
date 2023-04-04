@@ -44,34 +44,36 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.LeftButton:
             self._left_mouse_pressed: bool = True
 
-            print(type(self._last_item))
-
             if type(self._last_item) == SocketPinGraphicsItem:
-                self._mode: str = "EDGE"
+                self._mode: str = "EDGE_DRAG"
                 self._temp_edge[0]: QtWidgets.QGraphicsItem = self._last_item
 
-                temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-2, -2, 4, 4)
+                temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-10, -10, 20, 20)
                 temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
                 temp_target_item.setBrush(self._temp_edge[0].socket_background_color)
                 temp_target_item.setZValue(-1)
                 self._temp_edge[1] = temp_target_item
                 self.scene().addItem(self._temp_edge[1])
 
-            if type(self._last_item) == GraphicsNodeItem:
-                self._mode: str = "MOVE"
-                self._last_item.setZValue(1)
-
         if event.button() == QtCore.Qt.MiddleButton:
+            self._mode: str = "SCENE_DRAG"
             self._middle_mouse_pressed: bool = True
             self.setCursor(QtCore.Qt.SizeAllCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        if self._left_mouse_pressed and self._mode == "EDGE":
-            self._temp_edge[1].setPos(self.mapToScene(event.pos()))
+        self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
+        self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if self._middle_mouse_pressed:
+        if self._mode == "EDGE_DRAG":
+            if type(self._last_item) == SocketPinGraphicsItem:
+                snapping_pos: QtCore.QPointF = self._last_item.parentItem().mapToScene(self._last_item.pos())
+                self._temp_edge[1].setPos(snapping_pos)
+            else:
+                self._temp_edge[1].setPos(self._last_scene_pos)
+
+        if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_scene_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
@@ -82,33 +84,25 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
+        self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if self._left_mouse_pressed:
-            if self._mode == "EDGE":
-                temp_target_item: QtWidgets.QGraphicsItem = self._temp_edge[1]
-                if type(self._last_item) == SocketPinGraphicsItem:
-                    self._temp_edge[1] = self._last_item
-                    # Validate edge here
-                    print("Finish Edge")
-                else:
-                    print("Remove temp edge")
+        if self._mode == "EDGE_DRAG":
+            temp_target_item: QtWidgets.QGraphicsItem = self._temp_edge[1]
+            if type(self._last_item) == SocketPinGraphicsItem:
+                self._temp_edge[1] = self._last_item
+                # Validate edge here
+                print("Add edge")
+            else:
+                print("Remove temp edge")
 
-                self.scene().removeItem(temp_target_item)
-                self._temp_edge = [None, None]
+            self.scene().removeItem(temp_target_item)
+            self._temp_edge = [None, None]
 
-            if self._mode == "MOVE":
-                intersection_items: list = self.scene().collidingItems(self._last_item)
-                self._last_item.setZValue(0)
-                for item in intersection_items:
-                    item.stackBefore(self._last_item)
-
-            self._left_mouse_pressed: bool = False
-            self._mode: str = ""
-
-        if self._middle_mouse_pressed:
-            self._middle_mouse_pressed: bool = False
-            self.setCursor(QtCore.Qt.ArrowCursor)
+        self._mode: str = ""
+        self._left_mouse_pressed: bool = False
+        self._middle_mouse_pressed: bool = False
+        self.setCursor(QtCore.Qt.ArrowCursor)
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
@@ -192,7 +186,9 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
         return self._socket_size
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._socket_size, self._socket_size)
+        # return QtCore.QRectF(0, 0, self._socket_size, self._socket_size)
+        return QtCore.QRectF(-self._socket_size / 2, -self._socket_size / 2,
+                             2 * self._socket_size, 2 * self._socket_size)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
@@ -217,6 +213,7 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(self._socket_pen)
         painter.setBrush(self._socket_brush)
+        painter.drawEllipse(self.boundingRect())  # Snapping area
         painter.drawEllipse(0, 0, self._socket_size, self._socket_size)
 
 
@@ -538,6 +535,8 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
 
+        self.setZValue(1)
+
         if event.button() == QtCore.Qt.LeftButton:
             if event.pos().x() > self.boundingRect().width() - 10:
                 self._mode: str = "RESIZE"
@@ -596,6 +595,14 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
 
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
+
+        intersection_items: list = self.scene().collidingItems(self)
+        self.setZValue(0)
+
+        for item in intersection_items:
+            if type(item) == self.__class__:
+                item.stackBefore(self)
+
         self._mode = ""
         self.setCursor(QtCore.Qt.ArrowCursor)
 
