@@ -38,7 +38,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)
 
-        self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
+        self._last_scene_pos: QtCore.QPointF = self.mapToScene(event.pos())
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if event.button() == QtCore.Qt.LeftButton:
@@ -63,7 +63,6 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        self._last_scene_pos: QtCore.QPointF = self.mapToScene(event.pos())
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if self._mode == "EDGE_DRAG":
@@ -74,15 +73,15 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
                 self._temp_edge[1].setPos(snap_x, snap_y)
             else:
-                self._temp_edge[1].setPos(self._last_scene_pos)
+                self._temp_edge[1].setPos(self.mapToScene(event.pos()))
 
         if self._mode == "SCENE_DRAG":
-            current_pos: QtCore.QPointF = self.mapToScene(event.pos())
+            current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_scene_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-            self._last_scene_pos = self.mapToScene(event.pos())
+            self._last_scene_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -219,6 +218,7 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
+        self.setCursor(QtCore.Qt.CrossCursor)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
