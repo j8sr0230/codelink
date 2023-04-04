@@ -362,6 +362,7 @@ class MyGraphicsItem(QtWidgets.QGraphicsItem):
         self._content.setGeometry(self._content_rect)
         self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
         self.update_socket_pin_items()
+        print(self._option_box.height(), self._socket_widgets[0].height(), self._socket_widgets[1].height())
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
