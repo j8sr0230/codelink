@@ -44,6 +44,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.LeftButton:
             self._left_mouse_pressed: bool = True
 
+            print(type(self._last_item))
+
             if type(self._last_item) == SocketPinGraphicsItem:
                 self._mode: str = "EDGE"
                 self._temp_edge[0]: QtWidgets.QGraphicsItem = self._last_item
@@ -51,8 +53,13 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-2, -2, 4, 4)
                 temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
                 temp_target_item.setBrush(self._temp_edge[0].socket_background_color)
+                temp_target_item.setZValue(-1)
                 self._temp_edge[1] = temp_target_item
                 self.scene().addItem(self._temp_edge[1])
+
+            if type(self._last_item) == GraphicsNodeItem:
+                self._mode: str = "MOVE"
+                self._last_item.setZValue(1)
 
         if event.button() == QtCore.Qt.MiddleButton:
             self._middle_mouse_pressed: bool = True
@@ -77,14 +84,29 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if event.button() == QtCore.Qt.LeftButton and self._mode == "EDGE":
+        if self._left_mouse_pressed:
+            if self._mode == "EDGE":
+                temp_target_item: QtWidgets.QGraphicsItem = self._temp_edge[1]
+                if type(self._last_item) == SocketPinGraphicsItem:
+                    self._temp_edge[1] = self._last_item
+                    # Validate edge here
+                    print("Finish Edge")
+                else:
+                    print("Remove temp edge")
+
+                self.scene().removeItem(temp_target_item)
+                self._temp_edge = [None, None]
+
+            if self._mode == "MOVE":
+                intersection_items: list = self.scene().collidingItems(self._last_item)
+                self._last_item.setZValue(0)
+                for item in intersection_items:
+                    item.stackBefore(self._last_item)
+
             self._left_mouse_pressed: bool = False
             self._mode: str = ""
 
-            temp_target_item: QtWidgets.QGraphicsItem = self._temp_edge[1]
-            self.scene().removeItem(temp_target_item)
-
-        if event.button() == QtCore.Qt.MiddleButton:
+        if self._middle_mouse_pressed:
             self._middle_mouse_pressed: bool = False
             self.setCursor(QtCore.Qt.ArrowCursor)
 
