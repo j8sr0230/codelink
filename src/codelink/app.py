@@ -55,6 +55,13 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 self._temp_edge[1] = temp_target_item
                 self.scene().addItem(self._temp_edge[1])
 
+                self._new_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
+                    edge_color=self._temp_edge[0].socket_background_color
+                )
+                self._new_edge._start_item = self._last_item
+                self._new_edge._end_item = temp_target_item
+                self.scene().addItem(self._new_edge)
+
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
             self._middle_mouse_pressed: bool = True
@@ -74,6 +81,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 self._temp_edge[1].setPos(snap_x, snap_y)
             else:
                 self._temp_edge[1].setPos(self.mapToScene(event.pos()))
+                self._new_edge.update()
 
         if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
@@ -171,6 +179,40 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
 
         painter.setPen(self._pen_light)
         painter.drawPoints(points)
+
+
+class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
+    def __init__(self, edge_color: QtGui.QColor = QtGui.QColor("#292929"),
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent)
+
+        self._edge_color: QtGui.QColor = edge_color
+        self._edge_pen: QtGui.QPen = QtGui.QPen(self._edge_color)
+        self._edge_pen.setWidthF(2.0)
+
+        self._start_item: Optional[QtWidgets.QGraphicsItem] = None
+        self._end_item: Optional[QtWidgets.QGraphicsItem] = None
+
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setAcceptHoverEvents(True)
+        self.setZValue(-1)
+
+    def shape(self) -> QtGui.QPainterPath:
+        print(self._start_item.mapToScene(self._start_item.pos()))
+        print(self._end_item.pos())
+
+        path: QtGui.QPainterPath = QtGui.QPainterPath(self._start_item.mapToScene(self._start_item.pos()))
+        path.lineTo(self._end_item.pos())
+        return path
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.shape().boundingRect()
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: Optional[QtWidgets.QWidget] = None) -> None:
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.setPen(self._edge_pen)
+        painter.drawPath(self.shape())
 
 
 class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
