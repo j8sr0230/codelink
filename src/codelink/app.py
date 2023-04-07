@@ -58,7 +58,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
             self._middle_mouse_pressed: bool = True
-            self.setCursor(QtCore.Qt.SizeAllCursor)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -113,7 +113,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._mode: str = ""
         self._left_mouse_pressed: bool = False
         self._middle_mouse_pressed: bool = False
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
@@ -218,13 +218,14 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
-        self.setCursor(QtCore.Qt.CrossCursor)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
@@ -563,7 +564,7 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
         if event.button() == QtCore.Qt.LeftButton:
             if event.pos().x() > self.boundingRect().width() - 10:
                 self._mode: str = "RESIZE"
-                self.setCursor(QtCore.Qt.SizeHorCursor)
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
 
             collapse_item_left: float = 0  # self._collapse_item.x()
             collapse_item_right: float = self._title_x
@@ -629,21 +630,23 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
                 item.stackBefore(self)
 
         self._mode = ""
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
-        if event.pos().x() > self.boundingRect().width() - 10:
-            self.setCursor(QtCore.Qt.SizeHorCursor)
+
+        if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
+            if QtWidgets.QApplication.overrideCursor() != QtCore.Qt.SizeHorCursor:
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
         else:
-            self.setCursor(QtCore.Qt.ArrowCursor)
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
