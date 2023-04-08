@@ -287,8 +287,8 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
     def boundingRect(self) -> QtCore.QRectF:
         # return QtCore.QRectF(0, 0, self._socket_size, self._socket_size)
-        return QtCore.QRectF(-self._socket_size / 2, -self._socket_size / 2,
-                             2 * self._socket_size, 2 * self._socket_size)
+        return QtCore.QRectF(-self._socket_size, -self._socket_size,
+                             3 * self._socket_size, 3 * self._socket_size)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
