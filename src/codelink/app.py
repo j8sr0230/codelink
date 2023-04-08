@@ -230,7 +230,7 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         else:
             end_point: QtCore.QPointF = self._end_item.pos()
 
-        crt_point_offset: float = (end_point.x() - start_point.x()) / 3
+        crt_point_offset: float = abs(end_point.x() - start_point.x()) / 2.5
         ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + crt_point_offset, start_point.y())
         ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - crt_point_offset, end_point.y())
 
