@@ -46,22 +46,30 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
             self._left_mouse_pressed: bool = True
 
             if type(self._last_item) == SocketPinGraphicsItem:
-                self._mode: str = "EDGE_DRAG"
+                if not self._last_item.parent_widget.is_input or (self._last_item.parent_widget.is_input and
+                                                                  len(self._last_item.edges) == 0):
+                    self._mode: str = "EDGE_ADD"
+                    print("Add")
 
-                self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
-                    edge_color=self._last_item.socket_background_color
-                )
-                self._temp_edge.start_item = self._last_item
-                self._temp_edge.start_item.add_edge(self._temp_edge)
+                    self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
+                        edge_color=self._last_item.socket_background_color
+                    )
+                    self._temp_edge.start_item = self._last_item
+                    self._temp_edge.start_item.add_edge(self._temp_edge)
 
-                temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                temp_target_item.setBrush(self._last_item.socket_background_color)
-                temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
-                temp_target_item.setZValue(-1)
+                    temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                    temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
+                    temp_target_item.setBrush(self._last_item.socket_background_color)
+                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
+                    temp_target_item.setZValue(-1)
 
-                self._temp_edge.end_item = temp_target_item
-                self.scene().add_edge(self._temp_edge)
+                    self._temp_edge.end_item = temp_target_item
+                    self.scene().add_edge(self._temp_edge)
+
+                if self._last_item.parent_widget.is_input and len(self._last_item.edges) > 0:
+                    self._mode: str = "EDGE_REMOVE"
+                    print("Remove edge")
+                    print(self._last_item.edges)
 
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
@@ -73,7 +81,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if self._mode == "EDGE_DRAG":
+        if self._mode == "EDGE_ADD":
             if type(self._last_item) == SocketPinGraphicsItem:
                 snapping_pos: QtCore.QPointF = self._last_item.parentItem().mapToScene(self._last_item.pos())
                 snap_x: float = snapping_pos.x() + self._last_item.socket_size / 2
@@ -96,7 +104,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._last_scene_pos: QtCore.QPoint = self.mapToScene(event.pos())
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if self._mode == "EDGE_DRAG":
+        if self._mode == "EDGE_ADD":
             if type(self._last_item) == SocketPinGraphicsItem:
                 self._temp_edge.end_item = self._last_item
                 print("Add edge (validate edge here)!")
@@ -110,6 +118,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                     else:
                         print("Can connect!")
                         self._temp_edge.end_item.add_edge(self._temp_edge)
+                        print(self._last_item.edges)
                 else:
                     print("Can't connect!")
                     self.scene().remove_edge(self._temp_edge)
@@ -292,6 +301,10 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
     def parent_widget(self) -> QtWidgets.QWidget:
         return self._parent_widget
 
+    @property
+    def edges(self) -> list[QtWidgets.QGraphicsPathItem]:
+        return self._edges
+
     def add_edge(self, edge: EdgeGraphicsPathItem) -> None:
         self._edges.append(edge)
 
@@ -423,6 +436,10 @@ class IntSocketWidget(QtWidgets.QWidget):
     @property
     def socket_type(self) -> object:
         return self._socket_type
+
+    @property
+    def is_input(self) -> bool:
+        return self._is_input
 
     def update_socket_pin_item(self) -> None:
         if not self._parent_graphics_item.is_collapsed:
