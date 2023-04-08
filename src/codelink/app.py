@@ -47,21 +47,19 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
             if type(self._last_item) == SocketPinGraphicsItem:
                 self._mode: str = "EDGE_DRAG"
-                self._temp_socket_pins[0]: QtWidgets.QGraphicsItem = self._last_item
+
+                self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
+                    edge_color=self._last_item.socket_background_color
+                )
+                self._temp_edge._start_item = self._last_item
+                self._last_item.append_edge(self._temp_edge)
 
                 temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                 temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                temp_target_item.setBrush(self._temp_socket_pins[0].socket_background_color)
+                temp_target_item.setBrush(self._last_item.socket_background_color)
                 temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
                 temp_target_item.setZValue(-1)
 
-                self._temp_socket_pins[1] = temp_target_item
-                self.scene().addItem(self._temp_socket_pins[1])
-
-                self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
-                    edge_color=self._temp_socket_pins[0].socket_background_color
-                )
-                self._temp_edge._start_item = self._last_item
                 self._temp_edge._end_item = temp_target_item
                 self.scene().add_edge(self._temp_edge)
 
@@ -80,10 +78,9 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 snapping_pos: QtCore.QPointF = self._last_item.parentItem().mapToScene(self._last_item.pos())
                 snap_x: float = snapping_pos.x() + self._last_item.socket_size / 2
                 snap_y: float = snapping_pos.y() + self._last_item.socket_size / 2
-
-                self._temp_socket_pins[1].setPos(snap_x, snap_y)
+                self._temp_edge._end_item.setPos(snap_x, snap_y)
             else:
-                self._temp_socket_pins[1].setPos(self.mapToScene(event.pos()))
+                self._temp_edge._end_item.setPos(self.mapToScene(event.pos()))
 
         if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
@@ -114,6 +111,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                     else:
                         print("Can connect!")
                         self._temp_edge._end_item = self._temp_socket_pins[1]
+                        self._temp_socket_pins[1].append_edge(self._temp_edge)
                 else:
                     print("Can't connect!")
                     self.scene().remove_edge(self._temp_edge)
@@ -259,6 +257,8 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
         self._socket_background_color: QtGui.QColor = QtGui.QColor(socket_color)
         self._socket_border_color: QtGui.QColor = QtGui.QColor("black")
 
+        self._edges: list[EdgeGraphicsPathItem] = []
+
         self._socket_size: int = 12
         self._socket_brush: QtGui.QBrush = QtGui.QBrush(self._socket_background_color)
         self._socket_pen: QtGui.QPen = QtGui.QPen(self._socket_border_color)
@@ -278,6 +278,12 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
     @property
     def parent_widget(self) -> QtWidgets.QWidget:
         return self._parent_widget
+
+    def append_edge(self, edge: EdgeGraphicsPathItem) -> None:
+        self._edges.append(edge)
+
+    def remove_edge(self, edge: EdgeGraphicsPathItem) -> None:
+        self._edges.remove(edge)
 
     def centroid(self) -> QtCore.QPointF:
         return QtCore.QPointF(
