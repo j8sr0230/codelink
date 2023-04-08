@@ -793,11 +793,11 @@ if __name__ == "__main__":
     cl_graphics_view.show()
 
     my_item_1 = GraphicsNodeItem()
-    cl_graphics_scene.addItem(my_item_1)
     my_item_1.setPos(QtCore.QPointF(31900, 32000))
+    cl_graphics_scene.add_node(my_item_1)
 
     my_item_2 = GraphicsNodeItem()
-    cl_graphics_scene.addItem(my_item_2)
     my_item_2.setPos(QtCore.QPointF(32200, 32050))
+    cl_graphics_scene.add_node(my_item_2)
 
     sys.exit(app.exec_())
