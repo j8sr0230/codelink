@@ -220,6 +220,12 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(-1)
 
+    @property
+    def start_item(self) -> QtWidgets.QGraphicsItem:
+        return self._start_item
+
+
+
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_item.parentItem().mapToScene(self._start_item.centroid())
         if type(self._end_item) == SocketPinGraphicsItem:
