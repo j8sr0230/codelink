@@ -49,13 +49,11 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 if not self._last_item.parent_widget.is_input or (self._last_item.parent_widget.is_input and
                                                                   len(self._last_item.edges) == 0):
                     self._mode: str = "EDGE_ADD"
-                    print("Add")
 
                     self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
                         edge_color=self._last_item.socket_background_color
                     )
                     self._temp_edge.start_item = self._last_item
-                    self._temp_edge.start_item.add_edge(self._temp_edge)
 
                     temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
@@ -69,7 +67,6 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 if self._last_item.parent_widget.is_input and len(self._last_item.edges) > 0:
                     self._mode: str = "EDGE_REMOVE"
                     print("Remove edge")
-                    print(self._last_item.edges)
 
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
@@ -117,8 +114,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                         self.scene().remove_edge(self._temp_edge)
                     else:
                         print("Can connect!")
+                        self._temp_edge.start_item.add_edge(self._temp_edge)
                         self._temp_edge.end_item.add_edge(self._temp_edge)
-                        print(self._last_item.edges)
                 else:
                     print("Can't connect!")
                     self.scene().remove_edge(self._temp_edge)
@@ -251,8 +248,12 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
             end_point: QtCore.QPointF = self._end_item.pos()
 
         crt_point_offset: float = abs(end_point.x() - start_point.x()) / 2.5
-        ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + crt_point_offset, start_point.y())
-        ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - crt_point_offset, end_point.y())
+        if not self._start_item.parent_widget.is_input:
+            ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + crt_point_offset, start_point.y())
+            ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - crt_point_offset, end_point.y())
+        else:
+            ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() - crt_point_offset, start_point.y())
+            ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() + crt_point_offset, end_point.y())
 
         path: QtGui.QPainterPath = QtGui.QPainterPath(start_point)
         # path.lineTo(end_point)
