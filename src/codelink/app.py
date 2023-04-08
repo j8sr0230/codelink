@@ -192,8 +192,9 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
 
         self._edge_color: QtGui.QColor = edge_color
         self._edge_pen: QtGui.QPen = QtGui.QPen(self._edge_color)
-        self._edge_pen.setWidthF(2.0)
+        self._edge_pen.setWidthF(3.0)
 
+        self._crt_point_offset: int = 100
         self._start_item: Optional[QtWidgets.QGraphicsItem] = None
         self._end_item: Optional[QtWidgets.QGraphicsItem] = None
 
@@ -202,13 +203,20 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         self.setZValue(-1)
 
     def path(self) -> QtGui.QPainterPath:
-        path: QtGui.QPainterPath = QtGui.QPainterPath(
-            self._start_item.parentItem().mapToScene(self._start_item.centroid())
-        )
+        start_point: QtCore.QPointF = self._start_item.parentItem().mapToScene(self._start_item.centroid())
         if type(self._end_item) == SocketPinGraphicsItem:
-            path.lineTo(self._end_item.parentItem().mapToScene(self._end_item.centroid()))
+            end_point: QtCore.QPointF = self._end_item.parentItem().mapToScene(self._end_item.centroid())
         else:
-            path.lineTo(self._end_item.pos())
+            end_point: QtCore.QPointF = self._end_item.pos()
+
+        crt_point_offset: float = (end_point.x() - start_point.x()) / 3
+        ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + crt_point_offset, start_point.y())
+        ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - crt_point_offset, end_point.y())
+
+        path: QtGui.QPainterPath = QtGui.QPainterPath(start_point)
+        # path.lineTo(end_point)
+        path.cubicTo(ctrl_pt_1, ctrl_pt_2, end_point)
+
         return path
 
     def boundingRect(self) -> QtCore.QRectF:
