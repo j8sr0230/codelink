@@ -45,19 +45,19 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.LeftButton:
             self._left_mouse_pressed: bool = True
 
-            if type(self._last_item) == SocketPinGraphicsItem:
+            if type(self._last_item) == Socket:
                 if not self._last_item.parent_widget.is_input or (self._last_item.parent_widget.is_input and
                                                                   len(self._last_item.edges) == 0):
                     self._mode: str = "EDGE_ADD"
 
                     self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
-                        edge_color=self._last_item.socket_background_color
+                        edge_color=self._last_item.background_color
                     )
                     self._temp_edge.start_item = self._last_item
 
                     temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.socket_background_color)
+                    temp_target_item.setBrush(self._last_item.background_color)
                     temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
                     temp_target_item.setZValue(-1)
 
@@ -78,7 +78,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
                     temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.socket_background_color)
+                    temp_target_item.setBrush(self._last_item.background_color)
                     temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
                     temp_target_item.setZValue(-1)
 
@@ -100,10 +100,10 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if self._mode == "EDGE_ADD":
-            if type(self._last_item) == SocketPinGraphicsItem:
+            if type(self._last_item) == Socket:
                 snapping_pos: QtCore.QPointF = self._last_item.parentItem().mapToScene(self._last_item.pos())
-                snap_x: float = snapping_pos.x() + self._last_item.socket_size / 2
-                snap_y: float = snapping_pos.y() + self._last_item.socket_size / 2
+                snap_x: float = snapping_pos.x() + self._last_item.size / 2
+                snap_y: float = snapping_pos.y() + self._last_item.size / 2
                 self._temp_edge.end_item.setPos(snap_x, snap_y)
             else:
                 self._temp_edge.end_item.setPos(self.mapToScene(event.pos()))
@@ -123,7 +123,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if self._mode == "EDGE_ADD":
-            if type(self._last_item) == SocketPinGraphicsItem:
+            if type(self._last_item) == Socket:
                 self._temp_edge.end_item = self._last_item
                 print("Add edge (validate edge here)!")
 
@@ -274,7 +274,7 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
 
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_item.parentItem().mapToScene(self._start_item.centroid())
-        if type(self._end_item) == SocketPinGraphicsItem:
+        if type(self._end_item) == Socket:
             end_point: QtCore.QPointF = self._end_item.parentItem().mapToScene(self._end_item.centroid())
         else:
             end_point: QtCore.QPointF = self._end_item.pos()
@@ -303,40 +303,40 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         painter.drawPath(self.path())
 
 
-class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
-    def __init__(self, socket_color: str = "#00D6A3", parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
-                 parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent_graphics_item)
+class Socket(QtWidgets.QGraphicsItem):
+    def __init__(self, color: str = "#00D6A3", parent_widget: Optional[QtWidgets.QWidget] = None,
+                 parent_node: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent_node)
 
+        self._background_color: QtGui.QColor = QtGui.QColor(color)
         self._parent_widget: Optional[QtWidgets.QWidget] = parent_widget
-        self._socket_background_color: QtGui.QColor = QtGui.QColor(socket_color)
-        self._socket_border_color: QtGui.QColor = QtGui.QColor("black")
 
         self._edges: list[EdgeGraphicsPathItem] = []
 
-        self._socket_size: int = 12
-        self._socket_brush: QtGui.QBrush = QtGui.QBrush(self._socket_background_color)
-        self._socket_pen: QtGui.QPen = QtGui.QPen(self._socket_border_color)
+        self._size: int = 12
+        self._brush: QtGui.QBrush = QtGui.QBrush(self._background_color)
+        self._pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("black"))
 
         self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
-                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     @property
-    def socket_background_color(self) -> QtGui.QColor:
-        return self._socket_background_color
+    def edges(self) -> list[EdgeGraphicsPathItem]:
+        return self._edges
 
     @property
-    def socket_size(self) -> int:
-        return self._socket_size
+    def background_color(self) -> QtGui.QColor:
+        return self._background_color
+
+    @property
+    def size(self) -> int:
+        return self._size
 
     @property
     def parent_widget(self) -> QtWidgets.QWidget:
         return self._parent_widget
 
-    @property
-    def edges(self) -> list[QtWidgets.QGraphicsPathItem]:
-        return self._edges
+
 
     def add_edge(self, edge: EdgeGraphicsPathItem) -> None:
         self._edges.append(edge)
@@ -346,14 +346,14 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
 
     def centroid(self) -> QtCore.QPointF:
         return QtCore.QPointF(
-            self.x() + self._socket_size / 2,
-            self.y() + self._socket_size / 2,
+            self.x() + self._size / 2,
+            self.y() + self._size / 2,
         )
 
     def boundingRect(self) -> QtCore.QRectF:
-        # return QtCore.QRectF(0, 0, self._socket_size, self._socket_size)
-        return QtCore.QRectF(-self._socket_size, -self._socket_size,
-                             3 * self._socket_size, 3 * self._socket_size)
+        # return QtCore.QRectF(0, 0, self._size, self._size)
+        return QtCore.QRectF(-self._size, -self._size,
+                             3 * self._size, 3 * self._size)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
@@ -378,10 +378,10 @@ class SocketPinGraphicsItem(QtWidgets.QGraphicsItem):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
-        painter.setPen(self._socket_pen)
-        painter.setBrush(self._socket_brush)
+        painter.setPen(self._pen)
+        painter.setBrush(self._brush)
         # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
-        painter.drawEllipse(0, 0, self._socket_size, self._socket_size)
+        painter.drawEllipse(0, 0, self._size, self._size)
 
 
 class IntSocketWidget(QtWidgets.QWidget):
@@ -400,9 +400,9 @@ class IntSocketWidget(QtWidgets.QWidget):
         self._layout.setSpacing(0)
         self.setLayout(self._layout)
 
-        self._socket_pin_item: SocketPinGraphicsItem = SocketPinGraphicsItem(socket_color="#00D6A3",
-                                                                             parent_graphics_item=parent_graphics_item,
-                                                                             parent_widget=self)
+        self._socket_pin_item: Socket = Socket(color="#00D6A3",
+                                               parent_node=parent_graphics_item,
+                                               parent_widget=self)
 
         self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._socket_label, self)
         self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
@@ -474,24 +474,30 @@ class IntSocketWidget(QtWidgets.QWidget):
     def is_input(self) -> bool:
         return self._is_input
 
+    def update_connection_state(self):
+        if self._has_edge:
+            pass
+        else:
+            pass
+
     def update_socket_pin_item(self) -> None:
         if not self._parent_graphics_item.is_collapsed:
             y_pos: float = (self._parent_graphics_item.content_y_pos + self.y() +
-                            (self.height() - self._socket_pin_item.socket_size) / 2)
+                            (self.height() - self._socket_pin_item.size) / 2)
             if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.socket_size / 2, y_pos)
+                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
             else:
                 self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
-                                             self._socket_pin_item.socket_size / 2, y_pos)
+                                             self._socket_pin_item.size / 2, y_pos)
             self._socket_pin_item.show()
 
         else:
-            y_pos: float = (self._parent_graphics_item.header_height - self._socket_pin_item.socket_size) / 2
+            y_pos: float = (self._parent_graphics_item.header_height - self._socket_pin_item.size) / 2
             if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.socket_size / 2, y_pos)
+                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
             else:
                 self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
-                                             self._socket_pin_item.socket_size / 2, y_pos)
+                                             self._socket_pin_item.size / 2, y_pos)
             self._socket_pin_item.hide()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
