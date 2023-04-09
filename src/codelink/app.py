@@ -68,6 +68,27 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                     self._mode: str = "EDGE_REMOVE"
                     print("Remove edge")
 
+                    self._temp_edge: EdgeGraphicsPathItem = self._last_item.edges[-1]
+                    connected_graphics_sockets: list[QtWidgets.QGraphicsItem] = [
+                        self._temp_edge.start_item,
+                        self._temp_edge.end_item
+                    ]
+                    for socket in connected_graphics_sockets:
+                        socket.remove_edge(self._temp_edge)
+
+                    temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                    temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
+                    temp_target_item.setBrush(self._last_item.socket_background_color)
+                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
+                    temp_target_item.setZValue(-1)
+
+                    if self._temp_edge.start_item == self._last_item:
+                        self._temp_edge.start_item = self._temp_edge.end_item
+                        self._temp_edge.end_item = self._last_item
+
+                    self._temp_edge.end_item = temp_target_item
+                    self._mode = "EDGE_ADD"
+
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
             self._middle_mouse_pressed: bool = True
@@ -112,6 +133,17 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                     if self._temp_edge.start_item.parentItem() is self._temp_edge.end_item.parentItem():
                         print("Can't connect sockets of the same node!")
                         self.scene().remove_edge(self._temp_edge)
+
+                    elif (self._temp_edge.start_item.parent_widget.is_input and
+                          self._temp_edge.end_item.parent_widget.is_input):
+                        print("Can't connect input with input!")
+                        self.scene().remove_edge(self._temp_edge)
+
+                    elif (not self._temp_edge.start_item.parent_widget.is_input and
+                          not self._temp_edge.end_item.parent_widget.is_input):
+                        print("Can't connect output with output!")
+                        self.scene().remove_edge(self._temp_edge)
+
                     else:
                         print("Can connect!")
                         self._temp_edge.start_item.add_edge(self._temp_edge)
@@ -811,11 +843,15 @@ if __name__ == "__main__":
     cl_graphics_view.show()
 
     my_item_1 = GraphicsNodeItem()
-    my_item_1.setPos(QtCore.QPointF(31900, 32000))
+    my_item_1.setPos(QtCore.QPointF(31600, 31800))
     cl_graphics_scene.add_node(my_item_1)
 
     my_item_2 = GraphicsNodeItem()
     my_item_2.setPos(QtCore.QPointF(32200, 32050))
     cl_graphics_scene.add_node(my_item_2)
+
+    my_item_3 = GraphicsNodeItem()
+    my_item_3.setPos(QtCore.QPointF(31900, 32100))
+    cl_graphics_scene.add_node(my_item_3)
 
     sys.exit(app.exec_())
