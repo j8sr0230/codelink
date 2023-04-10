@@ -8,6 +8,84 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 
+class Socket(QtWidgets.QGraphicsItem):
+    def __init__(self, color: QtGui.QColor, socket_widget: Optional[QtWidgets.QWidget],
+                 parent_node: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent_node)
+
+        self._color: QtGui.QColor = QtGui.QColor(color)
+        self._socket_widget: Optional[QtWidgets.QWidget] = socket_widget
+
+        self._edges: list['EdgeGraphicsPathItem'] = []
+
+        self._size: int = 12
+
+        self.setAcceptHoverEvents(True)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
+    @property
+    def color(self) -> QtGui.QColor:
+        return self._color
+
+    @color.setter
+    def color(self, value: str) -> None:
+        self._color: QtGui.QColor = QtGui.QColor(value)
+
+    @property
+    def socket_widget(self) -> QtWidgets.QWidget:
+        return self._socket_widget
+
+    @property
+    def edges(self) -> list['EdgeGraphicsPathItem']:
+        return self._edges
+
+    @edges.setter
+    def edges(self, value: list['EdgeGraphicsPathItem']) -> None:
+        self._edges: list[EdgeGraphicsPathItem] = value
+
+    @property
+    def size(self) -> int:
+        return self._size
+
+    def add_edge(self, edge: 'EdgeGraphicsPathItem') -> None:
+        self._edges.append(edge)
+
+    def remove_edge(self, edge: 'EdgeGraphicsPathItem') -> None:
+        self._edges.remove(edge)
+
+    def has_edge(self) -> bool:
+        if len(self._edges) > 0:
+            return True
+        else:
+            return False
+
+    def center(self) -> QtCore.QPointF:
+        return QtCore.QPointF(
+            self.x() + self._size / 2,
+            self.y() + self._size / 2,
+        )
+
+    def boundingRect(self) -> QtCore.QRectF:
+        # return QtCore.QRectF(0, 0, self._size, self._size)
+        return QtCore.QRectF(-self._size, -self._size, 3 * self._size, 3 * self._size)
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
+
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverLeaveEvent(event)
+        QtWidgets.QApplication.restoreOverrideCursor()
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: Optional[QtWidgets.QWidget] = None) -> None:
+
+        painter.setPen(QtGui.QPen(QtGui.QColor("black")))
+        painter.setBrush(QtGui.QBrush(self._color))
+        # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
+        painter.drawEllipse(0, 0, self._size, self._size)
+
+
 class CLGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
@@ -46,25 +124,25 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
             self._left_mouse_pressed: bool = True
 
             if type(self._last_item) == Socket:
-                if not self._last_item.parent_widget.is_input or (self._last_item.parent_widget.is_input and
+                if not self._last_item.socket_widget.is_input or (self._last_item.socket_widget.is_input and
                                                                   len(self._last_item.edges) == 0):
                     self._mode: str = "EDGE_ADD"
 
                     self._temp_edge: EdgeGraphicsPathItem = EdgeGraphicsPathItem(
-                        edge_color=self._last_item.background_color
+                        edge_color=self._last_item.color
                     )
                     self._temp_edge.start_item = self._last_item
 
                     temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.background_color)
-                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
+                    temp_target_item.setBrush(self._last_item.color)
+                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
                     temp_target_item.setZValue(-1)
 
                     self._temp_edge.end_item = temp_target_item
                     self.scene().add_edge(self._temp_edge)
 
-                if self._last_item.parent_widget.is_input and len(self._last_item.edges) > 0:
+                if self._last_item.socket_widget.is_input and len(self._last_item.edges) > 0:
                     self._mode: str = "EDGE_REMOVE"
                     print("Remove edge")
 
@@ -78,8 +156,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
                     temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.background_color)
-                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.centroid()))
+                    temp_target_item.setBrush(self._last_item.color)
+                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
                     temp_target_item.setZValue(-1)
 
                     if self._temp_edge.start_item == self._last_item:
@@ -127,20 +205,20 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 self._temp_edge.end_item = self._last_item
                 print("Add edge (validate edge here)!")
 
-                socket_type_start: object = self._temp_edge.start_item.parent_widget.socket_type
-                socket_type_end: object = self._temp_edge.end_item.parent_widget.socket_type
+                socket_type_start: object = self._temp_edge.start_item.socket_widget.socket_type
+                socket_type_end: object = self._temp_edge.end_item.socket_widget.socket_type
                 if socket_type_start == socket_type_end:
                     if self._temp_edge.start_item.parentItem() is self._temp_edge.end_item.parentItem():
                         print("Can't connect sockets of the same node!")
                         self.scene().remove_edge(self._temp_edge)
 
-                    elif (self._temp_edge.start_item.parent_widget.is_input and
-                          self._temp_edge.end_item.parent_widget.is_input):
+                    elif (self._temp_edge.start_item.socket_widget.is_input and
+                          self._temp_edge.end_item.socket_widget.is_input):
                         print("Can't connect input with input!")
                         self.scene().remove_edge(self._temp_edge)
 
-                    elif (not self._temp_edge.start_item.parent_widget.is_input and
-                          not self._temp_edge.end_item.parent_widget.is_input):
+                    elif (not self._temp_edge.start_item.socket_widget.is_input and
+                          not self._temp_edge.end_item.socket_widget.is_input):
                         print("Can't connect output with output!")
                         self.scene().remove_edge(self._temp_edge)
 
@@ -273,14 +351,14 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         self._end_item: QtWidgets.QGraphicsItem = value
 
     def path(self) -> QtGui.QPainterPath:
-        start_point: QtCore.QPointF = self._start_item.parentItem().mapToScene(self._start_item.centroid())
+        start_point: QtCore.QPointF = self._start_item.parentItem().mapToScene(self._start_item.center())
         if type(self._end_item) == Socket:
-            end_point: QtCore.QPointF = self._end_item.parentItem().mapToScene(self._end_item.centroid())
+            end_point: QtCore.QPointF = self._end_item.parentItem().mapToScene(self._end_item.center())
         else:
             end_point: QtCore.QPointF = self._end_item.pos()
 
         crt_point_offset: float = abs(end_point.x() - start_point.x()) / 2.5
-        if not self._start_item.parent_widget.is_input:
+        if not self._start_item.socket_widget.is_input:
             ctrl_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + crt_point_offset, start_point.y())
             ctrl_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - crt_point_offset, end_point.y())
         else:
@@ -303,87 +381,6 @@ class EdgeGraphicsPathItem(QtWidgets.QGraphicsPathItem):
         painter.drawPath(self.path())
 
 
-class Socket(QtWidgets.QGraphicsItem):
-    def __init__(self, color: str = "#00D6A3", parent_widget: Optional[QtWidgets.QWidget] = None,
-                 parent_node: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(parent_node)
-
-        self._background_color: QtGui.QColor = QtGui.QColor(color)
-        self._parent_widget: Optional[QtWidgets.QWidget] = parent_widget
-
-        self._edges: list[EdgeGraphicsPathItem] = []
-
-        self._size: int = 12
-        self._brush: QtGui.QBrush = QtGui.QBrush(self._background_color)
-        self._pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("black"))
-
-        self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-
-    @property
-    def edges(self) -> list[EdgeGraphicsPathItem]:
-        return self._edges
-
-    @property
-    def background_color(self) -> QtGui.QColor:
-        return self._background_color
-
-    @property
-    def size(self) -> int:
-        return self._size
-
-    @property
-    def parent_widget(self) -> QtWidgets.QWidget:
-        return self._parent_widget
-
-
-
-    def add_edge(self, edge: EdgeGraphicsPathItem) -> None:
-        self._edges.append(edge)
-
-    def remove_edge(self, edge: EdgeGraphicsPathItem) -> None:
-        self._edges.remove(edge)
-
-    def centroid(self) -> QtCore.QPointF:
-        return QtCore.QPointF(
-            self.x() + self._size / 2,
-            self.y() + self._size / 2,
-        )
-
-    def boundingRect(self) -> QtCore.QRectF:
-        # return QtCore.QRectF(0, 0, self._size, self._size)
-        return QtCore.QRectF(-self._size, -self._size,
-                             3 * self._size, 3 * self._size)
-
-    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        super().mouseReleaseEvent(event)
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
-
-    def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverMoveEvent(event)
-
-    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverLeaveEvent(event)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-              widget: Optional[QtWidgets.QWidget] = None) -> None:
-
-        painter.setPen(self._pen)
-        painter.setBrush(self._brush)
-        # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
-        painter.drawEllipse(0, 0, self._size, self._size)
-
-
 class IntSocketWidget(QtWidgets.QWidget):
     def __init__(self, socket_label: str = "In", socket_type: object = int, is_input: bool = True,
                  parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
@@ -400,9 +397,9 @@ class IntSocketWidget(QtWidgets.QWidget):
         self._layout.setSpacing(0)
         self.setLayout(self._layout)
 
-        self._socket_pin_item: Socket = Socket(color="#00D6A3",
+        self._socket_pin_item: Socket = Socket(color=QtGui.QColor("#00D6A3"),
                                                parent_node=parent_graphics_item,
-                                               parent_widget=self)
+                                               socket_widget=self)
 
         self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._socket_label, self)
         self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
