@@ -174,8 +174,11 @@ class SocketWidget(QtWidgets.QWidget):
     def is_input(self) -> bool:
         return self._is_input
 
+    def has_edges(self) -> bool:
+        return self._socket.has_edges()
+
     def update_connection_state(self):
-        if self._has_edge:
+        if self._socket.has_edges():
             pass
         else:
             pass
@@ -199,9 +202,6 @@ class SocketWidget(QtWidgets.QWidget):
                 self._socket.setPos(self._parent_node.boundingRect().width() -
                                     self._socket.size / 2, y_pos)
             self._socket.hide()
-
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        super().paintEvent(event)
 
 
 class Edge(QtWidgets.QGraphicsPathItem):
