@@ -97,20 +97,18 @@ class SocketWidget(QtWidgets.QWidget):
         self._is_input: bool = is_input
         self._parent_node: Optional['GraphicsNodeItem'] = parent_node
 
+        self._socket: Socket = Socket(color=QtGui.QColor("#00D6A3"), parent_node=parent_node, socket_widget=self)
+
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
         self.setLayout(self._layout)
 
-        self._socket_pin_item: Socket = Socket(color=QtGui.QColor("#00D6A3"),
-                                               parent_node=parent_node,
-                                               socket_widget=self)
-
-        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
-        self._socket_label_widget.setFont(self._parent_node.default_font)
+        self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
+        self._label_widget.setFont(self._parent_node.default_font)
         if self._is_input:
-            self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._socket_label_widget.setStyleSheet(
+            self._label_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._label_widget.setStyleSheet(
                 "color: #E5E5E5;"
                 "background-color: #545454;"
                 "margin-left: 0px;"
@@ -128,8 +126,8 @@ class SocketWidget(QtWidgets.QWidget):
                 "border: 0px;"
             )
         else:
-            self._socket_label_widget.setAlignment(QtCore.Qt.AlignRight)
-            self._socket_label_widget.setStyleSheet(
+            self._label_widget.setAlignment(QtCore.Qt.AlignRight)
+            self._label_widget.setStyleSheet(
                 "color: #E5E5E5;"
                 "background-color: #303030;"
                 "margin: 0px;"
@@ -140,15 +138,15 @@ class SocketWidget(QtWidgets.QWidget):
                 "border-radius: 0px;"
                 "border: 0px;"
             )
-        self._layout.addWidget(self._socket_label_widget)
+        self._layout.addWidget(self._label_widget)
 
         if self._is_input:
-            self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-            self._socket_input_widget.setMinimumWidth(5)
-            self._socket_input_widget.setFont(self._parent_node.default_font)
-            self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._socket_input_widget.setPlaceholderText("Enter integer")
-            self._socket_input_widget.setStyleSheet(
+            self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+            self._input_widget.setMinimumWidth(5)
+            self._input_widget.setFont(self._parent_node.default_font)
+            self._input_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._input_widget.setPlaceholderText("Enter value")
+            self._input_widget.setStyleSheet(
                 "color: #E5E5E5;"
                 "background-color: #545454;"
                 "min-width: 5px;"
@@ -166,7 +164,7 @@ class SocketWidget(QtWidgets.QWidget):
                 "border-bottom-right-radius: 5px;"
                 "border: 0px;"
             )
-            self._layout.addWidget(self._socket_input_widget)
+            self._layout.addWidget(self._input_widget)
 
     @property
     def socket_type(self) -> object:
@@ -185,22 +183,22 @@ class SocketWidget(QtWidgets.QWidget):
     def update_socket_pin_item(self) -> None:
         if not self._parent_node.is_collapsed:
             y_pos: float = (self._parent_node.content_y_pos + self.y() +
-                            (self.height() - self._socket_pin_item.size) / 2)
+                            (self.height() - self._socket.size) / 2)
             if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
+                self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
-                self._socket_pin_item.setPos(self._parent_node.boundingRect().width() -
-                                             self._socket_pin_item.size / 2, y_pos)
-            self._socket_pin_item.show()
+                self._socket.setPos(self._parent_node.boundingRect().width() -
+                                    self._socket.size / 2, y_pos)
+            self._socket.show()
 
         else:
-            y_pos: float = (self._parent_node.header_height - self._socket_pin_item.size) / 2
+            y_pos: float = (self._parent_node.header_height - self._socket.size) / 2
             if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
+                self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
-                self._socket_pin_item.setPos(self._parent_node.boundingRect().width() -
-                                             self._socket_pin_item.size / 2, y_pos)
-            self._socket_pin_item.hide()
+                self._socket.setPos(self._parent_node.boundingRect().width() -
+                                    self._socket.size / 2, y_pos)
+            self._socket.hide()
 
     def paintEvent(self, event: QtGui.QPaintEvent) -> None:
         super().paintEvent(event)
