@@ -177,11 +177,36 @@ class SocketWidget(QtWidgets.QWidget):
     def has_edges(self) -> bool:
         return self._socket.has_edges()
 
-    def update_connection_state(self):
+    def update_widget(self):
         if self._socket.has_edges():
-            pass
+            self._label_widget.setAlignment(QtCore.Qt.AlignLeft)
+            self._label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: black;"
+                "margin: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-radius: 0px;"
+                "border: 0px;"
+            )
+            self._input_widget.hide()
+
         else:
-            pass
+            self._label_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #303030;"
+                "margin: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-radius: 0px;"
+                "border: 0px;"
+            )
+            self._input_widget.show()
 
     def update_socket_pin_item(self) -> None:
         if not self._parent_node.is_collapsed:
@@ -277,6 +302,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._middle_mouse_pressed: bool = False
         self._last_scene_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_item: Optional[QtWidgets.QGraphicsItem] = None
+        self._last_socket: Optional[Socket] = None
         self._temp_socket_pins: list[Optional[QtWidgets.QGraphicsItem]] = [None, None]
         self._temp_edge: Optional[Edge] = None
 
@@ -306,6 +332,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
             self._left_mouse_pressed: bool = True
 
             if type(self._last_item) == Socket:
+                self._last_socket: Socket = self._last_item
+
                 if not self._last_item.socket_widget.is_input or (self._last_item.socket_widget.is_input and
                                                                   len(self._last_item.edges) == 0):
                     self._mode: str = "EDGE_ADD"
@@ -384,6 +412,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
         if self._mode == "EDGE_ADD":
             if type(self._last_item) == Socket:
+                self._last_socket = self._last_item
+
                 self._temp_edge.end_socket = self._last_item
                 print("Add edge (validate edge here)!")
 
@@ -420,6 +450,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._mode: str = ""
         self._left_mouse_pressed: bool = False
         self._middle_mouse_pressed: bool = False
+        self._last_socket.socket_widget.update_widget()
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
