@@ -9,12 +9,12 @@ import PySide2.QtGui as QtGui
 
 
 class Socket(QtWidgets.QGraphicsItem):
-    def __init__(self, color: QtGui.QColor, socket_widget: Optional[QtWidgets.QWidget],
-                 parent_node: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
+                 parent_node: Optional['GraphicsNodeItem'] = None) -> None:
         super().__init__(parent_node)
 
         self._color: QtGui.QColor = QtGui.QColor(color)
-        self._socket_widget: Optional[QtWidgets.QWidget] = socket_widget
+        self._socket_widget: Optional['SocketWidget'] = socket_widget
 
         self._edges: list['Edge'] = []
 
@@ -32,7 +32,7 @@ class Socket(QtWidgets.QGraphicsItem):
         self._color: QtGui.QColor = QtGui.QColor(value)
 
     @property
-    def socket_widget(self) -> QtWidgets.QWidget:
+    def socket_widget(self) -> Optional['SocketWidget']:
         return self._socket_widget
 
     @property
@@ -84,6 +84,126 @@ class Socket(QtWidgets.QGraphicsItem):
         painter.setBrush(QtGui.QBrush(self._color))
         # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
         painter.drawEllipse(0, 0, self._size, self._size)
+
+
+class SocketWidget(QtWidgets.QWidget):
+    def __init__(self, label: str = "In", socket_type: object = int, is_input: bool = True,
+                 parent_node: Optional['GraphicsNodeItem'] = None,
+                 parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent_widget)
+
+        self._label: str = label
+        self._socket_type: object = socket_type
+        self._is_input: bool = is_input
+        self._parent_node: Optional['GraphicsNodeItem'] = parent_node
+
+        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self._layout.setMargin(0)
+        self._layout.setSpacing(0)
+        self.setLayout(self._layout)
+
+        self._socket_pin_item: Socket = Socket(color=QtGui.QColor("#00D6A3"),
+                                               parent_node=parent_node,
+                                               socket_widget=self)
+
+        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
+        self._socket_label_widget.setFont(self._parent_node.default_font)
+        if self._is_input:
+            self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._socket_label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #545454;"
+                "margin-left: 0px;"
+                "margin-right: 1px;"
+                "margin-top: 0px;"
+                "margin-bottom: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-top-left-radius: 5px;"
+                "border-bottom-left-radius: 5px;"
+                "border-top-right-radius: 0px;"
+                "border-bottom-right-radius: 0px;"
+                "border: 0px;"
+            )
+        else:
+            self._socket_label_widget.setAlignment(QtCore.Qt.AlignRight)
+            self._socket_label_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #303030;"
+                "margin: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-radius: 0px;"
+                "border: 0px;"
+            )
+        self._layout.addWidget(self._socket_label_widget)
+
+        if self._is_input:
+            self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+            self._socket_input_widget.setMinimumWidth(5)
+            self._socket_input_widget.setFont(self._parent_node.default_font)
+            self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
+            self._socket_input_widget.setPlaceholderText("Enter integer")
+            self._socket_input_widget.setStyleSheet(
+                "color: #E5E5E5;"
+                "background-color: #545454;"
+                "min-width: 5px;"
+                "margin-left: 1px;"
+                "margin-right: 0px;"
+                "margin-top: 0px;"
+                "margin-bottom: 0px;"
+                "padding-left: 10px;"
+                "padding-right: 10px;"
+                "padding-top: 0px;"
+                "padding-bottom: 0px;"
+                "border-top-left-radius: 0px;"
+                "border-bottom-left-radius: 0px;"
+                "border-top-right-radius: 5px;"
+                "border-bottom-right-radius: 5px;"
+                "border: 0px;"
+            )
+            self._layout.addWidget(self._socket_input_widget)
+
+    @property
+    def socket_type(self) -> object:
+        return self._socket_type
+
+    @property
+    def is_input(self) -> bool:
+        return self._is_input
+
+    def update_connection_state(self):
+        if self._has_edge:
+            pass
+        else:
+            pass
+
+    def update_socket_pin_item(self) -> None:
+        if not self._parent_node.is_collapsed:
+            y_pos: float = (self._parent_node.content_y_pos + self.y() +
+                            (self.height() - self._socket_pin_item.size) / 2)
+            if self._is_input:
+                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
+            else:
+                self._socket_pin_item.setPos(self._parent_node.boundingRect().width() -
+                                             self._socket_pin_item.size / 2, y_pos)
+            self._socket_pin_item.show()
+
+        else:
+            y_pos: float = (self._parent_node.header_height - self._socket_pin_item.size) / 2
+            if self._is_input:
+                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
+            else:
+                self._socket_pin_item.setPos(self._parent_node.boundingRect().width() -
+                                             self._socket_pin_item.size / 2, y_pos)
+            self._socket_pin_item.hide()
+
+    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+        super().paintEvent(event)
 
 
 class Edge(QtWidgets.QGraphicsPathItem):
@@ -381,126 +501,6 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         painter.drawPoints(points)
 
 
-class IntSocketWidget(QtWidgets.QWidget):
-    def __init__(self, socket_label: str = "In", socket_type: object = int, is_input: bool = True,
-                 parent_graphics_item: Optional[QtWidgets.QGraphicsItem] = None,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
-
-        self._socket_label: str = socket_label
-        self._socket_type: object = socket_type
-        self._is_input: bool = is_input
-        self._parent_graphics_item: QtWidgets.QGraphicsItem = parent_graphics_item
-
-        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-        self._layout.setMargin(0)
-        self._layout.setSpacing(0)
-        self.setLayout(self._layout)
-
-        self._socket_pin_item: Socket = Socket(color=QtGui.QColor("#00D6A3"),
-                                               parent_node=parent_graphics_item,
-                                               socket_widget=self)
-
-        self._socket_label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._socket_label, self)
-        self._socket_label_widget.setFont(self._parent_graphics_item.default_font)
-        if self._is_input:
-            self._socket_label_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._socket_label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #545454;"
-                "margin-left: 0px;"
-                "margin-right: 1px;"
-                "margin-top: 0px;"
-                "margin-bottom: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-top-left-radius: 5px;"
-                "border-bottom-left-radius: 5px;"
-                "border-top-right-radius: 0px;"
-                "border-bottom-right-radius: 0px;"
-                "border: 0px;"
-            )
-        else:
-            self._socket_label_widget.setAlignment(QtCore.Qt.AlignRight)
-            self._socket_label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #303030;"
-                "margin: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-radius: 0px;"
-                "border: 0px;"
-            )
-        self._layout.addWidget(self._socket_label_widget)
-
-        if self._is_input:
-            self._socket_input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-            self._socket_input_widget.setMinimumWidth(5)
-            self._socket_input_widget.setFont(self._parent_graphics_item.default_font)
-            self._socket_input_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._socket_input_widget.setPlaceholderText("Enter integer")
-            self._socket_input_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #545454;"
-                "min-width: 5px;"
-                "margin-left: 1px;"
-                "margin-right: 0px;"
-                "margin-top: 0px;"
-                "margin-bottom: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-top-left-radius: 0px;"
-                "border-bottom-left-radius: 0px;"
-                "border-top-right-radius: 5px;"
-                "border-bottom-right-radius: 5px;"
-                "border: 0px;"
-            )
-            self._layout.addWidget(self._socket_input_widget)
-
-    @property
-    def socket_type(self) -> object:
-        return self._socket_type
-
-    @property
-    def is_input(self) -> bool:
-        return self._is_input
-
-    def update_connection_state(self):
-        if self._has_edge:
-            pass
-        else:
-            pass
-
-    def update_socket_pin_item(self) -> None:
-        if not self._parent_graphics_item.is_collapsed:
-            y_pos: float = (self._parent_graphics_item.content_y_pos + self.y() +
-                            (self.height() - self._socket_pin_item.size) / 2)
-            if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
-            else:
-                self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
-                                             self._socket_pin_item.size / 2, y_pos)
-            self._socket_pin_item.show()
-
-        else:
-            y_pos: float = (self._parent_graphics_item.header_height - self._socket_pin_item.size) / 2
-            if self._is_input:
-                self._socket_pin_item.setPos(-self._socket_pin_item.size / 2, y_pos)
-            else:
-                self._socket_pin_item.setPos(self._parent_graphics_item.boundingRect().width() -
-                                             self._socket_pin_item.size / 2, y_pos)
-            self._socket_pin_item.hide()
-
-    def paintEvent(self, event: QtGui.QPaintEvent) -> None:
-        super().paintEvent(event)
-
-
 class GraphicsNodeItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
@@ -639,9 +639,9 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.addWidget(self._option_box)
 
         self._socket_widgets: list = [
-            IntSocketWidget(socket_label="A", socket_type=int, is_input=True, parent_graphics_item=self),
-            IntSocketWidget(socket_label="B", socket_type=int, is_input=True, parent_graphics_item=self),
-            IntSocketWidget(socket_label="Res", socket_type=int, is_input=False, parent_graphics_item=self)
+            SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
+            SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
+            SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
