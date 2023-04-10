@@ -192,7 +192,6 @@ class SocketWidget(QtWidgets.QWidget):
                 "border: 0px;"
             )
             self._input_widget.hide()
-
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignCenter)
             self._label_widget.setStyleSheet(
