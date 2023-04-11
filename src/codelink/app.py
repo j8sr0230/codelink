@@ -105,11 +105,11 @@ class SocketWidget(QtWidgets.QWidget):
         self.setLayout(self._layout)
 
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
-        self._label_widget.setFont(self._parent_node.default_font)
+        self._label_widget.setFont(self._parent_node.font)
         self._layout.addWidget(self._label_widget)
 
         self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-        self._input_widget.setFont(self._parent_node.default_font)
+        self._input_widget.setFont(self._parent_node.font)
         self._input_widget.setMinimumWidth(5)
         self._input_widget.setPlaceholderText("Enter value")
         self._layout.addWidget(self._input_widget)
@@ -203,7 +203,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     def update_socket_positions(self) -> None:
         if not self._parent_node.is_collapsed:
-            y_pos: float = (self._parent_node.content_y_pos + self.y() + (self.height() - self._socket.size) / 2)
+            y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._socket.size) / 2)
 
             if self._is_input:
                 self._socket.setPos(-self._socket.size / 2, y_pos)
@@ -306,7 +306,7 @@ class Node(QtWidgets.QGraphicsItem):
         self._header_height: int = 25
         self._min_height: int = self._header_height
         self._content_padding: int = 8
-        self._content_y_pos: int = self._header_height + self._content_padding
+        self._content_y: int = self._header_height + self._content_padding
         self._corner_radius: int = 5
 
         self._mode: str = ""
@@ -456,27 +456,20 @@ class Node(QtWidgets.QGraphicsItem):
         return self._header_height
 
     @property
+    def content_y(self) -> float:
+        return self._content_y
+
+    @property
     def is_collapsed(self) -> bool:
         return self._is_collapsed
 
     @property
-    def content_y_pos(self) -> float:
-        return self._content_y_pos
-
-    @property
-    def default_font(self) -> QtGui.QFont:
+    def font(self) -> QtGui.QFont:
         return self._font
-
-    @property
-    def default_font_color(self) -> QtGui.QColor:
-        return self._font_color
 
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
             widget.update_socket_positions()
-
-    def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, self._height)
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -495,25 +488,22 @@ class Node(QtWidgets.QGraphicsItem):
         self.setZValue(1)
 
         if event.button() == QtCore.Qt.LeftButton:
-            if event.pos().x() > self.boundingRect().width() - 10:
+            if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
                 self._mode: str = "RESIZE"
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
 
-            collapse_item_left: float = 0  # self._collapse_btn.x()
-            collapse_item_right: float = self._title_x
-            # collapse_item_right: float = self._collapse_btn.x() + self._collapse_btn.boundingRect().width()
-            collapse_item_top: float = 0  # self._collapse_btn.y()
-            collapse_item_bottom: float = self._header_height
-            # collapse_item_bottom: float = self._collapse_btn.y() + self._collapse_btn.boundingRect().height()
+            collapse_btn_left: float = 0
+            collapse_btn_right: float = self._title_x
+            collapse_btn_top: float = 0
+            collapse_btn_bottom: float = self._header_height
 
-            if collapse_item_left <= event.pos().x() <= collapse_item_right:
-                if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
+            if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
+                if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     self._mode: str = "COLLAPSE"
                     if not self._is_collapsed:
                         self._collapse_btn.setPixmap(self._collapse_pixmap_up)
                         self._content_proxy.hide()
                         self._height = self._min_height
-
                     else:
                         self._collapse_btn.setPixmap(self._collapse_pixmap_down)
                         self._content_proxy.show()
@@ -548,25 +538,21 @@ class Node(QtWidgets.QGraphicsItem):
             self._content_proxy.setGeometry(self._content_rect)
 
             self.update_socket_positions()
-
         else:
             super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        intersection_items: list = self.scene().collidingItems(self)
         self.setZValue(0)
 
+        intersection_items: list = self.scene().collidingItems(self)
         for item in intersection_items:
             if type(item) == self.__class__:
                 item.stackBefore(self)
 
         self._mode = ""
         QtWidgets.QApplication.restoreOverrideCursor()
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
@@ -580,6 +566,9 @@ class Node(QtWidgets.QGraphicsItem):
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return QtCore.QRectF(0, 0, self._width, self._height)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
@@ -598,15 +587,6 @@ class Node(QtWidgets.QGraphicsItem):
         else:
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-
-        if not self._is_collapsed:
-            pass
-            # pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
-            # pen_green.setWidth(10)
-            # painter.setPen(pen_green)
-            # socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
-            #                                               self._content_padding + self._line_edit_1.height()/2)
-            # painter.drawPoints([socket_pos_1])
 
 
 class CLGraphicsView(QtWidgets.QGraphicsView):
