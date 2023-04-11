@@ -106,65 +106,15 @@ class SocketWidget(QtWidgets.QWidget):
 
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
         self._label_widget.setFont(self._parent_node.default_font)
-        if self._is_input:
-            self._label_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #545454;"
-                "margin-left: 0px;"
-                "margin-right: 1px;"
-                "margin-top: 0px;"
-                "margin-bottom: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-top-left-radius: 5px;"
-                "border-bottom-left-radius: 5px;"
-                "border-top-right-radius: 0px;"
-                "border-bottom-right-radius: 0px;"
-                "border: 0px;"
-            )
-        else:
-            self._label_widget.setAlignment(QtCore.Qt.AlignRight)
-            self._label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #303030;"
-                "margin: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-radius: 0px;"
-                "border: 0px;"
-            )
         self._layout.addWidget(self._label_widget)
 
-        if self._is_input:
-            self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-            self._input_widget.setMinimumWidth(5)
-            self._input_widget.setFont(self._parent_node.default_font)
-            self._input_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._input_widget.setPlaceholderText("Enter value")
-            self._input_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #545454;"
-                "min-width: 5px;"
-                "margin-left: 1px;"
-                "margin-right: 0px;"
-                "margin-top: 0px;"
-                "margin-bottom: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-top-left-radius: 0px;"
-                "border-bottom-left-radius: 0px;"
-                "border-top-right-radius: 5px;"
-                "border-bottom-right-radius: 5px;"
-                "border: 0px;"
-            )
-            self._layout.addWidget(self._input_widget)
+        self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+        self._input_widget.setFont(self._parent_node.default_font)
+        self._input_widget.setMinimumWidth(5)
+        self._input_widget.setPlaceholderText("Enter value")
+        self._layout.addWidget(self._input_widget)
+
+        self.update_stylesheets()
 
     @property
     def socket_type(self) -> object:
@@ -177,14 +127,73 @@ class SocketWidget(QtWidgets.QWidget):
     def has_edges(self) -> bool:
         return self._socket.has_edges()
 
-    def update_widget(self):
-        if self._socket.has_edges():
-            self._label_widget.setAlignment(QtCore.Qt.AlignLeft)
+    def update_stylesheets(self):
+        if self._is_input:
+            self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+            if self._socket.has_edges():
+                self._label_widget.setStyleSheet(
+                    "color: #E5E5E5;"
+                    "background-color: transparent;"
+                    "min-height: 24px;"
+                    "margin: 0px;"
+                    "padding-left: 10px;"
+                    "padding-right: 0px;"
+                    "padding-top: 0px;"
+                    "padding-bottom: 0px;"
+                    "border-radius: 0px;"
+                    "border: 0px;"
+                )
+                self._input_widget.hide()
+            else:
+                self._label_widget.setStyleSheet(
+                    "color: #E5E5E5;"
+                    "background-color: #545454;"
+                    "min-height: 24px;"
+                    "margin-left: 0px;"
+                    "margin-right: 1px;"
+                    "margin-top: 0px;"
+                    "margin-bottom: 0px;"
+                    "padding-left: 10px;"
+                    "padding-right: 10px;"
+                    "padding-top: 0px;"
+                    "padding-bottom: 0px;"
+                    "border-top-left-radius: 5px;"
+                    "border-bottom-left-radius: 5px;"
+                    "border-top-right-radius: 0px;"
+                    "border-bottom-right-radius: 0px;"
+                    "border: 0px;"
+                )
+
+                self._input_widget.setStyleSheet(
+                    "color: #E5E5E5;"
+                    "background-color: #545454;"
+                    "min-width: 5px;"
+                    "min-height: 24px;"
+                    "margin-left: 1px;"
+                    "margin-right: 0px;"
+                    "margin-top: 0px;"
+                    "margin-bottom: 0px;"
+                    "padding-left: 10px;"
+                    "padding-right: 10px;"
+                    "padding-top: 0px;"
+                    "padding-bottom: 0px;"
+                    "border-top-left-radius: 0px;"
+                    "border-bottom-left-radius: 0px;"
+                    "border-top-right-radius: 5px;"
+                    "border-bottom-right-radius: 5px;"
+                    "border: 0px;"
+                )
+                self._input_widget.show()
+        else:
+            self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+
             self._label_widget.setStyleSheet(
                 "color: #E5E5E5;"
-                "background-color: black;"
+                "background-color: transparent;"
+                "min-height: 24px;"
                 "margin: 0px;"
-                "padding-left: 10px;"
+                "padding-left: 0px;"
                 "padding-right: 10px;"
                 "padding-top: 0px;"
                 "padding-bottom: 0px;"
@@ -192,30 +201,15 @@ class SocketWidget(QtWidgets.QWidget):
                 "border: 0px;"
             )
             self._input_widget.hide()
-        else:
-            self._label_widget.setAlignment(QtCore.Qt.AlignCenter)
-            self._label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: #303030;"
-                "margin: 0px;"
-                "padding-left: 10px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-radius: 0px;"
-                "border: 0px;"
-            )
-            self._input_widget.show()
 
-    def update_socket_pin_item(self) -> None:
+    def update_socket_positions(self) -> None:
         if not self._parent_node.is_collapsed:
-            y_pos: float = (self._parent_node.content_y_pos + self.y() +
-                            (self.height() - self._socket.size) / 2)
+            y_pos: float = (self._parent_node.content_y_pos + self.y() + (self.height() - self._socket.size) / 2)
+
             if self._is_input:
                 self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
-                self._socket.setPos(self._parent_node.boundingRect().width() -
-                                    self._socket.size / 2, y_pos)
+                self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
             self._socket.show()
 
         else:
@@ -223,8 +217,7 @@ class SocketWidget(QtWidgets.QWidget):
             if self._is_input:
                 self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
-                self._socket.setPos(self._parent_node.boundingRect().width() -
-                                    self._socket.size / 2, y_pos)
+                self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
             self._socket.hide()
 
 
@@ -440,16 +433,17 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 else:
                     print("Can't connect!")
                     self.scene().remove_edge(self._temp_edge)
+
             else:
                 print("No target - remove temporary edge!")
                 self.scene().remove_edge(self._temp_edge)
 
             self._temp_edge: Optional[Edge] = None
+            self._last_socket.socket_widget.update_stylesheets()
 
         self._mode: str = ""
         self._left_mouse_pressed: bool = False
         self._middle_mouse_pressed: bool = False
-        self._last_socket.socket_widget.update_widget()
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
@@ -723,7 +717,7 @@ class GraphicsNodeItem(QtWidgets.QGraphicsItem):
 
     def update_socket_pin_items(self) -> None:
         for widget in self._socket_widgets:
-            widget.update_socket_pin_item()
+            widget.update_socket_positions()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
