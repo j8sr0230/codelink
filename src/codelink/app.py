@@ -187,7 +187,6 @@ class SocketWidget(QtWidgets.QWidget):
                 self._input_widget.show()
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-
             self._label_widget.setStyleSheet(
                 "color: #E5E5E5;"
                 "background-color: transparent;"
@@ -251,8 +250,11 @@ class Edge(QtWidgets.QGraphicsPathItem):
         self._end_socket: QtWidgets.QGraphicsItem = value
 
     def sort_sockets(self) -> None:
-        pass
+        old_start_socket: QtWidgets.QGraphicsItem = self._start_socket
 
+        if old_start_socket.socket_widget.is_input:
+            self._start_socket: QtWidgets.QGraphicsItem = self._end_socket
+            self._end_socket: QtWidgets.QGraphicsItem = old_start_socket
 
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_socket.parentItem().mapToScene(self._start_socket.center())
@@ -330,8 +332,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
             self._left_mouse_pressed: bool = True
 
             if type(self._last_item) == Socket:
-                self._last_socket: Socket = self._last_item
-                self._last_socket_press: Socket = self._last_item
+                self._last_socket: QtWidgets.QGraphicsItem = self._last_item
+                self._last_socket_press: QtWidgets.QGraphicsItem = self._last_item
 
                 if not self._last_item.socket_widget.is_input or (self._last_item.socket_widget.is_input and
                                                                   len(self._last_item.edges) == 0):
@@ -437,9 +439,14 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                         print("Can connect!")
                         self._temp_edge.start_socket.add_edge(self._temp_edge)
                         self._temp_edge.end_socket.add_edge(self._temp_edge)
+                        self._temp_edge.sort_sockets()
+
+                        print("Start", self._temp_edge.start_socket.parentItem())
+                        print("End", self._temp_edge.end_socket.parentItem())
+
                         self._temp_edge.start_socket.socket_widget.update_stylesheets()
-                        self._temp_edge.start_socket.socket_widget.update_stylesheets()
-                        self._last_socket_press._socket_widget.update_stylesheets()
+                        self._temp_edge.end_socket.socket_widget.update_stylesheets()
+                        self._last_socket_press.socket_widget.update_stylesheets()
 
                 else:
                     print("Can't connect!")
