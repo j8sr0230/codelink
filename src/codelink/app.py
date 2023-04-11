@@ -7,6 +7,9 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 class Socket(QtWidgets.QGraphicsItem):
     def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
@@ -593,6 +596,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
+        self._graph: nx.DiGraph = nx.DiGraph()
         self._nodes: list[Optional[Node]] = []
         self._edges: list[Optional[Edge]] = []
 
@@ -604,13 +608,25 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
+    @property
+    def graph(self) -> nx.DiGraph:
+        return self._graph
+
+    @graph.setter
+    def graph(self, value: nx.DiGraph) -> None:
+        self._graph: nx.DiGraph = value
+
     def add_node(self, node: 'Node') -> None:
         self._nodes.append(node)
         self.addItem(node)
 
+        self._graph.add_node(node)
+
     def remove_node(self, node: 'Node') -> None:
         self._nodes.remove(node)
         self.removeItem(node)
+
+        self._graph.remove_node(node)
 
     def add_edge(self, edge: 'Edge') -> None:
         self._edges.append(edge)
@@ -771,6 +787,14 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self._temp_edge.end_socket.add_edge(self._temp_edge)
                         self._temp_edge.sort_sockets()
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
+
+                        self.scene().graph.add_edge(
+                            self._temp_edge.start_socket.parentItem(),
+                            self._temp_edge.end_socket.parentItem()
+                        )
+
+                        nx.draw(self.scene().graph)
+                        plt.show()
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
