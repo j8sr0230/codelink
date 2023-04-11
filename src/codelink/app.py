@@ -650,9 +650,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._mm_pressed: bool = False
         self._mode: str = ""
 
-        self._last_press_pos: QtCore.QPoint = QtCore.QPoint()
-        self._last_press_item: Optional[QtWidgets.QGraphicsItem] = None
-        self._last_press_socket: Optional[Socket] = None
+        self._last_pos: QtCore.QPoint = QtCore.QPoint()
+        self._last_socket: Optional[Socket] = None
         self._temp_edge: Optional[Edge] = None
 
         self._zoom_level: int = 10
@@ -672,34 +671,33 @@ class NodeEditorView(QtWidgets.QGraphicsView):
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)
 
-        self._last_press_pos: QtCore.QPointF = self.mapToScene(event.pos())
-        self._last_press_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
+        self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
         if event.button() == QtCore.Qt.LeftButton and self._mode == "":
             self._lm_pressed: bool = True
 
-            if type(self._last_press_item) == Socket:
-                self._last_press_socket: QtWidgets.QGraphicsItem = self._last_press_item
+            if type(self.itemAt(event.pos())) == Socket:
+                self._last_socket: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-                if (not self._last_press_item.socket_widget.is_input or
-                        (self._last_press_item.socket_widget.is_input and not self._last_press_item.has_edges())):
+                if (not self._last_socket.socket_widget.is_input or
+                        (self._last_socket.socket_widget.is_input and not self._last_socket.has_edges())):
                     self._mode: str = "EDGE_ADD"
-                    self._temp_edge: Edge = Edge(color=self._last_press_item.color)
-                    self._temp_edge.start_socket = self._last_press_item
+                    self._temp_edge: Edge = Edge(color=self._last_socket.color)
+                    self._temp_edge.start_socket = self._last_socket
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target.setBrush(self._last_press_item.color)
-                    temp_target.setPos(self._last_press_item.parentItem().mapToScene(self._last_press_item.center()))
+                    temp_target.setBrush(self._last_socket.color)
+                    temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
                     temp_target.setZValue(-1)
 
                     self._temp_edge.end_socket = temp_target
                     self.scene().add_edge(self._temp_edge)
 
-                if self._last_press_item.socket_widget.is_input and self._last_press_item.has_edges():
+                if self._last_socket.socket_widget.is_input and self._last_socket.has_edges():
                     self._mode: str = "EDGE_EDIT"
 
-                    self._temp_edge: Edge = self._last_press_item.edges[-1]
+                    self._temp_edge: Edge = self._last_socket.edges[-1]
                     connected_sockets: list[QtWidgets.QGraphicsItem] = [
                         self._temp_edge.start_socket,
                         self._temp_edge.end_socket
@@ -709,8 +707,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target.setBrush(self._last_press_item.color)
-                    temp_target.setPos(self._last_press_item.parentItem().mapToScene(self._last_press_item.center()))
+                    temp_target.setBrush(self._last_socket.color)
+                    temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
                     temp_target.setZValue(-1)
 
                     self._temp_edge.end_socket = temp_target
@@ -737,7 +735,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
-            pos_delta: QtCore.QPoint = current_pos - self._last_press_pos
+            pos_delta: QtCore.QPoint = current_pos - self._last_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -780,7 +778,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 print("Can't connect without destination!")
                 self.scene().remove_edge(self._temp_edge)
 
-            self._last_press_socket.socket_widget.update_stylesheets()
+            self._last_socket.socket_widget.update_stylesheets()
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
@@ -790,7 +788,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
 
-        self._last_press_pos = self.mapToScene(event.pos())
+        self._last_pos = self.mapToScene(event.pos())
 
         if event.angleDelta().y() > 0:
             if self._zoom_level < self._zoom_level_range[1]:
@@ -803,7 +801,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         # Hack: Fixes the scene drifting while zooming
         drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
-        pos_delta: QtCore.QPoint = drifted_pos - self._last_press_pos
+        pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
