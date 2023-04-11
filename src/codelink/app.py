@@ -589,7 +589,7 @@ class Node(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
 
-class NodeScene(QtWidgets.QGraphicsScene):
+class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
@@ -642,27 +642,24 @@ class NodeScene(QtWidgets.QGraphicsScene):
         painter.drawPoints(points)
 
 
-class CLGraphicsView(QtWidgets.QGraphicsView):
+class NodeEditorView(QtWidgets.QGraphicsView):
     def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
+        self._lm_pressed: bool = False
+        self._mm_pressed: bool = False
         self._mode: str = ""
-        self._left_mouse_pressed: bool = False
-        self._middle_mouse_pressed: bool = False
+
         self._last_scene_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_item: Optional[QtWidgets.QGraphicsItem] = None
+        self._current_socket: Optional[Socket] = None
         self._last_socket: Optional[Socket] = None
-        self._last_socket_press: Optional[Socket] = None
-
-        self._temp_socket_pins: list[Optional[QtWidgets.QGraphicsItem]] = [None, None]
-        self._temp_edge: Optional[Edge] = None
+        self._temp_edge: Optionl[Edge] = None
 
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
 
-        self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
-                            QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
-
+        self.setStyleSheet("selection-background-color: black")
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -670,8 +667,8 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setAcceptDrops(True)
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-
-        self.setStyleSheet("selection-background-color: black")
+        self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
+                            QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)
@@ -680,58 +677,54 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self._last_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if event.button() == QtCore.Qt.LeftButton:
-            self._left_mouse_pressed: bool = True
+            self._lm_pressed: bool = True
 
             if type(self._last_item) == Socket:
+                self._current_socket: QtWidgets.QGraphicsItem = self._last_item
                 self._last_socket: QtWidgets.QGraphicsItem = self._last_item
-                self._last_socket_press: QtWidgets.QGraphicsItem = self._last_item
 
-                if not self._last_item.socket_widget.is_input or (self._last_item.socket_widget.is_input and
-                                                                  len(self._last_item.edges) == 0):
+                if (not self._current_socket.socket_widget.is_input or
+                        (self._current_socket.socket_widget.is_input and not self._current_socket.has_edges())):
                     self._mode: str = "EDGE_ADD"
-
-                    self._temp_edge: Edge = Edge(
-                        color=self._last_item.color
-                    )
+                    self._temp_edge: Edge = Edge(color=self._last_item.color)
                     self._temp_edge.start_socket = self._last_item
 
-                    temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.color)
-                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
-                    temp_target_item.setZValue(-1)
+                    temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                    temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
+                    temp_target.setBrush(self._last_item.color)
+                    temp_target.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
+                    temp_target.setZValue(-1)
 
-                    self._temp_edge.end_socket = temp_target_item
+                    self._temp_edge.end_socket = temp_target
                     self.scene().add_edge(self._temp_edge)
 
-                if self._last_item.socket_widget.is_input and len(self._last_item.edges) > 0:
-                    self._mode: str = "EDGE_REMOVE"
-                    print("Remove edge")
+                if self._current_socket.socket_widget.is_input and self._current_socket.has_edges():
+                    self._mode: str = "EDGE_EDIT"
 
-                    self._temp_edge: Edge = self._last_item.edges[-1]
-                    connected_graphics_sockets: list[QtWidgets.QGraphicsItem] = [
+                    self._temp_edge: Edge = self._current_socket.edges[-1]
+                    connected_sockets: list[QtWidgets.QGraphicsItem] = [
                         self._temp_edge.start_socket,
                         self._temp_edge.end_socket
                     ]
-                    for socket in connected_graphics_sockets:
+                    for socket in connected_sockets:
                         socket.remove_edge(self._temp_edge)
 
-                    temp_target_item: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target_item.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target_item.setBrush(self._last_item.color)
-                    temp_target_item.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
-                    temp_target_item.setZValue(-1)
+                    temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                    temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
+                    temp_target.setBrush(self._last_item.color)
+                    temp_target.setPos(self._last_item.parentItem().mapToScene(self._last_item.center()))
+                    temp_target.setZValue(-1)
 
                     if self._temp_edge.start_socket == self._last_item:
                         self._temp_edge.start_socket = self._temp_edge.end_socket
                         self._temp_edge.end_socket = self._last_item
 
-                    self._temp_edge.end_socket = temp_target_item
+                    self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
 
         if event.button() == QtCore.Qt.MiddleButton:
             self._mode: str = "SCENE_DRAG"
-            self._middle_mouse_pressed: bool = True
+            self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -764,7 +757,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
         if self._mode == "EDGE_ADD":
             if type(self._last_item) == Socket:
-                self._last_socket = self._last_item
+                self._current_socket = self._last_item
 
                 self._temp_edge.end_socket = self._last_item
                 print("Add edge (validate edge here)!")
@@ -797,7 +790,7 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
 
                         self._temp_edge.start_socket.socket_widget.update_stylesheets()
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
-                        self._last_socket_press.socket_widget.update_stylesheets()
+                        self._last_socket.socket_widget.update_stylesheets()
 
                 else:
                     print("Can't connect!")
@@ -808,11 +801,11 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
                 self.scene().remove_edge(self._temp_edge)
 
             self._temp_edge: Optional[Edge] = None
-            self._last_socket.socket_widget.update_stylesheets()
+            self._current_socket.socket_widget.update_stylesheets()
 
         self._mode: str = ""
-        self._left_mouse_pressed: bool = False
-        self._middle_mouse_pressed: bool = False
+        self._lm_pressed: bool = False
+        self._mm_pressed: bool = False
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
@@ -844,8 +837,8 @@ if __name__ == "__main__":
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
     QtCore.QDir.addSearchPath('icon', os.path.abspath(os.path.dirname(__file__)))
 
-    cl_graphics_scene: NodeScene = NodeScene()
-    cl_graphics_view: CLGraphicsView = CLGraphicsView()
+    cl_graphics_scene: NodeEditorScene = NodeEditorScene()
+    cl_graphics_view: NodeEditorView = NodeEditorView()
 
     cl_graphics_view.setScene(cl_graphics_scene)
     cl_graphics_view.resize(1200, 600)
