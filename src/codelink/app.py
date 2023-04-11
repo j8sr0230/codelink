@@ -589,6 +589,59 @@ class Node(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
 
+class NodeScene(QtWidgets.QGraphicsScene):
+    def __init__(self, parent: Optional[QtCore.QObject] = None):
+        super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
+
+        self._nodes: list[Optional[Node]] = []
+        self._edges: list[Optional[Edge]] = []
+
+        self._grid_spacing: int = 50
+        self._background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
+        self._grid_color: QtGui.QColor = QtGui.QColor("#282828")
+        self._grid_pen: QtGui.QPen = QtGui.QPen(self._grid_color)
+        self._grid_pen.setWidth(5)
+
+        # self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+
+    def add_node(self, node: 'Node') -> None:
+        self._nodes.append(node)
+        self.addItem(node)
+
+    def remove_node(self, node: 'Node') -> None:
+        self._nodes.remove(node)
+        self.removeItem(node)
+
+    def add_edge(self, edge: 'Edge') -> None:
+        self._edges.append(edge)
+        self.addItem(edge)
+
+    def remove_edge(self, edge: 'Edge') -> None:
+        self._edges.remove(edge)
+        self.removeItem(edge)
+
+    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
+        super().drawBackground(painter, rect)
+
+        self.setBackgroundBrush(self._background_color)
+
+        bound_box_left: int = int(math.floor(rect.left()))
+        bound_box_right: int = int(math.ceil(rect.right()))
+        bound_box_top: int = int(math.floor(rect.top()))
+        bound_box_bottom: int = int(math.ceil(rect.bottom()))
+
+        first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
+        first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
+
+        points: list[Optional[QtCore.QPoint]] = []
+        for x in range(first_left, bound_box_right, self._grid_spacing):
+            for y in range(first_top, bound_box_bottom, self._grid_spacing):
+                points.append(QtCore.QPoint(x, y))
+
+        painter.setPen(self._grid_pen)
+        painter.drawPoints(points)
+
+
 class CLGraphicsView(QtWidgets.QGraphicsView):
     def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
@@ -784,61 +837,6 @@ class CLGraphicsView(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
 
-class CLGraphicsScene(QtWidgets.QGraphicsScene):
-    def __init__(self, parent: Optional[QtCore.QObject] = None):
-        super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
-
-        self._nodes: list[Node] = []
-        self._edges: list[Edge] = []
-
-        self._major_grid_spacing: int = 50
-
-        self._background_color_dark: QtGui.QColor = QtGui.QColor("#1D1D1D")
-        self._background_color_light: QtGui.QColor = QtGui.QColor("#282828")
-
-        self._pen_light: QtGui.QPen = QtGui.QPen(self._background_color_light)
-        self._pen_light.setWidth(5)
-
-        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
-
-    def add_node(self, node: 'Node') -> None:
-        self._nodes.append(node)
-        self.addItem(node)
-
-    def remove_node(self, node: 'Node') -> None:
-        self._nodes.remove(node)
-        self.removeItem(node)
-
-    def add_edge(self, edge: 'Edge') -> None:
-        self._edges.append(edge)
-        self.addItem(edge)
-
-    def remove_edge(self, edge: 'Edge') -> None:
-        self._edges.remove(edge)
-        self.removeItem(edge)
-
-    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
-        super().drawBackground(painter, rect)
-
-        self.setBackgroundBrush(self._background_color_dark)
-
-        bound_box_left: int = int(math.floor(rect.left()))
-        bound_box_right: int = int(math.ceil(rect.right()))
-        bound_box_top: int = int(math.floor(rect.top()))
-        bound_box_bottom: int = int(math.ceil(rect.bottom()))
-
-        first_left: int = bound_box_left - (bound_box_left % self._major_grid_spacing)
-        first_top: int = bound_box_top - (bound_box_top % self._major_grid_spacing)
-
-        points: list = []
-        for x in range(first_left, bound_box_right, self._major_grid_spacing):
-            for y in range(first_top, bound_box_bottom, self._major_grid_spacing):
-                points.append(QtCore.QPoint(x, y))
-
-        painter.setPen(self._pen_light)
-        painter.drawPoints(points)
-
-
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -846,7 +844,7 @@ if __name__ == "__main__":
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
     QtCore.QDir.addSearchPath('icon', os.path.abspath(os.path.dirname(__file__)))
 
-    cl_graphics_scene: CLGraphicsScene = CLGraphicsScene()
+    cl_graphics_scene: NodeScene = NodeScene()
     cl_graphics_view: CLGraphicsView = CLGraphicsView()
 
     cl_graphics_view.setScene(cl_graphics_scene)
