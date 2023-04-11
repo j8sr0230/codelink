@@ -793,8 +793,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             self._temp_edge.end_socket.parentItem()
                         )
 
-                        nx.draw(self.scene().graph)
-                        plt.show()
+                        print(len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                        # nx.draw(self.scene().graph)
+                        #plt.show()
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
