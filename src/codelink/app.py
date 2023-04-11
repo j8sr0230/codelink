@@ -721,6 +721,11 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     for socket in connected_sockets:
                         socket.remove_edge(self._temp_edge)
 
+                    self.scene().graph.remove_edge(
+                        self._temp_edge.start_socket.parentItem(),
+                        self._temp_edge.end_socket.parentItem()
+                    )
+
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
                     temp_target.setBrush(self._last_socket.color)
@@ -793,9 +798,10 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             self._temp_edge.end_socket.parentItem()
                         )
 
-                        print(len(list(nx.simple_cycles(self.scene().graph))) > 0)
-                        # nx.draw(self.scene().graph)
-                        #plt.show()
+                        print("Nodes:", len(self.scene().graph.nodes),
+                              "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                        nx.draw(self.scene().graph)
+                        plt.show()
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
