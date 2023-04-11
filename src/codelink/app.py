@@ -10,7 +10,7 @@ import PySide2.QtGui as QtGui
 
 class Socket(QtWidgets.QGraphicsItem):
     def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
-                 parent_node: Optional['GraphicsNodeItem'] = None) -> None:
+                 parent_node: Optional['Node'] = None) -> None:
         super().__init__(parent_node)
 
         self._color: QtGui.QColor = QtGui.QColor(color)
@@ -88,14 +88,14 @@ class Socket(QtWidgets.QGraphicsItem):
 
 class SocketWidget(QtWidgets.QWidget):
     def __init__(self, label: str = "In", socket_type: object = int, is_input: bool = True,
-                 parent_node: Optional['GraphicsNodeItem'] = None,
+                 parent_node: Optional['Node'] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
         self._label: str = label
         self._socket_type: object = socket_type
         self._is_input: bool = is_input
-        self._parent_node: Optional['GraphicsNodeItem'] = parent_node
+        self._parent_node: Optional['Node'] = parent_node
 
         self._socket: Socket = Socket(color=QtGui.QColor("#00D6A3"), parent_node=parent_node, socket_widget=self)
 
@@ -289,6 +289,324 @@ class Edge(QtWidgets.QGraphicsPathItem):
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.setPen(pen)
         painter.drawPath(self.path())
+
+
+class Node(QtWidgets.QGraphicsItem):
+    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent)
+
+        self._title: str = "Node Name"
+        self._socket_widgets: list[Optional[QtWidgets.QWidget]] = []
+
+        self._title_x: int = 20
+        self._min_width: int = 80
+        self._width: int = 160
+        self._max_height: int = 80
+        self._height: int = self._max_height
+        self._header_height: int = 25
+        self._min_height: int = self._header_height
+        self._content_padding: int = 8
+        self._content_y_pos: int = self._header_height + self._content_padding
+        self._corner_radius: int = 5
+
+        self._mode: str = ""
+        self._is_collapsed: bool = False
+
+        self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
+        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
+        self._default_border_color: QtGui.QColor = QtGui.QColor("black")
+        self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+
+        self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
+        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
+
+        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 7)
+
+        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        self._shadow.setColor(QtGui.QColor("black"))
+        self._shadow.setBlurRadius(20)
+        self._shadow.setOffset(1)
+        self.setGraphicsEffect(self._shadow)
+
+        self.setAcceptHoverEvents(True)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
+        self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
+        self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
+        self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_up)
+
+        self._collapse_btn: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
+        self._collapse_btn.setParentItem(self)
+        self._collapse_btn.setPixmap(self._collapse_pixmap_down)
+        btn_x = ((self._title_x + self._collapse_btn.boundingRect().width() / 2) -
+                 self._collapse_btn.boundingRect().width()) / 2
+        self._collapse_btn.setPos(btn_x, (self._header_height - self._collapse_btn.boundingRect().height()) / 2)
+
+        self._title_item = QtWidgets.QGraphicsTextItem(self)
+        self._title_item.setDefaultTextColor(self._font_color)
+        self._title_item.setFont(self._font)
+        self._title_item.setPlainText(
+            self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+        )
+        self._title_item.setPos(self._title_x, (self._header_height - self._title_item.boundingRect().height()) / 2)
+
+        self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
+        self._content_widget.setStyleSheet("background-color: transparent")
+        self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        self._content_layout.setMargin(0)
+        self._content_layout.setSpacing(5)
+        self._content_widget.setLayout(self._content_layout)
+
+        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._option_box.setMinimumWidth(5)
+        self._option_box.setFont(self._font)
+        self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
+        self._option_box.setStyleSheet("""
+            QComboBox {
+                color: #E5E5E5;
+                background-color: #282828;
+                border-radius: 5px;
+                min-width: 5px;
+                min-height:  24px;
+                padding-left: 10px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: 0px;
+            }
+            QComboBox::drop-down {
+                background-color: #545454;
+                subcontrol-origin: border;
+                subcontrol-position: top right;
+                width: 20px;
+                border-top-right-radius: 5px;
+                border-bottom-right-radius: 5px;
+                border-top-left-radius: 0px;
+                border-bottom-left-radius: 0px;
+            }
+            QComboBox::down-arrow {
+                image: url(icon:images_dark-light/down_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+        """)
+
+        item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
+        item_list_view.setSpacing(2)
+        item_list_view.setStyleSheet("""
+            QAbstractItemView {
+                color: #E5E5E5;
+                selection-color: #E5E5E5;
+                background-color: #282828;
+                selection-background-color: #4772B3;
+                border-radius: 5px;
+                min-width: 20px;
+                min-height: 24px;
+                padding-left: 5px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: 0px;
+            }
+        """)
+
+        self._content_layout.addWidget(self._option_box)
+
+        self._socket_widgets: list[Optional[SocketWidget]] = [
+            SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
+            SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
+            SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
+        ]
+        for widget in self._socket_widgets:
+            self._content_layout.addWidget(widget)
+
+        self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+        self._content_proxy.setWidget(self._content_widget)
+        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
+                                                          self._header_height + self._content_padding,
+                                                          self._width - 2 * self._content_padding,
+                                                          self._content_widget.height())
+        self._content_proxy.setGeometry(self._content_rect)
+        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+
+        self.update_socket_positions()
+
+    @staticmethod
+    def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
+        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
+
+        cropped_text: str = "..."
+        string_idx: int = 0
+        while all([font_metrics.horizontalAdvance(cropped_text) < width - font_metrics.horizontalAdvance("..."),
+                   string_idx < len(text)]):
+            cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
+            string_idx += 1
+
+        if string_idx == len(text):
+            cropped_text: str = cropped_text[:len(text)]
+
+        return cropped_text
+
+    @property
+    def header_height(self) -> int:
+        return self._header_height
+
+    @property
+    def is_collapsed(self) -> bool:
+        return self._is_collapsed
+
+    @property
+    def content_y_pos(self) -> float:
+        return self._content_y_pos
+
+    @property
+    def default_font(self) -> QtGui.QFont:
+        return self._font
+
+    @property
+    def default_font_color(self) -> QtGui.QColor:
+        return self._font_color
+
+    def update_socket_positions(self) -> None:
+        for widget in self._socket_widgets:
+            widget.update_socket_positions()
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return QtCore.QRectF(0, 0, self._width, self._height)
+
+    def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            new_pos: QtCore.QPointF = value
+
+            snapping_step: int = 10
+            x_snap = new_pos.x() // snapping_step * snapping_step
+            y_snap = new_pos.y() // snapping_step * snapping_step
+            return QtCore.QPointF(x_snap, y_snap)
+        else:
+            return super().itemChange(change, value)
+
+    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        super().mousePressEvent(event)
+
+        self.setZValue(1)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            if event.pos().x() > self.boundingRect().width() - 10:
+                self._mode: str = "RESIZE"
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
+
+            collapse_item_left: float = 0  # self._collapse_btn.x()
+            collapse_item_right: float = self._title_x
+            # collapse_item_right: float = self._collapse_btn.x() + self._collapse_btn.boundingRect().width()
+            collapse_item_top: float = 0  # self._collapse_btn.y()
+            collapse_item_bottom: float = self._header_height
+            # collapse_item_bottom: float = self._collapse_btn.y() + self._collapse_btn.boundingRect().height()
+
+            if collapse_item_left <= event.pos().x() <= collapse_item_right:
+                if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
+                    self._mode: str = "COLLAPSE"
+                    if not self._is_collapsed:
+                        self._collapse_btn.setPixmap(self._collapse_pixmap_up)
+                        self._content_proxy.hide()
+                        self._height = self._min_height
+
+                    else:
+                        self._collapse_btn.setPixmap(self._collapse_pixmap_down)
+                        self._content_proxy.show()
+                        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
+                                        self._content_padding)
+
+                    self._is_collapsed = not self._is_collapsed
+                    self.update_socket_positions()
+
+    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        if self._mode == "RESIZE":
+            old_x_left: float = self.boundingRect().x()
+            old_y_top: float = self.boundingRect().y()
+
+            old_top_left_local: QtCore.QPointF = QtCore.QPointF(old_x_left, old_y_top)
+            old_top_left_global: QtCore.QPointF = self.mapToScene(old_top_left_local)
+
+            current_x: int = self.mapToScene(event.pos()).x()
+            new_width: float = current_x - old_top_left_global.x()
+            if new_width < self._min_width:
+                new_width: float = self._min_width
+
+            self._width = new_width
+            self._shadow.updateBoundingRect()
+            self._title_item.setPlainText(
+                self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+            )
+            self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
+                                                              self._header_height + self._content_padding,
+                                                              self._width - 2 * self._content_padding,
+                                                              self._content_widget.height())
+            self._content_proxy.setGeometry(self._content_rect)
+
+            self.update_socket_positions()
+
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+
+        intersection_items: list = self.scene().collidingItems(self)
+        self.setZValue(0)
+
+        for item in intersection_items:
+            if type(item) == self.__class__:
+                item.stackBefore(self)
+
+        self._mode = ""
+        QtWidgets.QApplication.restoreOverrideCursor()
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+
+    def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverMoveEvent(event)
+
+        if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
+            if QtWidgets.QApplication.overrideCursor() != QtCore.Qt.SizeHorCursor:
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
+        else:
+            QtWidgets.QApplication.restoreOverrideCursor()
+
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverLeaveEvent(event)
+        QtWidgets.QApplication.restoreOverrideCursor()
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: Optional[QtWidgets.QWidget] = None) -> None:
+
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(self._node_background_color)
+        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+
+        rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
+        painter.setBrush(self._header_background_color)
+        painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
+
+        painter.setBrush(QtCore.Qt.NoBrush)
+        if self.isSelected():
+            painter.setPen(self._selected_border_pen)
+        else:
+            painter.setPen(self._default_border_pen)
+        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+
+        if not self._is_collapsed:
+            pass
+            # pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
+            # pen_green.setWidth(10)
+            # painter.setPen(pen_green)
+            # socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
+            #                                               self._content_padding + self._line_edit_1.height()/2)
+            # painter.drawPoints([socket_pos_1])
 
 
 class CLGraphicsView(QtWidgets.QGraphicsView):
@@ -490,7 +808,7 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._nodes: list[GraphicsNodeItem] = []
+        self._nodes: list[Node] = []
         self._edges: list[Edge] = []
 
         self._major_grid_spacing: int = 50
@@ -503,11 +821,11 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
-    def add_node(self, node: 'GraphicsNodeItem') -> None:
+    def add_node(self, node: 'Node') -> None:
         self._nodes.append(node)
         self.addItem(node)
 
-    def remove_node(self, node: 'GraphicsNodeItem') -> None:
+    def remove_node(self, node: 'Node') -> None:
         self._nodes.remove(node)
         self.removeItem(node)
 
@@ -541,336 +859,6 @@ class CLGraphicsScene(QtWidgets.QGraphicsScene):
         painter.drawPoints(points)
 
 
-class GraphicsNodeItem(QtWidgets.QGraphicsItem):
-    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(parent)
-
-        self._mode: str = ""
-        self._is_collapsed: bool = False
-
-        self._title: str = "Skalar Math"
-        self._title_x: int = 20
-
-        self._min_width: int = 80
-        self._width: int = 160
-
-        self._max_height: int = 80
-        self._header_height: int = 25
-        self._height: int = self._max_height
-        self._min_height: int = self._header_height
-
-        self._content_padding: int = 8
-        self._corner_radius: int = 5
-        self._content_y_pos: int = self._header_height + self._content_padding
-
-        self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
-        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
-        self._default_border_color: QtGui.QColor = QtGui.QColor("black")
-        self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
-        self._default_font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
-
-        self._default_font: QtGui.QFont = QtGui.QFont("Sans Serif", 7)
-
-        self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
-        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
-
-        self._socket_widgets: list = []
-
-        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
-        self._shadow.setColor(QtGui.QColor("black"))
-        self._shadow.setBlurRadius(20)
-        self._shadow.setOffset(1)
-        self.setGraphicsEffect(self._shadow)
-
-        self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable |
-                      QtWidgets.QGraphicsItem.ItemIsMovable |
-                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-
-        self._collapse_image_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
-        self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_image_down)
-        self._collapse_image_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
-        self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_image_up)
-
-        self._collapse_item: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
-        self._collapse_item.setParentItem(self)
-        self._collapse_item.setPixmap(self._collapse_pixmap_down)
-        item_x = ((self._title_x + self._collapse_item.boundingRect().width() / 2) -
-                  self._collapse_item.boundingRect().width()) / 2
-        self._collapse_item.setPos(item_x, (self._header_height - self._collapse_item.boundingRect().height()) / 2)
-
-        self._title_item = QtWidgets.QGraphicsTextItem(self)
-        self._title_item.setDefaultTextColor(self._default_font_color)
-        self._title_item.setFont(self._default_font)
-        self._title_item.setPlainText(self.crop_text(self._title, self._width - self._title_x - self._content_padding,
-                                                     self._default_font))
-        self._title_item.setPos(self._title_x,
-                                (self._header_height - self._title_item.boundingRect().height()) / 2)
-
-        self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
-        self._content_widget.setStyleSheet("background-color: transparent")
-        self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        self._content_layout.setMargin(0)
-        self._content_layout.setSpacing(5)
-        self._content_widget.setLayout(self._content_layout)
-
-        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
-        self._option_box.setMinimumWidth(5)
-        self._option_box.setFont(self._default_font)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Power"])
-        # self._option_box.setItemDelegate(QtWidgets.QStyledItemDelegate())
-        self._option_box.setStyleSheet("""
-            QComboBox {
-                color: #E5E5E5;
-                background-color: #282828;
-                border-radius: 5px;
-                min-width: 5px;
-                min-height:  24px;
-                padding-left: 10px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: 0px;
-            }
-            QComboBox::drop-down {
-                background-color: #545454;
-                subcontrol-origin: border;
-                subcontrol-position: top right;
-                width: 20px;
-                border-top-right-radius: 5px;
-                border-bottom-right-radius: 5px;
-                border-top-left-radius: 0px;
-                border-bottom-left-radius: 0px;
-            }
-            QComboBox::down-arrow {
-                image: url(icon:images_dark-light/down_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-        """)
-        item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
-        item_list_view.setSpacing(2)
-        item_list_view.setStyleSheet("""
-            QAbstractItemView {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                selection-background-color: #4772B3;
-                border-radius: 5px;
-                min-width: 20px;
-                min-height: 24px;
-                padding-left: 5px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: 0px;
-            }
-        """)
-
-        #     QAbstractItemView::item {
-        #         color: #E5E5E5;
-        #         background-color: #282828;
-        #         border-radius: 0px;
-        #         padding-left: 0px;
-        #     }
-        # """)
-
-        self._content_layout.addWidget(self._option_box)
-
-        self._socket_widgets: list = [
-            SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
-            SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
-            SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
-        ]
-        for widget in self._socket_widgets:
-            self._content_layout.addWidget(widget)
-
-        self._content: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
-        self._content.setWidget(self._content_widget)
-        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
-                                                          self._header_height + self._content_padding,
-                                                          self._width - 2 * self._content_padding,
-                                                          self._content_widget.height())
-
-        self._content.setGeometry(self._content_rect)
-        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
-        self.update_socket_pin_items()
-
-    @staticmethod
-    def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
-        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
-
-        cropped_text: str = "..."
-        string_idx: int = 0
-        while all([font_metrics.horizontalAdvance(cropped_text) < width - font_metrics.horizontalAdvance("..."),
-                   string_idx < len(text)]):
-            cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
-            string_idx += 1
-
-        if string_idx == len(text):
-            cropped_text: str = cropped_text[:len(text)]
-
-        return cropped_text
-
-    @property
-    def header_height(self) -> int:
-        return self._header_height
-
-    @property
-    def is_collapsed(self) -> bool:
-        return self._is_collapsed
-
-    @property
-    def content_y_pos(self) -> float:
-        return self._content_y_pos
-
-    @property
-    def default_font(self) -> QtGui.QFont:
-        return self._default_font
-
-    @property
-    def default_font_color(self) -> QtGui.QColor:
-        return self._default_font_color
-
-    def update_socket_pin_items(self) -> None:
-        for widget in self._socket_widgets:
-            widget.update_socket_positions()
-
-    def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, self._height)
-
-    def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
-        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
-            new_pos: QtCore.QPointF = value
-
-            snapping_step: int = 10
-            x_snap = new_pos.x() // snapping_step * snapping_step
-            y_snap = new_pos.y() // snapping_step * snapping_step
-            return QtCore.QPointF(x_snap, y_snap)
-        else:
-            return super().itemChange(change, value)
-
-    def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        super().mousePressEvent(event)
-
-        self.setZValue(1)
-
-        if event.button() == QtCore.Qt.LeftButton:
-            if event.pos().x() > self.boundingRect().width() - 10:
-                self._mode: str = "RESIZE"
-                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
-
-            collapse_item_left: float = 0  # self._collapse_item.x()
-            collapse_item_right: float = self._title_x
-            # collapse_item_right: float = self._collapse_item.x() + self._collapse_item.boundingRect().width()
-            collapse_item_top: float = 0  # self._collapse_item.y()
-            collapse_item_bottom: float = self._header_height
-            # collapse_item_bottom: float = self._collapse_item.y() + self._collapse_item.boundingRect().height()
-
-            if collapse_item_left <= event.pos().x() <= collapse_item_right:
-                if collapse_item_top <= event.pos().y() <= collapse_item_bottom:
-                    self._mode: str = "COLLAPSE"
-                    if not self._is_collapsed:
-                        self._collapse_item.setPixmap(self._collapse_pixmap_up)
-                        self._content.hide()
-                        self._height = self._min_height
-
-                    else:
-                        self._collapse_item.setPixmap(self._collapse_pixmap_down)
-                        self._content.show()
-                        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
-                                        self._content_padding)
-
-                    self._is_collapsed = not self._is_collapsed
-                    self.update_socket_pin_items()
-
-    def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        if self._mode == "RESIZE":
-            old_x_left: float = self.boundingRect().x()
-            old_y_top: float = self.boundingRect().y()
-
-            old_top_left_local: QtCore.QPointF = QtCore.QPointF(old_x_left, old_y_top)
-            old_top_left_global: QtCore.QPointF = self.mapToScene(old_top_left_local)
-
-            current_x: int = self.mapToScene(event.pos()).x()
-            new_width: float = current_x - old_top_left_global.x()
-            if new_width < self._min_width:
-                new_width: float = self._min_width
-
-            self._width = new_width
-            self._shadow.updateBoundingRect()
-            self._title_item.setPlainText(
-                self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._default_font)
-            )
-            self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
-                                                              self._header_height + self._content_padding,
-                                                              self._width - 2 * self._content_padding,
-                                                              self._content_widget.height())
-            self._content.setGeometry(self._content_rect)
-
-            self.update_socket_pin_items()
-
-        else:
-            super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
-        super().mouseReleaseEvent(event)
-
-        intersection_items: list = self.scene().collidingItems(self)
-        self.setZValue(0)
-
-        for item in intersection_items:
-            if type(item) == self.__class__:
-                item.stackBefore(self)
-
-        self._mode = ""
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
-
-    def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverMoveEvent(event)
-
-        if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
-            if QtWidgets.QApplication.overrideCursor() != QtCore.Qt.SizeHorCursor:
-                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
-        else:
-            QtWidgets.QApplication.restoreOverrideCursor()
-
-    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverLeaveEvent(event)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-              widget: Optional[QtWidgets.QWidget] = None) -> None:
-
-        painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(self._node_background_color)
-        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-
-        rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
-        painter.setBrush(self._header_background_color)
-        painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
-
-        painter.setBrush(QtCore.Qt.NoBrush)
-        if self.isSelected():
-            painter.setPen(self._selected_border_pen)
-        else:
-            painter.setPen(self._default_border_pen)
-        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-
-        if not self._is_collapsed:
-            pass
-            # pen_green: QtGui.QPen = QtGui.QPen(QtGui.QColor("green"))
-            # pen_green.setWidth(10)
-            # painter.setPen(pen_green)
-            # socket_pos_1: QtCore.QPointF = QtCore.QPointF(0, self._line_edit_1.y() + self._header_height +
-            #                                               self._content_padding + self._line_edit_1.height()/2)
-            # painter.drawPoints([socket_pos_1])
-
-
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -885,15 +873,15 @@ if __name__ == "__main__":
     cl_graphics_view.resize(1200, 600)
     cl_graphics_view.show()
 
-    my_item_1 = GraphicsNodeItem()
+    my_item_1 = Node()
     my_item_1.setPos(QtCore.QPointF(31600, 31800))
     cl_graphics_scene.add_node(my_item_1)
 
-    my_item_2 = GraphicsNodeItem()
+    my_item_2 = Node()
     my_item_2.setPos(QtCore.QPointF(32200, 32050))
     cl_graphics_scene.add_node(my_item_2)
 
-    my_item_3 = GraphicsNodeItem()
+    my_item_3 = Node()
     my_item_3.setPos(QtCore.QPointF(31900, 32100))
     cl_graphics_scene.add_node(my_item_3)
 
