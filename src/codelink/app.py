@@ -652,8 +652,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         self._last_press_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_press_item: Optional[QtWidgets.QGraphicsItem] = None
-        self._last_release_item: Optional[QtWidgets.QGraphicsItem] = None
-
         self._last_press_socket: Optional[Socket] = None
         self._temp_edge: Optional[Edge] = None
 
@@ -677,7 +675,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._last_press_pos: QtCore.QPointF = self.mapToScene(event.pos())
         self._last_press_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-        if event.button() == QtCore.Qt.LeftButton:
+        if event.button() == QtCore.Qt.LeftButton and self._mode == "":
             self._lm_pressed: bool = True
 
             if type(self._last_press_item) == Socket:
@@ -718,7 +716,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
 
-        if event.button() == QtCore.Qt.MiddleButton:
+        if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
@@ -747,11 +745,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        self._last_release_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
-
         if self._mode == "EDGE_ADD":
-            if type(self._last_release_item) == Socket:
-                self._temp_edge.end_socket = self._last_release_item
+            if type(self.itemAt(event.pos())) == Socket:
+                self._temp_edge.end_socket = self.itemAt(event.pos())
 
                 # Validate edge here!
                 socket_type_start: object = self._temp_edge.start_socket.socket_widget.socket_type
@@ -784,10 +780,16 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 print("Can't connect without destination!")
                 self.scene().remove_edge(self._temp_edge)
 
-        self._mode: str = ""
+            self._last_press_socket.socket_widget.update_stylesheets()
+
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
-        self._last_press_socket.socket_widget.update_stylesheets()
+        self._mode: str = ""
+        # self._last_press_pos: QtCore.QPoint = QtCore.QPoint()
+        # self._last_press_item: Optional[QtWidgets.QGraphicsItem] = None
+        # self._last_release_item: Optional[QtWidgets.QGraphicsItem] = None
+        # self._last_press_socket: Optional[Socket] = None
+        # self._temp_edge: Optional[Edge] = None
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
