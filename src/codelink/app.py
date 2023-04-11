@@ -728,9 +728,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                     print("Nodes:", len(self.scene().graph.nodes),
                           "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
-                    nx.draw(self.scene().graph)
-                    plt.show()
-
+                    # nx.draw(self.scene().graph)
+                    # plt.show()
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
@@ -806,9 +805,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                         print("Nodes:", len(self.scene().graph.nodes),
                               "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
-                        nx.draw(self.scene().graph)
-                        plt.show()
-
+                        # nx.draw(self.scene().graph)
+                        # plt.show()
 
                 else:
                     print("Can't connect incompatible socket types!")
