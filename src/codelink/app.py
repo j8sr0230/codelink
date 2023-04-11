@@ -652,9 +652,10 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         self._last_press_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_press_item: Optional[QtWidgets.QGraphicsItem] = None
-        self._current_socket: Optional[Socket] = None
+        self._last_release_item: Optional[QtWidgets.QGraphicsItem] = None
+
         self._last_press_socket: Optional[Socket] = None
-        self._temp_edge: Optionl[Edge] = None
+        self._temp_edge: Optional[Edge] = None
 
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
@@ -710,8 +711,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target.setBrush(self._current_socket.color)
-                    temp_target.setPos(self._current_socket.parentItem().mapToScene(self._current_socket.center()))
+                    temp_target.setBrush(self._last_press_item.color)
+                    temp_target.setPos(self._last_press_item.parentItem().mapToScene(self._last_press_item.center()))
                     temp_target.setZValue(-1)
 
                     self._temp_edge.end_socket = temp_target
@@ -725,12 +726,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        #self._last_press_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
-
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == Socket:
-                #self._current_socket: QtWidgets.QGraphicsItem = self._last_press_item
-
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )
@@ -750,15 +747,13 @@ class NodeEditorView(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        self._last_press_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
+        self._last_release_item: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
         if self._mode == "EDGE_ADD":
-            if type(self._last_press_item) == Socket:
-                self._current_socket = self._last_press_item
+            if type(self._last_release_item) == Socket:
+                self._temp_edge.end_socket = self._last_release_item
 
-                self._temp_edge.end_socket = self._last_press_item
-                print("Add edge (validate edge here)!")
-
+                # Validate edge here!
                 socket_type_start: object = self._temp_edge.start_socket.socket_widget.socket_type
                 socket_type_end: object = self._temp_edge.end_socket.socket_widget.socket_type
                 if socket_type_start == socket_type_end:
@@ -777,32 +772,22 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
-                        print("Can connect!")
+                        print("Connect!")
                         self._temp_edge.start_socket.add_edge(self._temp_edge)
                         self._temp_edge.end_socket.add_edge(self._temp_edge)
                         self._temp_edge.sort_sockets()
-
-                        print("Start", self._temp_edge.start_socket.parentItem())
-                        print("End", self._temp_edge.end_socket.parentItem())
-
-                        self._temp_edge.start_socket.socket_widget.update_stylesheets()
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
-                        self._last_press_socket.socket_widget.update_stylesheets()
-
                 else:
-                    print("Can't connect!")
+                    print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
-
             else:
-                print("No target - remove temporary edge!")
+                print("Can't connect without destination!")
                 self.scene().remove_edge(self._temp_edge)
-
-            self._temp_edge: Optional[Edge] = None
-            self._current_socket.socket_widget.update_stylesheets()
 
         self._mode: str = ""
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
+        self._last_press_socket.socket_widget.update_stylesheets()
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
