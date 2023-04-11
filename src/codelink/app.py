@@ -621,7 +621,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
 
         self._graph.add_node(node)
-        print("Nodes:", len(self._graph.nodes),
+        print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
               "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
         print(self._graph.nodes)
 
@@ -630,9 +630,9 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self.removeItem(node)
 
         self._graph.remove_node(node)
-        print("Nodes:", len(self._graph.nodes),
+        print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
               "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
-        print(self._nodes)
+        print(self._graph.nodes)
 
     def add_edge(self, edge: 'Edge') -> None:
         self._edges.append(edge)
@@ -732,7 +732,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self._temp_edge.end_socket.parentItem()
                     )
 
-                    print("Nodes:", len(self.scene().graph.nodes),
+                    print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
                           "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
                     print(self.scene().graph.nodes)
 
@@ -811,9 +811,10 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             self._temp_edge.end_socket.parentItem()
                         )
 
-                        print("Nodes:", len(self.scene().graph.nodes),
+                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
                               "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
                         print(self.scene().graph.nodes)
+
                         # nx.draw(self.scene().graph)
                         # plt.show()
 
@@ -860,23 +861,23 @@ if __name__ == "__main__":
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
     QtCore.QDir.addSearchPath('icon', os.path.abspath(os.path.dirname(__file__)))
 
-    cl_graphics_scene: NodeEditorScene = NodeEditorScene()
-    cl_graphics_view: NodeEditorView = NodeEditorView()
+    node_editor_scene: NodeEditorScene = NodeEditorScene()
+    node_editor_view: NodeEditorView = NodeEditorView()
 
-    cl_graphics_view.setScene(cl_graphics_scene)
-    cl_graphics_view.resize(1200, 600)
-    cl_graphics_view.show()
+    node_editor_view.setScene(node_editor_scene)
+    node_editor_view.resize(1200, 600)
+    node_editor_view.show()
 
-    my_item_1 = Node()
-    my_item_1.setPos(QtCore.QPointF(31600, 31800))
-    cl_graphics_scene.add_node(my_item_1)
+    node_1 = Node()
+    node_1.setPos(QtCore.QPointF(31600, 31800))
+    node_editor_scene.add_node(node_1)
 
-    my_item_2 = Node()
-    my_item_2.setPos(QtCore.QPointF(32200, 32050))
-    cl_graphics_scene.add_node(my_item_2)
+    node_2 = Node()
+    node_2.setPos(QtCore.QPointF(32200, 32050))
+    node_editor_scene.add_node(node_2)
 
-    my_item_3 = Node()
-    my_item_3.setPos(QtCore.QPointF(31900, 32100))
-    cl_graphics_scene.add_node(my_item_3)
+    node_3 = Node()
+    node_3.setPos(QtCore.QPointF(31900, 32100))
+    node_editor_scene.add_node(node_3)
 
     sys.exit(app.exec_())
