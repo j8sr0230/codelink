@@ -602,7 +602,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self._grid_pen: QtGui.QPen = QtGui.QPen(self._grid_color)
         self._grid_pen.setWidth(5)
 
-        # self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
     def add_node(self, node: 'Node') -> None:
         self._nodes.append(node)
@@ -729,8 +729,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )
-                snap_x: float = snapping_pos.x() + self._last_press_item.size / 2
-                snap_y: float = snapping_pos.y() + self._last_press_item.size / 2
+                snap_x: float = snapping_pos.x() + self.itemAt(event.pos()).size / 2
+                snap_y: float = snapping_pos.y() + self.itemAt(event.pos()).size / 2
                 self._temp_edge.end_socket.setPos(snap_x, snap_y)
             else:
                 self._temp_edge.end_socket.setPos(self.mapToScene(event.pos()))
@@ -785,11 +785,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
         self._mode: str = ""
-        # self._last_press_pos: QtCore.QPoint = QtCore.QPoint()
-        # self._last_press_item: Optional[QtWidgets.QGraphicsItem] = None
-        # self._last_release_item: Optional[QtWidgets.QGraphicsItem] = None
-        # self._last_press_socket: Optional[Socket] = None
-        # self._temp_edge: Optional[Edge] = None
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
