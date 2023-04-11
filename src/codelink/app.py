@@ -621,12 +621,18 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
 
         self._graph.add_node(node)
+        print("Nodes:", len(self._graph.nodes),
+              "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
+        print(self._graph.nodes)
 
     def remove_node(self, node: 'Node') -> None:
         self._nodes.remove(node)
         self.removeItem(node)
 
         self._graph.remove_node(node)
+        print("Nodes:", len(self._graph.nodes),
+              "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
+        print(self._nodes)
 
     def add_edge(self, edge: 'Edge') -> None:
         self._edges.append(edge)
@@ -728,6 +734,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                     print("Nodes:", len(self.scene().graph.nodes),
                           "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                    print(self.scene().graph.nodes)
+
                     # nx.draw(self.scene().graph)
                     # plt.show()
 
@@ -805,6 +813,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                         print("Nodes:", len(self.scene().graph.nodes),
                               "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                        print(self.scene().graph.nodes)
                         # nx.draw(self.scene().graph)
                         # plt.show()
 
