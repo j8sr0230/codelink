@@ -766,7 +766,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
-                        print("Connect!")
+                        print("Connected!")
                         self._temp_edge.start_socket.add_edge(self._temp_edge)
                         self._temp_edge.end_socket.add_edge(self._temp_edge)
                         self._temp_edge.sort_sockets()
