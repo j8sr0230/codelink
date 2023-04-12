@@ -781,10 +781,12 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     for socket in connected_sockets:
                         socket.remove_edge(self._temp_edge)
 
-                    self.scene().graph.remove_edge(
-                        self._temp_edge.start_socket.parentItem(),
-                        self._temp_edge.end_socket.parentItem()
-                    )
+                    if self.scene().graph.has_edge(self._temp_edge.start_socket.parentItem(),
+                                                   self._temp_edge.end_socket.parentItem()):
+                        self.scene().graph.remove_edge(
+                            self._temp_edge.start_socket.parentItem(),
+                            self._temp_edge.end_socket.parentItem()
+                        )
 
                     print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
                     print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
@@ -792,7 +794,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     print("graph_ends", len(self.scene().graph_ends()))
                     print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
                     print("successors", [len(node.successors()) for node in self.scene().nodes])
-                    print("Is cyclic:", self.scene().is_cyclic())
 
                     # nx.draw(self.scene().graph)
                     # plt.show()
@@ -858,50 +859,35 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
-                        print("Connected!")
-                        self._temp_edge.start_socket.add_edge(self._temp_edge)
-                        self._temp_edge.end_socket.add_edge(self._temp_edge)
-                        self._temp_edge.sort_sockets()
-                        self._temp_edge.end_socket.socket_widget.update_stylesheets()
-
                         self.scene().graph.add_edge(
                             self._temp_edge.start_socket.parentItem(),
                             self._temp_edge.end_socket.parentItem()
                         )
 
-                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
-                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
-                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
-                        print("graph_ends", len(self.scene().graph_ends()))
-                        print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
-                        print("successors", [len(node.successors()) for node in self.scene().nodes])
-                        print("Is cyclic:", self.scene().is_cyclic())
-
-                        # nx.draw(self.scene().graph)
-                        # plt.show()
-
                         if self.scene().is_cyclic():
-                            print("Cyclic graph!")
-                            connected_sockets: list[QtWidgets.QGraphicsItem] = [
-                                self._temp_edge.start_socket,
-                                self._temp_edge.end_socket
-                            ]
-                            for socket in connected_sockets:
-                                socket.remove_edge(self._temp_edge)
-
+                            print("Can't connect cyclic graph!")
                             self.scene().graph.remove_edge(
                                 self._temp_edge.start_socket.parentItem(),
                                 self._temp_edge.end_socket.parentItem()
                             )
                             self.scene().remove_edge(self._temp_edge)
 
-                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
-                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
-                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
-                        print("graph_ends", len(self.scene().graph_ends()))
-                        print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
-                        print("successors", [len(node.successors()) for node in self.scene().nodes])
-                        print("Is cyclic:", self.scene().is_cyclic())
+                        else:
+                            print("Connected!")
+                            self._temp_edge.start_socket.add_edge(self._temp_edge)
+                            self._temp_edge.end_socket.add_edge(self._temp_edge)
+                            self._temp_edge.sort_sockets()
+                            self._temp_edge.end_socket.socket_widget.update_stylesheets()
+
+                            print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
+                            print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
+                            print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
+                            print("graph_ends", len(self.scene().graph_ends()))
+                            print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
+                            print("successors", [len(node.successors()) for node in self.scene().nodes])
+
+                            # nx.draw(self.scene().graph)
+                            # plt.show()
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
