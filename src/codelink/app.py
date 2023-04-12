@@ -302,7 +302,7 @@ class Node(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._visited: int = 0
+        # self._visited: int = 0
 
         self._title: str = "Node Name"
         self._socket_widgets: list[Optional[QtWidgets.QWidget]] = []
