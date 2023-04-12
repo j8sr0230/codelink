@@ -694,7 +694,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         return result
 
     def is_cyclic(self) -> bool:
-        return len(list(nx.simple_cycles(self.scene().graph))) > 0
+        return len(list(nx.simple_cycles(self._graph))) > 0
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
@@ -880,6 +880,28 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         # nx.draw(self.scene().graph)
                         # plt.show()
 
+                        if self.scene().is_cyclic():
+                            print("Cyclic graph!")
+                            connected_sockets: list[QtWidgets.QGraphicsItem] = [
+                                self._temp_edge.start_socket,
+                                self._temp_edge.end_socket
+                            ]
+                            for socket in connected_sockets:
+                                socket.remove_edge(self._temp_edge)
+
+                            self.scene().graph.remove_edge(
+                                self._temp_edge.start_socket.parentItem(),
+                                self._temp_edge.end_socket.parentItem()
+                            )
+                            self.scene().remove_edge(self._temp_edge)
+
+                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
+                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
+                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
+                        print("graph_ends", len(self.scene().graph_ends()))
+                        print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
+                        print("successors", [len(node.successors()) for node in self.scene().nodes])
+                        print("Is cyclic:", self.scene().is_cyclic())
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
