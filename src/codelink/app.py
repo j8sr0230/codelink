@@ -689,16 +689,21 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
                 result.append(node)
         return result
 
-    def is_cyclic(self, current_node: Node, checker_node: Node) -> bool:
-        print(current_node.has_in_edges())
-        while current_node.has_in_edges():
-            print(current_node.predecessors())
-            for node in current_node.predecessors():
-                if node == checker_node:
-                    break
-                self.is_cyclic(node, checker_node)
-            break
-        return False
+    def _is_cyclic(self, checker_node: Node, travel_node: Node, visit_count: int = 0) -> bool:
+        if travel_node == checker_node:
+            visit_count += 1
+
+        if visit_count == 2:
+            return True
+
+        if not travel_node.has_in_edges():
+            return False
+        else:
+            for node in travel_node.predecessors():
+                return self._is_cyclic(node, checker_node, visit_count)
+
+    def is_cyclic(self, checker_node: Node) -> bool:
+        return self._is_cyclic(checker_node, checker_node, 0)
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
@@ -798,10 +803,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     print("graph_ends", len(self.scene().graph_ends()))
                     print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
                     print("successors", [len(node.successors()) for node in self.scene().nodes])
-                    # for end_node in self.scene().graph_ends():
-                    # #     #print("is_cyclic", self.scene().is_cyclic(end_node, end_node))
-                    #      print(end_node)
-
+                    for node in self.scene().nodes:
+                        print("is_cyclic", self.scene()._is_cyclic(node, node))
 
                     # nx.draw(self.scene().graph)
                     # plt.show()
@@ -886,10 +889,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         print("graph_ends", len(self.scene().graph_ends()))
                         print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
                         print("successors", [len(node.successors()) for node in self.scene().nodes])
-                        # for end_node in self.scene().graph_ends():
-                        #     #print(end_node)
-                        #     print("is_cyclic", self.scene().is_cyclic(end_node, end_node))
-                        print("is_cyclic", self.scene().is_cyclic(self.scene().nodes[0], self.scene().nodes[0]))
+                        for node in self.scene().nodes:
+                            print("is_cyclic", self.scene()._is_cyclic(node, node))
 
                         # nx.draw(self.scene().graph)
                         # plt.show()
