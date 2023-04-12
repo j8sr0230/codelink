@@ -460,13 +460,13 @@ class Node(QtWidgets.QGraphicsItem):
 
         return cropped_text
 
-    @property
-    def visited(self) -> int:
-        return self._visited
-
-    @visited.setter
-    def visited(self, value: int) -> None:
-        self._visited = value
+    # @property
+    # def visited(self) -> int:
+    #     return self._visited
+    #
+    # @visited.setter
+    # def visited(self, value: int) -> None:
+    #     self._visited = value
 
     @property
     def header_height(self) -> int:
