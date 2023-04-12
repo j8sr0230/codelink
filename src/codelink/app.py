@@ -7,8 +7,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-import networkx as nx
-import matplotlib.pyplot as plt
+# import networkx as nx
+# import matplotlib.pyplot as plt
 
 
 class Socket(QtWidgets.QGraphicsItem):
@@ -470,6 +470,18 @@ class Node(QtWidgets.QGraphicsItem):
     def font(self) -> QtGui.QFont:
         return self._font
 
+    def has_in_edges(self) -> bool:
+        for socket_widget in self._socket_widgets:
+            if socket_widget.is_input and socket_widget.has_edges():
+                return True
+        return False
+
+    def has_out_edges(self) -> bool:
+        for socket_widget in self._socket_widgets:
+            if not socket_widget.is_input and socket_widget.has_edges():
+                return True
+        return False
+
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
             widget.update_socket_positions()
@@ -596,7 +608,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._graph: nx.DiGraph = nx.DiGraph()
+        # self._graph: nx.DiGraph = nx.DiGraph()
         self._nodes: list[Optional[Node]] = []
         self._edges: list[Optional[Edge]] = []
 
@@ -608,31 +620,39 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
-    @property
-    def graph(self) -> nx.DiGraph:
-        return self._graph
+    # @property
+    # def graph(self) -> nx.DiGraph:
+    #     return self._graph
+    #
+    # @graph.setter
+    # def graph(self, value: nx.DiGraph) -> None:
+    #     self._graph: nx.DiGraph = value
 
-    @graph.setter
-    def graph(self, value: nx.DiGraph) -> None:
-        self._graph: nx.DiGraph = value
+    @property
+    def nodes(self) -> list[Optional[Node]]:
+        return self._nodes
+
+    @nodes.setter
+    def nodes(self, value: list[Optional[Node]]) -> None:
+        self._nodes: list[Optional[Node]] = value
 
     def add_node(self, node: 'Node') -> None:
         self._nodes.append(node)
         self.addItem(node)
 
-        self._graph.add_node(node)
-        print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
-              "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
-        print([item[0] for item in self._graph.out_degree if item[1] == 0])
+        # self._graph.add_node(node)
+        # print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
+        #       "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
+        # print([item[0] for item in self._graph.out_degree if item[1] == 0])
 
     def remove_node(self, node: 'Node') -> None:
         self._nodes.remove(node)
         self.removeItem(node)
 
-        self._graph.remove_node(node)
-        print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
-              "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
-        print([item[0] for item in self._graph.out_degree if item[1] == 0])
+        # self._graph.remove_node(node)
+        # print("Nodes:", len(self._graph.nodes), "Edges:", len(self._graph.edges),
+        #       "Is cyclic:", len(list(nx.simple_cycles(self._graph))) > 0)
+        # print([item[0] for item in self._graph.out_degree if item[1] == 0])
 
     def add_edge(self, edge: 'Edge') -> None:
         self._edges.append(edge)
@@ -641,6 +661,13 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def remove_edge(self, edge: 'Edge') -> None:
         self._edges.remove(edge)
         self.removeItem(edge)
+
+    def graph_ends(self) -> list[Optional[Node]]:
+        result: list[Optional[Node]] = []
+        for node in self._nodes:
+            if not node.has_out_edges():
+                result.append(node)
+        return result
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
@@ -727,14 +754,17 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     for socket in connected_sockets:
                         socket.remove_edge(self._temp_edge)
 
-                    self.scene().graph.remove_edge(
-                        self._temp_edge.start_socket.parentItem(),
-                        self._temp_edge.end_socket.parentItem()
-                    )
+                    # self.scene().graph.remove_edge(
+                    #     self._temp_edge.start_socket.parentItem(),
+                    #     self._temp_edge.end_socket.parentItem()
+                    # )
 
-                    print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
-                          "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
-                    print([item[0] for item in self.scene().graph.out_degree if item[1] == 0])
+                    # print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
+                    #       "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                    # print([item[0] for item in self.scene().graph.out_degree if item[1] == 0])
+                    print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
+                    print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
+                    print("graph_ends", len(self.scene().graph_ends()))
 
                     # nx.draw(self.scene().graph)
                     # plt.show()
@@ -806,14 +836,17 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self._temp_edge.sort_sockets()
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
 
-                        self.scene().graph.add_edge(
-                            self._temp_edge.start_socket.parentItem(),
-                            self._temp_edge.end_socket.parentItem()
-                        )
+                        # self.scene().graph.add_edge(
+                        #     self._temp_edge.start_socket.parentItem(),
+                        #     self._temp_edge.end_socket.parentItem()
+                        # )
 
-                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
-                              "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
-                        print([item[0] for item in self.scene().graph.out_degree if item[1] == 0])
+                        # print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges),
+                        #       "Is cyclic:", len(list(nx.simple_cycles(self.scene().graph))) > 0)
+                        # print([item[0] for item in self.scene().graph.out_degree if item[1] == 0])
+                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
+                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
+                        print("graph_ends", len(self.scene().graph_ends()))
 
                         # nx.draw(self.scene().graph)
                         # plt.show()
