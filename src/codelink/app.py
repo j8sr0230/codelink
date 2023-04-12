@@ -302,8 +302,6 @@ class Node(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        # self._visited: int = 0
-
         self._title: str = "Node Name"
         self._socket_widgets: list[Optional[QtWidgets.QWidget]] = []
 
@@ -459,14 +457,6 @@ class Node(QtWidgets.QGraphicsItem):
             cropped_text: str = cropped_text[:len(text)]
 
         return cropped_text
-
-    # @property
-    # def visited(self) -> int:
-    #     return self._visited
-    #
-    # @visited.setter
-    # def visited(self, value: int) -> None:
-    #     self._visited = value
 
     @property
     def header_height(self) -> int:
@@ -885,9 +875,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             print("graph_ends", len(self.scene().graph_ends()))
                             print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
                             print("successors", [len(node.successors()) for node in self.scene().nodes])
-
-                            # nx.draw(self.scene().graph)
-                            # plt.show()
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
