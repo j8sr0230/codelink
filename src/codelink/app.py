@@ -302,6 +302,8 @@ class Node(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        self._visited_count: int = 0
+
         self._title: str = "Node Name"
         self._socket_widgets: list[Optional[QtWidgets.QWidget]] = []
 
@@ -457,6 +459,14 @@ class Node(QtWidgets.QGraphicsItem):
             cropped_text: str = cropped_text[:len(text)]
 
         return cropped_text
+
+    @property
+    def visited_count(self) -> int:
+        return self._visited_count
+
+    @visited_count.setter
+    def visited_count(self, value: int) -> None:
+        self._visited_count: int = value
 
     @property
     def header_height(self) -> int:
@@ -686,6 +696,24 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def is_cyclic(self) -> bool:
         return len(list(nx.simple_cycles(self._graph))) > 0
 
+    def _has_cycle(self, visited_node: Node) -> bool:
+        visited_node.visited_count += 1
+
+        if visited_node.visited_count > 1: # len(visited_node.successors()):
+            return True
+
+        temp_res: list[bool] = []
+        for node in visited_node.predecessors():
+            temp_res.append(self._has_cycle(node))
+
+        return any(temp_res)
+
+    def has_cycle(self, visited_node: Node) -> bool:
+        for node in self._nodes:
+            node.visited_count = 0
+
+        return self._has_cycle(visited_node)
+
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
 
@@ -849,32 +877,36 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
-                        self.scene().graph.add_edge(
-                            self._temp_edge.start_socket.parentItem(),
-                            self._temp_edge.end_socket.parentItem()
-                        )
+                        # self.scene().graph.add_edge(
+                        #     self._temp_edge.start_socket.parentItem(),
+                        #     self._temp_edge.end_socket.parentItem()
+                        # )
+                        #
+                        # if self.scene().is_cyclic():
+                        #     print("Can't connect cyclic graph!")
+                        #     self.scene().graph.remove_edge(
+                        #         self._temp_edge.start_socket.parentItem(),
+                        #         self._temp_edge.end_socket.parentItem()
+                        #     )
+                        #     self.scene().remove_edge(self._temp_edge)
+                        #
+                        # else:
+                        print("Connected!")
+                        self._temp_edge.start_socket.add_edge(self._temp_edge)
+                        self._temp_edge.end_socket.add_edge(self._temp_edge)
+                        self._temp_edge.sort_sockets()
+                        self._temp_edge.end_socket.socket_widget.update_stylesheets()
 
-                        if self.scene().is_cyclic():
-                            print("Can't connect cyclic graph!")
-                            self.scene().graph.remove_edge(
-                                self._temp_edge.start_socket.parentItem(),
-                                self._temp_edge.end_socket.parentItem()
-                            )
-                            self.scene().remove_edge(self._temp_edge)
+                        print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
+                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
+                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
+                        print("graph_ends", len(self.scene().graph_ends()))
+                        print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
+                        print("successors", [len(node.successors()) for node in self.scene().nodes])
+                        print(self.scene().has_cycle(self.scene().nodes[0]))
+                        print(self.scene().has_cycle(self.scene().nodes[1]))
+                        print(self.scene().has_cycle(self.scene().nodes[2]))
 
-                        else:
-                            print("Connected!")
-                            self._temp_edge.start_socket.add_edge(self._temp_edge)
-                            self._temp_edge.end_socket.add_edge(self._temp_edge)
-                            self._temp_edge.sort_sockets()
-                            self._temp_edge.end_socket.socket_widget.update_stylesheets()
-
-                            print("Nodes:", len(self.scene().graph.nodes), "Edges:", len(self.scene().graph.edges))
-                            print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
-                            print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
-                            print("graph_ends", len(self.scene().graph_ends()))
-                            print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
-                            print("successors", [len(node.successors()) for node in self.scene().nodes])
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
