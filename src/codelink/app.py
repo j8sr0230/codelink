@@ -302,7 +302,7 @@ class Node(QtWidgets.QGraphicsItem):
         self._visited_count: int = 0
 
         self._title: str = "Node Name"
-        self._socket_widgets: list[Optional[QtWidgets.QWidget]] = []
+        self._socket_widgets: list[QtWidgets.QWidget] = []
 
         self._title_x: int = 20
         self._min_width: int = 80
@@ -493,16 +493,16 @@ class Node(QtWidgets.QGraphicsItem):
                 return True
         return False
 
-    def predecessors(self) -> list[Optional['Node']]:
-        result: list[Optional['Node']] = []
+    def predecessors(self) -> list['Node']:
+        result: list['Node'] = []
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input:
                 for edge in socket_widget.socket.edges:
                     result.append(edge.start_socket.parentItem())
         return result
 
-    def successors(self) -> list[Optional['Node']]:
-        result: list[Optional['Node']] = []
+    def successors(self) -> list['Node']:
+        result: list['Node'] = []
         for socket_widget in self._socket_widgets:
             if not socket_widget.is_input:
                 for edge in socket_widget.socket.edges:
@@ -512,6 +512,9 @@ class Node(QtWidgets.QGraphicsItem):
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
             widget.update_socket_positions()
+
+    def eval(self) -> None:
+        print("Hello", self._title)
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -635,8 +638,8 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._nodes: list[Optional[Node]] = []
-        self._edges: list[Optional[Edge]] = []
+        self._nodes: list[Node] = []
+        self._edges: list[Edge] = []
 
         self._grid_spacing: int = 50
         self._background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -647,37 +650,37 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
 
     @property
-    def nodes(self) -> list[Optional[Node]]:
+    def nodes(self) -> list[Node]:
         return self._nodes
 
     @nodes.setter
-    def nodes(self, value: list[Optional[Node]]) -> None:
-        self._nodes: list[Optional[Node]] = value
+    def nodes(self, value: list[Node]) -> None:
+        self._nodes: list[Node] = value
 
-    def add_node(self, node: 'Node') -> None:
+    def add_node(self, node: Node) -> None:
         self._nodes.append(node)
         self.addItem(node)
 
-    def remove_node(self, node: 'Node') -> None:
+    def remove_node(self, node: Node) -> None:
         self._nodes.remove(node)
         self.removeItem(node)
 
-    def add_edge(self, edge: 'Edge') -> None:
+    def add_edge(self, edge: Edge) -> None:
         self._edges.append(edge)
         self.addItem(edge)
 
-    def remove_edge(self, edge: 'Edge') -> None:
+    def remove_edge(self, edge: Edge) -> None:
         self._edges.remove(edge)
         self.removeItem(edge)
 
-    def graph_ends(self) -> list[Optional[Node]]:
-        result: list[Optional[Node]] = []
+    def graph_ends(self) -> list[Node]:
+        result: list[Node] = []
         for node in self._nodes:
             if not node.has_out_edges():
                 result.append(node)
         return result
 
-    def _node_cyclic(self, visited_node: Node) -> bool:
+    def _is_node_cyclic(self, visited_node: Node) -> bool:
         visited_node.visited_count += 1
 
         if visited_node.visited_count > len(visited_node.successors()) + 1:
@@ -685,18 +688,18 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
 
         temp_res: list[bool] = []
         for node in visited_node.predecessors():
-            temp_res.append(self._node_cyclic(node))
+            temp_res.append(self._is_node_cyclic(node))
         return any(temp_res)
 
-    def node_cyclic(self, visited_node: Node) -> bool:
+    def is_node_cyclic(self, visited_node: Node) -> bool:
         for node in self._nodes:
             node.visited_count = 0
-        return self._node_cyclic(visited_node)
+        return self._is_node_cyclic(visited_node)
 
-    def is_cyclic(self) -> bool:
+    def is_graph_cyclic(self) -> bool:
         temp_res: list[bool] = []
         for node in self._nodes:
-            temp_res.append(self.node_cyclic(node))
+            temp_res.append(self.is_node_cyclic(node))
         return any(temp_res)
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
@@ -862,9 +865,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         print("graph_ends", len(self.scene().graph_ends()))
                         print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
                         print("successors", [len(node.successors()) for node in self.scene().nodes])
-                        print("is_cyclic", self.scene().is_cyclic())
+                        print("is_graph_cyclic", self.scene().is_graph_cyclic())
 
-                        if self.scene().is_cyclic():
+                        if self.scene().is_graph_cyclic():
                             print("Can't connect cyclic graph!")
                             connected_sockets: list[QtWidgets.QGraphicsItem] = [
                                 self._temp_edge.start_socket,
