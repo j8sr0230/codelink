@@ -1,6 +1,7 @@
 import os
 import sys
 import math
+import pickle
 from typing import Optional, Any, Union
 
 import PySide2.QtCore as QtCore
@@ -687,6 +688,29 @@ class Node(QtWidgets.QGraphicsItem):
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
+    def __getstate__(self) -> dict:
+        print("__getstate__")
+
+        state: dict = {
+            "x": self.x(),
+            "y": self.y(),
+            "width": self._width,
+            "is_collapsed": self._is_collapsed
+        }
+
+        return state
+
+    def __setstate__(self, state: dict):
+        print("__setstate__", repr(state))
+
+        self.__init__(None)
+        # self.setPos(QtCore.QPointF(state["x"], state["y"]))
+        self.setPos(QtCore.QPointF(32500, 31800))
+        self._width = state["width"]
+        self._is_collapsed = state["is_collapsed"]
+
+
+
 
 class Cutter(QtWidgets.QGraphicsPathItem):
     def __init__(self, start: QtCore.QPointF = QtCore.QPointF(), end: QtCore.QPointF = QtCore.QPointF(),
@@ -1082,5 +1106,9 @@ if __name__ == "__main__":
     node_3 = Node()
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
+
+    node_1_data: bytes = pickle.dumps(node_1)
+    node_1_copy: Node = pickle.loads(node_1_data)
+    node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
