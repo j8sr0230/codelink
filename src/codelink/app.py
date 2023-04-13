@@ -703,21 +703,11 @@ class Node(QtWidgets.QGraphicsItem):
     def __setstate__(self, state: dict):
         print("__setstate__", repr(state))
 
-        # self.__init__(None)
+        self.__init__(parent=None)
         # self.setPos(QtCore.QPointF(state["x"], state["y"]))
-        # self.setPos(QtCore.QPointF(32500, 31800))
+        self.setPos(QtCore.QPointF(32500, 31800))
         self._width = state["width"]
         self._is_collapsed = state["is_collapsed"]
-
-    def __new__(cls, *args):
-        print("__new__")
-        return super(Node, cls).__new__(cls)
-
-    def __getnewargs__(self):
-        print("__getnewargs__")
-        return (None, )
-
-
 
 
 class Cutter(QtWidgets.QGraphicsPathItem):
@@ -1117,7 +1107,6 @@ if __name__ == "__main__":
 
     node_1_data: bytes = pickle.dumps(node_1, 2)
     node_1_copy: Node = pickle.loads(node_1_data)
-    #node_1_copy = Node.__new__(Node, node_1_copy)
     node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
