@@ -703,11 +703,15 @@ class Node(QtWidgets.QGraphicsItem):
     def __setstate__(self, state: dict):
         print("__setstate__", repr(state))
 
-        self.__init__(None)
+        # self.__init__(None)
         # self.setPos(QtCore.QPointF(state["x"], state["y"]))
-        self.setPos(QtCore.QPointF(32500, 31800))
+        # self.setPos(QtCore.QPointF(32500, 31800))
         self._width = state["width"]
         self._is_collapsed = state["is_collapsed"]
+
+    def __getnewargs__(self):
+        print("In A::__getnewargs__(%s):", self)
+        return (self.parentItem(), )
 
 
 
@@ -1109,6 +1113,7 @@ if __name__ == "__main__":
 
     node_1_data: bytes = pickle.dumps(node_1)
     node_1_copy: Node = pickle.loads(node_1_data)
+    #node_1_copy = Node.__new__(Node, node_1_copy)
     node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
