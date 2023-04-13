@@ -929,6 +929,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 self._mode: str = "EDGE_CUT"
                 self._cutter: Cutter = Cutter(start=self._last_pos, end=self._last_pos)
                 self.scene().addItem(self._cutter)
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
