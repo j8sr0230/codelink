@@ -1084,7 +1084,7 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
-    QtCore.QDir.addSearchPath('icon', os.path.abspath(os.path.dirname(__file__)))
+    QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     node_editor_scene: NodeEditorScene = NodeEditorScene()
     node_editor_view: NodeEditorView = NodeEditorView()
