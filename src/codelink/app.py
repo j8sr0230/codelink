@@ -327,7 +327,7 @@ class Node(QtWidgets.QGraphicsItem):
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
 
-        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 7)
+        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
 
         self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
         self._shadow.setColor(QtGui.QColor("black"))
