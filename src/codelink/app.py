@@ -1,7 +1,7 @@
 import os
 import sys
 import math
-from typing import Optional, Any
+from typing import Optional, Any, Union
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -136,6 +136,15 @@ class SocketWidget(QtWidgets.QWidget):
 
     def has_edges(self) -> bool:
         return self._socket.has_edges()
+
+    def input_data(self) -> Union['Node', int]:
+        if self.has_edges():
+            return self._socket.edges[0].start_socket.parentItem()
+        else:
+            if self._input_widget.text() != "":
+                return int(self._input_widget.text())
+            else:
+                return 0
 
     def update_stylesheets(self):
         if self._is_input:
@@ -721,10 +730,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         task_inputs: list = []
         for socket_widget in visited_node.socket_widgets:
             if socket_widget.is_input:
-                if socket_widget.has_edges():
-                    task_inputs.append(socket_widget.socket.edges[0].start_socket.parentItem())
-                else:
-                    task_inputs.append(int(socket_widget.input_widget.text()))
+                task_inputs.append(socket_widget.input_data())
 
         graph_dict[visited_node] = (visited_node.eval, *task_inputs)
 
@@ -862,7 +868,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 socket_type_end: object = self._temp_edge.end_socket.socket_widget.socket_type
                 if socket_type_start == socket_type_end:
                     if self._temp_edge.start_socket.parentItem() is self._temp_edge.end_socket.parentItem():
-                       # Sockets of the same node
+                        # Sockets of the same node
                         self.scene().remove_edge(self._temp_edge)
 
                     elif (self._temp_edge.start_socket.socket_widget.is_input and
@@ -883,7 +889,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
 
                         if self.scene().is_graph_cyclic():
-                            # ... ff not cyclic graph
+                            # ... if not cyclic graph
                             connected_sockets: list[QtWidgets.QGraphicsItem] = [
                                 self._temp_edge.start_socket,
                                 self._temp_edge.end_socket
