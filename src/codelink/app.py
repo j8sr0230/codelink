@@ -297,6 +297,9 @@ class Edge(QtWidgets.QGraphicsPathItem):
 
         return path
 
+    def shape(self) -> QtGui.QPainterPath:
+        return self.path()
+
     def boundingRect(self) -> QtCore.QRectF:
         return self.path().boundingRect()
 
@@ -685,6 +688,52 @@ class Node(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
 
+class Cutter(QtWidgets.QGraphicsPathItem):
+    def __init__(self, start: QtCore.QPointF = QtCore.QPointF(), end: QtCore.QPointF = QtCore.QPointF(),
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(parent)
+
+        self._start_point: QtCore.QPointF = start
+        self._end_point: QtCore.QPointF = end
+
+    @property
+    def start_point(self) -> QtCore.QPointF():
+        return self._start_point
+
+    @start_point.setter
+    def start_point(self, value: QtCore.QPointF) -> None:
+        self._start_point = value
+
+    @property
+    def end_point(self) -> QtCore.QPointF():
+        return self._end_point
+
+    @end_point.setter
+    def end_point(self, value: QtCore.QPointF) -> None:
+        self._end_point = value
+
+    def path(self) -> QtGui.QPainterPath:
+        path: QtGui.QPainterPath = QtGui.QPainterPath(self._start_point)
+        path.lineTo(self._end_point)
+        return path
+
+    def shape(self) -> QtGui.QPainterPath:
+        return self.path()
+
+    def boundingRect(self) -> QtCore.QRectF:
+        return self.path().boundingRect()
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: Optional[QtWidgets.QWidget] = None) -> None:
+        pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("#E5E5E5"))
+        pen.setStyle(QtCore.Qt.DashLine)
+        pen.setWidthF(1.0)
+
+        painter.setBrush(QtCore.Qt.NoBrush)
+        painter.setPen(pen)
+        painter.drawPath(self.path())
+
+
 class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -796,11 +845,13 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
+        self._rm_pressed: bool = False
         self._mode: str = ""
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_socket: Optional[Socket] = None
         self._temp_edge: Optional[Edge] = None
+        self._cutter: Optional[Cutter] = None
 
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
@@ -817,11 +868,12 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        super().mousePressEvent(event)
 
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
         if event.button() == QtCore.Qt.LeftButton and self._mode == "":
+            super().mousePressEvent(event)
+
             self._lm_pressed: bool = True
 
             if type(self.itemAt(event.pos())) == Socket:
@@ -863,9 +915,20 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     self._mode = "EDGE_ADD"
 
         if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
+            super().mousePressEvent(event)
+
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
+
+        if event.button() == QtCore.Qt.RightButton and self._mode == "":
+            # super().mousePressEvent(event)
+
+            self._rm_pressed: bool = True
+            if event.modifiers() == QtCore.Qt.ShiftModifier:
+                self._mode: str = "EDGE_CUT"
+                self._cutter: Cutter = Cutter(start=self._last_pos, end=self._last_pos)
+                self.scene().addItem(self._cutter)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -887,6 +950,24 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+        if self._mode == "EDGE_CUT":
+            current_pos: QtCore.QPoint = self.mapToScene(event.pos())
+            self._cutter.end_point = current_pos
+
+            selected_items: list[QtWidgets.QGraphicsItem] = self.scene().collidingItems(self._cutter)
+
+            for item in selected_items:
+                if type(item) is Edge:
+                    connected_sockets: list[QtWidgets.QGraphicsItem] = [
+                        item.start_socket,
+                        item.end_socket
+                    ]
+                    for socket in connected_sockets:
+                        socket.remove_edge(item)
+                        socket.socket_widget.update_stylesheets()
+
+                    self.scene().remove_edge(item)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -944,8 +1025,12 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 dsk: dict = self.scene().graph_to_dict(node, {})
                 print(get(dsk, node.socket_widgets[-1]))
 
+        if self._mode == "EDGE_CUT":
+            self.scene().removeItem(self._cutter)
+
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
+        self._rm_pressed: bool = False
         self._mode: str = ""
         QtWidgets.QApplication.restoreOverrideCursor()
 
