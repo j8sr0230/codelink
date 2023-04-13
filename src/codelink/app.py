@@ -689,7 +689,7 @@ class Node(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
     def __getstate__(self) -> dict:
-        print("__getstate__")
+        print("Node.__getstate__(self)")
 
         state: dict = {
             "x": self.x(),
@@ -701,7 +701,7 @@ class Node(QtWidgets.QGraphicsItem):
         return state
 
     def __setstate__(self, state: dict):
-        print("__setstate__", repr(state))
+        print("Node.__setstate__(self, state: dict)", repr(state))
 
         self.__init__(parent=None)
         # self.setPos(QtCore.QPointF(state["x"], state["y"]))
@@ -1105,8 +1105,8 @@ if __name__ == "__main__":
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
 
-    node_1_data: bytes = pickle.dumps(node_1, 2)
-    node_1_copy: Node = pickle.loads(node_1_data)
+    pickle.dump(node_1, open("my_graph.cl", 'wb'))
+    node_1_copy: Node = pickle.load(open("my_graph.cl", "rb"))
     node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
