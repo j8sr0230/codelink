@@ -815,12 +815,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     for socket in connected_sockets:
                         socket.remove_edge(self._temp_edge)
 
-                    print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
-                    print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
-                    print("graph_ends", len(self.scene().graph_ends()))
-                    print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
-                    print("successors", [len(node.successors()) for node in self.scene().nodes])
-
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
                     temp_target.setBrush(self._last_socket.color)
@@ -868,35 +862,28 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 socket_type_end: object = self._temp_edge.end_socket.socket_widget.socket_type
                 if socket_type_start == socket_type_end:
                     if self._temp_edge.start_socket.parentItem() is self._temp_edge.end_socket.parentItem():
-                        print("Can't connect sockets of the same node!")
+                       # Sockets of the same node
                         self.scene().remove_edge(self._temp_edge)
 
                     elif (self._temp_edge.start_socket.socket_widget.is_input and
                           self._temp_edge.end_socket.socket_widget.is_input):
-                        print("Can't connect input with input!")
+                        # Input with input socket
                         self.scene().remove_edge(self._temp_edge)
 
                     elif (not self._temp_edge.start_socket.socket_widget.is_input and
                           not self._temp_edge.end_socket.socket_widget.is_input):
-                        print("Can't connect output with output!")
+                        # Output with output socket
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
-                        print("Connected!")
+                        # Maybe valid connection ...
                         self._temp_edge.start_socket.add_edge(self._temp_edge)
                         self._temp_edge.end_socket.add_edge(self._temp_edge)
                         self._temp_edge.sort_sockets()
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
 
-                        print("has_in_edges", [node.has_in_edges() for node in self.scene().nodes])
-                        print("has_out_edges", [node.has_out_edges() for node in self.scene().nodes])
-                        print("graph_ends", len(self.scene().graph_ends()))
-                        print("predecessors", [len(node.predecessors()) for node in self.scene().nodes])
-                        print("successors", [len(node.successors()) for node in self.scene().nodes])
-                        print("is_graph_cyclic", self.scene().is_graph_cyclic())
-
                         if self.scene().is_graph_cyclic():
-                            print("Can't connect cyclic graph!")
+                            # ... ff not cyclic graph
                             connected_sockets: list[QtWidgets.QGraphicsItem] = [
                                 self._temp_edge.start_socket,
                                 self._temp_edge.end_socket
@@ -906,17 +893,18 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                                 socket.socket_widget.update_stylesheets()
 
                             self.scene().remove_edge(self._temp_edge)
-
-                        dsk: dict = self.scene().graph_to_dict(self.scene().nodes[1], {})
-                        print(get(dsk, self.scene().nodes[1]))
                 else:
-                    print("Can't connect incompatible socket types!")
+                    # Incompatible socket types
                     self.scene().remove_edge(self._temp_edge)
             else:
-                print("Can't connect without destination!")
+                # No target socket
                 self.scene().remove_edge(self._temp_edge)
 
             self._last_socket.socket_widget.update_stylesheets()
+
+            for node in self.scene().graph_ends():
+                dsk: dict = self.scene().graph_to_dict(node, {})
+                print(get(dsk, node))
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
