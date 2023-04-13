@@ -7,6 +7,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from dask.threaded import get
+
 
 class Socket(QtWidgets.QGraphicsItem):
     def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
@@ -125,8 +127,12 @@ class SocketWidget(QtWidgets.QWidget):
         return self._is_input
 
     @property
-    def socket(self) -> object:
+    def socket(self) -> Socket:
         return self._socket
+
+    @property
+    def input_widget(self) -> QtWidgets.QWidget:
+        return self._input_widget
 
     def has_edges(self) -> bool:
         return self._socket.has_edges()
@@ -481,6 +487,10 @@ class Node(QtWidgets.QGraphicsItem):
     def font(self) -> QtGui.QFont:
         return self._font
 
+    @property
+    def socket_widgets(self) -> list[SocketWidget]:
+        return self._socket_widgets
+
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input and socket_widget.has_edges():
@@ -513,8 +523,9 @@ class Node(QtWidgets.QGraphicsItem):
         for widget in self._socket_widgets:
             widget.update_socket_positions()
 
-    def eval(self) -> None:
-        print("Hello", self._title)
+    @staticmethod
+    def eval(a: int, b: int) -> int:
+        return a + b
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -702,6 +713,23 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
             temp_res.append(self.is_node_cyclic(node))
         return any(temp_res)
 
+    def graph_to_dict(self, visited_node: Node, graph_dict: dict) -> dict:
+
+        for node in visited_node.predecessors():
+            self.graph_to_dict(node, graph_dict)
+
+        task_inputs: list = []
+        for socket_widget in visited_node.socket_widgets:
+            if socket_widget.is_input:
+                if socket_widget.has_edges():
+                    task_inputs.append(socket_widget.socket.edges[0].start_socket.parentItem())
+                else:
+                    task_inputs.append(int(socket_widget.input_widget.text()))
+
+        graph_dict[visited_node] = (visited_node.eval, *task_inputs)
+
+        return graph_dict
+
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
 
@@ -878,6 +906,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                                 socket.socket_widget.update_stylesheets()
 
                             self.scene().remove_edge(self._temp_edge)
+
+                        dsk: dict = self.scene().graph_to_dict(self.scene().nodes[1], {})
+                        print(get(dsk, self.scene().nodes[1]))
                 else:
                     print("Can't connect incompatible socket types!")
                     self.scene().remove_edge(self._temp_edge)
