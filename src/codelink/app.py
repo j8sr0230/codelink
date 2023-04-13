@@ -139,7 +139,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     def input_data(self) -> Union['Node', int]:
         if self.has_edges():
-            return self._socket.edges[0].start_socket.parentItem()
+            return self._socket.edges[0].start_socket.socket_widget
         else:
             if self._input_widget.text() != "":
                 return int(self._input_widget.text())
@@ -315,6 +315,7 @@ class Node(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         self._visited_count: int = 0
+        self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
 
         self._title: str = "Node Name"
         self._socket_widgets: list[QtWidgets.QWidget] = []
@@ -481,6 +482,14 @@ class Node(QtWidgets.QGraphicsItem):
         self._visited_count: int = value
 
     @property
+    def evals(self) -> list[object]:
+        return self._evals
+
+    @evals.setter
+    def evals(self, value: list[object]) -> None:
+        self._evals: list[object] = value
+
+    @property
     def header_height(self) -> int:
         return self._header_height
 
@@ -499,6 +508,24 @@ class Node(QtWidgets.QGraphicsItem):
     @property
     def socket_widgets(self) -> list[SocketWidget]:
         return self._socket_widgets
+
+    @property
+    def input_socket_widgets(self) -> list[SocketWidget]:
+        result: list[SocketWidget] = []
+        for socket_widget in self._socket_widgets:
+            if socket_widget.is_input:
+                result.append(socket_widget)
+
+        return result
+
+    @property
+    def output_socket_widgets(self) -> list[SocketWidget]:
+        result: list[SocketWidget] = []
+        for socket_widget in self._socket_widgets:
+            if not socket_widget.is_input:
+                result.append(socket_widget)
+
+        return result
 
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
@@ -533,7 +560,11 @@ class Node(QtWidgets.QGraphicsItem):
             widget.update_socket_positions()
 
     @staticmethod
-    def eval(a: int, b: int) -> int:
+    def eval_socket_1(a: int, b: int) -> int:
+        return a + b
+
+    @staticmethod
+    def eval_socket_2(a: int, b: int) -> int:
         return a + b
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
@@ -723,16 +754,17 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         return any(temp_res)
 
     def graph_to_dict(self, visited_node: Node, graph_dict: dict) -> dict:
-
         for node in visited_node.predecessors():
             self.graph_to_dict(node, graph_dict)
 
         task_inputs: list = []
-        for socket_widget in visited_node.socket_widgets:
+        for socket_widget in visited_node.input_socket_widgets:
             if socket_widget.is_input:
                 task_inputs.append(socket_widget.input_data())
 
-        graph_dict[visited_node] = (visited_node.eval, *task_inputs)
+        for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
+            if not socket_widget.is_input:
+                graph_dict[socket_widget] = (visited_node.evals[idx], *task_inputs)
 
         return graph_dict
 
@@ -910,7 +942,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
             for node in self.scene().graph_ends():
                 dsk: dict = self.scene().graph_to_dict(node, {})
-                print(get(dsk, node))
+                print(get(dsk, node.socket_widgets[-1]))
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
