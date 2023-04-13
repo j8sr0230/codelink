@@ -1080,11 +1080,17 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
+    from app import Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
+
+    if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
+        sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+    QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
+
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
     # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
-    QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     node_editor_scene: NodeEditorScene = NodeEditorScene()
     node_editor_view: NodeEditorView = NodeEditorView()
@@ -1106,12 +1112,8 @@ if __name__ == "__main__":
     node_editor_scene.add_node(node_3)
 
     file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
-    print(file_path)
-
-    with open(file_path, "wb") as f:
-        pickle.dump(node_1, f)
-    with open(file_path, 'rb') as f:
-        node_1_copy: Node = pickle.load(f)
+    pickle.dump(node_1, open(file_path, "wb"))
+    node_1_copy: Node = pickle.load(open(file_path, 'rb'))
     node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
