@@ -1107,8 +1107,11 @@ if __name__ == "__main__":
 
     file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
     print(file_path)
-    pickle.dump(node_1, open(file_path, 'wb'), 2)
-    node_1_copy: Node = pickle.load(open(file_path, "rb"))
+
+    with open(file_path, "wb") as f:
+        pickle.dump(node_1, f)
+    with open(file_path, 'rb') as f:
+        node_1_copy: Node = pickle.load(f)
     node_editor_scene.add_node(node_1_copy)
 
     sys.exit(app.exec_())
