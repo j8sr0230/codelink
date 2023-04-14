@@ -391,17 +391,14 @@ class Node(QtWidgets.QGraphicsItem):
                         "Collapse State": True,
                         "Color": QtGui.QColor("#232323")}
         )
-        self._prop_model.dataChanged.connect(
-            lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
-                               self._prop_model.properties)
-        )
+
         self._prop_view: NodePropertyView = NodePropertyView()
         self._prop_view.setModel(self._prop_model)
 
         self._visited_count: int = 0
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
 
-        self._title: str = "Node Name"
+        self._title: str = self._prop_model.properties["Title"]  # "Node Name"
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
         self._title_x: int = 20
@@ -541,6 +538,12 @@ class Node(QtWidgets.QGraphicsItem):
 
         self.update_socket_positions()
 
+        self._prop_model.dataChanged.connect(lambda: self.update_title(self._prop_model.properties["Title"]))
+        # lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
+        #                    self._prop_model.properties)
+        # lambda: self._title = self._prop_model.properties["Title"]
+        # )
+
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
         font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
@@ -568,6 +571,20 @@ class Node(QtWidgets.QGraphicsItem):
     @visited_count.setter
     def visited_count(self, value: int) -> None:
         self._visited_count: int = value
+
+    @property
+    def title(self) -> str:
+        return self._title
+
+    @title.setter
+    def title(self, value: str) -> None:
+        self._title: str = value
+
+    def update_title(self, value: str) -> None:
+        self._title: str = value
+        self._title_item.setPlainText(
+            self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+        )
 
     @property
     def evals(self) -> list[object]:
