@@ -37,15 +37,6 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
         if role == QtCore.Qt.DisplayRole:
             if index.column() == 0:
-                # if index.row() == 0:
-                #     return self._properties["Title"]
-                # if index.row() == 1:
-                #     return self._properties["X Pos"]
-                # if index.row() == 2:
-                #     return self._properties["Y Pos"]
-                # if index.row() == 3:
-                #     return "True" if self._properties["Collapse State"] else "False"
-
                 key: str = list(self._properties.keys())[index.row()]
                 return self._properties[key]
         return None
@@ -55,42 +46,18 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
             return None
 
         if orientation == QtCore.Qt.Vertical:
-            # if section == 0:
-            #     return "Titel"
-            # elif section == 1:
-            #     return "X Pos"
-            # elif section == 2:
-            #     return "Y Pos"
-            # elif section == 3:
-            #     return "Collapse State"
-            # else:
-            #     return None
-
             key: str = list(self._properties.keys())[section]
             return key
 
         return None
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
-        if index.isValid() and 0 <= index.column() < len(self._properties) and role == QtCore.Qt.EditRole:
-            # if index.row() == 0:
-            #     self._properties["Title"] = str(value)
-            # elif index.row() == 1:
-            #     self._properties["X Pos"] = int(value)
-            # elif index.row() == 2:
-            #     self._properties["Y Pos"] = int(value)
-            # elif index.row() == 3:
-            #     self._properties["Collapse State"] = True if str(value) == "True" else False
-            # else:
-            #     return False
-
+        if role == QtCore.Qt.EditRole:
             key: str = list(self._properties.keys())[index.row()]
             data_type = type(self._properties[key])
             self._properties[key] = data_type(value)
-
             self.dataChanged.emit(index, index)
             return True
-
         return False
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
