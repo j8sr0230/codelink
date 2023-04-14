@@ -87,7 +87,7 @@ class NodePropertyView(QtWidgets.QTableView):
                 background-color: #282828;
                 alternate-background-color: #545454;
                 selection-background-color: #4772B3;
-                gridline-color: none;
+                gridline-color: transparent;
                 padding: 5px;
                 margin: 0px;
                 border: 2px solid #E5E5E5;
