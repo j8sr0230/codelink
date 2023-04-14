@@ -1378,16 +1378,4 @@ if __name__ == "__main__":
     # node_1_copy: Node = pickle.load(open(file_path, 'rb'))
     # node_editor_scene.add_node(node_1_copy)
 
-    # node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
-    #                                                                    "X Pos": 5.1,
-    #                                                                    "Y Pos": 5.1,
-    #                                                                    "Collapse State": True,
-    #                                                                    "Color": QtGui.QColor("#232323")})
-    # node_prop_model.dataChanged.connect(
-    #     lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed \n", node_prop_model.properties)
-    # )
-    # node_prop_view: NodePropertyView = NodePropertyView()
-    # node_prop_view.setModel(node_prop_model)
-    # node_prop_view.show()
-
     sys.exit(app.exec_())
