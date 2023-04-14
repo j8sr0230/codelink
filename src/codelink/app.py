@@ -20,6 +20,14 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
 
         self._properties = properties
 
+    @property
+    def properties(self) -> dict:
+        return self._properties
+
+    @properties.setter
+    def properties(self, value: dict) -> None:
+        self._properties: dict = value
+
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._properties.keys())
 
@@ -29,14 +37,17 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
         if role == QtCore.Qt.DisplayRole:
             if index.column() == 0:
-                if index.row() == 0:
-                    return self._properties["Title"]
-                if index.row() == 1:
-                    return self._properties["X Pos"]
-                if index.row() == 2:
-                    return self._properties["Y Pos"]
-                if index.row() == 3:
-                    return "True" if self._properties["Collapse State"] else "False"
+                # if index.row() == 0:
+                #     return self._properties["Title"]
+                # if index.row() == 1:
+                #     return self._properties["X Pos"]
+                # if index.row() == 2:
+                #     return self._properties["Y Pos"]
+                # if index.row() == 3:
+                #     return "True" if self._properties["Collapse State"] else "False"
+
+                key: str = list(self._properties.keys())[index.row()]
+                return self._properties[key]
         return None
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
@@ -44,31 +55,37 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
             return None
 
         if orientation == QtCore.Qt.Vertical:
-            if section == 0:
-                return "Titel"
-            elif section == 1:
-                return "X Pos"
-            elif section == 2:
-                return "Y Pos"
-            elif section == 3:
-                return "Collapse State"
-            else:
-                return None
+            # if section == 0:
+            #     return "Titel"
+            # elif section == 1:
+            #     return "X Pos"
+            # elif section == 2:
+            #     return "Y Pos"
+            # elif section == 3:
+            #     return "Collapse State"
+            # else:
+            #     return None
+
+            key: str = list(self._properties.keys())[section]
+            return key
 
         return None
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
         if index.isValid() and 0 <= index.column() < len(self._properties) and role == QtCore.Qt.EditRole:
-            if index.row() == 0:
-                self._properties["Title"] = str(value)
-            elif index.row() == 1:
-                self._properties["X Pos"] = str(value)
-            elif index.row() == 2:
-                self._properties["Y Pos"] = str(value)
-            elif index.row() == 3:
-                self._properties["Collapse State"] = True if str(value) == "True" else False
-            else:
-                return False
+            # if index.row() == 0:
+            #     self._properties["Title"] = str(value)
+            # elif index.row() == 1:
+            #     self._properties["X Pos"] = int(value)
+            # elif index.row() == 2:
+            #     self._properties["Y Pos"] = int(value)
+            # elif index.row() == 3:
+            #     self._properties["Collapse State"] = True if str(value) == "True" else False
+            # else:
+            #     return False
+
+            key: str = list(self._properties.keys())[index.row()]
+            self._properties[key] = str(value)
 
             self.dataChanged.emit(index, index)
             return True
@@ -76,7 +93,7 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
         return False
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
-        if index.column() == 0:
+        if 0 <= index.row() <= len(self._properties.keys()):
             return super().flags(index) | QtCore.Qt.ItemIsEditable
         else:
             return super().flags(index)
@@ -1200,7 +1217,11 @@ if __name__ == "__main__":
     node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
                                                                        "X Pos": 5,
                                                                        "Y Pos": 5,
-                                                                       "Collapse State": True})
+                                                                       "Collapse State": True,
+                                                                       "Color": "#red"})
+    node_prop_model.dataChanged.connect(
+        lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed")
+    )
     node_prop_view: NodePropertyView = NodePropertyView()
     node_prop_view.setModel(node_prop_model)
     node_prop_view.show()
