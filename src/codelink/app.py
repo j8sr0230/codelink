@@ -823,6 +823,7 @@ class Node(QtWidgets.QGraphicsItem):
         node_view: NodeEditorView = self.scene().views()[0]
 
         self._prop_view.setParent(node_view)
+        self._prop_view.clearSelection()
         # self._prop_view.setGeometry(QtCore.QRect(node_view.mapFromScene(self.pos()).x() + self._width + 10,
         #                                          node_view.mapFromScene(self.pos()).y(), 200, 200))
         self._prop_view.setGeometry(node_view.width() - 210, 10, 200, 155)
