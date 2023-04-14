@@ -944,26 +944,26 @@ class Node(QtWidgets.QGraphicsItem):
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
-    def __getstate__(self) -> dict:
-        print("Node.__getstate__(self)")
-
-        state: dict = {
-            "x": self.x(),
-            "y": self.y(),
-            "width": self._width,
-            "is_collapsed": self._is_collapsed
-        }
-
-        return state
-
-    def __setstate__(self, state: dict):
-        print("Node.__setstate__(self, state: dict)", repr(state))
-
-        self.__init__(parent=None)
-        # self.setPos(QtCore.QPointF(state["x"], state["y"]))
-        self.setPos(QtCore.QPointF(32500, 31800))
-        self._width = state["width"]
-        self._is_collapsed = state["is_collapsed"]
+    # def __getstate__(self) -> dict:
+    #     print("Node.__getstate__(self)")
+    #
+    #     state: dict = {
+    #         "x": self.x(),
+    #         "y": self.y(),
+    #         "width": self._width,
+    #         "is_collapsed": self._is_collapsed
+    #     }
+    #
+    #     return state
+    #
+    # def __setstate__(self, state: dict):
+    #     print("Node.__setstate__(self, state: dict)", repr(state))
+    #
+    #     self.__init__(parent=None)
+    #     # self.setPos(QtCore.QPointF(state["x"], state["y"]))
+    #     self.setPos(QtCore.QPointF(32500, 31800))
+    #     self._width = state["width"]
+    #     self._is_collapsed = state["is_collapsed"]
 
 
 class Cutter(QtWidgets.QGraphicsPathItem):
