@@ -71,10 +71,56 @@ class NodePropertyView(QtWidgets.QTableView):
     def __init__(self, parent: QtWidgets.QWidget = None):
         super().__init__(parent)
 
+        self.setFont(QtGui.QFont("Sans Serif", 10))
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setAlternatingRowColors(True)
         self.horizontalHeader().hide()
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+        self.setStyleSheet("""
+            QTableView {
+                color: #E5E5E5;
+                background-color: #303030;
+                alternate-background-color: #545454;
+                selection-color: #E5E5E5;
+                selection-background-color: #4772B3;
+                padding: 1px;
+                margin: 0px;
+                border: 1px solid #545454;
+                border-radius: 1px;
+            }
+            QTableView::item {
+              border: 0px;
+              margin: 0px;
+              padding: 0px 0px 0px 10px;
+              selection-background-color: #4772B3;
+            }
+            QTableView::item:selected {
+              border: 0px;
+              margin: 0px;
+              padding: 0px 0px 0px 10px;
+              color: E5E5E5;
+              background-color: #4772B3;
+            }
+            QHeaderView {
+                color: #E5E5E5;
+                background-color: #1D1D1D;
+                padding: 0px;
+                margin: 0px;
+                border: 0px;
+                border-radius: 0px
+            }
+            
+            QHeaderView::section {
+                border: 0px;
+                padding: 0px 0px 0px 10px;
+                background-color: transparent;
+            }
+            
+            QHeaderView::section:vertical {
+                border-bottom: 1px solid rgba(255,255,255,30);
+            }
+        """)
 
 
 class Socket(QtWidgets.QGraphicsItem):
