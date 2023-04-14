@@ -85,7 +85,8 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
             #     return False
 
             key: str = list(self._properties.keys())[index.row()]
-            self._properties[key] = str(value)
+            data_type = type(self._properties[key])
+            self._properties[key] = data_type(value)
 
             self.dataChanged.emit(index, index)
             return True
@@ -1215,12 +1216,12 @@ if __name__ == "__main__":
     node_editor_scene.add_node(node_1_copy)
 
     node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
-                                                                       "X Pos": 5,
-                                                                       "Y Pos": 5,
+                                                                       "X Pos": 5.1,
+                                                                       "Y Pos": 5.1,
                                                                        "Collapse State": True,
-                                                                       "Color": "#red"})
+                                                                       "Color": QtGui.QColor("#232323")})
     node_prop_model.dataChanged.connect(
-        lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed")
+        lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed \n", node_prop_model.properties)
     )
     node_prop_view: NodePropertyView = NodePropertyView()
     node_prop_view.setModel(node_prop_model)
