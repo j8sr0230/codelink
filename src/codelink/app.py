@@ -92,7 +92,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 background-color: #545454;
                 padding: 0px 0px 0px 2px;
                 margin: 0px;
-                border: 0px;
+                border: none;
                 border-radius: 0px;
             }
             QComboBox::drop-down {
@@ -115,8 +115,11 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 selection-background-color: #4772B3;
                 padding: 0px;
                 margin: 0px;
-                border: 0px;
+                border: 0px solid #282828;
                 border-radius: 0px;
+                border-width: 5px 0px 5px 0px;
+                border-style: solid;
+                border-color: transparent;
             }
         """)
 
