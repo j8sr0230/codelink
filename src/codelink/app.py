@@ -384,6 +384,20 @@ class Node(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        self._prop_model: NodePropertyModel = NodePropertyModel(
+            properties={"Title": "Add",
+                        "X Pos": 5.1,
+                        "Y Pos": 5.1,
+                        "Collapse State": True,
+                        "Color": QtGui.QColor("#232323")}
+        )
+        self._prop_model.dataChanged.connect(
+            lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
+                               self._prop_model.properties)
+        )
+        self._prop_view: NodePropertyView = NodePropertyView()
+        self._prop_view.setModel(self._prop_model)
+
         self._visited_count: int = 0
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
 
@@ -542,6 +556,10 @@ class Node(QtWidgets.QGraphicsItem):
             cropped_text: str = cropped_text[:len(text)]
 
         return cropped_text
+
+    @property
+    def prop_view(self) -> QtWidgets.QTableView:
+        return self._prop_view
 
     @property
     def visited_count(self) -> int:
@@ -732,6 +750,17 @@ class Node(QtWidgets.QGraphicsItem):
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
+
+    def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent) -> None:
+        super().contextMenuEvent(event)
+
+        node_view: NodeEditorView = self.scene().views()[0]
+
+        self._prop_view.setParent(node_view)
+        # self._prop_view.setGeometry(QtCore.QRect(node_view.mapFromScene(self.pos()).x() + self._width + 10,
+        #                                          node_view.mapFromScene(self.pos()).y(), 200, 200))
+        self._prop_view.setGeometry(node_view.width() - 210, 10, 200, 155)
+        self._prop_view.show()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -1002,6 +1031,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
 
+            for node in self.scene().nodes:
+                node.prop_view.hide()
+
         if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
             super().mousePressEvent(event)
 
@@ -1018,6 +1050,9 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 self._cutter: Cutter = Cutter(start=self._last_pos, end=self._last_pos)
                 self.scene().addItem(self._cutter)
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
+
+            for node in self.scene().nodes:
+                node.prop_view.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -1182,16 +1217,16 @@ if __name__ == "__main__":
     node_1_copy: Node = pickle.load(open(file_path, 'rb'))
     node_editor_scene.add_node(node_1_copy)
 
-    node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
-                                                                       "X Pos": 5.1,
-                                                                       "Y Pos": 5.1,
-                                                                       "Collapse State": True,
-                                                                       "Color": QtGui.QColor("#232323")})
-    node_prop_model.dataChanged.connect(
-        lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed \n", node_prop_model.properties)
-    )
-    node_prop_view: NodePropertyView = NodePropertyView()
-    node_prop_view.setModel(node_prop_model)
-    node_prop_view.show()
+    # node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
+    #                                                                    "X Pos": 5.1,
+    #                                                                    "Y Pos": 5.1,
+    #                                                                    "Collapse State": True,
+    #                                                                    "Color": QtGui.QColor("#232323")})
+    # node_prop_model.dataChanged.connect(
+    #     lambda i, j: print(list(node_prop_model.properties.keys())[i.row()], "changed \n", node_prop_model.properties)
+    # )
+    # node_prop_view: NodePropertyView = NodePropertyView()
+    # node_prop_view.setModel(node_prop_model)
+    # node_prop_view.show()
 
     sys.exit(app.exec_())
