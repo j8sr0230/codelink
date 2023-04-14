@@ -918,8 +918,8 @@ class Node(QtWidgets.QGraphicsItem):
 
         self._prop_view.setParent(node_view)
         self._prop_view.clearSelection()
-        # self._prop_view.setGeometry(QtCore.QRect(node_view.mapFromScene(self.pos()).x() + self._width + 10,
-        #                                          node_view.mapFromScene(self.pos()).y(), 200, 200))
+        self._prop_view.setGeometry(QtCore.QRect(node_view.mapFromScene(self.pos()).x() + self._width + 10,
+                                                 node_view.mapFromScene(self.pos()).y(), 200, 200))
         self._prop_view.setGeometry(node_view.width() - 210, 10, 200, 155)
         self._prop_view.show()
 
@@ -1203,7 +1203,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
         if event.button() == QtCore.Qt.RightButton and self._mode == "":
-            # super().mousePressEvent(event)
+            super().mousePressEvent(event)
 
             self._rm_pressed: bool = True
             if event.modifiers() == QtCore.Qt.ShiftModifier:
@@ -1342,10 +1342,10 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
-    from app import Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
-
-    if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
-        sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+    # from app import NodePropertyModel, Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
+    #
+    # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
+    #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
@@ -1373,10 +1373,10 @@ if __name__ == "__main__":
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
 
-    file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
-    pickle.dump(node_1, open(file_path, "wb"))
-    node_1_copy: Node = pickle.load(open(file_path, 'rb'))
-    node_editor_scene.add_node(node_1_copy)
+    # file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
+    # pickle.dump(node_1, open(file_path, "wb"))
+    # node_1_copy: Node = pickle.load(open(file_path, 'rb'))
+    # node_editor_scene.add_node(node_1_copy)
 
     # node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
     #                                                                    "X Pos": 5.1,
