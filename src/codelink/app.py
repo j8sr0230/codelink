@@ -11,6 +11,87 @@ import PySide2.QtGui as QtGui
 from dask.threaded import get
 
 
+class NodePropertyModel(QtCore.QAbstractTableModel):
+    def __init__(self, properties: Optional[dict] = None, parent: QtCore.QObject = None) -> None:
+        super().__init__(parent)
+
+        if properties is None:
+            properties: dict = {}
+
+        self._properties = properties
+
+    def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        return len(self._properties.keys())
+
+    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        return 1
+
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if role == QtCore.Qt.DisplayRole:
+            if index.column() == 0:
+                if index.row() == 0:
+                    return self._properties["Title"]
+                if index.row() == 1:
+                    return self._properties["X Pos"]
+                if index.row() == 2:
+                    return self._properties["Y Pos"]
+                if index.row() == 3:
+                    return "True" if self._properties["Collapse State"] else "False"
+        return None
+
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if role != QtCore.Qt.DisplayRole:
+            return None
+
+        if orientation == QtCore.Qt.Vertical:
+            if section == 0:
+                return "Titel"
+            elif section == 1:
+                return "X Pos"
+            elif section == 2:
+                return "Y Pos"
+            elif section == 3:
+                return "Collapse State"
+            else:
+                return None
+
+        return None
+
+    def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
+        if index.isValid() and 0 <= index.column() < len(self._properties) and role == QtCore.Qt.EditRole:
+            if index.row() == 0:
+                self._properties["Title"] = str(value)
+            elif index.row() == 1:
+                self._properties["X Pos"] = str(value)
+            elif index.row() == 2:
+                self._properties["Y Pos"] = str(value)
+            elif index.row() == 3:
+                self._properties["Collapse State"] = True if str(value) == "True" else False
+            else:
+                return False
+
+            self.dataChanged.emit(index, index)
+            return True
+
+        return False
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if index.column() == 0:
+            return super().flags(index) | QtCore.Qt.ItemIsEditable
+        else:
+            return super().flags(index)
+
+
+class NodePropertyView(QtWidgets.QTableView):
+    def __init__(self, parent: QtWidgets.QWidget = None):
+        super().__init__(parent)
+
+        self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.setAlternatingRowColors(True)
+        self.horizontalHeader().hide()
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+
+
 class Socket(QtWidgets.QGraphicsItem):
     def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
                  parent_node: Optional['Node'] = None) -> None:
@@ -1115,5 +1196,13 @@ if __name__ == "__main__":
     pickle.dump(node_1, open(file_path, "wb"))
     node_1_copy: Node = pickle.load(open(file_path, 'rb'))
     node_editor_scene.add_node(node_1_copy)
+
+    node_prop_model: NodePropertyModel = NodePropertyModel(properties={"Title": "Add",
+                                                                       "X Pos": 5,
+                                                                       "Y Pos": 5,
+                                                                       "Collapse State": True})
+    node_prop_view: NodePropertyView = NodePropertyView()
+    node_prop_view.setModel(node_prop_model)
+    node_prop_view.show()
 
     sys.exit(app.exec_())
