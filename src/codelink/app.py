@@ -74,53 +74,44 @@ class NodePropertyView(QtWidgets.QTableView):
         self.setFont(QtGui.QFont("Sans Serif", 10))
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setAlternatingRowColors(True)
-        self.horizontalHeader().hide()
+
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.horizontalHeader().hide()
+        self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.verticalHeader().setFont(QtGui.QFont("Sans Serif", 10))
 
         self.setStyleSheet("""
             QTableView {
                 color: #E5E5E5;
-                background-color: #303030;
-                alternate-background-color: #545454;
                 selection-color: #E5E5E5;
+                background-color: #282828;
+                alternate-background-color: #545454;
                 selection-background-color: #4772B3;
-                padding: 1px;
+                padding: 5px;
                 margin: 0px;
-                border: 1px solid #545454;
-                border-radius: 1px;
+                border: 2px solid #E5E5E5;
+                border-radius: 5px;
             }
-            QTableView::item {
-              border: 0px;
-              margin: 0px;
-              padding: 0px 0px 0px 10px;
-              selection-background-color: #4772B3;
-            }
-            QTableView::item:selected {
-              border: 0px;
-              margin: 0px;
-              padding: 0px 0px 0px 10px;
-              color: E5E5E5;
-              background-color: #4772B3;
-            }
-            QHeaderView {
-                color: #E5E5E5;
-                background-color: #1D1D1D;
-                padding: 0px;
-                margin: 0px;
-                border: 0px;
-                border-radius: 0px
-            }
-            
             QHeaderView::section {
-                border: 0px;
+                color: #E5E5E5;
+                background-color: #282828;
                 padding: 0px 0px 0px 10px;
-                background-color: transparent;
+                border: 0px;
             }
-            
             QHeaderView::section:vertical {
-                border-bottom: 1px solid rgba(255,255,255,30);
+                border-bottom: 1px solid #545454;
+                border-right: 1px solid #545454;
+            }
+            QHeaderView::section:last {
+                border-bottom: none;
             }
         """)
+
+        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        self._shadow.setColor(QtGui.QColor("black"))
+        self._shadow.setBlurRadius(20)
+        self._shadow.setOffset(1)
+        self.setGraphicsEffect(self._shadow)
 
 
 class Socket(QtWidgets.QGraphicsItem):
@@ -469,6 +460,7 @@ class Node(QtWidgets.QGraphicsItem):
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
+        self._selected_border_pen.setWidthF(1.5)
 
         self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
 
@@ -816,6 +808,8 @@ class Node(QtWidgets.QGraphicsItem):
 
     def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent) -> None:
         super().contextMenuEvent(event)
+
+        self.setSelected(True)
 
         node_view: NodeEditorView = self.scene().views()[0]
 
