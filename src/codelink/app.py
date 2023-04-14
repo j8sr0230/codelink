@@ -434,7 +434,7 @@ class Node(QtWidgets.QGraphicsItem):
             properties={"Title": "Add",
                         "X Pos": 5.1,
                         "Y Pos": 5.1,
-                        "Collapse State": True,
+                        "Collapse State": False,
                         "Color": QtGui.QColor("#232323")}
         )
 
@@ -459,7 +459,7 @@ class Node(QtWidgets.QGraphicsItem):
         self._corner_radius: int = 5
 
         self._mode: str = ""
-        self._is_collapsed: bool = False
+        self._is_collapsed: bool = self._prop_model.properties["Collapse State"]  # False
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -586,6 +586,9 @@ class Node(QtWidgets.QGraphicsItem):
         self.update_socket_positions()
 
         self._prop_model.dataChanged.connect(lambda: self.update_title(self._prop_model.properties["Title"]))
+        self._prop_model.dataChanged.connect(
+            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
+        )
         # lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
         #                    self._prop_model.properties)
         # lambda: self._title = self._prop_model.properties["Title"]
@@ -652,6 +655,20 @@ class Node(QtWidgets.QGraphicsItem):
     @property
     def is_collapsed(self) -> bool:
         return self._is_collapsed
+
+    def update_collapse_state(self, collapse_state: bool) -> None:
+        if collapse_state:
+            self._collapse_btn.setPixmap(self._collapse_pixmap_up)
+            self._content_proxy.hide()
+            self._height = self._min_height
+        else:
+            self._collapse_btn.setPixmap(self._collapse_pixmap_down)
+            self._content_proxy.show()
+            self._height = (self._header_height + self._content_padding + self._content_widget.height() +
+                            self._content_padding)
+
+        self._is_collapsed = collapse_state
+        self.update_socket_positions()
 
     @property
     def font(self) -> QtGui.QFont:
