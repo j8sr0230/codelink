@@ -89,14 +89,17 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
         editor.setStyleSheet("""
             QComboBox {
                 color: #E5E5E5;
-                background-color: #545454;
+                background-color: red;
                 padding: 0px 0px 0px 2px;
-                margin: 0px;
-                border: none;
-                border-radius: 0px;
+                margin: 5px;
+                border: 5px;
+                border-color: green;
+                border-radius: 5px;
             }
             QComboBox::drop-down {
-                background-color: transparent;
+                background-color: green;
+                border: 5px;
+                border-color: yellow;
                 border-radius: 0px;
             }
             QComboBox::down-arrow {
@@ -114,12 +117,23 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 background-color: #282828;
                 selection-background-color: #4772B3;
                 padding: 0px;
-                margin: 0px;
-                border: 0px solid #282828;
-                border-radius: 0px;
-                border-width: 5px 0px 5px 0px;
+                margin: 5px;
+                border: 5px;
                 border-style: solid;
-                border-color: transparent;
+                border-color: green;
+                border-radius: 0px;
+            }
+            QAbstractItemView::focus {
+                color: #E5E5E5;
+                selection-color: #E5E5E5;
+                background-color: #282828;
+                selection-background-color: #4772B3;
+                padding: 0px;
+                margin: 5px;
+                border: 1px;
+                border-style: solid;
+                border-color: green;
+                border-radius: 0px;
             }
         """)
 
