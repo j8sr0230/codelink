@@ -87,52 +87,46 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
         editor.currentIndexChanged.connect(self.commit_editor)
 
         editor.setStyleSheet("""
-            QComboBox {
+           QComboBox {
                 color: #E5E5E5;
-                background-color: red;
-                padding: 0px 0px 0px 2px;
-                margin: 5px;
-                border: 5px;
-                border-color: green;
-                border-radius: 5px;
+                background-color: #545454;
+                border-radius: 0px;
+                padding-left: 2px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: none;
             }
             QComboBox::drop-down {
-                background-color: green;
-                border: 5px;
-                border-color: yellow;
+                background-color: #545454;
+                subcontrol-origin: border;
+                subcontrol-position: top right;
                 border-radius: 0px;
             }
             QComboBox::down-arrow {
                 image: url(icon:images_dark-light/down_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
             }
+            QListView{
+                border: none;
+            }
         """)
 
         item_list_view: QtWidgets.QAbstractItemView = editor.view()
         item_list_view.setSpacing(2)
         item_list_view.setStyleSheet("""
-            QAbstractItemView {
+           QAbstractItemView {
                 color: #E5E5E5;
                 selection-color: #E5E5E5;
                 background-color: #282828;
                 selection-background-color: #4772B3;
-                padding: 0px;
-                margin: 5px;
-                border: 5px;
-                border-style: solid;
-                border-color: green;
-                border-radius: 0px;
-            }
-            QAbstractItemView::focus {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                selection-background-color: #4772B3;
-                padding: 0px;
-                margin: 5px;
-                border: 1px;
-                border-style: solid;
-                border-color: green;
+                padding-left: 0px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: none;
                 border-radius: 0px;
             }
         """)
@@ -636,6 +630,9 @@ class Node(QtWidgets.QGraphicsItem):
             QComboBox::down-arrow {
                 image: url(icon:images_dark-light/down_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+            QListView{
+                border: none;
             }
         """)
 
