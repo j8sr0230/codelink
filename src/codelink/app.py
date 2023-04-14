@@ -87,10 +87,15 @@ class NodePropertyView(QtWidgets.QTableView):
                 background-color: #282828;
                 alternate-background-color: #545454;
                 selection-background-color: #4772B3;
+                gridline-color: none;
                 padding: 5px;
                 margin: 0px;
                 border: 2px solid #E5E5E5;
                 border-radius: 5px;
+            }
+            QTableView::item:hover,
+            QTableView::item:hover:focus {
+                border: none;
             }
             QHeaderView::section {
                 color: #E5E5E5;
@@ -100,6 +105,10 @@ class NodePropertyView(QtWidgets.QTableView):
             }
             QHeaderView::section:vertical {
                 border-bottom: 1px solid #545454;
+                border-right: 1px solid #545454;
+            }
+            QHeaderView::section:horizontal {
+                padding: 0px;
                 border-right: 1px solid #545454;
             }
             QHeaderView::section:last {
