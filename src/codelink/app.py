@@ -67,6 +67,83 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
             return super().flags(index)
 
 
+class BooleanDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent: QtCore.QObject):
+        super().__init__(parent)
+
+        self.items: list[str] = ["False", "True"]
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
+              index: QtCore.QModelIndex) -> None:
+        if isinstance(self.parent(), QtWidgets.QAbstractItemView):
+            self.parent().openPersistentEditor(index)
+
+        super().paint(painter, option, index)
+
+    def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                     index: QtCore.QModelIndex) -> QtWidgets.QWidget:
+        editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
+        editor.addItems(self.items)
+        editor.currentIndexChanged.connect(self.commit_editor)
+
+        editor.setStyleSheet("""
+            QComboBox {
+                color: #E5E5E5;
+                background-color: #545454;
+                padding: 0px 0px 0px 2px;
+                margin: 0px;
+                border: 0px;
+                border-radius: 0px;
+            }
+            QComboBox::drop-down {
+                background-color: transparent;
+                border-radius: 0px;
+            }
+            QComboBox::down-arrow {
+                image: url(icon:images_dark-light/down_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+        """)
+
+        item_list_view: QtWidgets.QAbstractItemView = editor.view()
+        item_list_view.setSpacing(2)
+        item_list_view.setStyleSheet("""
+            QAbstractItemView {
+                color: #E5E5E5;
+                selection-color: #E5E5E5;
+                background-color: #282828;
+                selection-background-color: #4772B3;
+                padding: 0px;
+                margin: 0px;
+                border: 0px;
+                border-radius: 0px;
+            }
+        """)
+
+        return editor
+
+    def commit_editor(self):
+        editor: QtCore.QObject = self.sender()
+        self.commitData.emit(editor)
+
+    def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
+        # noinspection PyTypeChecker
+        value: str = index.data(QtCore.Qt.DisplayRole)
+        num: int = self.items.index(value)
+        editor.setCurrentIndex(num)
+
+    def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                     index: QtCore.QModelIndex) -> None:
+        value: str = editor.currentText()
+
+        # noinspection PyTypeChecker
+        model.setData(index, value, QtCore.Qt.EditRole)
+
+    def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                             index: QtCore.QModelIndex) -> None:
+        editor.setGeometry(option.rect)
+
+
 class NodePropertyView(QtWidgets.QTableView):
     def __init__(self, parent: QtWidgets.QWidget = None):
         super().__init__(parent)
@@ -334,7 +411,7 @@ class SocketWidget(QtWidgets.QWidget):
             self._input_widget.hide()
 
     def update_socket_positions(self) -> None:
-        if not self._parent_node.is_collapsed:
+        if not self._parent_node.is_collapsed == "True":
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._socket.size) / 2)
 
             if self._is_input:
@@ -434,12 +511,13 @@ class Node(QtWidgets.QGraphicsItem):
             properties={"Title": "Add",
                         "X Pos": 5.1,
                         "Y Pos": 5.1,
-                        "Collapse State": False,
+                        "Collapse State": "False",
                         "Color": QtGui.QColor("#232323")}
         )
 
         self._prop_view: NodePropertyView = NodePropertyView()
         self._prop_view.setModel(self._prop_model)
+        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
 
         self._visited_count: int = 0
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
@@ -459,7 +537,7 @@ class Node(QtWidgets.QGraphicsItem):
         self._corner_radius: int = 5
 
         self._mode: str = ""
-        self._is_collapsed: bool = self._prop_model.properties["Collapse State"]  # False
+        self._is_collapsed: str = self._prop_model.properties["Collapse State"]  # False
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -552,7 +630,6 @@ class Node(QtWidgets.QGraphicsItem):
                 selection-color: #E5E5E5;
                 background-color: #282828;
                 selection-background-color: #4772B3;
-                border-radius: 5px;
                 min-width: 20px;
                 min-height: 24px;
                 padding-left: 5px;
@@ -561,6 +638,7 @@ class Node(QtWidgets.QGraphicsItem):
                 padding-bottom: 0px;
                 margin: 0px;
                 border: 0px;
+                border-radius: 0px;
             }
         """)
 
@@ -653,11 +731,11 @@ class Node(QtWidgets.QGraphicsItem):
         return self._content_y
 
     @property
-    def is_collapsed(self) -> bool:
+    def is_collapsed(self) -> str:
         return self._is_collapsed
 
-    def update_collapse_state(self, collapse_state: bool) -> None:
-        if collapse_state:
+    def update_collapse_state(self, collapse_state: str) -> None:
+        if collapse_state == "True":
             self._collapse_btn.setPixmap(self._collapse_pixmap_up)
             self._content_proxy.hide()
             self._height = self._min_height
@@ -765,18 +843,17 @@ class Node(QtWidgets.QGraphicsItem):
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     self._mode: str = "COLLAPSE"
-                    if not self._is_collapsed:
-                        self._collapse_btn.setPixmap(self._collapse_pixmap_up)
-                        self._content_proxy.hide()
-                        self._height = self._min_height
-                    else:
-                        self._collapse_btn.setPixmap(self._collapse_pixmap_down)
-                        self._content_proxy.show()
-                        self._height = (self._header_height + self._content_padding + self._content_widget.height() +
-                                        self._content_padding)
 
-                    self._is_collapsed = not self._is_collapsed
-                    self.update_socket_positions()
+                    if self._prop_model.properties["Collapse State"] == "True":
+                        # noinspection PyTypeChecker
+                        self._prop_model.setData(
+                            self._prop_model.index(3, 0, QtCore.QModelIndex()), "False", QtCore.Qt.EditRole
+                        )
+                    else:
+                        # noinspection PyTypeChecker
+                        self._prop_model.setData(
+                            self._prop_model.index(3, 0, QtCore.QModelIndex()), "True", QtCore.Qt.EditRole
+                        )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
