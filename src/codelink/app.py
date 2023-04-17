@@ -1,7 +1,7 @@
 import os
 import sys
 import math
-# import pickle
+import pickle
 from typing import Optional, Any, Union
 
 import PySide2.QtCore as QtCore
@@ -19,6 +19,14 @@ class NodesModel(QtCore.QAbstractTableModel):
             self._nodes: Optional[list[dict]] = []
         else:
             self._nodes: Optional[list[dict]] = nodes
+
+    @property
+    def nodes(self) -> list[dict]:
+        return self._nodes
+
+    @nodes.setter
+    def nodes(self, value: list[dict]) -> None:
+        self._nodes = value
 
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._nodes)
@@ -125,12 +133,6 @@ class NodesModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
         return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
-
-    def __getstate__(self) -> list[dict]:
-        return self._nodes.copy()
-
-    def __setstate__(self, data: list[dict]):
-        self._nodes: list[dict] = data
 
 
 class NodePropertyModel(QtCore.QAbstractTableModel):
@@ -1521,11 +1523,17 @@ if __name__ == "__main__":
         {"class_name": "BaseNode", "node_name": "Sub", "node_color": "green", "node_collapsed": "False",
          "node_pos_x": "10", "node_pos_y": "10"}
     ])
-    nodes_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
-                                    print(nodes_model._nodes[top_left_idx.row()]))
+
+    file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nodes.pkl")
+    pickle.dump(nodes_model.nodes, open(file_path, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
+    loaded_nodes_data: list[dict] = pickle.load(open(file_path, 'rb'))
+    loaded_model_model: NodesModel = NodesModel(nodes=loaded_nodes_data)
+
+    loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
+                                           print(loaded_model_model.nodes[top_left_idx.row()]))
 
     nodes_view: QtWidgets.QTableView = QtWidgets.QTableView()
-    nodes_view.setModel(nodes_model)
+    nodes_view.setModel(loaded_model_model)
     nodes_view.show()
 
     sys.exit(app.exec_())
