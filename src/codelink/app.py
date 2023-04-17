@@ -1517,20 +1517,25 @@ if __name__ == "__main__":
     # node_editor_scene.add_node(node_1_copy)
 
     # Test NodesModel
-    nodes_model: NodesModel = NodesModel(nodes=[
-        {"class_name": "BaseNode", "node_name": "Add", "node_color": "red", "node_collapsed": "False",
-         "node_pos_x": "0", "node_pos_y": "0"},
-        {"class_name": "BaseNode", "node_name": "Sub", "node_color": "green", "node_collapsed": "False",
-         "node_pos_x": "10", "node_pos_y": "10"}
-    ])
+    # nodes_model: NodesModel = NodesModel(nodes=[
+    #     {"class_name": "BaseNode", "node_name": "Add", "node_color": "red", "node_collapsed": "False",
+    #      "node_pos_x": "0", "node_pos_y": "0"},
+    #     {"class_name": "BaseNode", "node_name": "Sub", "node_color": "green", "node_collapsed": "False",
+    #      "node_pos_x": "10", "node_pos_y": "10"}
+    # ])
 
     file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nodes.pkl")
-    pickle.dump(nodes_model.nodes, open(file_path, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
+    # pickle.dump(nodes_model.nodes, open(file_path, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
     loaded_nodes_data: list[dict] = pickle.load(open(file_path, 'rb'))
     loaded_model_model: NodesModel = NodesModel(nodes=loaded_nodes_data)
 
     loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
                                            print(loaded_model_model.nodes[top_left_idx.row()]))
+    loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
+                                           pickle.dump(
+                                               loaded_model_model.nodes, open(file_path, "wb"),
+                                               protocol=pickle.HIGHEST_PROTOCOL)
+                                           )
 
     nodes_view: QtWidgets.QTableView = QtWidgets.QTableView()
     nodes_view.setModel(loaded_model_model)
