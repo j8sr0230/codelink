@@ -126,6 +126,12 @@ class NodesModel(QtCore.QAbstractTableModel):
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
         return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
 
+    def __getstate__(self) -> list[dict]:
+        return self._nodes.copy()
+
+    def __setstate__(self, data: list[dict]):
+        self._nodes: list[dict] = data
+
 
 class NodePropertyModel(QtCore.QAbstractTableModel):
     def __init__(self, properties: Optional[dict] = None, parent: QtCore.QObject = None) -> None:
