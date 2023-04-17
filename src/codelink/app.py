@@ -34,13 +34,13 @@ class NodesModel(QtCore.QAbstractTableModel):
         if not 0 <= index.row() < len(self._nodes):
             return None
 
-        if role == Qt.DisplayRole:
-            class_name: str = self.addresses[index.row()]["class_name"]
-            node_name: str = self.addresses[index.row()]["node_name"]
-            node_color: str = self.addresses[index.row()]["node_color"]
-            node_collapsed: str = self.addresses[index.row()]["node_collapsed"]
-            node_pos_x: str = self.addresses[index.row()]["node_pos_x"]
-            node_pos_y: str = self.addresses[index.row()]["node_pos_y"]
+        if role == QtCore.Qt.DisplayRole:
+            class_name: str = self._nodes[index.row()]["class_name"]
+            node_name: str = self._nodes[index.row()]["node_name"]
+            node_color: str = self._nodes[index.row()]["node_color"]
+            node_collapsed: str = self._nodes[index.row()]["node_collapsed"]
+            node_pos_x: str = self._nodes[index.row()]["node_pos_x"]
+            node_pos_y: str = self._nodes[index.row()]["node_pos_y"]
 
             if index.column() == 0:
                 return class_name
@@ -58,27 +58,27 @@ class NodesModel(QtCore.QAbstractTableModel):
         return None
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
-        if role != Qt.DisplayRole:
+        if role != QtCore.Qt.DisplayRole:
             return None
 
-        if orientation == Qt.Horizontal:
+        if orientation == QtCore.Qt.Horizontal:
             if section == 0:
-                return "Node class"
+                return "node_class"
             elif section == 1:
-                return "Node name"
+                return "node_name"
             elif section == 2:
-                return "Node color"
+                return "node_color"
             elif section == 3:
-                return "Node collapsed"
+                return "node_collapsed"
             elif section == 4:
-                return "Node pos x"
+                return "node_pos_x"
             elif section == 5:
-                return "Node pos y"
+                return "node_pos_y"
 
         return None
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
-        if role != Qt.EditRole:
+        if role != QtCore.Qt.EditRole:
             return False
 
         if index.isValid() and 0 <= index.row() < len(self._nodes):
@@ -87,13 +87,13 @@ class NodesModel(QtCore.QAbstractTableModel):
                 node["class_name"]: str = value
             elif index.column() == 1:
                 node["node_name"]: str = value
-            elif index.column() == 1:
+            elif index.column() == 2:
                 node["node_color"]: str = value
-            elif index.column() == 1:
+            elif index.column() == 3:
                 node["node_collapsed"]: str = value
-            elif index.column() == 1:
+            elif index.column() == 4:
                 node["node_pos_x"]: str = value
-            elif index.column() == 1:
+            elif index.column() == 5:
                 node["node_pos_y"]: str = value
             else:
                 return False
@@ -1507,5 +1507,19 @@ if __name__ == "__main__":
     # pickle.dump(node_1, open(file_path, "wb"))
     # node_1_copy: Node = pickle.load(open(file_path, 'rb'))
     # node_editor_scene.add_node(node_1_copy)
+
+    # Test NodesModel
+    nodes_model: NodesModel = NodesModel(nodes=[
+        {"class_name": "BaseNode", "node_name": "Add", "node_color": "red", "node_collapsed": "False",
+         "node_pos_x": "0", "node_pos_y": "0"},
+        {"class_name": "BaseNode", "node_name": "Sub", "node_color": "green", "node_collapsed": "False",
+         "node_pos_x": "10", "node_pos_y": "10"}
+    ])
+    nodes_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
+                                    print(nodes_model._nodes[top_left_idx.row()]))
+
+    nodes_view: QtWidgets.QTableView = QtWidgets.QTableView()
+    nodes_view.setModel(nodes_model)
+    nodes_view.show()
 
     sys.exit(app.exec_())
