@@ -11,6 +11,122 @@ import PySide2.QtGui as QtGui
 from dask.threaded import get
 
 
+class NodesModel(QtCore.QAbstractTableModel):
+    def __init__(self, nodes: Optional[list[dict]] = None, parent: QtCore.QObject = None):
+        super(NodesModel, self).__init__(parent)
+
+        if nodes is None:
+            self._nodes: Optional[list[dict]] = []
+        else:
+            self._nodes: Optional[list[dict]] = nodes
+
+    def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        return len(self._nodes)
+
+    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        # Columns: class_name, node_name, node_color, node_collapsed, node_pos_x, node_pos_y
+        return 6
+
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if not index.isValid():
+            return None
+
+        if not 0 <= index.row() < len(self._nodes):
+            return None
+
+        if role == Qt.DisplayRole:
+            class_name: str = self.addresses[index.row()]["class_name"]
+            node_name: str = self.addresses[index.row()]["node_name"]
+            node_color: str = self.addresses[index.row()]["node_color"]
+            node_collapsed: str = self.addresses[index.row()]["node_collapsed"]
+            node_pos_x: str = self.addresses[index.row()]["node_pos_x"]
+            node_pos_y: str = self.addresses[index.row()]["node_pos_y"]
+
+            if index.column() == 0:
+                return class_name
+            elif index.column() == 1:
+                return node_name
+            elif index.column() == 2:
+                return node_color
+            elif index.column() == 3:
+                return node_collapsed
+            elif index.column() == 4:
+                return node_pos_x
+            elif index.column() == 5:
+                return node_pos_y
+
+        return None
+
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if role != Qt.DisplayRole:
+            return None
+
+        if orientation == Qt.Horizontal:
+            if section == 0:
+                return "Node class"
+            elif section == 1:
+                return "Node name"
+            elif section == 2:
+                return "Node color"
+            elif section == 3:
+                return "Node collapsed"
+            elif section == 4:
+                return "Node pos x"
+            elif section == 5:
+                return "Node pos y"
+
+        return None
+
+    def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
+        if role != Qt.EditRole:
+            return False
+
+        if index.isValid() and 0 <= index.row() < len(self._nodes):
+            node = self._nodes[index.row()]
+            if index.column() == 0:
+                node["class_name"]: str = value
+            elif index.column() == 1:
+                node["node_name"]: str = value
+            elif index.column() == 1:
+                node["node_color"]: str = value
+            elif index.column() == 1:
+                node["node_collapsed"]: str = value
+            elif index.column() == 1:
+                node["node_pos_x"]: str = value
+            elif index.column() == 1:
+                node["node_pos_y"]: str = value
+            else:
+                return False
+
+            self.dataChanged.emit(index, index)
+            return True
+
+        return False
+
+    def insertRows(self, row: int, count: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
+        self.beginInsertRows(QModelIndex(), position, position + rows - 1)
+
+        for row in range(rows):
+            self._nodes.insert(position + row, {"class_name": "", "node_name": "", "node_color": "",
+                                                "node_collapsed": "", "node_pos_x": "", "node_pos_y": ""})
+
+        self.endInsertRows()
+        return True
+
+    def removeRows(self, row: int, count: int = 1, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
+        self.beginRemoveRows(QModelIndex(), row, row + count - 1)
+
+        del self.addresses[row:row + count]
+
+        self.endRemoveRows()
+        return True
+
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
+        if not index.isValid():
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
+        return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
+
+
 class NodePropertyModel(QtCore.QAbstractTableModel):
     def __init__(self, properties: Optional[dict] = None, parent: QtCore.QObject = None) -> None:
         super().__init__(parent)
