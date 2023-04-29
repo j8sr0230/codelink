@@ -1154,6 +1154,8 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
+        self._nodes_model: NodesModel = NodesModel(nodes=None)
+
         self._nodes: list[Node] = []
         self._edges: list[Edge] = []
 
@@ -1341,17 +1343,17 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
         if event.button() == QtCore.Qt.RightButton and self._mode == "":
-            super().mousePressEvent(event)
-
             self._rm_pressed: bool = True
             if event.modifiers() == QtCore.Qt.ShiftModifier:
                 self._mode: str = "EDGE_CUT"
                 self._cutter: Cutter = Cutter(start=self._last_pos, end=self._last_pos)
                 self.scene().addItem(self._cutter)
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
+            else:
+                super().mousePressEvent(event)
 
-            for node in self.scene().nodes:
-                node.prop_view.hide()
+                for node in self.scene().nodes:
+                    node.prop_view.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
