@@ -309,6 +309,9 @@ class NodePropertyView(QtWidgets.QTableView):
             QTableView::item:hover:focus {
                 border: none;
             }
+            QHeaderView {
+                background-color: #282828;
+            }
             QHeaderView::section {
                 color: #E5E5E5;
                 background-color: #282828;
@@ -649,14 +652,6 @@ class Node(QtWidgets.QGraphicsItem):
                         "Collapse State": "False",
                         "Color": QtGui.QColor("#232323")}
         )
-
-        self._prop_view: NodePropertyView = NodePropertyView()
-        self._prop_view.setModel(self._prop_model)
-        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
-
-        # self._prop_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
-        # self._prop_proxy.setWidget(self._prop_view)
-        # self._prop_proxy.hide()
 
         self._visited_count: int = 0
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
@@ -1282,7 +1277,11 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-        self._layout.setAlignment(QtCore.Qt.AlignRight)
+        self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignRight)
+        self._prop_view: NodePropertyView = NodePropertyView(self)
+        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
+        self._prop_view.setMaximumWidth(250)
+        self._layout.addWidget(self._prop_view)
         self.setLayout(self._layout)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -1336,18 +1335,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 self._last_node: Node = self.itemAt(event.pos())
                 self._mode: str = "NODE_SELECTED"
 
+                self._prop_view.setModel(self._last_node._prop_model)
 
-
-                print("Prop")
-                self._last_node.prop_view.setMaximumWidth(200)
-                #elf._layout.addWidget(self._last_node.prop_view)
-                if self._layout.takeAt(0) is None:
-                    self._layout.addWidget(self._last_node.prop_view)
-                else:
-                    print(self._layout.takeAt(0))
-                    self._layout.replaceWidget(self._layout.takeAt(0), self._last_node.prop_view)
-
-                # self.update()
 
             # for node in self.scene().nodes:
             #     node.prop_view.hide()
