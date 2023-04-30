@@ -289,7 +289,7 @@ class NodePropertyView(QtWidgets.QTableView):
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.horizontalHeader().hide()
-        self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        # self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().setFont(QtGui.QFont("Sans Serif", 10))
 
         self.setStyleSheet("""
