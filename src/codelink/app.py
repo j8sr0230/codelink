@@ -654,9 +654,9 @@ class Node(QtWidgets.QGraphicsItem):
         self._prop_view.setModel(self._prop_model)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
 
-        self._prop_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
-        self._prop_proxy.setWidget(self._prop_view)
-        self._prop_proxy.hide()
+        # self._prop_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+        # self._prop_proxy.setWidget(self._prop_view)
+        # self._prop_proxy.hide()
 
         self._visited_count: int = 0
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
@@ -1054,9 +1054,9 @@ class Node(QtWidgets.QGraphicsItem):
     def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent) -> None:
         super().contextMenuEvent(event)
 
-        self.setSelected(True)
-        self._prop_proxy.setGeometry(QtCore.QRectF(self._width + 10, 0, 200, 200))
-        self._prop_proxy.show()
+        # self.setSelected(True)
+        # self._prop_proxy.setGeometry(QtCore.QRectF(self._width + 10, 0, 200, 200))
+        # self._prop_proxy.show()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
@@ -1263,6 +1263,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_socket: Optional[Socket] = None
+        self._last_node: Optional[Node] = None
         self._temp_edge: Optional[Edge] = None
         self._cutter: Optional[Cutter] = None
 
@@ -1279,6 +1280,10 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
                             QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
+
+        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self._layout.setAlignment(QtCore.Qt.AlignRight)
+        self.setLayout(self._layout)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
 
@@ -1327,6 +1332,23 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
 
+            if type(self.itemAt(event.pos())) == Node:
+                self._last_node: Node = self.itemAt(event.pos())
+                self._mode: str = "NODE_SELECTED"
+
+
+
+                print("Prop")
+                self._last_node.prop_view.setMaximumWidth(200)
+                #elf._layout.addWidget(self._last_node.prop_view)
+                if self._layout.takeAt(0) is None:
+                    self._layout.addWidget(self._last_node.prop_view)
+                else:
+                    print(self._layout.takeAt(0))
+                    self._layout.replaceWidget(self._layout.takeAt(0), self._last_node.prop_view)
+
+                # self.update()
+
             # for node in self.scene().nodes:
             #     node.prop_view.hide()
 
@@ -1349,9 +1371,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
                 # for node in self.scene().nodes:
                 #     node.prop_view.hide()
-
-        for node in self.scene().nodes:
-            node._prop_proxy.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
