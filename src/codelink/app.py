@@ -315,7 +315,7 @@ class NodePropertyView(QtWidgets.QTableView):
             QHeaderView::section {
                 color: #E5E5E5;
                 background-color: #282828;
-                padding: 0px 0px 0px 10px;
+                padding: 0px 0px 0px 2px;
                 border: 0px;
             }
             QHeaderView::section:vertical {
@@ -331,11 +331,11 @@ class NodePropertyView(QtWidgets.QTableView):
             }
         """)
 
-        # self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
-        # self._shadow.setColor(QtGui.QColor("black"))
-        # self._shadow.setBlurRadius(20)
-        # self._shadow.setOffset(1)
-        # self.setGraphicsEffect(self._shadow)
+        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        self._shadow.setColor(QtGui.QColor("black"))
+        self._shadow.setBlurRadius(20)
+        self._shadow.setOffset(1)
+        self.setGraphicsEffect(self._shadow)
 
 
 class Socket(QtWidgets.QGraphicsItem):
@@ -646,11 +646,13 @@ class Node(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         self._prop_model: NodePropertyModel = NodePropertyModel(
-            properties={"Title": "Add",
-                        "X Pos": 5.1,
-                        "Y Pos": 5.1,
+            properties={"Class": self.__class__.__name__,
+                        "Title": "Add",
+                        "Color": QtGui.QColor("#232323"),
                         "Collapse State": "False",
-                        "Color": QtGui.QColor("#232323")}
+                        "X Pos": 5.1,
+                        "Y Pos": 5.1
+                        }
         )
 
         self._visited_count: int = 0
@@ -826,8 +828,8 @@ class Node(QtWidgets.QGraphicsItem):
         return cropped_text
 
     @property
-    def prop_view(self) -> QtWidgets.QTableView:
-        return self._prop_view
+    def prop_model(self) -> QtCore.QAbstractTableModel:
+        return self._prop_model
 
     @property
     def visited_count(self) -> int:
@@ -1281,6 +1283,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._prop_view: NodePropertyView = NodePropertyView(self)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
+        self._prop_view.hide()
         self._layout.addWidget(self._prop_view)
         self.setLayout(self._layout)
 
@@ -1331,16 +1334,6 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
 
-            if type(self.itemAt(event.pos())) == Node:
-                self._last_node: Node = self.itemAt(event.pos())
-                self._mode: str = "NODE_SELECTED"
-
-                self._prop_view.setModel(self._last_node._prop_model)
-
-
-            # for node in self.scene().nodes:
-            #     node.prop_view.hide()
-
         if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
             super().mousePressEvent(event)
 
@@ -1358,8 +1351,16 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             else:
                 super().mousePressEvent(event)
 
-                # for node in self.scene().nodes:
-                #     node.prop_view.hide()
+                if type(self.itemAt(event.pos())) == Node:
+                    self.scene().clearSelection()
+
+                    self._last_node: Node = self.itemAt(event.pos())
+                    self._mode: str = "NODE_SELECTED"
+                    self._last_node.setSelected(True)
+                    self._prop_view.setModel(self._last_node.prop_model)
+                    self._prop_view.show()
+                else:
+                    self._prop_view.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -1532,21 +1533,21 @@ if __name__ == "__main__":
     #      "node_pos_x": "10", "node_pos_y": "10"}
     # ])
 
-    file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nodes.pkl")
-    # pickle.dump(nodes_model.nodes, open(file_path, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
-    loaded_nodes_data: list[dict] = pickle.load(open(file_path, 'rb'))
-    loaded_model_model: NodesModel = NodesModel(nodes=loaded_nodes_data)
-
-    loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
-                                           print(loaded_model_model.nodes[top_left_idx.row()]))
-    loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
-                                           pickle.dump(
-                                               loaded_model_model.nodes, open(file_path, "wb"),
-                                               protocol=pickle.HIGHEST_PROTOCOL)
-                                           )
-
-    nodes_view: QtWidgets.QTableView = QtWidgets.QTableView()
-    nodes_view.setModel(loaded_model_model)
-    nodes_view.show()
+    # file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "nodes.pkl")
+    # # pickle.dump(nodes_model.nodes, open(file_path, "wb"), protocol=pickle.HIGHEST_PROTOCOL)
+    # loaded_nodes_data: list[dict] = pickle.load(open(file_path, 'rb'))
+    # loaded_model_model: NodesModel = NodesModel(nodes=loaded_nodes_data)
+    #
+    # loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
+    #                                        print(loaded_model_model.nodes[top_left_idx.row()]))
+    # loaded_model_model.dataChanged.connect(lambda top_left_idx, bottom_right_idx, roles:
+    #                                        pickle.dump(
+    #                                            loaded_model_model.nodes, open(file_path, "wb"),
+    #                                            protocol=pickle.HIGHEST_PROTOCOL)
+    #                                        )
+    #
+    # nodes_view: QtWidgets.QTableView = QtWidgets.QTableView()
+    # nodes_view.setModel(loaded_model_model)
+    # nodes_view.show()
 
     sys.exit(app.exec_())
