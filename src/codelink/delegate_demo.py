@@ -147,7 +147,7 @@ class Main(QtWidgets.QMainWindow):
         grid_layout.addWidget(self.tableview, 1, 0, 1, 7)
         grid_layout.addWidget(self.lbltitle, 0, 3, 1, 1, QtCore.Qt.AlignCenter)
 
-        # initializing layout
+        # initializing sub_layout
         self.title = 'Data Visualization Tool'
         self.setWindowTitle(self.title)
         self.setGeometry(0, 0, 1024, 576)

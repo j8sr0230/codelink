@@ -1520,6 +1520,28 @@ if __name__ == "__main__":
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
 
+    test_widget: QtWidgets.QWidget = QtWidgets.QWidget()
+    main_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout(test_widget)
+    test_widget.setLayout(main_layout)
+    main_layout.addWidget(QtWidgets.QLabel("Test node"))
+
+    main_layout.addWidget(QtWidgets.QComboBox())
+
+    sub_container: QtWidgets.QWidget = QtWidgets.QWidget()
+    sub_layout: QtWidgets.QFormLayout = QtWidgets.QFormLayout(test_widget)
+    sub_container.setLayout(sub_layout)
+    main_layout.addWidget(sub_container)
+    sub_layout.addRow(QtWidgets.QLabel("In 1"), QtWidgets.QLineEdit())
+    sub_layout.addRow(QtWidgets.QLabel("In 2"), QtWidgets.QLineEdit())
+    sub_layout.addRow(QtWidgets.QLabel("In 3"), QtWidgets.QLineEdit())
+    sub_layout.addRow(QtWidgets.QWidget(), QtWidgets.QLabel("Out 1", alignment=QtCore.Qt.AlignRight))
+    sub_layout.addRow(QtWidgets.QWidget(), QtWidgets.QLabel("Out 2", alignment=QtCore.Qt.AlignRight))
+
+    proxy: QtWidgets.QGraphicsProxyWidget = node_editor_scene.addWidget(test_widget)
+    proxy.setParentItem(node_3)
+
+    proxy.setPos(0, 25)
+
     # file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
     # pickle.dump(node_1, open(file_path, "wb"))
     # node_1_copy: Node = pickle.load(open(file_path, 'rb'))
