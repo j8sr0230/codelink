@@ -11,132 +11,8 @@ import PySide2.QtGui as QtGui
 from dask.threaded import get
 
 
-class NodesModel(QtCore.QAbstractTableModel):
-    def __init__(self, nodes: Optional[list[dict]] = None, parent: QtCore.QObject = None):
-        super(NodesModel, self).__init__(parent)
-
-        if nodes is None:
-            self._nodes: Optional[list[dict]] = []
-        else:
-            self._nodes: Optional[list[dict]] = nodes
-
-    @property
-    def nodes(self) -> list[dict]:
-        return self._nodes
-
-    @nodes.setter
-    def nodes(self, value: list[dict]) -> None:
-        self._nodes = value
-
-    def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
-        return len(self._nodes)
-
-    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
-        # Columns: class_name, node_name, node_color, node_collapsed, node_pos_x, node_pos_y
-        return 6
-
-    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
-        if not index.isValid():
-            return None
-
-        if not 0 <= index.row() < len(self._nodes):
-            return None
-
-        if role == QtCore.Qt.DisplayRole:
-            class_name: str = self._nodes[index.row()]["class_name"]
-            node_name: str = self._nodes[index.row()]["node_name"]
-            node_color: str = self._nodes[index.row()]["node_color"]
-            node_collapsed: str = self._nodes[index.row()]["node_collapsed"]
-            node_pos_x: str = self._nodes[index.row()]["node_pos_x"]
-            node_pos_y: str = self._nodes[index.row()]["node_pos_y"]
-
-            if index.column() == 0:
-                return class_name
-            elif index.column() == 1:
-                return node_name
-            elif index.column() == 2:
-                return node_color
-            elif index.column() == 3:
-                return node_collapsed
-            elif index.column() == 4:
-                return node_pos_x
-            elif index.column() == 5:
-                return node_pos_y
-
-        return None
-
-    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
-        if role != QtCore.Qt.DisplayRole:
-            return None
-
-        if orientation == QtCore.Qt.Horizontal:
-            if section == 0:
-                return "node_class"
-            elif section == 1:
-                return "node_name"
-            elif section == 2:
-                return "node_color"
-            elif section == 3:
-                return "node_collapsed"
-            elif section == 4:
-                return "node_pos_x"
-            elif section == 5:
-                return "node_pos_y"
-
-        return None
-
-    def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
-        if role != QtCore.Qt.EditRole:
-            return False
-
-        if index.isValid() and 0 <= index.row() < len(self._nodes):
-            node = self._nodes[index.row()]
-            if index.column() == 0:
-                node["class_name"]: str = value
-            elif index.column() == 1:
-                node["node_name"]: str = value
-            elif index.column() == 2:
-                node["node_color"]: str = value
-            elif index.column() == 3:
-                node["node_collapsed"]: str = value
-            elif index.column() == 4:
-                node["node_pos_x"]: str = value
-            elif index.column() == 5:
-                node["node_pos_y"]: str = value
-            else:
-                return False
-
-            self.dataChanged.emit(index, index)
-            return True
-
-        return False
-
-    def insertRows(self, row: int, count: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
-        self.beginInsertRows(QModelIndex(), position, position + rows - 1)
-
-        for row in range(rows):
-            self._nodes.insert(position + row, {"class_name": "", "node_name": "", "node_color": "",
-                                                "node_collapsed": "", "node_pos_x": "", "node_pos_y": ""})
-
-        self.endInsertRows()
-        return True
-
-    def removeRows(self, row: int, count: int = 1, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
-        self.beginRemoveRows(QModelIndex(), row, row + count - 1)
-
-        del self.addresses[row:row + count]
-
-        self.endRemoveRows()
-        return True
-
-    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
-        if not index.isValid():
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
-        return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
-
-
-class NodePropertyModel(QtCore.QAbstractTableModel):
-    def __init__(self, properties: Optional[dict] = None, parent: QtCore.QObject = None) -> None:
+class PropertyModel(QtCore.QAbstractTableModel):
+    def __init__(self, properties: Optional[dict] = None, parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
 
         if properties is None:
@@ -156,22 +32,34 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
         return len(self._properties.keys())
 
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
-        return 1
+        return 2
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if not index.isValid():
+            return None
+
+        if not 0 <= index.row() < len(self._properties.keys()):
+            return None
+
         if role == QtCore.Qt.DisplayRole:
+            key: str = list(self._properties.keys())[index.row()]
+
             if index.column() == 0:
-                key: str = list(self._properties.keys())[index.row()]
+                return key
+            else:
                 return self._properties[key]
+
         return None
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
         if role != QtCore.Qt.DisplayRole:
             return None
 
-        if orientation == QtCore.Qt.Vertical:
-            key: str = list(self._properties.keys())[section]
-            return key
+        if orientation == QtCore.Qt.Horizontal:
+            if section == 0:
+                return "Name"
+            elif section == 1:
+                return "Value"
 
         return None
 
@@ -185,10 +73,10 @@ class NodePropertyModel(QtCore.QAbstractTableModel):
         return False
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
-        if 0 <= index.row() <= len(self._properties.keys()):
-            return super().flags(index) | QtCore.Qt.ItemIsEditable
-        else:
-            return super().flags(index)
+        if not index.isValid():
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
+
+        return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
 
 
 class BooleanDelegate(QtWidgets.QStyledItemDelegate):
@@ -288,16 +176,15 @@ class NodePropertyView(QtWidgets.QTableView):
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.horizontalHeader().hide()
-        # self.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.verticalHeader().setFont(QtGui.QFont("Sans Serif", 10))
+        self.horizontalHeader().setFont(QtGui.QFont("Sans Serif", 10))
+        self.verticalHeader().hide()
 
         self.setStyleSheet("""
             QTableView {
                 color: #E5E5E5;
                 selection-color: #E5E5E5;
                 background-color: #282828;
-                alternate-background-color: #545454;
+                alternate-background-color: #2B2B2B;
                 selection-background-color: #4772B3;
                 gridline-color: transparent;
                 padding: 5px;
@@ -305,30 +192,31 @@ class NodePropertyView(QtWidgets.QTableView):
                 border: 2px solid #E5E5E5;
                 border-radius: 5px;
             }
+            QTableView::item{
+                border-right: 1px solid black;
+                border-bottom: 1px solid black;
+
+            }
+            QTableView::item:horizontal:last{
+                border-right: none;
+                border-bottom: 1px solid black;
+            }
             QTableView::item:hover,
             QTableView::item:hover:focus {
                 border: none;
             }
-            QHeaderView {
-                background-color: #282828;
-            }
             QHeaderView::section {
                 color: #E5E5E5;
-                background-color: #282828;
-                padding: 0px 0px 0px 2px;
+                background-color: #333333;
+                padding: 0px;
                 border: 0px;
             }
-            QHeaderView::section:vertical {
-                border-bottom: 1px solid #545454;
-                border-right: 1px solid #545454;
+            QHeaderView::section:horizontal:first {
+                border-right: 1px solid black;
+                
             }
-            QHeaderView::section:horizontal {
-                padding: 0px;
-                border-right: 1px solid #545454;
-            }
-            QHeaderView::section:last {
-                border-bottom: none;
-            }
+            
+         
         """)
 
         self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
@@ -645,7 +533,7 @@ class Node(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._prop_model: NodePropertyModel = NodePropertyModel(
+        self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
                         "Title": "Add",
                         "Color": QtGui.QColor("#232323"),
@@ -1281,7 +1169,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignRight)
         self._prop_view: NodePropertyView = NodePropertyView(self)
-        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
+        #self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
         self._prop_view.hide()
         self._layout.addWidget(self._prop_view)
@@ -1489,7 +1377,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
-    # from app import NodePropertyModel, Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
+    # from app import PropertyModel, Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
     #
     # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
     #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
