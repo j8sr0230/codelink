@@ -177,7 +177,7 @@ class NodePropertyView(QtWidgets.QTableView):
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.horizontalHeader().setFont(QtGui.QFont("Sans Serif", 10))
-        self.verticalHeader().hide()
+        #self.verticalHeader().hide()
 
         self.setStyleSheet("""
             QTableView {
@@ -186,33 +186,35 @@ class NodePropertyView(QtWidgets.QTableView):
                 background-color: #282828;
                 alternate-background-color: #2B2B2B;
                 selection-background-color: #4772B3;
-                gridline-color: transparent;
+                gridline-color: green;
                 padding: 5px;
                 margin: 0px;
                 border: 2px solid #E5E5E5;
                 border-radius: 5px;
             }
-            QTableView::item{
-                border-right: 1px solid black;
-                border-bottom: 1px solid black;
-
-            }
-            QTableView::item:horizontal:last{
-                border-right: none;
-                border-bottom: 1px solid black;
-            }
+            QTableView::item,
             QTableView::item:hover,
             QTableView::item:hover:focus {
-                border: none;
+                border-left: 0px solid red;
+                border-right: 0px solid red;
+                border-bottom: 0px solid red;
             }
+            
+           
             QHeaderView::section {
                 color: #E5E5E5;
                 background-color: #333333;
                 padding: 0px;
                 border: 0px;
             }
-            QHeaderView::section:horizontal:first {
-                border-right: 1px solid black;
+       
+            QHeaderView::section:horizontal {
+                border-left: 1px solid black;
+                border-bottom: 1px solid black;
+                
+            }
+            QHeaderView::section:horizontal:last {
+                border-right: 1px solid green;
                 
             }
             
