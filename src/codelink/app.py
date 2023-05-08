@@ -57,7 +57,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
 
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
-                return "Name"
+                return "Property"
             elif section == 1:
                 return "Value"
 
@@ -177,7 +177,7 @@ class NodePropertyView(QtWidgets.QTableView):
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.horizontalHeader().setFont(QtGui.QFont("Sans Serif", 10))
-        #self.verticalHeader().hide()
+        self.verticalHeader().hide()
 
         self.setStyleSheet("""
             QTableView {
@@ -185,47 +185,33 @@ class NodePropertyView(QtWidgets.QTableView):
                 selection-color: #E5E5E5;
                 background-color: #282828;
                 alternate-background-color: #2B2B2B;
-                selection-background-color: #4772B3;
-                gridline-color: green;
-                padding: 5px;
+                selection-background-color: #334D80;
+                gridline-color: black;
+                padding: 0px;
                 margin: 0px;
                 border: 2px solid #E5E5E5;
-                border-radius: 5px;
+                border-radius: 2px;
             }
-            QTableView::item,
-            QTableView::item:hover,
-            QTableView::item:hover:focus {
-                border-left: 0px solid red;
-                border-right: 0px solid red;
-                border-bottom: 0px solid red;
-            }
-            
-           
-            QHeaderView::section {
+        
+
+            QHeaderView::section:horizontal {
                 color: #E5E5E5;
                 background-color: #333333;
+                margin: 0px;
                 padding: 0px;
-                border: 0px;
-            }
-       
-            QHeaderView::section:horizontal {
-                border-left: 1px solid black;
+                border-top: none;
                 border-bottom: 1px solid black;
-                
+                border-left: none;
+                border-right: 1px solid black;
             }
-            QHeaderView::section:horizontal:last {
-                border-right: 1px solid green;
-                
-            }
-            
-         
-        """)
-
-        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
-        self._shadow.setColor(QtGui.QColor("black"))
-        self._shadow.setBlurRadius(20)
-        self._shadow.setOffset(1)
-        self.setGraphicsEffect(self._shadow)
+            """)
+        #
+        #     QTableView::item {
+        #         border: none;
+        #         margin: 0px;
+        #         padding: 0px 0px 0px 5px;
+        #     }
+        # """)
 
 
 class Socket(QtWidgets.QGraphicsItem):
