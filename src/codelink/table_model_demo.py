@@ -481,7 +481,7 @@ class MainView(QWidget):
         self.vertical_layout: QVBoxLayout = QVBoxLayout()
         self.vertical_layout.setMargin(0)
         self.filter_line_edit: QLineEdit = QLineEdit(parent=self.left_container)
-        self.filter_line_edit.setPlaceholderText("Filter code items ...")
+        self.filter_line_edit.setPlaceholderText("Filter code _items ...")
         self.filter_line_edit.textChanged.connect(self.filter_reg_exp_changed)
         self.code_key_view: CodeKeyListView = CodeKeyListView(parent=self.left_container)
         self.code_key_view.setModel(self.code_key_model)

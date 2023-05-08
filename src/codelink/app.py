@@ -83,27 +83,29 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
         super().__init__(parent)
 
-        self.items: list[str] = ["False", "True"]
+        self._items: list[str] = ["False", "True"]
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
               index: QtCore.QModelIndex) -> None:
+
         if isinstance(self.parent(), QtWidgets.QAbstractItemView):
             self.parent().openPersistentEditor(index)
 
-        super().paint(painter, option, index)
+        if index.isValid() and not type(index.data()) == bool:
+            super().paint(painter, option, index)
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
         editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
-        editor.addItems(self.items)
+        editor.addItems(self._items)
         editor.currentIndexChanged.connect(self.commit_editor)
 
         editor.setStyleSheet("""
            QComboBox {
                 color: #E5E5E5;
-                background-color: #545454;
+                background-color: transparent;
                 border-radius: 0px;
-                padding-left: 2px;
+                padding-left: 5px;
                 padding-right: 0px;
                 padding-top: 0px;
                 padding-bottom: 0px;
@@ -111,7 +113,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 border: none;
             }
             QComboBox::drop-down {
-                background-color: #545454;
+                background-color: transparent;
                 subcontrol-origin: border;
                 subcontrol-position: top right;
                 border-radius: 0px;
@@ -132,7 +134,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 color: #E5E5E5;
                 selection-color: #E5E5E5;
                 background-color: #282828;
-                selection-background-color: #4772B3;
+                selection-background-color: #334D80;
                 padding-left: 0px;
                 padding-right: 0px;
                 padding-top: 0px;
@@ -140,10 +142,12 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 margin: 0px;
                 border: none;
                 border-radius: 0px;
+                outline: none;
             }
         """)
 
-        return editor
+        if index.isValid() and type(index.data()) == bool:
+            return editor
 
     def commit_editor(self):
         editor: QtCore.QObject = self.sender()
@@ -151,13 +155,13 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
-        value: str = index.data(QtCore.Qt.DisplayRole)
-        num: int = self.items.index(value)
+        value: str = str(index.data(QtCore.Qt.DisplayRole))
+        num: int = self._items.index(value)
         editor.setCurrentIndex(num)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        value: str = editor.currentText()
+        value: bool = eval(editor.currentText())
 
         # noinspection PyTypeChecker
         model.setData(index, value, QtCore.Qt.EditRole)
@@ -193,7 +197,6 @@ class NodePropertyView(QtWidgets.QTableView):
                 border-radius: 2px;
                 outline: none;
             }
-        
             QHeaderView::section:horizontal {
                 color: #E5E5E5;
                 background-color: #333333;
@@ -204,26 +207,21 @@ class NodePropertyView(QtWidgets.QTableView):
                 border-left: none;
                 border-right: 1px solid black;
             }
-            
             QTableView::item {
                 border: none;
                 margin: 0px;
                 padding: 0px 0px 0px 5px;
-                
             }
-
             QTableView::item:selected {
                 background-color: #334D80;
             }
-            
             QTableView::item:hover {
                 border: none;
             }
-            
             QTableView::item:focus {
                 border: none;
             }
-         """)
+        """)
 
 
 class Socket(QtWidgets.QGraphicsItem):
@@ -437,7 +435,7 @@ class SocketWidget(QtWidgets.QWidget):
             self._input_widget.hide()
 
     def update_socket_positions(self) -> None:
-        if not self._parent_node.is_collapsed == "True":
+        if not self._parent_node.is_collapsed:
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._socket.size) / 2)
 
             if self._is_input:
@@ -537,7 +535,7 @@ class Node(QtWidgets.QGraphicsItem):
             properties={"Class": self.__class__.__name__,
                         "Title": "Add",
                         "Color": QtGui.QColor("#232323"),
-                        "Collapse State": "False",
+                        "Collapse State": False,
                         "X Pos": 5.1,
                         "Y Pos": 5.1
                         }
@@ -761,8 +759,8 @@ class Node(QtWidgets.QGraphicsItem):
     def is_collapsed(self) -> str:
         return self._is_collapsed
 
-    def update_collapse_state(self, collapse_state: str) -> None:
-        if collapse_state == "True":
+    def update_collapse_state(self, collapse_state: bool) -> None:
+        if collapse_state:
             self._collapse_btn.setPixmap(self._collapse_pixmap_up)
             self._content_proxy.hide()
             self._height = self._min_height
@@ -871,15 +869,15 @@ class Node(QtWidgets.QGraphicsItem):
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     self._mode: str = "COLLAPSE"
 
-                    if self._prop_model.properties["Collapse State"] == "True":
+                    if self._prop_model.properties["Collapse State"]:
                         # noinspection PyTypeChecker
                         self._prop_model.setData(
-                            self._prop_model.index(3, 0, QtCore.QModelIndex()), "False", QtCore.Qt.EditRole
+                            self._prop_model.index(3, 1, QtCore.QModelIndex()), False, QtCore.Qt.EditRole
                         )
                     else:
                         # noinspection PyTypeChecker
                         self._prop_model.setData(
-                            self._prop_model.index(3, 0, QtCore.QModelIndex()), "True", QtCore.Qt.EditRole
+                            self._prop_model.index(3, 1, QtCore.QModelIndex()), True, QtCore.Qt.EditRole
                         )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
@@ -1169,7 +1167,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignRight)
         self._prop_view: NodePropertyView = NodePropertyView(self)
-        #self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
+        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
         self._prop_view.hide()
         self._layout.addWidget(self._prop_view)
@@ -1407,28 +1405,6 @@ if __name__ == "__main__":
     node_3 = Node()
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
-
-    test_widget: QtWidgets.QWidget = QtWidgets.QWidget()
-    main_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout(test_widget)
-    test_widget.setLayout(main_layout)
-    main_layout.addWidget(QtWidgets.QLabel("Test node"))
-
-    main_layout.addWidget(QtWidgets.QComboBox())
-
-    sub_container: QtWidgets.QWidget = QtWidgets.QWidget()
-    sub_layout: QtWidgets.QFormLayout = QtWidgets.QFormLayout(test_widget)
-    sub_container.setLayout(sub_layout)
-    main_layout.addWidget(sub_container)
-    sub_layout.addRow(QtWidgets.QLabel("In 1"), QtWidgets.QLineEdit())
-    sub_layout.addRow(QtWidgets.QLabel("In 2"), QtWidgets.QLineEdit())
-    sub_layout.addRow(QtWidgets.QLabel("In 3"), QtWidgets.QLineEdit())
-    sub_layout.addRow(QtWidgets.QWidget(), QtWidgets.QLabel("Out 1", alignment=QtCore.Qt.AlignRight))
-    sub_layout.addRow(QtWidgets.QWidget(), QtWidgets.QLabel("Out 2", alignment=QtCore.Qt.AlignRight))
-
-    proxy: QtWidgets.QGraphicsProxyWidget = node_editor_scene.addWidget(test_widget)
-    proxy.setParentItem(node_3)
-
-    proxy.setPos(0, 25)
 
     # file_path: str = os.path.join(os.path.dirname(os.path.realpath(__file__)), "my_graph.cl")
     # pickle.dump(node_1, open(file_path, "wb"))
