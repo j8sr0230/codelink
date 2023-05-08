@@ -76,6 +76,9 @@ class PropertyModel(QtCore.QAbstractTableModel):
         if not index.isValid():
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
 
+        if index.column() == 0:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+
         return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
 
 
@@ -161,7 +164,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        value: bool = eval(editor.currentText())
+        value: str = editor.currentText()
 
         # noinspection PyTypeChecker
         model.setData(index, value, QtCore.Qt.EditRole)
