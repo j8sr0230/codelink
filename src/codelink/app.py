@@ -164,7 +164,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        value: str = editor.currentText()
+        value: bool = eval(editor.currentText())
 
         # noinspection PyTypeChecker
         model.setData(index, value, QtCore.Qt.EditRole)
