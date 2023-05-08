@@ -191,9 +191,9 @@ class NodePropertyView(QtWidgets.QTableView):
                 margin: 0px;
                 border: 2px solid #E5E5E5;
                 border-radius: 2px;
+                outline: none;
             }
         
-
             QHeaderView::section:horizontal {
                 color: #E5E5E5;
                 background-color: #333333;
@@ -204,14 +204,26 @@ class NodePropertyView(QtWidgets.QTableView):
                 border-left: none;
                 border-right: 1px solid black;
             }
-            """)
-        #
-        #     QTableView::item {
-        #         border: none;
-        #         margin: 0px;
-        #         padding: 0px 0px 0px 5px;
-        #     }
-        # """)
+            
+            QTableView::item {
+                border: none;
+                margin: 0px;
+                padding: 0px 0px 0px 5px;
+                
+            }
+
+            QTableView::item:selected {
+                background-color: #334D80;
+            }
+            
+            QTableView::item:hover {
+                border: none;
+            }
+            
+            QTableView::item:focus {
+                border: none;
+            }
+         """)
 
 
 class Socket(QtWidgets.QGraphicsItem):
