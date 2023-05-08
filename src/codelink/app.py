@@ -1168,13 +1168,15 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                             QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-        self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignRight)
+        self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
+        self.setLayout(self._layout)
+
         self._prop_view: NodePropertyView = NodePropertyView(self)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
-        self._prop_view.hide()
         self._layout.addWidget(self._prop_view)
-        self.setLayout(self._layout)
+
+        self._prop_view.hide()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
 
