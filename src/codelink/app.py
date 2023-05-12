@@ -108,7 +108,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 color: #E5E5E5;
                 background-color: transparent;
                 border-radius: 0px;
-                padding-left: 5px;
+                padding-left: 3px;
                 padding-right: 0px;
                 padding-top: 0px;
                 padding-bottom: 0px;
@@ -138,11 +138,8 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 selection-color: #E5E5E5;
                 background-color: #282828;
                 selection-background-color: #334D80;
-                padding-left: 0px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
                 margin: 0px;
+                padding: 0px;
                 border: none;
                 border-radius: 0px;
                 outline: none;
@@ -196,13 +193,13 @@ class NodePropertyView(QtWidgets.QTableView):
                 gridline-color: black;
                 padding: 0px;
                 margin: 0px;
-                border: 2px solid #E5E5E5;
-                border-radius: 2px;
+                border: none;
+                border-radius: 0px;
                 outline: none;
             }
             QHeaderView::section:horizontal {
                 color: #E5E5E5;
-                background-color: #333333;
+                background-color: #3D3D3D;
                 margin: 0px;
                 padding: 0px;
                 border-top: none;
@@ -213,7 +210,7 @@ class NodePropertyView(QtWidgets.QTableView):
             QTableView::item {
                 border: none;
                 margin: 0px;
-                padding: 0px 0px 0px 5px;
+                padding: 0px;
             }
             QTableView::item:selected {
                 background-color: #334D80;
@@ -1175,6 +1172,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
         self._layout.addWidget(self._prop_view)
+        self._layout.setMargin(0)
+        self._layout.setSpacing(0)
 
         self._prop_view.hide()
 
