@@ -16,6 +16,7 @@ from item_delegates import BooleanDelegate
 from socket_item import SocketItem
 from socket_widget import SocketWidget
 from edge_item import EdgeItem
+from cutter_item import CutterItem
 
 
 class Node(QtWidgets.QGraphicsItem):
@@ -475,52 +476,6 @@ class Node(QtWidgets.QGraphicsItem):
     #     self._is_collapsed = state["is_collapsed"]
 
 
-class Cutter(QtWidgets.QGraphicsPathItem):
-    def __init__(self, start: QtCore.QPointF = QtCore.QPointF(), end: QtCore.QPointF = QtCore.QPointF(),
-                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(parent)
-
-        self._start_point: QtCore.QPointF = start
-        self._end_point: QtCore.QPointF = end
-
-    @property
-    def start_point(self) -> QtCore.QPointF():
-        return self._start_point
-
-    @start_point.setter
-    def start_point(self, value: QtCore.QPointF) -> None:
-        self._start_point = value
-
-    @property
-    def end_point(self) -> QtCore.QPointF():
-        return self._end_point
-
-    @end_point.setter
-    def end_point(self, value: QtCore.QPointF) -> None:
-        self._end_point = value
-
-    def path(self) -> QtGui.QPainterPath:
-        path: QtGui.QPainterPath = QtGui.QPainterPath(self._start_point)
-        path.lineTo(self._end_point)
-        return path
-
-    def shape(self) -> QtGui.QPainterPath:
-        return self.path()
-
-    def boundingRect(self) -> QtCore.QRectF:
-        return self.path().boundingRect()
-
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-              widget: Optional[QtWidgets.QWidget] = None) -> None:
-        pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("#E5E5E5"))
-        pen.setStyle(QtCore.Qt.DashLine)
-        pen.setWidthF(1.0)
-
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.setPen(pen)
-        painter.drawPath(self.path())
-
-
 class NodeEditorScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -639,7 +594,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._last_socket: Optional[SocketItem] = None
         self._last_node: Optional[Node] = None
         self._temp_edge: Optional[EdgeItem] = None
-        self._cutter: Optional[Cutter] = None
+        self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
@@ -726,7 +681,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             self._rm_pressed: bool = True
             if event.modifiers() == QtCore.Qt.ShiftModifier:
                 self._mode: str = "EDGE_CUT"
-                self._cutter: Cutter = Cutter(start=self._last_pos, end=self._last_pos)
+                self._cutter: CutterItem = CutterItem(start=self._last_pos, end=self._last_pos)
                 self.scene().addItem(self._cutter)
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
             else:
@@ -870,7 +825,8 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
-    # from app import PropertyModel, SocketItem, SocketWidget, EdgeItem, Node, Cutter, NodeEditorScene, NodeEditorView
+    # from app import PropertyModel, SocketItem, SocketWidget, EdgeItem, Node, CutterItem, NodeEditorScene,
+    # NodeEditorView
     #
     # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
     #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
