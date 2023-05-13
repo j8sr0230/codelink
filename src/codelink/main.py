@@ -20,11 +20,11 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     node_editor_scene: EditorScene = EditorScene()
-    node_editor_view: EditorWidget = EditorWidget()
+    node_editor_widget: EditorWidget = EditorWidget()
 
-    node_editor_view.setScene(node_editor_scene)
-    node_editor_view.resize(1200, 600)
-    node_editor_view.show()
+    node_editor_widget.setScene(node_editor_scene)
+    node_editor_widget.resize(1200, 600)
+    node_editor_widget.show()
 
     node_1 = NodeItem()
     node_1.setPos(QtCore.QPointF(31600, 31800))
