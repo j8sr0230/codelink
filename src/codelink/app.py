@@ -13,84 +13,7 @@ from dask.threaded import get
 from property_model import PropertyModel
 from property_widget import PropertyView
 from item_delegates import BooleanDelegate
-
-
-class Socket(QtWidgets.QGraphicsItem):
-    def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
-                 parent_node: Optional['Node'] = None) -> None:
-        super().__init__(parent_node)
-
-        self._color: QtGui.QColor = QtGui.QColor(color)
-        self._socket_widget: Optional['SocketWidget'] = socket_widget
-
-        self._edges: list['Edge'] = []
-
-        self._size: int = 12
-
-        self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-
-    @property
-    def color(self) -> QtGui.QColor:
-        return self._color
-
-    @color.setter
-    def color(self, value: str) -> None:
-        self._color: QtGui.QColor = QtGui.QColor(value)
-
-    @property
-    def socket_widget(self) -> Optional['SocketWidget']:
-        return self._socket_widget
-
-    @property
-    def edges(self) -> list['Edge']:
-        return self._edges
-
-    @edges.setter
-    def edges(self, value: list['Edge']) -> None:
-        self._edges: list[Edge] = value
-
-    @property
-    def size(self) -> int:
-        return self._size
-
-    def add_edge(self, edge: 'Edge') -> None:
-        self._edges.append(edge)
-
-    def remove_edge(self, edge: 'Edge') -> None:
-        self._edges.remove(edge)
-
-    def has_edges(self) -> bool:
-        if len(self._edges) > 0:
-            return True
-        else:
-            return False
-
-    def center(self) -> QtCore.QPointF:
-        return QtCore.QPointF(
-            self.x() + self._size / 2,
-            self.y() + self._size / 2,
-        )
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
-
-    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverLeaveEvent(event)
-        QtWidgets.QApplication.restoreOverrideCursor()
-
-    def boundingRect(self) -> QtCore.QRectF:
-        # return QtCore.QRectF(0, 0, self._size, self._size)
-        return QtCore.QRectF(-self._size, -self._size, 3 * self._size, 3 * self._size)
-
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-              widget: Optional[QtWidgets.QWidget] = None) -> None:
-
-        painter.setPen(QtGui.QPen(QtGui.QColor("black")))
-        painter.setBrush(QtGui.QBrush(self._color))
-        # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
-        painter.drawEllipse(0, 0, self._size, self._size)
+from socket_item import SocketItem
 
 
 class SocketWidget(QtWidgets.QWidget):
@@ -104,7 +27,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._is_input: bool = is_input
         self._parent_node: Optional['Node'] = parent_node
 
-        self._socket: Socket = Socket(color=QtGui.QColor("#00D6A3"), parent_node=parent_node, socket_widget=self)
+        self._socket: SocketItem = SocketItem(color=QtGui.QColor("#00D6A3"), parent_node=parent_node, socket_widget=self)
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setMargin(0)
@@ -132,7 +55,7 @@ class SocketWidget(QtWidgets.QWidget):
         return self._is_input
 
     @property
-    def socket(self) -> Socket:
+    def socket(self) -> SocketItem:
         return self._socket
 
     @property
@@ -283,7 +206,7 @@ class Edge(QtWidgets.QGraphicsPathItem):
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_socket.parentItem().mapToScene(self._start_socket.center())
 
-        if type(self._end_socket) == Socket:
+        if type(self._end_socket) == SocketItem:
             end_point: QtCore.QPointF = self._end_socket.parentItem().mapToScene(self._end_socket.center())
         else:
             end_point: QtCore.QPointF = self._end_socket.pos()
@@ -936,7 +859,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._mode: str = ""
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
-        self._last_socket: Optional[Socket] = None
+        self._last_socket: Optional[SocketItem] = None
         self._last_node: Optional[Node] = None
         self._temp_edge: Optional[Edge] = None
         self._cutter: Optional[Cutter] = None
@@ -977,7 +900,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == Socket:
+            if type(self.itemAt(event.pos())) == SocketItem:
                 self._last_socket: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
                 if (not self._last_socket.socket_widget.is_input or
@@ -1047,7 +970,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         super().mouseMoveEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == Socket:
+            if type(self.itemAt(event.pos())) == SocketItem:
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )
@@ -1086,7 +1009,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == Socket:
+            if type(self.itemAt(event.pos())) == SocketItem:
                 self._temp_edge.end_socket = self.itemAt(event.pos())
 
                 # Validate edge here!
@@ -1170,7 +1093,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
-    # from app import PropertyModel, Socket, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
+    # from app import PropertyModel, SocketItem, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
     #
     # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
     #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
