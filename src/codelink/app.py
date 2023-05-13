@@ -15,80 +15,7 @@ from property_widget import PropertyView
 from item_delegates import BooleanDelegate
 from socket_item import SocketItem
 from socket_widget import SocketWidget
-
-
-class Edge(QtWidgets.QGraphicsPathItem):
-    def __init__(self, color: QtGui.QColor, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(parent)
-
-        self._color: QtGui.QColor = color
-
-        self._start_socket: Optional[QtWidgets.QGraphicsItem] = None
-        self._end_socket: Optional[QtWidgets.QGraphicsItem] = None
-
-        self.setAcceptHoverEvents(True)
-        self.setZValue(-1)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
-
-    @property
-    def start_socket(self) -> QtWidgets.QGraphicsItem:
-        return self._start_socket
-
-    @start_socket.setter
-    def start_socket(self, value: QtWidgets.QGraphicsItem) -> None:
-        self._start_socket: QtWidgets.QGraphicsItem = value
-
-    @property
-    def end_socket(self) -> QtWidgets.QGraphicsItem:
-        return self._end_socket
-
-    @end_socket.setter
-    def end_socket(self, value: QtWidgets.QGraphicsItem) -> None:
-        self._end_socket: QtWidgets.QGraphicsItem = value
-
-    def sort_sockets(self) -> None:
-        old_start_socket: QtWidgets.QGraphicsItem = self._start_socket
-
-        if old_start_socket.socket_widget.is_input:
-            self._start_socket: QtWidgets.QGraphicsItem = self._end_socket
-            self._end_socket: QtWidgets.QGraphicsItem = old_start_socket
-
-    def path(self) -> QtGui.QPainterPath:
-        start_point: QtCore.QPointF = self._start_socket.parentItem().mapToScene(self._start_socket.center())
-
-        if type(self._end_socket) == SocketItem:
-            end_point: QtCore.QPointF = self._end_socket.parentItem().mapToScene(self._end_socket.center())
-        else:
-            end_point: QtCore.QPointF = self._end_socket.pos()
-
-        ctr_pt_offset: float = abs(end_point.x() - start_point.x()) / 2.5
-
-        if not self._start_socket.socket_widget.is_input:
-            ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + ctr_pt_offset, start_point.y())
-            ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - ctr_pt_offset, end_point.y())
-        else:
-            ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() - ctr_pt_offset, start_point.y())
-            ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() + ctr_pt_offset, end_point.y())
-
-        path: QtGui.QPainterPath = QtGui.QPainterPath(start_point)
-        path.cubicTo(ctr_pt_1, ctr_pt_2, end_point)
-
-        return path
-
-    def shape(self) -> QtGui.QPainterPath:
-        return self.path()
-
-    def boundingRect(self) -> QtCore.QRectF:
-        return self.path().boundingRect()
-
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
-              widget: Optional[QtWidgets.QWidget] = None) -> None:
-        pen: QtGui.QPen = QtGui.QPen(self._color)
-        pen.setWidthF(3.0)
-
-        painter.setBrush(QtCore.Qt.NoBrush)
-        painter.setPen(pen)
-        painter.drawPath(self.path())
+from edge_item import EdgeItem
 
 
 class Node(QtWidgets.QGraphicsItem):
@@ -599,7 +526,7 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
         self._nodes: list[Node] = []
-        self._edges: list[Edge] = []
+        self._edges: list[EdgeItem] = []
 
         self._grid_spacing: int = 50
         self._background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
@@ -625,11 +552,11 @@ class NodeEditorScene(QtWidgets.QGraphicsScene):
         self._nodes.remove(node)
         self.removeItem(node)
 
-    def add_edge(self, edge: Edge) -> None:
+    def add_edge(self, edge: EdgeItem) -> None:
         self._edges.append(edge)
         self.addItem(edge)
 
-    def remove_edge(self, edge: Edge) -> None:
+    def remove_edge(self, edge: EdgeItem) -> None:
         self._edges.remove(edge)
         self.removeItem(edge)
 
@@ -711,7 +638,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_socket: Optional[SocketItem] = None
         self._last_node: Optional[Node] = None
-        self._temp_edge: Optional[Edge] = None
+        self._temp_edge: Optional[EdgeItem] = None
         self._cutter: Optional[Cutter] = None
 
         self._zoom_level: int = 10
@@ -756,7 +683,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 if (not self._last_socket.socket_widget.is_input or
                         (self._last_socket.socket_widget.is_input and not self._last_socket.has_edges())):
                     self._mode: str = "EDGE_ADD"
-                    self._temp_edge: Edge = Edge(color=self._last_socket.color)
+                    self._temp_edge: EdgeItem = EdgeItem(color=self._last_socket.color)
                     self._temp_edge.start_socket = self._last_socket
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
@@ -771,7 +698,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
                 if self._last_socket.socket_widget.is_input and self._last_socket.has_edges():
                     self._mode: str = "EDGE_EDIT"
 
-                    self._temp_edge: Edge = self._last_socket.edges[-1]
+                    self._temp_edge: EdgeItem = self._last_socket.edges[-1]
                     connected_sockets: list[QtWidgets.QGraphicsItem] = [
                         self._temp_edge.start_socket,
                         self._temp_edge.end_socket
@@ -844,7 +771,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
             selected_items: list[QtWidgets.QGraphicsItem] = self.scene().collidingItems(self._cutter)
 
             for item in selected_items:
-                if type(item) is Edge:
+                if type(item) is EdgeItem:
                     connected_sockets: list[QtWidgets.QGraphicsItem] = [
                         item.start_socket,
                         item.end_socket
@@ -943,7 +870,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
 
 
 if __name__ == "__main__":
-    # from app import PropertyModel, SocketItem, SocketWidget, Edge, Node, Cutter, NodeEditorScene, NodeEditorView
+    # from app import PropertyModel, SocketItem, SocketWidget, EdgeItem, Node, Cutter, NodeEditorScene, NodeEditorView
     #
     # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
     #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))

@@ -13,7 +13,7 @@ class SocketItem(QtWidgets.QGraphicsItem):
         self._color: QtGui.QColor = QtGui.QColor(color)
         self._socket_widget: Optional['SocketWidget'] = socket_widget
 
-        self._edges: list['Edge'] = []
+        self._edges: list['EdgeItem'] = []
 
         self._size: int = 12
 
@@ -33,21 +33,21 @@ class SocketItem(QtWidgets.QGraphicsItem):
         return self._socket_widget
 
     @property
-    def edges(self) -> list['Edge']:
+    def edges(self) -> list['EdgeItem']:
         return self._edges
 
     @edges.setter
-    def edges(self, value: list['Edge']) -> None:
+    def edges(self, value: list['EdgeItem']) -> None:
         self._edges: list[Edge] = value
 
     @property
     def size(self) -> int:
         return self._size
 
-    def add_edge(self, edge: 'Edge') -> None:
+    def add_edge(self, edge: 'EdgeItem') -> None:
         self._edges.append(edge)
 
-    def remove_edge(self, edge: 'Edge') -> None:
+    def remove_edge(self, edge: 'EdgeItem') -> None:
         self._edges.remove(edge)
 
     def has_edges(self) -> bool:
