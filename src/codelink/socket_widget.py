@@ -9,14 +9,14 @@ from socket_item import SocketItem
 
 class SocketWidget(QtWidgets.QWidget):
     def __init__(self, label: str = "In", socket_type: object = int, is_input: bool = True,
-                 parent_node: Optional['Node'] = None,
+                 parent_node: Optional['NodeItem'] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
         self._label: str = label
         self._socket_type: object = socket_type
         self._is_input: bool = is_input
-        self._parent_node: Optional['Node'] = parent_node
+        self._parent_node: Optional['NodeItem'] = parent_node
 
         self._socket: SocketItem = SocketItem(
             color=QtGui.QColor("#00D6A3"),
@@ -59,7 +59,7 @@ class SocketWidget(QtWidgets.QWidget):
     def has_edges(self) -> bool:
         return self._socket.has_edges()
 
-    def input_data(self) -> Union['Node', int]:
+    def input_data(self) -> Union['NodeItem', int]:
         if self.has_edges():
             return self._socket.edges[0].start_socket.socket_widget
         else:
