@@ -2,7 +2,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 
-class PropertyView(QtWidgets.QTableView):
+class PropertyWidget(QtWidgets.QTableView):
     def __init__(self, parent: QtWidgets.QWidget = None):
         super().__init__(parent)
 

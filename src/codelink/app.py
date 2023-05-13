@@ -1,42 +1,26 @@
 import os
 import sys
-import math
 import pickle
-from typing import Optional, Any, Union
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
 
-from dask.threaded import get
-
-from property_model import PropertyModel
-from property_widget import PropertyView
-from item_delegates import BooleanDelegate
-from socket_item import SocketItem
-from socket_widget import SocketWidget
-from edge_item import EdgeItem
 from node_item import NodeItem
 from editor_scene import EditorScene
-from editor_widget import NodeEditorView
+from editor_widget import EditorWidget
 
 
 if __name__ == "__main__":
-    # from app import PropertyModel, SocketItem, SocketWidget, EdgeItem, NodeItem, CutterItem, EditorScene,
-    # NodeEditorView
-    #
     # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
     #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
-    # app.setStyle(QtWidgets.QStyleFactory().create("Fusion"))
 
     node_editor_scene: EditorScene = EditorScene()
-    node_editor_view: NodeEditorView = NodeEditorView()
+    node_editor_view: EditorWidget = EditorWidget()
 
     node_editor_view.setScene(node_editor_scene)
     node_editor_view.resize(1200, 600)

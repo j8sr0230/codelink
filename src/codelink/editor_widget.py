@@ -6,7 +6,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from property_widget import PropertyView
+from property_widget import PropertyWidget
 from item_delegates import BooleanDelegate
 from socket_item import SocketItem
 from edge_item import EdgeItem
@@ -14,7 +14,7 @@ from node_item import NodeItem
 from cutter_item import CutterItem
 
 
-class NodeEditorView(QtWidgets.QGraphicsView):
+class EditorWidget(QtWidgets.QGraphicsView):
     def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
@@ -47,7 +47,7 @@ class NodeEditorView(QtWidgets.QGraphicsView):
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
         self.setLayout(self._layout)
 
-        self._prop_view: PropertyView = PropertyView(self)
+        self._prop_view: PropertyWidget = PropertyWidget(self)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
         self._layout.addWidget(self._prop_view)
