@@ -62,6 +62,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
             self._properties[key] = data_type(value)
             self.dataChanged.emit(index, index)
             return True
+
         return False
 
     def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
