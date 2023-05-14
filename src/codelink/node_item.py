@@ -174,6 +174,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._prop_model.dataChanged.connect(
            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
         )
+        self._prop_model.dataChanged.connect(
+            lambda: self.update(self.boundingRect())
+        )
 
         self._prop_model.dataChanged.connect(
             lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
