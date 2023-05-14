@@ -43,7 +43,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._is_collapsed: str = self._prop_model.properties["Collapse State"]  # False
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
-        self._header_background_color: QtGui.QColor = self._prop_model.properties["Color"]
+        # self._header_background_color: QtGui.QColor = self._prop_model.properties["Color"]
         # QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
@@ -174,10 +174,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._prop_model.dataChanged.connect(
            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
         )
-        self._prop_model.dataChanged.connect(
-            lambda: self.update(self.boundingRect())
-        )
-
         self._prop_model.dataChanged.connect(
             lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
                                self._prop_model.properties
@@ -440,7 +436,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
-        painter.setBrush(self._header_background_color)
+        painter.setBrush(self._prop_model.properties["Color"])  # self._header_background_color
         painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
 
         painter.setBrush(QtCore.Qt.NoBrush)
