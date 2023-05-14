@@ -15,7 +15,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Title": "Add",
-                        "Color": QtGui.QColor("#232323"),
+                        "Color": QtGui.QColor("#1D1D1D"),
                         "Collapse State": False,
                         "X Pos": 5.1,
                         "Y Pos": 5.1
@@ -43,7 +43,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._is_collapsed: str = self._prop_model.properties["Collapse State"]  # False
 
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
-        self._header_background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
+        self._header_background_color: QtGui.QColor = self._prop_model.properties["Color"]
+        # QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
@@ -174,11 +175,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
         )
 
-        # self._prop_model.dataChanged.connect(
-        #     lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
-        #                        self._prop_model.properties
-        #                        )
-        # )
+        self._prop_model.dataChanged.connect(
+            lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
+                               self._prop_model.properties
+                               )
+        )
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
