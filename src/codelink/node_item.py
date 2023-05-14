@@ -13,8 +13,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
-            properties={"Class": self.__class__.__name__,
-                        "Title": "Add",
+            properties={"Title": "Add",
                         "Color": QtGui.QColor("#232323"),
                         "Collapse State": False,
                         "X Pos": 5.1,
@@ -171,7 +170,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._prop_model.dataChanged.connect(lambda: self.update_title(self._prop_model.properties["Title"]))
         self._prop_model.dataChanged.connect(
-            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
+           lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
         )
         # lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
         #                    self._prop_model.properties)

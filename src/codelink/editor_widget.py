@@ -48,7 +48,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setLayout(self._layout)
 
         self._prop_view: PropertyWidget = PropertyWidget(self)
-        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
+        self._prop_view.setItemDelegateForRow(2, BooleanDelegate(self._prop_view))
         self._prop_view.setMaximumWidth(250)
         self._layout.addWidget(self._prop_view)
         self._layout.setMargin(0)
