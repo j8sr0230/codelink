@@ -6,6 +6,7 @@ import PySide2.QtGui as QtGui
 
 from property_model import PropertyModel
 from socket_widget import SocketWidget
+from utils import crop_text
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
@@ -79,7 +80,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._title_item.setDefaultTextColor(self._font_color)
         self._title_item.setFont(self._font)
         self._title_item.setPlainText(
-            self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+            crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
         )
         self._title_item.setPos(self._title_x, (self._header_height - self._title_item.boundingRect().height()) / 2)
 
@@ -172,26 +173,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._prop_model.dataChanged.connect(
            lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
         )
-        # lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
-        #                    self._prop_model.properties)
-        # lambda: self._title = self._prop_model.properties["Title"]
+
+        # self._prop_model.dataChanged.connect(
+        #     lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
+        #                        self._prop_model.properties
+        #                        )
         # )
-
-    @staticmethod
-    def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
-        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
-
-        cropped_text: str = "..."
-        string_idx: int = 0
-        while all([font_metrics.horizontalAdvance(cropped_text) < width - font_metrics.horizontalAdvance("..."),
-                   string_idx < len(text)]):
-            cropped_text = cropped_text[:string_idx] + text[string_idx] + cropped_text[string_idx:]
-            string_idx += 1
-
-        if string_idx == len(text):
-            cropped_text: str = cropped_text[:len(text)]
-
-        return cropped_text
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -216,7 +203,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def update_title(self, value: str) -> None:
         self._title: str = value
         self._title_item.setPlainText(
-            self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+            crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
         )
 
     @property
@@ -326,6 +313,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
             snapping_step: int = 10
             x_snap = new_pos.x() // snapping_step * snapping_step
             y_snap = new_pos.y() // snapping_step * snapping_step
+
+            x_pos_model_row: int = list(self._prop_model.properties.keys()).index("X Pos")
+            y_pos_model_row: int = list(self._prop_model.properties.keys()).index("Y Pos")
+
+            # noinspection PyTypeChecker
+            self._prop_model.setData(
+                self._prop_model.index(x_pos_model_row, 1, QtCore.QModelIndex()), x_snap, QtCore.Qt.EditRole
+            )
+            # noinspection PyTypeChecker
+            self._prop_model.setData(
+                self._prop_model.index(y_pos_model_row, 1, QtCore.QModelIndex()), y_snap, QtCore.Qt.EditRole
+            )
+
             return QtCore.QPointF(x_snap, y_snap)
         else:
             return super().itemChange(change, value)
@@ -345,6 +345,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             collapse_btn_top: float = 0
             collapse_btn_bottom: float = self._header_height
 
+            collapse_state_model_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
+
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     self._mode: str = "COLLAPSE"
@@ -352,12 +354,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     if self._prop_model.properties["Collapse State"]:
                         # noinspection PyTypeChecker
                         self._prop_model.setData(
-                            self._prop_model.index(3, 1, QtCore.QModelIndex()), False, QtCore.Qt.EditRole
+                            self._prop_model.index(collapse_state_model_row, 1, QtCore.QModelIndex()), False,
+                            QtCore.Qt.EditRole
                         )
                     else:
                         # noinspection PyTypeChecker
                         self._prop_model.setData(
-                            self._prop_model.index(3, 1, QtCore.QModelIndex()), True, QtCore.Qt.EditRole
+                            self._prop_model.index(collapse_state_model_row, 1, QtCore.QModelIndex()), True,
+                            QtCore.Qt.EditRole
                         )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
@@ -376,7 +380,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._width = new_width
             self._shadow.updateBoundingRect()
             self._title_item.setPlainText(
-                self.crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+                crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
             )
             self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
                                                               self._header_height + self._content_padding,
