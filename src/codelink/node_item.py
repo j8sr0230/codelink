@@ -407,7 +407,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
-        painter.setBrush(self._prop_model.properties["Color"])  # self._header_background_color
+        painter.setBrush(self._prop_model.properties["Color"])
         painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
 
         painter.setBrush(QtCore.Qt.NoBrush)
