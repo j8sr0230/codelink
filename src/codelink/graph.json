@@ -1,29 +1,38 @@
 [
     {
-        "Class": "NodeItem",
-        "Name": "Result",
-        "Color": "#1d1d1d",
-        "Collapse State": false,
-        "X": 32170,
-        "Y": 31870,
-        "Width": 120
+        "Option_idx": 0,
+        "Properties": {
+            "Class": "NodeItem",
+            "Name": "Test",
+            "Color": "green",
+            "Collapse State": false,
+            "X": 31610,
+            "Y": 31930,
+            "Width": 179
+        }
     },
     {
-        "Class": "NodeItem",
-        "Name": "Sub",
-        "Color": "#1d1d1d",
-        "Collapse State": false,
-        "X": 31660,
-        "Y": 31970,
-        "Width": 167
+        "Option_idx": 2,
+        "Properties": {
+            "Class": "NodeItem",
+            "Name": "Add",
+            "Color": "red",
+            "Collapse State": false,
+            "X": 32140,
+            "Y": 31950,
+            "Width": 160
+        }
     },
     {
-        "Class": "NodeItem",
-        "Name": "Knoten 1",
-        "Color": "green",
-        "Collapse State": false,
-        "X": 31620,
-        "Y": 31790,
-        "Width": 197
+        "Option_idx": 1,
+        "Properties": {
+            "Class": "NodeItem",
+            "Name": "Sub",
+            "Color": "#1D1D1D",
+            "Collapse State": false,
+            "X": 31880,
+            "Y": 32130,
+            "Width": 160
+        }
     }
 ]

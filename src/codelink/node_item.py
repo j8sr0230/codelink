@@ -442,7 +442,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
     def __getstate__(self) -> dict:
-        return self.prop_model.__getstate__()
+        data_dict: dict = {
+            "Option_idx": self._option_box.currentIndex(),
+            "Properties": self.prop_model.__getstate__()
+        }
+        return data_dict
 
     def __setstate__(self, state: dict):
-        self.prop_model.__setstate__(state)
+        self._option_box.setCurrentIndex(state["Option_idx"])
+        self.prop_model.__setstate__(state["Properties"])

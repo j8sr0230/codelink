@@ -124,8 +124,12 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def deserialize_nodes(self, nodes_dict: list[dict]) -> None:
         for node_dict in nodes_dict:
-            NodeClass = getattr(importlib.import_module("node_item"), node_dict["Class"])
+            # Create node from dict
+            node_props: dict = node_dict["Properties"]
+            NodeClass = getattr(importlib.import_module("node_item"), node_props["Class"])
             new_node: NodeClass = NodeClass()
             self.add_node(new_node)
+
+            # Reset node state
             new_node.__setstate__(node_dict)
-            new_node.setPos(QtCore.QPointF(int(node_dict["X"]), int(node_dict["Y"])))
+            new_node.setPos(QtCore.QPointF(int(node_props["X"]), int(node_props["Y"])))
