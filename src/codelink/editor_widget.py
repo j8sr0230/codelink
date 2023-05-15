@@ -7,7 +7,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from property_widget import PropertyWidget
-from item_delegates import BooleanDelegate
+from item_delegates import BooleanDelegate, IntegerDelegate
 from socket_item import SocketItem
 from edge_item import EdgeItem
 from node_item import NodeItem
@@ -49,6 +49,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._prop_view: PropertyWidget = PropertyWidget(self)
         self._prop_view.setItemDelegateForRow(2, BooleanDelegate(self._prop_view))
+        self._prop_view.setItemDelegateForRow(3, IntegerDelegate(self._prop_view))
+        self._prop_view.setItemDelegateForRow(4, IntegerDelegate(self._prop_view))
+        self._prop_view.setItemDelegateForRow(5, IntegerDelegate(self._prop_view))
+
         self._prop_view.setMaximumWidth(250)
         self._layout.addWidget(self._prop_view)
         self._layout.setMargin(0)

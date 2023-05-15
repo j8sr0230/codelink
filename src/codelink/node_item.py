@@ -17,8 +17,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             properties={"Name": "Add",
                         "Color": QtGui.QColor("#1D1D1D"),
                         "Collapse State": False,
-                        "X": 5.1,
-                        "Y": 5.1,
+                        "X": 100,
+                        "Y": 100,
                         "Width": 160
                         }
         )
@@ -63,7 +63,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self._shadow)
 
         # UI
-
         # Collapse button
         self._collapse_btn: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
         self._collapse_btn.setParentItem(self)
@@ -123,6 +122,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 border-bottom-left-radius: 0px;
             }
             QComboBox::down-arrow {
+                width: 10px; 
+                height: 10px;
                 image: url(icon:images_dark-light/down_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
             }
@@ -279,8 +280,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
             x_snap = new_pos.x() // snapping_step * snapping_step
             y_snap = new_pos.y() // snapping_step * snapping_step
 
-            self._prop_model.properties["X"] = x_snap
-            self._prop_model.properties["Y"] = y_snap
+            # noinspection PyTypeChecker
+            self._prop_model.setData(
+                self._prop_model.index(3, 1, QtCore.QModelIndex()), int(x_snap), QtCore.Qt.EditRole
+            )
+            # noinspection PyTypeChecker
+            self._prop_model.setData(
+                self._prop_model.index(4, 1, QtCore.QModelIndex()), int(y_snap), QtCore.Qt.EditRole
+            )
 
             return QtCore.QPointF(x_snap, y_snap)
         else:
@@ -321,7 +328,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             current_x: int = self.mapToScene(event.pos()).x()
             new_width: float = current_x - old_top_left_global.x()
 
-            self.update_width(int(new_width))
+            # noinspection PyTypeChecker
+            self._prop_model.setData(
+                self._prop_model.index(5, 1, QtCore.QModelIndex()), new_width, QtCore.Qt.EditRole
+            )
         else:
             super().mouseMoveEvent(event)
 
@@ -394,7 +404,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.update_name(self._prop_model.properties["Name"])
         self.update_collapse_state(self._prop_model.properties["Collapse State"])
         self.update_width(self._prop_model.properties["Width"])
+
+        # Hack to prevent callback loop while changing the node position
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setPos(QtCore.QPointF(self._prop_model.properties["X"], self._prop_model.properties["Y"]))
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
