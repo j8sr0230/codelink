@@ -14,23 +14,24 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
-            properties={"Title": "Add",
+            properties={"Name": "Add",
                         "Color": QtGui.QColor("#1D1D1D"),
                         "Collapse State": False,
-                        "X Pos": 5.1,
-                        "Y Pos": 5.1
+                        "X": 5.1,
+                        "Y": 5.1,
+                        "Width": 160
                         }
         )
 
         self._visited_count: int = 0
+        self._mode: str = ""
+
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
 
-        self._title: str = self._prop_model.properties["Title"]  # "NodeItem Name"
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
         self._title_x: int = 20
         self._min_width: int = 80
-        self._width: int = 160
         self._max_height: int = 80
         self._height: int = self._max_height
         self._header_height: int = 25
@@ -39,12 +40,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_y: int = self._header_height + self._content_padding
         self._corner_radius: int = 5
 
-        self._mode: str = ""
-        self._is_collapsed: str = self._prop_model.properties["Collapse State"]  # False
-
+        # Assets
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
-        # self._header_background_color: QtGui.QColor = self._prop_model.properties["Color"]
-        # QtGui.QColor("#1D1D1D")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
@@ -65,6 +62,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
+        # UI
         self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
         self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
         self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
@@ -81,7 +79,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._title_item.setDefaultTextColor(self._font_color)
         self._title_item.setFont(self._font)
         self._title_item.setPlainText(
-            crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
+            crop_text(self._prop_model.properties["Name"],
+                      self._prop_model.properties["Width"] - self._title_x - self._content_padding,
+                      self._font)
         )
         self._title_item.setPos(self._title_x, (self._header_height - self._title_item.boundingRect().height()) / 2)
 
@@ -161,24 +161,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content_proxy.setWidget(self._content_widget)
-        self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
-                                                          self._header_height + self._content_padding,
-                                                          self._width - 2 * self._content_padding,
-                                                          self._content_widget.height())
+        self._content_rect: QtCore.QRectF = QtCore.QRectF(
+            self._content_padding,
+            self._header_height + self._content_padding,
+            self._prop_model.properties["Width"] - 2 * self._content_padding,
+            self._content_widget.height()
+        )
         self._content_proxy.setGeometry(self._content_rect)
         self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
 
         self.update_socket_positions()
 
-        self._prop_model.dataChanged.connect(lambda: self.update_title(self._prop_model.properties["Title"]))
-        self._prop_model.dataChanged.connect(
-           lambda: self.update_collapse_state(self._prop_model.properties["Collapse State"])
-        )
-        self._prop_model.dataChanged.connect(
-            lambda i, j: print(list(self._prop_model.properties.keys())[i.row()], "changed \n",
-                               self._prop_model.properties
-                               )
-        )
+        # Listeners
+        self._prop_model.dataChanged.connect(lambda: self.update_all())
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -193,26 +188,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._visited_count: int = value
 
     @property
-    def title(self) -> str:
-        return self._title
-
-    @title.setter
-    def title(self, value: str) -> None:
-        self._title: str = value
-
-    def update_title(self, value: str) -> None:
-        self._title: str = value
-        self._title_item.setPlainText(
-            crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
-        )
-
-    @property
     def evals(self) -> list[object]:
         return self._evals
-
-    @evals.setter
-    def evals(self, value: list[object]) -> None:
-        self._evals: list[object] = value
 
     @property
     def header_height(self) -> int:
@@ -224,21 +201,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     @property
     def is_collapsed(self) -> str:
-        return self._is_collapsed
-
-    def update_collapse_state(self, collapse_state: bool) -> None:
-        if collapse_state:
-            self._collapse_btn.setPixmap(self._collapse_pixmap_up)
-            self._content_proxy.hide()
-            self._height = self._min_height
-        else:
-            self._collapse_btn.setPixmap(self._collapse_pixmap_down)
-            self._content_proxy.show()
-            self._height = (self._header_height + self._content_padding + self._content_widget.height() +
-                            self._content_padding)
-
-        self._is_collapsed = collapse_state
-        self.update_socket_positions()
+        return self._prop_model.properties["Collapse State"]
 
     @property
     def font(self) -> QtGui.QFont:
@@ -294,10 +257,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     result.append(edge.end_socket.parentItem())
         return result
 
-    def update_socket_positions(self) -> None:
-        for widget in self._socket_widgets:
-            widget.update_socket_positions()
-
     @staticmethod
     def eval_socket_1(a: int, b: int) -> int:
         return a + b
@@ -314,17 +273,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             x_snap = new_pos.x() // snapping_step * snapping_step
             y_snap = new_pos.y() // snapping_step * snapping_step
 
-            x_pos_model_row: int = list(self._prop_model.properties.keys()).index("X Pos")
-            y_pos_model_row: int = list(self._prop_model.properties.keys()).index("Y Pos")
-
-            # noinspection PyTypeChecker
-            self._prop_model.setData(
-                self._prop_model.index(x_pos_model_row, 1, QtCore.QModelIndex()), x_snap, QtCore.Qt.EditRole
-            )
-            # noinspection PyTypeChecker
-            self._prop_model.setData(
-                self._prop_model.index(y_pos_model_row, 1, QtCore.QModelIndex()), y_snap, QtCore.Qt.EditRole
-            )
+            self._prop_model.properties["X"] = x_snap
+            self._prop_model.properties["Y"] = y_snap
 
             return QtCore.QPointF(x_snap, y_snap)
         else:
@@ -345,24 +295,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             collapse_btn_top: float = 0
             collapse_btn_bottom: float = self._header_height
 
-            collapse_state_model_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
-
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    self._mode: str = "COLLAPSE"
-
-                    if self._prop_model.properties["Collapse State"]:
-                        # noinspection PyTypeChecker
-                        self._prop_model.setData(
-                            self._prop_model.index(collapse_state_model_row, 1, QtCore.QModelIndex()), False,
-                            QtCore.Qt.EditRole
-                        )
-                    else:
-                        # noinspection PyTypeChecker
-                        self._prop_model.setData(
-                            self._prop_model.index(collapse_state_model_row, 1, QtCore.QModelIndex()), True,
-                            QtCore.Qt.EditRole
-                        )
+                    self.update_collapse_state(self._prop_model.properties["Collapse State"])
+                    self._prop_model.properties["Collapse State"] = not self._prop_model.properties["Collapse State"]
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
@@ -374,21 +310,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             current_x: int = self.mapToScene(event.pos()).x()
             new_width: float = current_x - old_top_left_global.x()
-            if new_width < self._min_width:
-                new_width: float = self._min_width
 
-            self._width = new_width
-            self._shadow.updateBoundingRect()
-            self._title_item.setPlainText(
-                crop_text(self._title, self._width - self._title_x - self._content_padding, self._font)
-            )
-            self._content_rect: QtCore.QRectF = QtCore.QRectF(self._content_padding,
-                                                              self._header_height + self._content_padding,
-                                                              self._width - 2 * self._content_padding,
-                                                              self._content_widget.height())
-            self._content_proxy.setGeometry(self._content_rect)
-
-            self.update_socket_positions()
+            self.update_width(int(new_width))
         else:
             super().mouseMoveEvent(event)
 
@@ -418,15 +341,53 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-    def contextMenuEvent(self, event: QtWidgets.QGraphicsSceneContextMenuEvent) -> None:
-        super().contextMenuEvent(event)
+    def update_name(self, value: str) -> None:
+        self._title_item.setPlainText(
+            crop_text(value, self._prop_model.properties["Width"] - self._title_x - self._content_padding, self._font)
+        )
 
-        # self.setSelected(True)
-        # self._prop_proxy.setGeometry(QtCore.QRectF(self._width + 10, 0, 200, 200))
-        # self._prop_proxy.show()
+    def update_collapse_state(self, collapse_state: bool) -> None:
+        if collapse_state:
+            self._collapse_btn.setPixmap(self._collapse_pixmap_up)
+            self._content_proxy.hide()
+            self._height = self._min_height
+        else:
+            self._collapse_btn.setPixmap(self._collapse_pixmap_down)
+            self._content_proxy.show()
+            self._height = (self._header_height + self._content_padding + self._content_widget.height() +
+                            self._content_padding)
+
+        self.update_socket_positions()
+
+    def update_width(self, new_width: int = 160) -> None:
+        if new_width < self._min_width:
+            new_width: float = self._min_width
+
+        self._prop_model.properties["Width"] = new_width
+        self._content_rect: QtCore.QRectF = QtCore.QRectF(
+            self._content_padding,
+            self._header_height + self._content_padding,
+            self._prop_model.properties["Width"] - 2 * self._content_padding,
+            self._content_widget.height()
+        )
+        self._content_proxy.setGeometry(self._content_rect)
+        self.update_name(self._prop_model.properties["Name"])
+        self.update_socket_positions()
+
+    def update_socket_positions(self) -> None:
+        for widget in self._socket_widgets:
+            widget.update_socket_positions()
+
+    def update_all(self):
+        self.update_name(self._prop_model.properties["Name"])
+        self.update_collapse_state(self._prop_model.properties["Collapse State"])
+        self.update_width(self._prop_model.properties["Width"])
+        self.setPos(QtCore.QPointF(self._prop_model.properties["X"], self._prop_model.properties["Y"]))
+        self.update_collapse_state(self._prop_model.properties["Collapse State"])
+        #self.update_socket_positions()
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, self._height)
+        return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
@@ -435,7 +396,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.setBrush(self._node_background_color)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
-        rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._width, self._header_height)
+        rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
         painter.setBrush(self._prop_model.properties["Color"])  # self._header_background_color
         painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
 
@@ -445,24 +406,3 @@ class NodeItem(QtWidgets.QGraphicsItem):
         else:
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-
-    # def __getstate__(self) -> dict:
-    #     print("NodeItem.__getstate__(self)")
-    #
-    #     state: dict = {
-    #         "x": self.x(),
-    #         "y": self.y(),
-    #         "width": self._width,
-    #         "is_collapsed": self._is_collapsed
-    #     }
-    #
-    #     return state
-    #
-    # def __setstate__(self, state: dict):
-    #     print("NodeItem.__setstate__(self, state: dict)", repr(state))
-    #
-    #     self.__init__(parent=None)
-    #     # self.setPos(QtCore.QPointF(state["x"], state["y"]))
-    #     self.setPos(QtCore.QPointF(32500, 31800))
-    #     self._width = state["width"]
-    #     self._is_collapsed = state["is_collapsed"]
