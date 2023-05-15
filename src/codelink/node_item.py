@@ -440,3 +440,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         else:
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+
+    def __getstate__(self) -> dict:
+        return self.prop_model.__getstate__()
+
+    def __setstate__(self, state: dict):
+        self.prop_model.__setstate__(state)

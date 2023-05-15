@@ -77,5 +77,8 @@ class PropertyModel(QtCore.QAbstractTableModel):
 
         return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
 
-    def __getstate__(self):
+    def __getstate__(self) -> dict:
         return self._properties
+
+    def __setstate__(self, state: dict):
+        self._properties: dict = state

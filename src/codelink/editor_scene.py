@@ -118,7 +118,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         nodes_dict: list[dict] = []
 
         for node in self._nodes:
-            nodes_dict.append(node.prop_model.__getstate__())
+            nodes_dict.append(node.__getstate__())
 
         return nodes_dict
 
@@ -127,5 +127,5 @@ class EditorScene(QtWidgets.QGraphicsScene):
             NodeClass = getattr(importlib.import_module("node_item"), node_dict["Class"])
             new_node: NodeClass = NodeClass()
             self.add_node(new_node)
-            new_node.prop_model.properties = node_dict
+            new_node.__setstate__(node_dict)
             new_node.setPos(QtCore.QPointF(int(node_dict["X"]), int(node_dict["Y"])))
