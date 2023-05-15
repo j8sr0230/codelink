@@ -1,0 +1,29 @@
+[
+    {
+        "Class": "NodeItem",
+        "Name": "Add",
+        "Color": "#1D1D1D",
+        "Collapse State": false,
+        "X": 31970,
+        "Y": 31990,
+        "Width": 160
+    },
+    {
+        "Class": "NodeItem",
+        "Name": "Add",
+        "Color": "#1D1D1D",
+        "Collapse State": false,
+        "X": 31570,
+        "Y": 31800,
+        "Width": 160
+    },
+    {
+        "Class": "NodeItem",
+        "Name": "Mein Knoten",
+        "Color": "blue",
+        "Collapse State": false,
+        "X": 31890,
+        "Y": 31780,
+        "Width": 426
+    }
+]
