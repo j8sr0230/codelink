@@ -75,15 +75,15 @@ class NodeItem(QtWidgets.QGraphicsItem):
                  self._collapse_btn.boundingRect().width()) / 2
         self._collapse_btn.setPos(btn_x, (self._header_height - self._collapse_btn.boundingRect().height()) / 2)
 
-        self._title_item = QtWidgets.QGraphicsTextItem(self)
-        self._title_item.setDefaultTextColor(self._font_color)
-        self._title_item.setFont(self._font)
-        self._title_item.setPlainText(
+        self._name_item = QtWidgets.QGraphicsTextItem(self)
+        self._name_item.setDefaultTextColor(self._font_color)
+        self._name_item.setFont(self._font)
+        self._name_item.setPlainText(
             crop_text(self._prop_model.properties["Name"],
                       self._prop_model.properties["Width"] - self._title_x - self._content_padding,
                       self._font)
         )
-        self._title_item.setPos(self._title_x, (self._header_height - self._title_item.boundingRect().height()) / 2)
+        self._name_item.setPos(self._title_x, (self._header_height - self._name_item.boundingRect().height()) / 2)
 
         self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         self._content_widget.setStyleSheet("background-color: transparent")
@@ -297,8 +297,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    self.update_collapse_state(self._prop_model.properties["Collapse State"])
-                    self._prop_model.properties["Collapse State"] = not self._prop_model.properties["Collapse State"]
+                    collapse_state: bool = not self._prop_model.properties["Collapse State"]
+
+                    #noinspection PyTypeChecker
+                    self._prop_model.setData(
+                        self._prop_model.index(2, 1, QtCore.QModelIndex()), collapse_state, QtCore.Qt.EditRole
+                    )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
@@ -342,7 +346,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def update_name(self, value: str) -> None:
-        self._title_item.setPlainText(
+        self._name_item.setPlainText(
             crop_text(value, self._prop_model.properties["Width"] - self._title_x - self._content_padding, self._font)
         )
 
@@ -383,8 +387,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.update_collapse_state(self._prop_model.properties["Collapse State"])
         self.update_width(self._prop_model.properties["Width"])
         self.setPos(QtCore.QPointF(self._prop_model.properties["X"], self._prop_model.properties["Y"]))
-        self.update_collapse_state(self._prop_model.properties["Collapse State"])
-        #self.update_socket_positions()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
