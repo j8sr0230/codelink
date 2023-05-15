@@ -38,12 +38,14 @@ if __name__ == "__main__":
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
 
-    # Testing save and load
-    stored_data: list[dict] = node_editor_scene.serialize_nodes()
-    out_file = open("graph.json", "w")
-    json.dump(stored_data, out_file, indent=4)
-    out_file.close()
-    node_editor_scene.clear()
-    node_editor_scene.deserialize_nodes(stored_data)
+    # with open("graph.json", 'w', encoding='utf8') as json_file:
+    #     json.dump(node_editor_scene.serialize_nodes(), json_file, indent=4)
+    #
+    # # for node in node_editor_scene.nodes:
+    # #     node_editor_scene.remove_node(node)
+    #
+    # with open("graph.json", 'r', encoding='utf8') as json_file:
+    #     nodes_dict: list[dict] = json.load(json_file)
+    #     node_editor_scene.deserialize_nodes(nodes_dict)
 
     sys.exit(app.exec_())

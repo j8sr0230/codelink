@@ -259,3 +259,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+
+        if event.matches(QtGui.QKeySequence.Save):
+            with open("graph.json", 'w', encoding='utf8') as json_file:
+                json.dump(self.scene().serialize_nodes(), json_file, indent=4)
+
+        super().keyPressEvent(event)
