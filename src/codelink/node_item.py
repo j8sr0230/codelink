@@ -25,11 +25,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._visited_count: int = 0
         self._mode: str = ""
-
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
-
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
+        # Node geometry
         self._title_x: int = 20
         self._min_width: int = 80
         self._max_height: int = 80
@@ -58,9 +57,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._shadow.setOffset(1)
         self.setGraphicsEffect(self._shadow)
 
-        self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
-                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
 
         # UI
         self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
@@ -171,6 +168,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
 
         self.update_socket_positions()
+        self.setAcceptHoverEvents(True)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
         # Listeners
         self._prop_model.dataChanged.connect(lambda: self.update_all())
@@ -299,7 +299,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     collapse_state: bool = not self._prop_model.properties["Collapse State"]
 
-                    #noinspection PyTypeChecker
+                    # noinspection PyTypeChecker
                     self._prop_model.setData(
                         self._prop_model.index(2, 1, QtCore.QModelIndex()), collapse_state, QtCore.Qt.EditRole
                     )
