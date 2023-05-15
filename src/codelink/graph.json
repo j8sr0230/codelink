@@ -4,14 +4,23 @@
         "Name": "Add",
         "Color": "#1D1D1D",
         "Collapse State": false,
-        "X": 31600,
-        "Y": 31800,
+        "X": 32200,
+        "Y": 32050,
         "Width": 160
     },
     {
         "Class": "NodeItem",
-        "Name": "Add",
-        "Color": "#1D1D1D",
+        "Name": "asdfghcvjkblh",
+        "Color": "green",
+        "Collapse State": false,
+        "X": 31600,
+        "Y": 31800,
+        "Width": 380
+    },
+    {
+        "Class": "NodeItem",
+        "Name": "Testnode",
+        "Color": "red",
         "Collapse State": false,
         "X": 32200,
         "Y": 32050,

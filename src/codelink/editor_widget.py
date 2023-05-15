@@ -1,4 +1,5 @@
 from typing import Optional
+import json
 
 from dask.threaded import get
 
@@ -265,5 +266,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.matches(QtGui.QKeySequence.Save):
             with open("graph.json", 'w', encoding='utf8') as json_file:
                 json.dump(self.scene().serialize_nodes(), json_file, indent=4)
+
+        if event.matches(QtGui.QKeySequence.Open):
+            for node in self.scene().nodes:
+                self.scene().remove_node(node)
+
+            with open("graph.json", 'r', encoding='utf8') as json_file:
+                self.scene().deserialize_nodes(json.load(json_file))
 
         super().keyPressEvent(event)

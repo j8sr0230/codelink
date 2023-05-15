@@ -1,6 +1,5 @@
 import os
 import sys
-import json
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
