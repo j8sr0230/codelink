@@ -1,20 +1,20 @@
 [
     {
         "Class": "NodeItem",
-        "Name": "Add",
-        "Color": "#1D1D1D",
+        "Name": "Result",
+        "Color": "#1d1d1d",
         "Collapse State": false,
-        "X": 32090,
-        "Y": 31820,
-        "Width": 160
+        "X": 31990,
+        "Y": 31880,
+        "Width": 120
     },
     {
         "Class": "NodeItem",
         "Name": "Sub",
         "Color": "#1d1d1d",
         "Collapse State": false,
-        "X": 31860,
-        "Y": 31990,
+        "X": 31660,
+        "Y": 31970,
         "Width": 167
     },
     {
@@ -22,8 +22,8 @@
         "Name": "Knoten 1",
         "Color": "green",
         "Collapse State": false,
-        "X": 31530,
-        "Y": 31810,
+        "X": 31620,
+        "Y": 31790,
         "Width": 197
     }
 ]
