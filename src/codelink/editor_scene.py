@@ -1,5 +1,6 @@
 from typing import Optional
 import math
+import importlib
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -112,3 +113,19 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
         painter.setPen(self._grid_pen)
         painter.drawPoints(points)
+
+    def serialize_nodes(self) -> list[dict]:
+        nodes_dict: list[dict] = []
+
+        for node in self._nodes:
+            nodes_dict.append(node.prop_model.__getstate__())
+
+        return nodes_dict
+
+    def deserialize_nodes(self, nodes_dict: list[dict]) -> None:
+        for node_dict in nodes_dict:
+            NodeClass = getattr(importlib.import_module("node_item"), node_dict["Class"])
+            new_node: NodeClass = NodeClass()
+            new_node.prop_model.properties = node_dict
+            self.add_node(new_node)
+            new_node.setPos(QtCore.QPointF(int(node_dict["X"]), int(node_dict["Y"])))

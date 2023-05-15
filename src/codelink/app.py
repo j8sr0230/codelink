@@ -1,6 +1,6 @@
 import os
 import sys
-import pickle
+import json
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -37,5 +37,13 @@ if __name__ == "__main__":
     node_3 = NodeItem()
     node_3.setPos(QtCore.QPointF(31900, 32100))
     node_editor_scene.add_node(node_3)
+
+    # Testing save and load
+    stored_data: list[dict] = node_editor_scene.serialize_nodes()
+    out_file = open("graph.json", "w")
+    json.dump(stored_data, out_file, indent=4)
+    out_file.close()
+    node_editor_scene.clear()
+    node_editor_scene.deserialize_nodes(stored_data)
 
     sys.exit(app.exec_())

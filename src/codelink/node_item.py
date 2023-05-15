@@ -14,8 +14,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
-            properties={"Name": "Add",
-                        "Color": QtGui.QColor("#1D1D1D"),
+            properties={"Class": self.__class__.__name__,
+                        "Name": "Add",
+                        "Color": "#1D1D1D",
                         "Collapse State": False,
                         "X": 100,
                         "Y": 100,
@@ -280,13 +281,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
             x_snap = new_pos.x() // snapping_step * snapping_step
             y_snap = new_pos.y() // snapping_step * snapping_step
 
+            x_mode_row: int = list(self._prop_model.properties.keys()).index("X")
+            y_mode_row: int = list(self._prop_model.properties.keys()).index("Y")
+
             # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(3, 1, QtCore.QModelIndex()), int(x_snap), QtCore.Qt.EditRole
+                self._prop_model.index(x_mode_row, 1, QtCore.QModelIndex()), int(x_snap), QtCore.Qt.EditRole
             )
             # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(4, 1, QtCore.QModelIndex()), int(y_snap), QtCore.Qt.EditRole
+                self._prop_model.index(y_mode_row, 1, QtCore.QModelIndex()), int(y_snap), QtCore.Qt.EditRole
             )
 
             return QtCore.QPointF(x_snap, y_snap)
@@ -312,9 +316,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     collapse_state: bool = not self._prop_model.properties["Collapse State"]
 
+                    collapse_mode_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
+
                     # noinspection PyTypeChecker
                     self._prop_model.setData(
-                        self._prop_model.index(2, 1, QtCore.QModelIndex()), collapse_state, QtCore.Qt.EditRole
+                        self._prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
+                        collapse_state, QtCore.Qt.EditRole
                     )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
@@ -328,9 +335,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
             current_x: int = self.mapToScene(event.pos()).x()
             new_width: float = current_x - old_top_left_global.x()
 
+            width_row: int = list(self._prop_model.properties.keys()).index("Width")
+
             # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(5, 1, QtCore.QModelIndex()), new_width, QtCore.Qt.EditRole
+                self._prop_model.index(width_row, 1, QtCore.QModelIndex()), new_width, QtCore.Qt.EditRole
             )
         else:
             super().mouseMoveEvent(event)
@@ -422,7 +431,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
-        painter.setBrush(self._prop_model.properties["Color"])
+        painter.setBrush(QtGui.QColor(self._prop_model.properties["Color"]))
         painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
 
         painter.setBrush(QtCore.Qt.NoBrush)
