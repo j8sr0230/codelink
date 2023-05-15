@@ -51,6 +51,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
 
+        self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
+        self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
+        self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_up)
+
         self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
         self._shadow.setColor(QtGui.QColor("black"))
         self._shadow.setBlurRadius(20)
@@ -58,11 +63,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self._shadow)
 
         # UI
-        self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
-        self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
-        self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
-        self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_up)
 
+        # Collapse button
         self._collapse_btn: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
         self._collapse_btn.setParentItem(self)
         self._collapse_btn.setPixmap(self._collapse_pixmap_down)
@@ -70,6 +72,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                  self._collapse_btn.boundingRect().width()) / 2
         self._collapse_btn.setPos(btn_x, (self._header_height - self._collapse_btn.boundingRect().height()) / 2)
 
+        # Node name
         self._name_item = QtWidgets.QGraphicsTextItem(self)
         self._name_item.setDefaultTextColor(self._font_color)
         self._name_item.setFont(self._font)
@@ -82,6 +85,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                                (self._header_height - self._name_item.boundingRect().height()) / 2
                                )
 
+        # Node content container
         self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         self._content_widget.setStyleSheet("background-color: transparent")
         self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
@@ -89,6 +93,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.setSpacing(5)
         self._content_widget.setLayout(self._content_layout)
 
+        # Option combo box
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._font)
@@ -148,6 +153,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._content_layout.addWidget(self._option_box)
 
+        # Socket widgets
         self._socket_widgets: list[Optional[SocketWidget]] = [
             SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
             SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
@@ -263,7 +269,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     @staticmethod
     def eval_socket_2(a: int, b: int) -> int:
-        return a + b
+        return a - b
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
