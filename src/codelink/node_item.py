@@ -29,7 +29,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
         # Node geometry
-        self._title_x: int = 20
+        self._title_left_padding: int = 20
         self._min_width: int = 80
         self._max_height: int = 80
         self._height: int = self._max_height
@@ -57,8 +57,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._shadow.setOffset(1)
         self.setGraphicsEffect(self._shadow)
 
-
-
         # UI
         self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
         self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
@@ -68,7 +66,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._collapse_btn: QtWidgets.QGraphicsPixmapItem = QtWidgets.QGraphicsPixmapItem()
         self._collapse_btn.setParentItem(self)
         self._collapse_btn.setPixmap(self._collapse_pixmap_down)
-        btn_x = ((self._title_x + self._collapse_btn.boundingRect().width() / 2) -
+        btn_x = ((self._title_left_padding + self._collapse_btn.boundingRect().width() / 2) -
                  self._collapse_btn.boundingRect().width()) / 2
         self._collapse_btn.setPos(btn_x, (self._header_height - self._collapse_btn.boundingRect().height()) / 2)
 
@@ -77,10 +75,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._name_item.setFont(self._font)
         self._name_item.setPlainText(
             crop_text(self._prop_model.properties["Name"],
-                      self._prop_model.properties["Width"] - self._title_x - self._content_padding,
+                      self._prop_model.properties["Width"] - self._title_left_padding - self._content_padding,
                       self._font)
         )
-        self._name_item.setPos(self._title_x, (self._header_height - self._name_item.boundingRect().height()) / 2)
+        self._name_item.setPos(self._title_left_padding,
+                               (self._header_height - self._name_item.boundingRect().height()) / 2
+                               )
 
         self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
         self._content_widget.setStyleSheet("background-color: transparent")
@@ -291,7 +291,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
 
             collapse_btn_left: float = 0
-            collapse_btn_right: float = self._title_x
+            collapse_btn_right: float = self._title_left_padding
             collapse_btn_top: float = 0
             collapse_btn_bottom: float = self._header_height
 
@@ -347,7 +347,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def update_name(self, value: str) -> None:
         self._name_item.setPlainText(
-            crop_text(value, self._prop_model.properties["Width"] - self._title_x - self._content_padding, self._font)
+            crop_text(value,
+                      self._prop_model.properties["Width"] - self._title_left_padding - self._content_padding,
+                      self._font)
         )
 
     def update_collapse_state(self, collapse_state: bool) -> None:
