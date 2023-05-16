@@ -16,23 +16,23 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    node_editor_scene: EditorScene = EditorScene()
-    node_editor_widget: EditorWidget = EditorWidget()
+    editor_scene: EditorScene = EditorScene()
+    editor_widget: EditorWidget = EditorWidget()
 
-    node_editor_widget.setScene(node_editor_scene)
-    node_editor_widget.resize(1200, 600)
-    node_editor_widget.show()
+    editor_widget.setScene(editor_scene)
+    editor_widget.resize(1200, 600)
+    editor_widget.show()
 
     node_1 = NodeItem()
     node_1.setPos(QtCore.QPointF(31600, 31800))
-    node_editor_scene.add_node(node_1)
+    editor_scene.add_node(node_1)
 
     node_2 = NodeItem()
     node_2.setPos(QtCore.QPointF(32200, 32050))
-    node_editor_scene.add_node(node_2)
+    editor_scene.add_node(node_2)
 
     node_3 = NodeItem()
     node_3.setPos(QtCore.QPointF(31900, 32100))
-    node_editor_scene.add_node(node_3)
+    editor_scene.add_node(node_3)
 
     sys.exit(app.exec_())
