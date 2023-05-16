@@ -3,11 +3,38 @@
         "Option_idx": 0,
         "Properties": {
             "Class": "NodeItem",
-            "Name": "Add",
-            "Color": "#1D1D1D",
+            "Name": "Start",
+            "Color": "green",
             "Collapse State": false,
-            "X": 31600,
-            "Y": 31800,
+            "X": 31550,
+            "Y": 31780,
+            "Width": 160
+        },
+        "Socket 0": {
+            "Class": "SocketWidget",
+            "Name": "A",
+            "Input": 30
+        },
+        "Socket 1": {
+            "Class": "SocketWidget",
+            "Name": "B",
+            "Input": -40
+        },
+        "Socket 2": {
+            "Class": "SocketWidget",
+            "Name": "Res",
+            "Input": 0
+        }
+    },
+    {
+        "Option_idx": 2,
+        "Properties": {
+            "Class": "NodeItem",
+            "Name": "End",
+            "Color": "red",
+            "Collapse State": false,
+            "X": 32040,
+            "Y": 31830,
             "Width": 160
         },
         "Socket 0": {
@@ -18,7 +45,7 @@
         "Socket 1": {
             "Class": "SocketWidget",
             "Name": "B",
-            "Input": 0
+            "Input": 20
         },
         "Socket 2": {
             "Class": "SocketWidget",
@@ -27,47 +54,20 @@
         }
     },
     {
-        "Option_idx": 0,
+        "Option_idx": 1,
         "Properties": {
             "Class": "NodeItem",
             "Name": "Add",
             "Color": "#1D1D1D",
             "Collapse State": false,
-            "X": 32200,
-            "Y": 32050,
+            "X": 31770,
+            "Y": 31970,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
             "Name": "A",
             "Input": 0
-        },
-        "Socket 1": {
-            "Class": "SocketWidget",
-            "Name": "B",
-            "Input": 0
-        },
-        "Socket 2": {
-            "Class": "SocketWidget",
-            "Name": "Res",
-            "Input": 0
-        }
-    },
-    {
-        "Option_idx": 0,
-        "Properties": {
-            "Class": "NodeItem",
-            "Name": "Add",
-            "Color": "#1D1D1D",
-            "Collapse State": false,
-            "X": 31640,
-            "Y": 32070,
-            "Width": 160
-        },
-        "Socket 0": {
-            "Class": "SocketWidget",
-            "Name": "A",
-            "Input": 34
         },
         "Socket 1": {
             "Class": "SocketWidget",
