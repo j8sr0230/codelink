@@ -16,15 +16,15 @@ if __name__ == "__main__":
         sys.path.append(os.path.abspath(os.path.dirname(__file__)))
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
-    fc_wnd = FreeCADGui.getMainWindow()
-    print(fc_wnd)
-
     node_editor_scene: EditorScene = EditorScene()
     node_editor_widget: EditorWidget = EditorWidget(parent=fc_wnd)
 
     node_editor_widget.setScene(node_editor_scene)
     node_editor_widget.resize(1200, 600)
-    node_editor_widget.show()
+
+    fc_wnd = FreeCADGui.getMainWindow()
+    fc_wnd.node_editor = node_editor_widget
+    fc_wnd.node_editor.show()
 
     node_1 = NodeItem()
     node_1.setPos(QtCore.QPointF(31600, 31800))

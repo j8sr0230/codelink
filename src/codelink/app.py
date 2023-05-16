@@ -10,8 +10,6 @@ from editor_widget import EditorWidget
 
 
 if __name__ == "__main__":
-    # if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
-    #     sys.path.append(os.path.abspath(os.path.dirname(__file__)))
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)

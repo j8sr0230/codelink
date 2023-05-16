@@ -1,5 +1,6 @@
 from typing import Optional
 import json
+import os
 
 from dask.threaded import get
 
@@ -262,16 +263,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
         if event.matches(QtGui.QKeySequence.Save):
-            with open("graph.json", 'w', encoding='utf8') as json_file:
+            with open(file_path, "w", encoding="utf8") as json_file:
                 json.dump(self.scene().serialize_nodes(), json_file, indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
             self.scene().clear()
             self.scene().nodes: list[NodeItem] = []
 
-            with open("graph.json", 'r', encoding='utf8') as json_file:
+            with open(file_path, "r", encoding="utf8") as json_file:
                 self.scene().deserialize_nodes(json.load(json_file))
 
         super().keyPressEvent(event)
