@@ -4,6 +4,8 @@ import sys
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+import FreeCADGui
+
 from node_item import NodeItem
 from editor_scene import EditorScene
 from editor_widget import EditorWidget
@@ -14,8 +16,11 @@ if __name__ == "__main__":
         sys.path.append(os.path.abspath(os.path.dirname(__file__)))
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
+    fc_wnd = FreeCADGui.getMainWindow()
+    print(fc_wnd)
+
     node_editor_scene: EditorScene = EditorScene()
-    node_editor_widget: EditorWidget = EditorWidget()
+    node_editor_widget: EditorWidget = EditorWidget(parent=fc_wnd)
 
     node_editor_widget.setScene(node_editor_scene)
     node_editor_widget.resize(1200, 600)
