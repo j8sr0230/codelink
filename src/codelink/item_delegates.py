@@ -49,8 +49,8 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
                 image: url(icon:images_dark-light/up_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
             }
-            QSpinBox::up-arrow:focus{
-                background-color: #334D80;
+            QSpinBox::up-button{
+                background-color: transparent;
             }
             QSpinBox::down-arrow {
                 width: 12px; 
@@ -59,8 +59,8 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
                 image: url(icon:images_dark-light/down_arrow_light.svg);
                 /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
             }
-            QSpinBox::down-arrow:focus{
-                background-color: #334D80;
+            QSpinBox::down-button{
+                background-color: transparent;
             }
         """)
 
