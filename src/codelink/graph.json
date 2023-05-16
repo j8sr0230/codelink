@@ -6,18 +6,18 @@
             "Name": "Start",
             "Color": "green",
             "Collapse State": false,
-            "X": 31550,
+            "X": 31540,
             "Y": 31780,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "A",
+            "Name": "I1",
             "Input": 30
         },
         "Socket 1": {
             "Class": "SocketWidget",
-            "Name": "B",
+            "Name": "I2",
             "Input": -40
         },
         "Socket 2": {
@@ -34,22 +34,22 @@
             "Color": "red",
             "Collapse State": false,
             "X": 32040,
-            "Y": 31830,
-            "Width": 160
+            "Y": 31810,
+            "Width": 120
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "A",
+            "Name": "X",
             "Input": 0
         },
         "Socket 1": {
             "Class": "SocketWidget",
-            "Name": "B",
+            "Name": "Y",
             "Input": 20
         },
         "Socket 2": {
             "Class": "SocketWidget",
-            "Name": "Res",
+            "Name": "Ergebnis",
             "Input": 0
         }
     },
@@ -59,7 +59,7 @@
             "Class": "NodeItem",
             "Name": "Add",
             "Color": "#1D1D1D",
-            "Collapse State": false,
+            "Collapse State": true,
             "X": 31770,
             "Y": 31970,
             "Width": 160
