@@ -8,12 +8,10 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from property_model import PropertyModel
 from property_widget import PropertyWidget
-from item_delegates import BooleanDelegate, IntegerDelegate
 from socket_item import SocketItem
-from edge_item import EdgeItem
 from node_item import NodeItem
+from edge_item import EdgeItem
 from cutter_item import CutterItem
 
 
@@ -48,53 +46,29 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
-        self.setLayout(self._layout)
-
-        self._prop_container: QtWidgets.QWidget = QtWidgets.QWidget()
-        self._prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        self._prop_container_layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
-        self._prop_container.setLayout(self._prop_container_layout)
-        self._prop_container_layout.setMargin(0)
-        self._prop_container_layout.setSpacing(0)
-
-        self._prop_node_heading: QtWidgets.QLabel = QtWidgets.QLabel("Node")
-        self._prop_node_heading.setFont(QtGui.QFont("Sans Serif", 12))
-        self._prop_node_heading.setStyleSheet("Color: #E5E5E5")
-        self._prop_container_layout.addWidget(self._prop_node_heading)
-
-        self._prop_view: PropertyWidget = PropertyWidget(self)
-        self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
-        self._prop_view.setItemDelegateForRow(4, IntegerDelegate(self._prop_view))
-        self._prop_view.setItemDelegateForRow(5, IntegerDelegate(self._prop_view))
-        self._prop_view.setItemDelegateForRow(6, IntegerDelegate(self._prop_view))
-        self._prop_container_layout.addWidget(self._prop_view)
-
-        self._prop_sockets_heading: QtWidgets.QLabel = QtWidgets.QLabel("Sockets")
-        self._prop_sockets_heading.setFont(QtGui.QFont("Sans Serif", 12))
-        self._prop_sockets_heading.setStyleSheet("Color: #E5E5E5")
-        self._prop_container_layout.addWidget(self._prop_sockets_heading)
-
-        self._socket_prop_container: QtWidgets.QWidget = QtWidgets.QWidget()
-        self._socket_prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        self._socket_prop_container.setLayout(self._socket_prop_container_layout)
-        self._prop_container_layout.addWidget(self._socket_prop_container)
-        self._prop_container.setMinimumHeight(1000)
-
-        self._prop_scroller: QtWidgets.QScrollArea = QtWidgets.QScrollArea(self)
-        self._prop_scroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self._prop_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self._prop_scroller.setStyleSheet("Background: transparent")
-        self._prop_scroller.setWidget(self._prop_container)
-        self._prop_scroller.setMaximumWidth(300)
-
-        self._layout.addWidget(self._prop_scroller)
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
+        self.setLayout(self._layout)
 
+        # Property scroller
+        self._prop_scroller: QtWidgets.QScrollArea = QtWidgets.QScrollArea(self)
+        self._prop_scroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._prop_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._prop_scroller.setFixedWidth(300)
         self._prop_scroller.hide()
+        self._prop_scroller.setStyleSheet("""
+            QScrollArea {
+                background-color: transparent;
+                padding: 0px;
+                margin: 0px;
+                border: none;
+                border-radius: 0px;
+            }
+        """)
+
+        self._layout.addWidget(self._prop_scroller)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
         if event.button() == QtCore.Qt.LeftButton and self._mode == "":
@@ -155,29 +129,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().addItem(self._cutter)
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
             else:
-                super().mousePressEvent(event)
-
+                # Open node properties
                 if type(self.itemAt(event.pos())) == NodeItem:
                     self.scene().clearSelection()
-
                     self._last_node: NodeItem = self.itemAt(event.pos())
-                    self._mode: str = "NODE_SELECTED"
                     self._last_node.setSelected(True)
-                    self._prop_view.setModel(self._last_node.prop_model)
-
-                    for socket_widget in self._socket_prop_container.findChildren(PropertyWidget):
-                        self._socket_prop_container_layout.removeWidget(socket_widget)
-
-                    for socket_widget in self._last_node.socket_widgets:
-                        socket_model: PropertyModel = socket_widget.prop_model
-                        socket_view: PropertyWidget = PropertyWidget()
-                        socket_view.setModel(socket_model)
-                        socket_view.setItemDelegateForRow(2, IntegerDelegate(socket_view))
-                        self._socket_prop_container_layout.addWidget(socket_view)
-
+                    prop_widget: PropertyWidget = PropertyWidget(
+                        self._last_node,
+                        width=self._prop_scroller.width(),
+                        parent=self._prop_scroller
+                    )
+                    self._prop_scroller.setWidget(prop_widget)
                     self._prop_scroller.show()
                 else:
                     self._prop_scroller.hide()
+
+                super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -314,6 +281,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.matches(QtGui.QKeySequence.Open):
             self.scene().clear()
             self.scene().nodes: list[NodeItem] = []
+            self._prop_scroller.hide()
 
             with open(file_path, "r", encoding="utf8") as json_file:
                 self.scene().deserialize_nodes(json.load(json_file))

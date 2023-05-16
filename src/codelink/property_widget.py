@@ -1,57 +1,48 @@
+from typing import Optional
+
 import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
+
+from item_delegates import BooleanDelegate, IntegerDelegate
+from property_table import PropertyTable
+from node_item import NodeItem
 
 
-class PropertyWidget(QtWidgets.QTableView):
-    def __init__(self, parent: QtWidgets.QWidget = None):
-        super().__init__(parent)
+class PropertyWidget(QtWidgets.QWidget):
+	def __init__(self, node_item: Optional[NodeItem] = None, width: int = 250, parent: Optional[QtWidgets.QWidget] = None):
+		super().__init__(parent)
 
-        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
+		self._node_item: NodeItem = node_item
 
-        self.setFont(self._font)
-        self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
-        self.setAlternatingRowColors(True)
+		self._height: int = 0
+		self._width: int = width
 
-        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.horizontalHeader().setFont(self._font)
-        self.verticalHeader().hide()
+		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
-        self.setStyleSheet("""
-            QTableView {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                alternate-background-color: #2B2B2B;
-                selection-background-color: #334D80;
-                gridline-color: black;
-                padding: 0px;
-                margin: 0px;
-                border: none;
-                border-radius: 0px;
-                outline: none;
-            }
-            QHeaderView::section:horizontal {
-                color: #E5E5E5;
-                background-color: #3D3D3D;
-                margin: 0px;
-                padding: 0px;
-                border-top: none;
-                border-bottom: 1px solid black;
-                border-left: none;
-                border-right: 1px solid black;
-            }
-            QTableView::item {
-                border: none;
-                margin: 0px;
-                padding: 0px;
-            }
-            QTableView::item:selected {
-                background-color: #334D80;
-            }
-            QTableView::item:hover {
-                border: none;
-            }
-            QTableView::item:focus {
-                border: none;
-            }
-        """)
+		self._node_prop_table: PropertyTable = PropertyTable(self)
+		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(6, IntegerDelegate(self._node_prop_table))
+		self._node_prop_table.setModel(self._node_item.prop_model)
+		self._node_prop_table.setFixedHeight(
+			self._node_prop_table.model().rowCount() * self._node_prop_table.rowHeight(0) +
+			self._node_prop_table.horizontalHeader().height()
+		)
+		self._height += self._node_prop_table.height()
+		self._layout.addWidget(self._node_prop_table)
+
+		for socket_widget in self._node_item.socket_widgets:
+			socket_model: PropertyModel = socket_widget.prop_model
+			socket_prop_table: PropertyTable = PropertyTable(self)
+			socket_prop_table.setModel(socket_model)
+			socket_prop_table.setFixedHeight(
+				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
+				socket_prop_table.horizontalHeader().height()
+			)
+			socket_prop_table.setItemDelegateForRow(2, IntegerDelegate(socket_prop_table))
+			self._layout.addWidget(socket_prop_table)
+
+		self._layout.setMargin(0)
+		self._layout.setSpacing(0)
+		self.setLayout(self._layout)
+		self.setFixedWidth(self._width)
