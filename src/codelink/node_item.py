@@ -156,7 +156,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.addWidget(self._option_box)
 
         # Socket widgets
-        self._socket_widgets: list[Optional[SocketWidget]] = [
+        self._socket_widgets: list[SocketWidget] = [
             SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
             SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
             SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
