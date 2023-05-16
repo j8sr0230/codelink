@@ -4,6 +4,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from property_model import PropertyModel
 from socket_item import SocketItem
 
 
@@ -13,7 +14,14 @@ class SocketWidget(QtWidgets.QWidget):
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
-        self._label: str = label
+        self._prop_model: PropertyModel = PropertyModel(
+            properties={
+                        "Class": self.__class__.__name__,
+                        "Name": label,
+                        "Input": 0
+                        }
+        )
+
         self._socket_type: object = socket_type
         self._is_input: bool = is_input
         self._parent_node: Optional['NodeItem'] = parent_node
@@ -28,17 +36,25 @@ class SocketWidget(QtWidgets.QWidget):
         self._layout.setSpacing(0)
         self.setLayout(self._layout)
 
-        self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._label, self)
+        self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
         self._label_widget.setFont(self._parent_node.font)
         self._layout.addWidget(self._label_widget)
 
         self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
         self._input_widget.setFont(self._parent_node.font)
         self._input_widget.setMinimumWidth(5)
-        self._input_widget.setPlaceholderText("Enter value")
+        # self._input_widget.setPlaceholderText("Enter value")
+        self._input_widget.setText(str(self._prop_model.properties["Input"]))
         self._layout.addWidget(self._input_widget)
 
         self.update_stylesheets()
+
+        # Listeners
+        self._prop_model.dataChanged.connect(lambda: self.update_all())
+
+    @property
+    def prop_model(self) -> QtCore.QAbstractTableModel:
+        return self._prop_model
 
     @property
     def socket_type(self) -> object:
@@ -159,3 +175,6 @@ class SocketWidget(QtWidgets.QWidget):
             else:
                 self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
             self._socket.hide()
+
+    def update_all(self):
+        self._label_widget.setText(self._prop_model.properties["Name"])

@@ -8,6 +8,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from property_model import PropertyModel
 from property_widget import PropertyWidget
 from item_delegates import BooleanDelegate, IntegerDelegate
 from socket_item import SocketItem
@@ -49,18 +50,35 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
         self.setLayout(self._layout)
 
+        self._prop_container: QtWidgets.QWidget = QtWidgets.QWidget()
+        self._prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        self._prop_container_layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
+        self._prop_container.setLayout(self._prop_container_layout)
+
         self._prop_view: PropertyWidget = PropertyWidget(self)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(4, IntegerDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(5, IntegerDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(6, IntegerDelegate(self._prop_view))
 
-        self._prop_view.setMaximumWidth(250)
-        self._layout.addWidget(self._prop_view)
+        self._prop_node_heading: QtWidgets.QLabel = QtWidgets.QLabel("Node")
+        self._prop_node_heading.setFont(QtGui.QFont("Sans Serif", 12))
+        self._prop_node_heading.setStyleSheet("Color: #E5E5E5")
+
+        self._prop_sockets_heading: QtWidgets.QLabel = QtWidgets.QLabel("Sockets")
+        self._prop_sockets_heading.setFont(QtGui.QFont("Sans Serif", 12))
+        self._prop_sockets_heading.setStyleSheet("Color: #E5E5E5")
+
+        self._prop_container_layout.addWidget(self._prop_node_heading)
+        self._prop_container_layout.addWidget(self._prop_view)
+        self._prop_container_layout.addWidget(self._prop_sockets_heading)
+
+        self._prop_container.setMaximumWidth(250)
+        self._layout.addWidget(self._prop_container)
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
 
-        self._prop_view.hide()
+        self._prop_container.hide()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
 
@@ -133,9 +151,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._mode: str = "NODE_SELECTED"
                     self._last_node.setSelected(True)
                     self._prop_view.setModel(self._last_node.prop_model)
-                    self._prop_view.show()
+
+                    for socket_widget in self._last_node.socket_widgets:
+                        socket_model: PropertyModel = socket_widget.prop_model
+                        socket_view: PropertyWidget = PropertyWidget()
+                        socket_view.setModel(socket_model)
+                        self._prop_container_layout.addWidget(socket_view)
+
+                    self._prop_container.show()
                 else:
-                    self._prop_view.hide()
+                    self._prop_container.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
