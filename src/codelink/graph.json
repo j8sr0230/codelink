@@ -1,13 +1,13 @@
 [
     {
-        "Option_idx": 0,
+        "Option_idx": 2,
         "Properties": {
             "Class": "NodeItem",
             "Name": "Test",
-            "Color": "green",
+            "Color": "",
             "Collapse State": false,
-            "X": 31610,
-            "Y": 31930,
+            "X": 31590,
+            "Y": 31870,
             "Width": 179
         }
     },
@@ -18,21 +18,21 @@
             "Name": "Add",
             "Color": "red",
             "Collapse State": false,
-            "X": 31910,
-            "Y": 31840,
+            "X": 32160,
+            "Y": 31890,
             "Width": 160
         }
     },
     {
-        "Option_idx": 1,
+        "Option_idx": 0,
         "Properties": {
             "Class": "NodeItem",
-            "Name": "Sub",
-            "Color": "#1D1D1D",
+            "Name": "Long Sub Title",
+            "Color": "blue",
             "Collapse State": false,
-            "X": 31880,
-            "Y": 32130,
-            "Width": 160
+            "X": 31910,
+            "Y": 32020,
+            "Width": 133
         }
     }
 ]
