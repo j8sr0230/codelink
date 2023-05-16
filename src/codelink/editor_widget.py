@@ -55,23 +55,27 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._prop_container_layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
         self._prop_container.setLayout(self._prop_container_layout)
 
+        self._prop_node_heading: QtWidgets.QLabel = QtWidgets.QLabel("Node")
+        self._prop_node_heading.setFont(QtGui.QFont("Sans Serif", 12))
+        self._prop_node_heading.setStyleSheet("Color: #E5E5E5")
+        self._prop_container_layout.addWidget(self._prop_node_heading)
+
         self._prop_view: PropertyWidget = PropertyWidget(self)
         self._prop_view.setItemDelegateForRow(3, BooleanDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(4, IntegerDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(5, IntegerDelegate(self._prop_view))
         self._prop_view.setItemDelegateForRow(6, IntegerDelegate(self._prop_view))
-
-        self._prop_node_heading: QtWidgets.QLabel = QtWidgets.QLabel("Node")
-        self._prop_node_heading.setFont(QtGui.QFont("Sans Serif", 12))
-        self._prop_node_heading.setStyleSheet("Color: #E5E5E5")
+        self._prop_container_layout.addWidget(self._prop_view)
 
         self._prop_sockets_heading: QtWidgets.QLabel = QtWidgets.QLabel("Sockets")
         self._prop_sockets_heading.setFont(QtGui.QFont("Sans Serif", 12))
         self._prop_sockets_heading.setStyleSheet("Color: #E5E5E5")
-
-        self._prop_container_layout.addWidget(self._prop_node_heading)
-        self._prop_container_layout.addWidget(self._prop_view)
         self._prop_container_layout.addWidget(self._prop_sockets_heading)
+
+        self._socket_prop_container: QtWidgets.QWidget = QtWidgets.QWidget()
+        self._socket_prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        self._socket_prop_container.setLayout(self._socket_prop_container_layout)
+        self._prop_container_layout.addWidget(self._socket_prop_container)
 
         self._prop_container.setMaximumWidth(250)
         self._layout.addWidget(self._prop_container)
@@ -152,11 +156,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._last_node.setSelected(True)
                     self._prop_view.setModel(self._last_node.prop_model)
 
+                    for socket_widget in self._socket_prop_container.findChildren(PropertyWidget):
+                        self._socket_prop_container_layout.removeWidget(socket_widget)
+
                     for socket_widget in self._last_node.socket_widgets:
                         socket_model: PropertyModel = socket_widget.prop_model
                         socket_view: PropertyWidget = PropertyWidget()
                         socket_view.setModel(socket_model)
-                        self._prop_container_layout.addWidget(socket_view)
+                        socket_view.setItemDelegateForRow(2, IntegerDelegate(socket_view))
+                        self._socket_prop_container_layout.addWidget(socket_view)
 
                     self._prop_container.show()
                 else:

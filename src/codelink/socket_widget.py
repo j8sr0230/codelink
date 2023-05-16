@@ -178,3 +178,4 @@ class SocketWidget(QtWidgets.QWidget):
 
     def update_all(self):
         self._label_widget.setText(self._prop_model.properties["Name"])
+        self._input_widget.setText(str(self._prop_model.properties["Input"]))
