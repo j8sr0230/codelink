@@ -150,5 +150,3 @@ class EditorScene(QtWidgets.QGraphicsScene):
             # Reset node state
             new_edge.__setstate__(edge_dict)
             new_edge.update()
-
-
