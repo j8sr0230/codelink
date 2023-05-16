@@ -133,3 +133,22 @@ class EditorScene(QtWidgets.QGraphicsScene):
             # Reset node state
             new_node.__setstate__(node_dict)
             new_node.setPos(QtCore.QPointF(int(node_props["X"]), int(node_props["Y"])))
+
+    def serialize_edges(self) -> list[dict]:
+        edges_dict: list[dict] = []
+
+        for edge in self._edges:
+            edges_dict.append(edge.__getstate__())
+
+        return edges_dict
+
+    def deserialize_edges(self, edges_dict: list[dict]):
+        for edge_dict in edges_dict:
+            new_edge: EdgeItem = EdgeItem()
+            self.add_edge(new_edge)
+
+            # Reset node state
+            new_edge.__setstate__(edge_dict)
+            new_edge.update()
+
+

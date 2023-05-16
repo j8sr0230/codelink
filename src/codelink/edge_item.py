@@ -8,7 +8,8 @@ from socket_item import SocketItem
 
 
 class EdgeItem(QtWidgets.QGraphicsPathItem):
-    def __init__(self, color: QtGui.QColor, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, color: QtGui.QColor = QtGui.QColor("#E5E5E5"),
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         self._color: QtGui.QColor = color
@@ -79,3 +80,24 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.setPen(pen)
         painter.drawPath(self.path())
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = {
+            "Start Node Idx": self.scene().nodes.index(self._start_socket.parentItem()),
+            "Start Socket Idx": self._start_socket.parentItem().socket_widgets.index(self._start_socket.socket_widget),
+            "End Node Idx": self.scene().nodes.index(self._end_socket.parentItem()),
+            "End Socket Idx": self._end_socket.parentItem().socket_widgets.index(self._end_socket.socket_widget)
+        }
+        return data_dict
+
+    def __setstate__(self, state):
+        start_node: 'NodeItem' = self.scene().nodes[state["Start Node Idx"]]
+        self._start_socket: SocketItem = start_node.socket_widgets[state["Start Socket Idx"]].socket
+
+        end_node: 'NodeItem' = self.scene().nodes[state["End Node Idx"]]
+        self._end_socket: SocketItem = end_node.socket_widgets[state["End Socket Idx"]].socket
+
+        self._start_socket.add_edge(self)
+        self._end_socket.add_edge(self)
+        self.end_socket.socket_widget.update_stylesheets()
+        self._color: QtGui.QColor = self._start_socket.color

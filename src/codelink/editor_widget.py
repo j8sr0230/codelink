@@ -270,7 +270,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.matches(QtGui.QKeySequence.Save):
             with open(file_path, "w", encoding="utf8") as json_file:
-                json.dump(self.scene().serialize_nodes(), json_file, indent=4)
+                json.dump(
+                    {
+                        "Nodes": self.scene().serialize_nodes(),
+                        "Edges": self.scene().serialize_edges()
+                    },
+                    json_file,
+                    indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
             self.scene().clear()
@@ -278,6 +284,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._prop_scroller.hide()
 
             with open(file_path, "r", encoding="utf8") as json_file:
-                self.scene().deserialize_nodes(json.load(json_file))
+                data_dict: dict = json.load(json_file)
+
+                self.scene().deserialize_nodes(data_dict["Nodes"])
+                self.scene().deserialize_edges(data_dict["Edges"])
 
         super().keyPressEvent(event)
