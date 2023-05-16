@@ -458,3 +458,4 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for idx, socket_widget in enumerate(self._socket_widgets):
             socket_widget.prop_model.__setstate__(state["Socket " + str(idx)])
             socket_widget.update_all()
+        self.update_all()
