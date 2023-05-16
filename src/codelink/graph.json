@@ -3,49 +3,49 @@
         "Option_idx": 0,
         "Properties": {
             "Class": "NodeItem",
-            "Name": "Add",
-            "Color": "#1D1D1D",
+            "Name": "Start",
+            "Color": "green",
             "Collapse State": false,
-            "X": 31600,
-            "Y": 31800,
+            "X": 31530,
+            "Y": 31770,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "A",
-            "Input": 0
+            "Name": "X",
+            "Input": 10
         },
         "Socket 1": {
             "Class": "SocketWidget",
-            "Name": "B",
-            "Input": 0
+            "Name": "Y",
+            "Input": 20
         },
         "Socket 2": {
             "Class": "SocketWidget",
-            "Name": "Res",
+            "Name": "Erg",
             "Input": 0
         }
     },
     {
-        "Option_idx": 1,
+        "Option_idx": 2,
         "Properties": {
             "Class": "NodeItem",
-            "Name": "Add",
-            "Color": "green",
+            "Name": "End",
+            "Color": "red",
             "Collapse State": false,
-            "X": 32100,
-            "Y": 31900,
+            "X": 32140,
+            "Y": 31910,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "tes",
+            "Name": "Q",
             "Input": 40
         },
         "Socket 1": {
             "Class": "SocketWidget",
-            "Name": "B",
-            "Input": -50
+            "Name": "R",
+            "Input": 20
         },
         "Socket 2": {
             "Class": "SocketWidget",
@@ -58,21 +58,21 @@
         "Properties": {
             "Class": "NodeItem",
             "Name": "Add",
-            "Color": "#1D1D1D",
-            "Collapse State": false,
-            "X": 31900,
-            "Y": 32100,
+            "Color": "blue",
+            "Collapse State": true,
+            "X": 31830,
+            "Y": 31990,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "A",
-            "Input": 0
+            "Name": "T",
+            "Input": 20
         },
         "Socket 1": {
             "Class": "SocketWidget",
-            "Name": "B",
-            "Input": 0
+            "Name": "Z",
+            "Input": 40
         },
         "Socket 2": {
             "Class": "SocketWidget",

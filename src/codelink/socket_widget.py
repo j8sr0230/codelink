@@ -45,6 +45,13 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.setMinimumWidth(5)
         # self._input_widget.setPlaceholderText("Enter value")
         self._input_widget.setText(str(self._prop_model.properties["Input"]))
+
+        # noinspection PyTypeChecker
+        self._input_widget.textChanged.connect(lambda: self._prop_model.setData(
+            self._prop_model.index(2, 1, QtCore.QModelIndex()),
+            int(self.input_widget.text()), QtCore.Qt.EditRole
+        ))
+
         self._layout.addWidget(self._input_widget)
 
         self.update_stylesheets()
