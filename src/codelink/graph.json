@@ -33,14 +33,14 @@
             "Name": "End",
             "Color": "red",
             "Collapse State": false,
-            "X": 32140,
-            "Y": 31910,
+            "X": 31910,
+            "Y": 31820,
             "Width": 160
         },
         "Socket 0": {
             "Class": "SocketWidget",
-            "Name": "Q",
-            "Input": 40
+            "Name": "tz",
+            "Input": 559
         },
         "Socket 1": {
             "Class": "SocketWidget",
@@ -62,7 +62,7 @@
             "Collapse State": true,
             "X": 31830,
             "Y": 31990,
-            "Width": 160
+            "Width": 150
         },
         "Socket 0": {
             "Class": "SocketWidget",
