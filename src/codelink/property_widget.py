@@ -55,3 +55,4 @@ class PropertyWidget(QtWidgets.QTableView):
                 border: none;
             }
         """)
+

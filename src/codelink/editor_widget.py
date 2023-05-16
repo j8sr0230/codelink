@@ -54,6 +54,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         self._prop_container_layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
         self._prop_container.setLayout(self._prop_container_layout)
+        self._prop_container_layout.setMargin(0)
+        self._prop_container_layout.setSpacing(0)
 
         self._prop_node_heading: QtWidgets.QLabel = QtWidgets.QLabel("Node")
         self._prop_node_heading.setFont(QtGui.QFont("Sans Serif", 12))
@@ -76,13 +78,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._socket_prop_container_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         self._socket_prop_container.setLayout(self._socket_prop_container_layout)
         self._prop_container_layout.addWidget(self._socket_prop_container)
+        self._prop_container.setMinimumHeight(1000)
 
-        self._prop_container.setMaximumWidth(250)
-        self._layout.addWidget(self._prop_container)
+        self._prop_scroller: QtWidgets.QScrollArea = QtWidgets.QScrollArea(self)
+        self._prop_scroller.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self._prop_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self._prop_scroller.setStyleSheet("Background: transparent")
+        self._prop_scroller.setWidget(self._prop_container)
+        self._prop_scroller.setMaximumWidth(300)
+
+        self._layout.addWidget(self._prop_scroller)
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
 
-        self._prop_container.hide()
+        self._prop_scroller.hide()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
 
@@ -166,9 +175,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         socket_view.setItemDelegateForRow(2, IntegerDelegate(socket_view))
                         self._socket_prop_container_layout.addWidget(socket_view)
 
-                    self._prop_container.show()
+                    self._prop_scroller.show()
                 else:
-                    self._prop_container.hide()
+                    self._prop_scroller.hide()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
