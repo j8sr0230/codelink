@@ -1,5 +1,7 @@
 import PySide2.QtGui as QtGui
 
+from edge_item import EdgeItem
+
 
 def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
     font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
@@ -15,3 +17,9 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
         cropped_text: str = cropped_text[:len(text)]
 
     return cropped_text
+
+
+def validate_edge(temp_edge_item: EdgeItem) -> bool:
+    print(temp_edge_item)
+
+    return True

@@ -86,10 +86,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.start_socket = self._last_socket
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target.setBrush(self._last_socket.color)
                     temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
-                    temp_target.setZValue(-1)
 
                     self._temp_edge.end_socket = temp_target
                     self.scene().add_edge(self._temp_edge)
@@ -106,10 +103,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         socket.remove_edge(self._temp_edge)
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPen(QtGui.QPen(QtGui.QColor("black")))
-                    temp_target.setBrush(self._last_socket.color)
                     temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
-                    temp_target.setZValue(-1)
 
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
