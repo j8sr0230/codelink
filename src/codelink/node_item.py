@@ -251,26 +251,30 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
         self.update_socket_positions()
 
+
     def remove_input_widget(self):
         remove_idx: int = 0
         for idx, socket_widget in enumerate(self._socket_widgets):
             if not socket_widget.is_input:
                 remove_idx: int = idx
                 break
-        print(self._content_widget.height())
-        remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
-        remove_widget.setParent(None)
-        #del remove_widget
-        #del self._socket_widgets[remove_idx-1]
-        #self._content_widget.updateGeometry()
-        #self._content_widget.update()
-        self.update()
         self._content_widget.hide()
+        remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
+        self.scene().removeItem(remove_widget.socket)
+        self._content_layout.removeWidget(remove_widget)
+        remove_widget.setParent(None)
+        remove_widget.deleteLater()
+        self._socket_widgets.remove(remove_widget)
+
+        for widget in self._socket_widgets:
+            widget.setFixedHeight(24)
+        self._content_layout.update()
+        self._content_widget.update()
+
         self._content_widget.show()
 
-        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+        self._height = (self._header_height + 2 * self._content_padding + (len(self._socket_widgets) + 1) * 24)
         self.update_socket_positions()
-        print(self._content_widget.height())
 
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
