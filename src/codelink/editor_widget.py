@@ -10,6 +10,7 @@ import PySide2.QtGui as QtGui
 
 from property_widget import PropertyWidget
 from socket_item import SocketItem
+from socket_widget import SocketWidget
 from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
@@ -288,5 +289,23 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 self.scene().deserialize_nodes(data_dict["Nodes"])
                 self.scene().deserialize_edges(data_dict["Edges"])
+
+        if event.matches(QtGui.QKeySequence.AddTab):
+            if type(self.scene().selectedItems()[0]) is NodeItem:
+                selected_node_item: NodeItem = self.scene().selectedItems()[0]
+                new_socket_widget: SocketWidget = SocketWidget(
+                    label="N",
+                    socket_type=int,
+                    is_input=True,
+                    parent_node=selected_node_item)
+
+                selected_node_item.add_input_widget(new_socket_widget)
+                self._prop_scroller.hide()
+
+        if event.matches(QtGui.QKeySequence.Cancel):
+            if type(self.scene().selectedItems()[0]) is NodeItem:
+                selected_node_item: NodeItem = self.scene().selectedItems()[0]
+                selected_node_item.remove_input_widget()
+                self._prop_scroller.hide()
 
         super().keyPressEvent(event)

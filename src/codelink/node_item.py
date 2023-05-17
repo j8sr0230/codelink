@@ -32,8 +32,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Node geometry
         self._title_left_padding: int = 20
         self._min_width: int = 80
-        self._max_height: int = 80
-        self._height: int = self._max_height
+        self._height: int = 0
         self._header_height: int = 25
         self._min_height: int = self._header_height
         self._content_padding: int = 8
@@ -237,6 +236,42 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         return result
 
+    def add_input_widget(self, input_widget: SocketWidget):
+        insert_idx: int = 0
+        for idx, socket_widget in enumerate(self._socket_widgets):
+            if not socket_widget.is_input:
+                insert_idx: int = idx
+                break
+
+        self._content_widget.hide()
+        self._socket_widgets.insert(insert_idx, input_widget)
+        self._content_layout.insertWidget(insert_idx + 1, input_widget)
+        self._content_widget.show()
+
+        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+        self.update_socket_positions()
+
+    def remove_input_widget(self):
+        remove_idx: int = 0
+        for idx, socket_widget in enumerate(self._socket_widgets):
+            if not socket_widget.is_input:
+                remove_idx: int = idx
+                break
+        print(self._content_widget.height())
+        remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
+        remove_widget.setParent(None)
+        #del remove_widget
+        #del self._socket_widgets[remove_idx-1]
+        #self._content_widget.updateGeometry()
+        #self._content_widget.update()
+        self.update()
+        self._content_widget.hide()
+        self._content_widget.show()
+
+        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+        self.update_socket_positions()
+        print(self._content_widget.height())
+
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input and socket_widget.has_edges():
@@ -265,12 +300,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     result.append(edge.end_socket.parentItem())
         return result
 
+    # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_1(a: int, b: int) -> int:
+    def eval_socket_1(a: int, b: int, *args, **kwargs) -> int:
         return a + b
 
+    # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_2(a: int, b: int) -> int:
+    def eval_socket_2(a: int, b: int, *args, **kwargs) -> int:
         return a - b
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
