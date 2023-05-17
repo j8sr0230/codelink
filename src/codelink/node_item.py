@@ -443,8 +443,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
-            "Option_idx": self._option_box.currentIndex(),
-            "Properties": self.prop_model.__getstate__()
+            "Properties": self.prop_model.__getstate__(),
+            "Option_idx": self._option_box.currentIndex()
         }
 
         for idx, socket_widget in enumerate(self._socket_widgets):
@@ -453,8 +453,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return data_dict
 
     def __setstate__(self, state: dict):
-        self._option_box.setCurrentIndex(state["Option_idx"])
         self.prop_model.__setstate__(state["Properties"])
+        self._option_box.setCurrentIndex(state["Option_idx"])
         for idx, socket_widget in enumerate(self._socket_widgets):
             socket_widget.prop_model.__setstate__(state["Socket " + str(idx)])
             socket_widget.update_all()

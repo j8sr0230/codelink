@@ -1,7 +1,6 @@
 {
     "Nodes": [
         {
-            "Option_idx": 0,
             "Properties": {
                 "Class": "NodeItem",
                 "Name": "Start",
@@ -11,6 +10,7 @@
                 "Y": 31800,
                 "Width": 170
             },
+            "Option_idx": 0,
             "Socket 0": {
                 "Class": "SocketWidget",
                 "Name": "X",
@@ -28,7 +28,6 @@
             }
         },
         {
-            "Option_idx": 2,
             "Properties": {
                 "Class": "NodeItem",
                 "Name": "End",
@@ -38,6 +37,7 @@
                 "Y": 31820,
                 "Width": 160
             },
+            "Option_idx": 2,
             "Socket 0": {
                 "Class": "SocketWidget",
                 "Name": "A",
@@ -55,7 +55,6 @@
             }
         },
         {
-            "Option_idx": 1,
             "Properties": {
                 "Class": "NodeItem",
                 "Name": "Very long title",
@@ -65,6 +64,7 @@
                 "Y": 32010,
                 "Width": 105
             },
+            "Option_idx": 1,
             "Socket 0": {
                 "Class": "SocketWidget",
                 "Name": "A",
