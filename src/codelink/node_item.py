@@ -447,8 +447,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
             "Option_idx": self._option_box.currentIndex()
         }
 
+        sockets_list: list[dict] = []
         for idx, socket_widget in enumerate(self._socket_widgets):
-            data_dict["Socket " + str(idx)] = socket_widget.prop_model.__getstate__()
+            sockets_list.append(socket_widget.prop_model.__getstate__())
+
+        data_dict["Sockets"] = sockets_list
 
         return data_dict
 
@@ -456,6 +459,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.prop_model.__setstate__(state["Properties"])
         self._option_box.setCurrentIndex(state["Option_idx"])
         for idx, socket_widget in enumerate(self._socket_widgets):
-            socket_widget.prop_model.__setstate__(state["Socket " + str(idx)])
+            socket_widget.prop_model.__setstate__(state["Sockets"][idx])
             socket_widget.update_all()
         self.update_all()

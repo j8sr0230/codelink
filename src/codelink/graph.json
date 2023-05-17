@@ -6,26 +6,28 @@
                 "Name": "Start",
                 "Color": "green",
                 "Collapse State": false,
-                "X": 31560,
-                "Y": 31800,
-                "Width": 170
+                "X": 31530,
+                "Y": 31880,
+                "Width": 160
             },
             "Option_idx": 0,
-            "Socket 0": {
-                "Class": "SocketWidget",
-                "Name": "X",
-                "Input": 20
-            },
-            "Socket 1": {
-                "Class": "SocketWidget",
-                "Name": "Y",
-                "Input": 30
-            },
-            "Socket 2": {
-                "Class": "SocketWidget",
-                "Name": "Res",
-                "Input": 0
-            }
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "X",
+                    "Input": 20
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Y",
+                    "Input": 10
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Input": 0
+                }
+            ]
         },
         {
             "Properties": {
@@ -33,56 +35,66 @@
                 "Name": "End",
                 "Color": "red",
                 "Collapse State": false,
-                "X": 32040,
-                "Y": 31820,
+                "X": 32010,
+                "Y": 31890,
                 "Width": 160
             },
             "Option_idx": 2,
-            "Socket 0": {
-                "Class": "SocketWidget",
-                "Name": "A",
-                "Input": 0
-            },
-            "Socket 1": {
-                "Class": "SocketWidget",
-                "Name": "B",
-                "Input": 0
-            },
-            "Socket 2": {
-                "Class": "SocketWidget",
-                "Name": "Erg",
-                "Input": 0
-            }
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Erg",
+                    "Input": 0
+                }
+            ]
         },
         {
             "Properties": {
                 "Class": "NodeItem",
-                "Name": "Very long title",
+                "Name": "Add",
                 "Color": "#1D1D1D",
-                "Collapse State": false,
+                "Collapse State": true,
                 "X": 31800,
-                "Y": 32010,
-                "Width": 105
+                "Y": 32060,
+                "Width": 80
             },
             "Option_idx": 1,
-            "Socket 0": {
-                "Class": "SocketWidget",
-                "Name": "A",
-                "Input": 0
-            },
-            "Socket 1": {
-                "Class": "SocketWidget",
-                "Name": "B",
-                "Input": 0
-            },
-            "Socket 2": {
-                "Class": "SocketWidget",
-                "Name": "Res",
-                "Input": 0
-            }
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Input": 5
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Input": 0
+                }
+            ]
         }
     ],
     "Edges": [
+        {
+            "Start Node Idx": 0,
+            "Start Socket Idx": 2,
+            "End Node Idx": 2,
+            "End Socket Idx": 1
+        },
         {
             "Start Node Idx": 0,
             "Start Socket Idx": 2,
@@ -94,12 +106,6 @@
             "Start Socket Idx": 2,
             "End Node Idx": 1,
             "End Socket Idx": 1
-        },
-        {
-            "Start Node Idx": 0,
-            "Start Socket Idx": 2,
-            "End Node Idx": 2,
-            "End Socket Idx": 0
         }
     ]
 }
