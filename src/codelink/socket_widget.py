@@ -24,7 +24,6 @@ class SocketWidget(QtWidgets.QWidget):
         )
 
         self._socket_type: object = socket_type
-        self._is_input: bool = is_input
         self._parent_node: Optional['NodeItem'] = parent_node
 
         self._socket: SocketItem = SocketItem(
@@ -72,7 +71,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     @property
     def is_input(self) -> bool:
-        return self._is_input
+        return self._prop_model.properties["Is Input"]
 
     @property
     def socket(self) -> SocketItem:
@@ -95,7 +94,7 @@ class SocketWidget(QtWidgets.QWidget):
                 return 0
 
     def update_stylesheets(self):
-        if self._is_input:
+        if self._prop_model.properties["Is Input"]:
             self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
             if self._socket.has_edges():
@@ -172,11 +171,11 @@ class SocketWidget(QtWidgets.QWidget):
             )
             self._input_widget.hide()
 
-    def update_socket_positions(self) -> None:
+    def update_socket_position(self) -> None:
         if not self._parent_node.is_collapsed:
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._socket.size) / 2)
 
-            if self._is_input:
+            if self._prop_model.properties["Is Input"]:
                 self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
                 self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
@@ -193,3 +192,5 @@ class SocketWidget(QtWidgets.QWidget):
     def update_all(self):
         self._label_widget.setText(self._prop_model.properties["Name"])
         self._input_widget.setText(str(self._prop_model.properties["Input"]))
+        self.update_stylesheets()
+        self.update_socket_position()

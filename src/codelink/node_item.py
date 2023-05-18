@@ -433,7 +433,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
-            widget.update_socket_positions()
+            widget.update_socket_position()
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])

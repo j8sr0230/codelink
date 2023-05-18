@@ -39,7 +39,8 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
 				socket_prop_table.horizontalHeader().height()
 			)
-			socket_prop_table.setItemDelegateForRow(2, IntegerDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)
 
 		self._layout.setMargin(0)
