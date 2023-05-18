@@ -254,7 +254,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for widget in self._content_widget.children():
             if hasattr(widget, "height"):
                 new_content_height += widget.height()
-        new_content_height: int = new_content_height + (self._content_layout.count() - 1) * self._content_layout.spacing()
+        new_content_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
         self._content_widget.setFixedHeight(new_content_height)
 
         self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
@@ -281,8 +281,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for widget in self._content_widget.children():
             if hasattr(widget, "height"):
                 new_content_height += widget.height()
-        new_content_height: int = new_content_height + (
-                    self._content_layout.count() - 1) * self._content_layout.spacing()
+        new_content_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
         self._content_widget.setFixedHeight(new_content_height)
 
         self._content_widget.show()
