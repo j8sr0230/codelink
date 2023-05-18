@@ -215,7 +215,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         self._temp_edge.end_socket.socket_widget.update_stylesheets()
 
                         if self.scene().is_graph_cyclic():
-                            # ... if not cyclic graph
+                            # ... if cyclic graph
+                            print("Cyclic")
                             connected_sockets: list[QtWidgets.QGraphicsItem] = [
                                 self._temp_edge.start_socket,
                                 self._temp_edge.end_socket
