@@ -2,7 +2,7 @@ from typing import Optional
 
 import PySide2.QtWidgets as QtWidgets
 
-from item_delegates import BooleanDelegate, IntegerDelegate
+from item_delegates import BooleanDelegate, IntegerDelegate, StringDelegate
 from property_table import PropertyTable
 from node_item import NodeItem
 
@@ -19,6 +19,8 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
+		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
@@ -39,6 +41,7 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
 				socket_prop_table.horizontalHeader().height()
 			)
+			socket_prop_table.setItemDelegateForRow(1, StringDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)

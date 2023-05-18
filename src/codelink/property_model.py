@@ -70,10 +70,10 @@ class PropertyModel(QtCore.QAbstractTableModel):
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
 
         if index.row() == 0:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         if index.column() == 0:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+            return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         return QtCore.Qt.ItemFlags(QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable)
 

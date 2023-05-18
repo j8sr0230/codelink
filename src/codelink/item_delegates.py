@@ -10,10 +10,10 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
               index: QtCore.QModelIndex) -> None:
 
-        if isinstance(self.parent(), QtWidgets.QAbstractItemView):
+        if isinstance(self.parent(), QtWidgets.QAbstractItemView) and index.column() == 1 and type(index.data()) == int:
             self.parent().openPersistentEditor(index)
 
-        if index.isValid() and not type(index.data()) == int:
+        if index.isValid() and not index.column() == 1:
             super().paint(painter, option, index)
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
@@ -29,7 +29,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
            QSpinBox {
                 color: #E5E5E5;
                 background-color: transparent;
-                selection-background-color: transparent;
+                selection-background-color: black;
                 border-radius: 0px;
                 padding-left: 3px;
                 padding-right: 0px;
@@ -98,10 +98,11 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
               index: QtCore.QModelIndex) -> None:
 
-        if isinstance(self.parent(), QtWidgets.QAbstractItemView):
+        if (isinstance(self.parent(), QtWidgets.QAbstractItemView) and index.column() == 1 and
+                type(index.data()) == bool):
             self.parent().openPersistentEditor(index)
 
-        if index.isValid() and not type(index.data()) == bool:
+        if index.isValid() and not index.column() == 1:
             super().paint(painter, option, index)
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
@@ -181,4 +182,70 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
+        editor.setGeometry(option.rect)
+
+
+class StringDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, parent: QtCore.QObject):
+        super().__init__(parent)
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
+              index: QtCore.QModelIndex) -> None:
+
+        if isinstance(self.parent(), QtWidgets.QAbstractItemView) and index.column() == 1 and type(index.data()) == str:
+            self.parent().openPersistentEditor(index)
+
+        if index.isValid() and not index.column() == 1:
+            super().paint(painter, option, index)
+
+    def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                     index: QtCore.QModelIndex) -> QtWidgets.QWidget:
+        editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
+
+        editor.textChanged.connect(self.commit_editor)
+
+        editor.setStyleSheet("""
+           QLineEdit {
+                color: #E5E5E5;
+                background-color: transparent;
+                selection-background-color: black;
+                border-radius: 0px;
+                padding-left: 3px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: none;
+            }
+            QLineEdit:focus {
+                color: #E5E5E5;
+                background-color: transparent;
+            }
+            QLineEdit:selected {
+                color: #E5E5E5;
+                background-color: transparent;
+            }
+        """)
+
+        if index.isValid() and type(index.data()) == str:
+            return editor
+
+    def commit_editor(self):
+        editor: QtCore.QObject = self.sender()
+        self.commitData.emit(editor)
+
+    def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
+        # noinspection PyTypeChecker
+        value: str = index.data(QtCore.Qt.DisplayRole)
+        editor.setText(value)
+
+    def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                     index: QtCore.QModelIndex) -> None:
+
+        value: str = editor.text()
+        model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
+
+    def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                             index: QtCore.QModelIndex) -> None:
+
         editor.setGeometry(option.rect)
