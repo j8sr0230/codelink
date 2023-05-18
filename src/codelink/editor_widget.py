@@ -299,7 +299,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     is_input=True,
                     parent_node=selected_node_item
                 )
-                selected_node_item.add_input_widget(new_socket_widget)
+                selected_node_item.add_socket_widget(new_socket_widget)
                 self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Cancel):

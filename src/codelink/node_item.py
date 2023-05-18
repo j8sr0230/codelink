@@ -214,58 +214,37 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     @property
     def input_socket_widgets(self) -> list[SocketWidget]:
-        result: list[SocketWidget] = []
-        for socket_widget in self._socket_widgets:
-            if socket_widget.is_input:
-                result.append(socket_widget)
-
-        return result
+        return [
+            socket_widget for socket_widget in self._socket_widgets if socket_widget.is_input
+        ]
 
     @property
     def output_socket_widgets(self) -> list[SocketWidget]:
-        result: list[SocketWidget] = []
-        for socket_widget in self._socket_widgets:
-            if not socket_widget.is_input:
-                result.append(socket_widget)
+        return [
+            socket_widget for socket_widget in self._socket_widgets if not socket_widget.is_input
+        ]
 
-        return result
-
-    def add_input_widget(self, input_widget: SocketWidget):
-        insert_idx: int = 0
-        for idx, socket_widget in enumerate(self._socket_widgets):
-            if not socket_widget.is_input:
-                insert_idx: int = idx
-                break
-
+    def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
         self._content_widget.hide()
-
         self._socket_widgets.insert(insert_idx, input_widget)
         self._content_layout.insertWidget(insert_idx + 1, input_widget)
-
         self._content_widget.show()
-
         self.update_all()
 
-    def remove_input_widget(self):
-        remove_idx: int = 0
-        for idx, socket_widget in enumerate(self._socket_widgets):
-            if not socket_widget.is_input:
-                remove_idx: int = idx
-                break
+    def remove_input_widget(self, remove_idx: int = 0):
+        if 0 <= remove_idx < len(self._socket_widgets):
+            self._content_widget.hide()
 
-        self._content_widget.hide()
+            remove_widget: SocketWidget = self._socket_widgets[remove_idx]
+            self.scene().removeItem(remove_widget.socket)
+            self._content_layout.removeWidget(remove_widget)
+            # noinspection PyTypeChecker
+            remove_widget.setParent(None)
+            remove_widget.deleteLater()
+            self._socket_widgets.remove(remove_widget)
 
-        remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
-        self.scene().removeItem(remove_widget.socket)
-        self._content_layout.removeWidget(remove_widget)
-        # noinspection PyTypeChecker
-        remove_widget.setParent(None)
-        remove_widget.deleteLater()
-        self._socket_widgets.remove(remove_widget)
-
-        self._content_widget.show()
-
-        self.update_all()
+            self._content_widget.show()
+            self.update_all()
 
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
