@@ -173,9 +173,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_widget.height()
         )
         self._content_proxy.setGeometry(self._content_rect)
-        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
 
-        self.update_socket_positions()
+        self.update_all()
+
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
@@ -251,7 +251,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._content_widget.show()
 
-        self.update_height()
+        self.update_all()
 
     def remove_input_widget(self):
         remove_idx: int = 0
@@ -272,7 +272,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._content_widget.show()
 
-        self.update_height()
+        self.update_all()
 
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
@@ -455,7 +455,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Update node height and socket positions
         self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
-        self.update_socket_positions()
 
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
@@ -465,6 +464,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.update_name(self._prop_model.properties["Name"])
         self.update_collapse_state(self._prop_model.properties["Collapse State"])
         self.update_width(self._prop_model.properties["Width"])
+        self.update_height()
+        self.update_socket_positions()
 
         # Hack to prevent callback loop while changing the node position
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)

@@ -6,8 +6,8 @@
                 "Name": "Add",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31570,
-                "Y": 31780,
+                "X": 31590,
+                "Y": 31830,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -15,22 +15,12 @@
                 {
                     "Class": "SocketWidget",
                     "Name": "A",
-                    "Input": 3
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "B",
-                    "Input": 4
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "N",
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "er",
-                    "Input": 40
+                    "Name": "B",
+                    "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
@@ -72,13 +62,13 @@
             "Properties": {
                 "Class": "NodeItem",
                 "Name": "Add",
-                "Color": "#1D1D1D",
+                "Color": "green",
                 "Collapse State": false,
-                "X": 31900,
-                "Y": 32100,
+                "X": 31920,
+                "Y": 31950,
                 "Width": 160
             },
-            "Option_idx": 0,
+            "Option_idx": 1,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -92,18 +82,21 @@
                 },
                 {
                     "Class": "SocketWidget",
+                    "Name": "N",
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "N",
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
                     "Name": "Res",
                     "Input": 0
                 }
             ]
         }
     ],
-    "Edges": [
-        {
-            "Start Node Idx": 0,
-            "Start Socket Idx": 4,
-            "End Node Idx": 2,
-            "End Socket Idx": 0
-        }
-    ]
+    "Edges": []
 }
