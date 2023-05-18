@@ -485,6 +485,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setCurrentIndex(state["Option_idx"])
 
         # TODO: Dynamically init of sockets from class
+        for i in range(len(state["Sockets"])):
+            socket_widget_props: dict = state["Sockets"][i]
+            SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
+            new_socket_widget: SocketWidgetClass = SocketWidgetClass()
+
+
         for idx, socket_widget in enumerate(self._socket_widgets):
             socket_widget.prop_model.__setstate__(state["Sockets"][idx])
             socket_widget.update_all()
