@@ -29,7 +29,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
            QSpinBox {
                 color: #E5E5E5;
                 background-color: transparent;
-                selection-background-color: black;
+                selection-background-color: #334D80;
                 border-radius: 0px;
                 padding-left: 3px;
                 padding-right: 0px;
@@ -208,7 +208,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
            QLineEdit {
                 color: #E5E5E5;
                 background-color: transparent;
-                selection-background-color: black;
+                selection-background-color: #334D80;
                 border-radius: 0px;
                 padding-left: 3px;
                 padding-right: 0px;
