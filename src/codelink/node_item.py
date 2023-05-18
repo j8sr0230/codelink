@@ -103,7 +103,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 background-color: #282828;
                 border-radius: 5px;
                 min-width: 5px;
-                min-height:  24px;
+                min-height: 24px;
+                max-height: 24px;
                 padding-left: 10px;
                 padding-right: 0px;
                 padding-top: 0px;
@@ -244,13 +245,17 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 break
 
         self._content_widget.hide()
+
         self._socket_widgets.insert(insert_idx, input_widget)
         self._content_layout.insertWidget(insert_idx + 1, input_widget)
+
+        self._content_widget.setFixedHeight(
+            24 * self._content_layout.count() + (self._content_layout.count() - 1) * self._content_layout.spacing()
+        )
         self._content_widget.show()
 
-        self._height = (self._header_height + 2 * self._content_padding + self._content_widget.height())
+        self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
         self.update_socket_positions()
-
 
     def remove_input_widget(self):
         remove_idx: int = 0
@@ -258,7 +263,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             if not socket_widget.is_input:
                 remove_idx: int = idx
                 break
+
         self._content_widget.hide()
+
         remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
         self.scene().removeItem(remove_widget.socket)
         self._content_layout.removeWidget(remove_widget)
@@ -266,14 +273,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         remove_widget.deleteLater()
         self._socket_widgets.remove(remove_widget)
 
-        for widget in self._socket_widgets:
-            widget.setFixedHeight(24)
-        self._content_layout.update()
-        self._content_widget.update()
-
+        self._content_widget.setFixedHeight(
+            24 * self._content_layout.count() + (self._content_layout.count() - 1) * self._content_layout.spacing()
+        )
         self._content_widget.show()
 
-        self._height = (self._header_height + 2 * self._content_padding + (len(self._socket_widgets) + 1) * 24)
+        self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
         self.update_socket_positions()
 
     def has_in_edges(self) -> bool:
