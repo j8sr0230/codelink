@@ -164,21 +164,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
 
-        new_content_height: int = 0
-        for widget in self._content_widget.children():
-            if hasattr(widget, "height"):
-                new_content_height += widget.height()
-        new_content_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
-
         self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content_proxy.setWidget(self._content_widget)
-        self._content_rect: QtCore.QRectF = QtCore.QRectF(
-            self._content_padding,
-            self._header_height + self._content_padding,
-            self._prop_model.properties["Width"] - 2 * self._content_padding,
-            new_content_height  # self._content_widget.height()
-        )
-        self._content_proxy.setGeometry(self._content_rect)
 
         self.update_all()
 
@@ -422,45 +409,47 @@ class NodeItem(QtWidgets.QGraphicsItem):
                       self._font)
         )
 
-    def update_collapse_state(self, collapse_state: bool) -> None:
-        if collapse_state:
-            self._collapse_btn.setPixmap(self._collapse_pixmap_up)
-            self._content_proxy.hide()
-            self._height = self._min_height
-        else:
-            self._collapse_btn.setPixmap(self._collapse_pixmap_down)
-            self._content_proxy.show()
-            self._height = (self._header_height + self._content_padding + self._content_widget.height() +
-                            self._content_padding)
-
-        self.update_socket_positions()
-
     def update_width(self, new_width: int = 160) -> None:
         if new_width < self._min_width:
             new_width: float = self._min_width
 
         self._prop_model.properties["Width"] = new_width
-        self._content_rect: QtCore.QRectF = QtCore.QRectF(
+        content_rect: QtCore.QRectF = QtCore.QRectF(
             self._content_padding,
             self._header_height + self._content_padding,
             self._prop_model.properties["Width"] - 2 * self._content_padding,
             self._content_widget.height()
         )
-        self._content_proxy.setGeometry(self._content_rect)
+        self._content_proxy.setGeometry(content_rect)
         self.update_name(self._prop_model.properties["Name"])
         self.update_socket_positions()
 
     def update_height(self):
-        # Calculate and set new fixed content widget height
-        new_content_height: int = 0
-        for widget in self._content_widget.children():
-            if hasattr(widget, "height"):
-                new_content_height += widget.height()
-        new_content_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
-        self._content_widget.setFixedHeight(new_content_height)
+        # Reset content proxy
+        content_proxy_height: int = 0
+        self._content_proxy.hide()
+        self._collapse_btn.setPixmap(self._collapse_pixmap_up)
 
-        # Update node height and socket positions
-        self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
+        # Calculate and set new fixed content widget height
+        if not self.is_collapsed:
+            for widget in self._content_widget.children():
+                if hasattr(widget, "height"):
+                    content_proxy_height += widget.height()
+            content_proxy_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
+            self._content_proxy.show()
+            self._collapse_btn.setPixmap(self._collapse_pixmap_down)
+
+        content_rect: QtCore.QRectF = QtCore.QRectF(
+            self._content_padding,
+            self._header_height + self._content_padding,
+            self._prop_model.properties["Width"] - 2 * self._content_padding,
+            content_proxy_height
+        )
+
+        # Update node height, content proxy height and socket positions
+        self._content_proxy.setGeometry(content_rect)
+        self._height = self._header_height + 2 * self._content_padding + content_proxy_height
+        self.update_socket_positions()
 
     def update_socket_positions(self) -> None:
         for widget in self._socket_widgets:
@@ -468,10 +457,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])
-        self.update_collapse_state(self._prop_model.properties["Collapse State"])
         self.update_width(self._prop_model.properties["Width"])
         self.update_height()
-        self.update_socket_positions()
 
         # Hack to prevent callback loop while changing the node position
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
