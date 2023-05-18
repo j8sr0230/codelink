@@ -15,21 +15,37 @@
                 {
                     "Class": "SocketWidget",
                     "Name": "A",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "B",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "N",
+                    "Is Input": true,
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "N",
+                    "Is Input": true,
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "N",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "Res",
+                    "Is Input": false,
                     "Input": 0
                 }
             ]
@@ -49,16 +65,19 @@
                 {
                     "Class": "SocketWidget",
                     "Name": "A",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "B",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "Res",
+                    "Is Input": false,
                     "Input": 0
                 }
             ]
@@ -78,16 +97,19 @@
                 {
                     "Class": "SocketWidget",
                     "Name": "A",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "B",
+                    "Is Input": true,
                     "Input": 0
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "Res",
+                    "Is Input": false,
                     "Input": 0
                 }
             ]
@@ -96,7 +118,7 @@
     "Edges": [
         {
             "Start Node Idx": 0,
-            "Start Socket Idx": 3,
+            "Start Socket Idx": 5,
             "End Node Idx": 2,
             "End Socket Idx": 0
         }

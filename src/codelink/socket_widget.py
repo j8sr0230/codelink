@@ -18,6 +18,7 @@ class SocketWidget(QtWidgets.QWidget):
             properties={
                         "Class": self.__class__.__name__,
                         "Name": label,
+                        "Is Input": is_input,
                         "Input": 0
                         }
         )

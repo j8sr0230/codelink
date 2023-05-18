@@ -310,7 +310,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 selected_node_item: NodeItem = self.scene().selectedItems()[0]
 
                 if len(selected_node_item.input_socket_widgets) > 0:
-                    selected_node_item.remove_input_widget(
+                    selected_node_item.remove_socket_widget(
                         selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
                     )
                     self._prop_scroller.hide()

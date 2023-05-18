@@ -1,4 +1,5 @@
 from typing import Optional, Any
+import importlib
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -231,7 +232,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_widget.show()
         self.update_all()
 
-    def remove_input_widget(self, remove_idx: int = 0):
+    def remove_socket_widget(self, remove_idx: int = 0):
         if 0 <= remove_idx < len(self._socket_widgets):
             self._content_widget.hide()
 
@@ -485,13 +486,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setCurrentIndex(state["Option_idx"])
 
         # TODO: Dynamically init of sockets from class
+        for i in range(len(self._socket_widgets)):
+            self.remove_socket_widget(0)
+
         for i in range(len(state["Sockets"])):
             socket_widget_props: dict = state["Sockets"][i]
             SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
-            new_socket_widget: SocketWidgetClass = SocketWidgetClass()
-
-
-        for idx, socket_widget in enumerate(self._socket_widgets):
-            socket_widget.prop_model.__setstate__(state["Sockets"][idx])
-            socket_widget.update_all()
+            new_socket_widget: SocketWidgetClass = SocketWidgetClass(
+                label=socket_widget_props["Name"],
+                socket_type=int,
+                is_input=socket_widget_props["Is Input"],
+                parent_node=self
+            )
+            new_socket_widget.prop_model.__setstate__(socket_widget_props)
+            self.add_socket_widget(new_socket_widget, i)
+            new_socket_widget.update_all()
         self.update_all()
