@@ -299,13 +299,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     is_input=True,
                     parent_node=selected_node_item
                 )
-                selected_node_item.add_socket_widget(new_socket_widget)
+                selected_node_item.add_socket_widget(
+                    new_socket_widget,
+                    selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])+1
+                )
                 self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Cancel):
             if type(self.scene().selectedItems()[0]) is NodeItem:
                 selected_node_item: NodeItem = self.scene().selectedItems()[0]
-                selected_node_item.remove_input_widget()
-                self._prop_scroller.hide()
+
+                if len(selected_node_item.input_socket_widgets) > 0:
+                    selected_node_item.remove_input_widget(
+                        selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
+                    )
+                    self._prop_scroller.hide()
 
         super().keyPressEvent(event)
