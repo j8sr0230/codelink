@@ -88,8 +88,8 @@
                 "Name": "Add",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31900,
-                "Y": 32100,
+                "X": 31910,
+                "Y": 31810,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -108,6 +108,24 @@
                 },
                 {
                     "Class": "SocketWidget",
+                    "Name": "N",
+                    "Is Input": true,
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "N",
+                    "Is Input": true,
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "N",
+                    "Is Input": true,
+                    "Input": 0
+                },
+                {
+                    "Class": "SocketWidget",
                     "Name": "Res",
                     "Is Input": false,
                     "Input": 0
@@ -121,6 +139,18 @@
             "Start Socket Idx": 5,
             "End Node Idx": 2,
             "End Socket Idx": 0
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 5,
+            "End Node Idx": 1,
+            "End Socket Idx": 0
+        },
+        {
+            "Start Node Idx": 0,
+            "Start Socket Idx": 5,
+            "End Node Idx": 2,
+            "End Socket Idx": 2
         }
     ]
 }

@@ -50,7 +50,7 @@ class SocketWidget(QtWidgets.QWidget):
 
         # noinspection PyTypeChecker
         self._input_widget.textChanged.connect(lambda: self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
+            self._prop_model.index(3, 1, QtCore.QModelIndex()),
             int(self.input_widget.text()), QtCore.Qt.EditRole
         ))
 
@@ -183,7 +183,7 @@ class SocketWidget(QtWidgets.QWidget):
 
         else:
             y_pos: float = (self._parent_node.header_height - self._socket.size) / 2
-            if self._is_input:
+            if self._prop_model.properties["Is Input"]:
                 self._socket.setPos(-self._socket.size / 2, y_pos)
             else:
                 self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)

@@ -241,7 +241,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_layout.removeWidget(remove_widget)
             # noinspection PyTypeChecker
             remove_widget.setParent(None)
-            remove_widget.deleteLater()
+            # remove_widget.deleteLater()
             self._socket_widgets.remove(remove_widget)
 
             self._content_widget.show()
