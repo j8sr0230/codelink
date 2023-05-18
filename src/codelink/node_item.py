@@ -164,13 +164,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
 
+        new_content_height: int = 0
+        for widget in self._content_widget.children():
+            if hasattr(widget, "height"):
+                new_content_height += widget.height()
+        new_content_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
+
         self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content_proxy.setWidget(self._content_widget)
         self._content_rect: QtCore.QRectF = QtCore.QRectF(
             self._content_padding,
             self._header_height + self._content_padding,
             self._prop_model.properties["Width"] - 2 * self._content_padding,
-            self._content_widget.height()
+            new_content_height  # self._content_widget.height()
         )
         self._content_proxy.setGeometry(self._content_rect)
 
