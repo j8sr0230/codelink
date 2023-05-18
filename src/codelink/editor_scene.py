@@ -56,21 +56,15 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 result.append(node)
         return result
 
-    def _is_node_cyclic(self, visited_node: NodeItem) -> bool:
-        visited_node.visited_count += 1
-
-        if visited_node.visited_count > len(visited_node.successors()) + 1:
+    def is_node_cyclic(self, visited_node: NodeItem, predecessor_count: int = 0) -> bool:
+        if predecessor_count > 500:
             return True
-
-        temp_res: list[bool] = []
-        for node in visited_node.predecessors():
-            temp_res.append(self._is_node_cyclic(node))
-        return any(temp_res)
-
-    def is_node_cyclic(self, visited_node: NodeItem) -> bool:
-        for node in self._nodes:
-            node.visited_count = 0
-        return self._is_node_cyclic(visited_node)
+        elif len(visited_node.predecessors()) == 0:
+            return False
+        else:
+            predecessor_count += len(visited_node.predecessors())
+            for node in visited_node.predecessors():
+                return self.is_node_cyclic(node, predecessor_count)
 
     def is_graph_cyclic(self) -> bool:
         temp_res: list[bool] = []

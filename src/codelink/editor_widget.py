@@ -198,13 +198,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     elif (self._temp_edge.start_socket.socket_widget.is_input and
                           self._temp_edge.end_socket.socket_widget.is_input):
                         # Input with input socket
-                        print("Input with input")
                         self.scene().remove_edge(self._temp_edge)
 
                     elif (not self._temp_edge.start_socket.socket_widget.is_input and
                           not self._temp_edge.end_socket.socket_widget.is_input):
                         # Output with output socket
-                        print("Output with output")
                         self.scene().remove_edge(self._temp_edge)
 
                     else:
@@ -216,7 +214,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                         if self.scene().is_graph_cyclic():
                             # ... if cyclic graph
-                            print("Cyclic")
                             connected_sockets: list[QtWidgets.QGraphicsItem] = [
                                 self._temp_edge.start_socket,
                                 self._temp_edge.end_socket
@@ -229,11 +226,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 else:
                     # Incompatible socket types
-                    print("Incompatible types")
                     self.scene().remove_edge(self._temp_edge)
             else:
                 # No target socket
-                print("No target socket")
                 self.scene().remove_edge(self._temp_edge)
 
             self._last_socket.socket_widget.update_stylesheets()
