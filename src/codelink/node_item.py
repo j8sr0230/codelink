@@ -269,6 +269,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
         self.scene().removeItem(remove_widget.socket)
         self._content_layout.removeWidget(remove_widget)
+        # noinspection PyTypeChecker
         remove_widget.setParent(None)
         remove_widget.deleteLater()
         self._socket_widgets.remove(remove_widget)
