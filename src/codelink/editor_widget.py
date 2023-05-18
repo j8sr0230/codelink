@@ -297,8 +297,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     label="N",
                     socket_type=int,
                     is_input=True,
-                    parent_node=selected_node_item)
-
+                    parent_node=selected_node_item
+                )
                 selected_node_item.add_input_widget(new_socket_widget)
                 self._prop_scroller.hide()
 
