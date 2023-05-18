@@ -34,6 +34,8 @@ class SocketWidget(QtWidgets.QWidget):
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
+        self.setFixedHeight(24)
+
         self.setLayout(self._layout)
 
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
@@ -136,6 +138,7 @@ class SocketWidget(QtWidgets.QWidget):
                     "background-color: #545454;"
                     "min-width: 5px;"
                     "min-height: 24px;"
+                    "max-height: 24px;"
                     "margin-left: 1px;"
                     "margin-right: 0px;"
                     "margin-top: 0px;"
@@ -157,6 +160,7 @@ class SocketWidget(QtWidgets.QWidget):
                 "color: #E5E5E5;"
                 "background-color: transparent;"
                 "min-height: 24px;"
+                "max-height: 24px;"
                 "margin: 0px;"
                 "padding-left: 0px;"
                 "padding-right: 10px;"

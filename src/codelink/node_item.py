@@ -245,14 +245,17 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 break
 
         self._content_widget.hide()
-
         self._socket_widgets.insert(insert_idx, input_widget)
         self._content_layout.insertWidget(insert_idx + 1, input_widget)
-
-        self._content_widget.setFixedHeight(
-            24 * self._content_layout.count() + (self._content_layout.count() - 1) * self._content_layout.spacing()
-        )
         self._content_widget.show()
+
+        # Calculate and set new fixed content widget height
+        new_content_height: int = 0
+        for widget in self._content_widget.children():
+            if hasattr(widget, "height"):
+                new_content_height += widget.height()
+        new_content_height: int = new_content_height + (self._content_layout.count() - 1) * self._content_layout.spacing()
+        self._content_widget.setFixedHeight(new_content_height)
 
         self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
         self.update_socket_positions()
@@ -265,7 +268,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 break
 
         self._content_widget.hide()
-
         remove_widget: SocketWidget = self._socket_widgets[remove_idx-1]
         self.scene().removeItem(remove_widget.socket)
         self._content_layout.removeWidget(remove_widget)
@@ -274,9 +276,15 @@ class NodeItem(QtWidgets.QGraphicsItem):
         remove_widget.deleteLater()
         self._socket_widgets.remove(remove_widget)
 
-        self._content_widget.setFixedHeight(
-            24 * self._content_layout.count() + (self._content_layout.count() - 1) * self._content_layout.spacing()
-        )
+        # Calculate and set new fixed content widget height
+        new_content_height: int = 0
+        for widget in self._content_widget.children():
+            if hasattr(widget, "height"):
+                new_content_height += widget.height()
+        new_content_height: int = new_content_height + (
+                    self._content_layout.count() - 1) * self._content_layout.spacing()
+        self._content_widget.setFixedHeight(new_content_height)
+
         self._content_widget.show()
 
         self._height = self._header_height + 2 * self._content_padding + self._content_widget.height()
