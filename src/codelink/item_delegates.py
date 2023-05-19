@@ -228,6 +228,9 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
         """)
 
         if index.isValid() and type(index.data()) == str:
+            # editor.setFocusPolicy(QtCore.Qt.ClickFocus)
+            editor.setFocus()
+            editor.clearFocus()
             return editor
 
     def commit_editor(self):
@@ -243,9 +246,8 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
                      index: QtCore.QModelIndex) -> None:
 
         value: str = editor.text()
-        model.setData(index, value, QtCore.Qt.DisplayRole | QtCore.Qt.EditRole)
+        model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
-
         editor.setGeometry(option.rect)
