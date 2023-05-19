@@ -9,7 +9,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
 
         self._spin_box: QtWidgets.QSpinBox = QtWidgets.QSpinBox()
         self._spin_box.setFont(QtGui.QFont("Sans Serif", 10))
-        self._spin_box.setFocusPolicy(QtCore.Qt.StrongFocus)
+        # self._spin_box.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         self._spin_box.setFrame(True)
         self._spin_box.setRange(-64000, 64000)
@@ -74,7 +74,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor_layout.setMargin(0)
         editor_layout.addWidget(self._spin_box)
         editor.setLayout(editor_layout)
-        editor.setFocusPolicy(QtCore.Qt.StrongFocus)
+        #editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         if index.isValid() and type(index.data()) == int:
             return editor
