@@ -9,8 +9,6 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
 
         self._spin_box: QtWidgets.QSpinBox = QtWidgets.QSpinBox()
         self._spin_box.setFont(QtGui.QFont("Sans Serif", 10))
-        # self._spin_box.setFocusPolicy(QtCore.Qt.StrongFocus)
-
         self._spin_box.setFrame(True)
         self._spin_box.setRange(-64000, 64000)
         self._spin_box.setSingleStep(10)
@@ -74,15 +72,13 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor_layout.setMargin(0)
         editor_layout.addWidget(self._spin_box)
         editor.setLayout(editor_layout)
-        #editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         if index.isValid() and type(index.data()) == int:
             return editor
 
     def commit_editor(self):
-        editor: QtCore.QObject = self.sender()
-        self.commitData.emit(editor)
-        print("Commit")
+        editor: QtCore.QObject = self.sender()  # Gets sender, in this case QSpinBox
+        self.commitData.emit(editor.parent())  # Emit signal of delegate, not of QSpinBox
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
@@ -91,7 +87,6 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        print("set")
         self._spin_box.interpretText()
         value = int(self._spin_box.value())
         model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
