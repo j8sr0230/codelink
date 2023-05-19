@@ -19,13 +19,13 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
+		self._node_prop_table.setModel(self._node_item.prop_model)
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(6, IntegerDelegate(self._node_prop_table))
-		self._node_prop_table.setModel(self._node_item.prop_model)
 		self._node_prop_table.setFixedHeight(
 			self._node_prop_table.model().rowCount() * self._node_prop_table.rowHeight(0) +
 			self._node_prop_table.horizontalHeader().height()

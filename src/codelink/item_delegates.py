@@ -229,8 +229,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
         if index.isValid() and type(index.data()) == str:
             # editor.setFocusPolicy(QtCore.Qt.ClickFocus)
-            editor.setFocus()
-            editor.clearFocus()
+
             return editor
 
     def commit_editor(self):
