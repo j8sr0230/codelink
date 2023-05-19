@@ -201,6 +201,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
+        # editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         editor.textChanged.connect(self.commit_editor)
 
@@ -208,7 +209,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
            QLineEdit {
                 color: #E5E5E5;
                 background-color: transparent;
-                selection-background-color: #334D80;
+                selection-background-color: red;
                 border-radius: 0px;
                 padding-left: 3px;
                 padding-right: 0px;
@@ -218,7 +219,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
                 border: none;
             }
             QLineEdit:focus {
-                color: #E5E5E5;
+                color: green;
                 background-color: transparent;
             }
             QLineEdit:selected {
