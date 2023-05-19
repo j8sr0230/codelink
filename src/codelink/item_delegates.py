@@ -7,6 +7,54 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
         super().__init__(parent)
 
+        self._spin_box: QtWidgets.QSpinBox = QtWidgets.QSpinBox()
+        self._spin_box.setFont(QtGui.QFont("Sans Serif", 10))
+        self._spin_box.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+        self._spin_box.setFrame(True)
+        self._spin_box.setRange(-64000, 64000)
+        self._spin_box.setSingleStep(10)
+
+        self._spin_box.setStyleSheet("""
+               QSpinBox {
+                    color: #E5E5E5;
+                    background-color: transparent;
+                    selection-background-color: #334D80;
+                    border-radius: 0px;
+                    padding-left: 3px;
+                    padding-right: 0px;
+                    padding-top: 0px;
+                    padding-bottom: 0px;
+                    margin: 0px;
+                    border: none;
+                }
+                QSpinBox:focus {
+                    color: #E5E5E5;
+                    background-color: transparent;
+                }
+                QSpinBox::up-arrow {
+                    width: 12px; 
+                    height: 12px;
+                    background-color: transparent;
+                    image: url(icon:images_dark-light/up_arrow_light.svg);
+                    /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+                }
+                QSpinBox::up-button{
+                    background-color: transparent;
+                }
+                QSpinBox::down-arrow {
+                    width: 12px; 
+                    height: 12px;
+                    background-color: transparent;           
+                    image: url(icon:images_dark-light/down_arrow_light.svg);
+                    /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+                }
+                QSpinBox::down-button{
+                    background-color: transparent;
+                }
+            """)
+        self._spin_box.valueChanged.connect(self.commit_editor)
+
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
               index: QtCore.QModelIndex) -> None:
 
@@ -18,51 +66,15 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
-        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
 
-        editor.setFrame(True)
-        editor.setRange(-64000, 64000)
-        editor.setSingleStep(10)
-        editor.valueChanged.connect(self.commit_editor)
-
-        editor.setStyleSheet("""
-           QSpinBox {
-                color: #E5E5E5;
-                background-color: transparent;
-                selection-background-color: #334D80;
-                border-radius: 0px;
-                padding-left: 3px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: none;
-            }
-            QSpinBox:focus {
-                color: #E5E5E5;
-                background-color: transparent;
-            }
-            QSpinBox::up-arrow {
-                width: 12px; 
-                height: 12px;
-                background-color: transparent;
-                image: url(icon:images_dark-light/up_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QSpinBox::up-button{
-                background-color: transparent;
-            }
-            QSpinBox::down-arrow {
-                width: 12px; 
-                height: 12px;
-                background-color: transparent;           
-                image: url(icon:images_dark-light/down_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QSpinBox::down-button{
-                background-color: transparent;
-            }
-        """)
+        editor: QtWidgets.QWidget = QtWidgets.QWidget(parent)
+        editor.setStyleSheet("background-color: transparent")
+        editor_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        editor_layout.setSpacing(0)
+        editor_layout.setMargin(0)
+        editor_layout.addWidget(self._spin_box)
+        editor.setLayout(editor_layout)
+        editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         if index.isValid() and type(index.data()) == int:
             return editor
@@ -70,22 +82,22 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def commit_editor(self):
         editor: QtCore.QObject = self.sender()
         self.commitData.emit(editor)
+        print("Commit")
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
         value: int = int(index.data(QtCore.Qt.DisplayRole))
-        editor.setValue(value)
+        self._spin_box.setValue(value)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-
-        editor.interpretText()
-        value = int(editor.value())
+        print("set")
+        self._spin_box.interpretText()
+        value = int(self._spin_box.value())
         model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
-
         editor.setGeometry(option.rect)
 
 
@@ -189,6 +201,33 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
         super().__init__(parent)
 
+        self._line_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
+        self._line_edit.setFont(QtGui.QFont("Sans Serif", 10))
+        self._line_edit.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self._line_edit.setStyleSheet("""
+           QLineEdit {
+                color: #E5E5E5;
+                background-color: transparent;
+                selection-background-color: #334D80;
+                border-radius: 0px;
+                padding-left: 3px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: none;
+            }
+            QLineEdit:focus {
+                color: #E5E5E5;
+                background-color: transparent;
+            }
+            QLineEdit:selected {
+                color: #E5E5E5;
+                background-color: transparent;
+            }
+        """)
+        self._line_edit.textChanged.connect(self.commit_editor)
+
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
               index: QtCore.QModelIndex) -> None:
 
@@ -200,36 +239,16 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
-        editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
-
-        editor.textChanged.connect(self.commit_editor)
-
-        editor.setStyleSheet("""
-           QLineEdit {
-                color: #E5E5E5;
-                background-color: transparent;
-                selection-background-color: red;
-                border-radius: 0px;
-                padding-left: 3px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: none;
-            }
-            QLineEdit:focus {
-                color: green;
-                background-color: transparent;
-            }
-            QLineEdit:selected {
-                color: #E5E5E5;
-                background-color: transparent;
-            }
-        """)
+        editor: QtWidgets.QWidget = QtWidgets.QWidget(parent)
+        editor.setStyleSheet("background-color: transparent")
+        editor_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        editor_layout.setSpacing(0)
+        editor_layout.setMargin(0)
+        editor_layout.addWidget(self._line_edit)
+        editor.setLayout(editor_layout)
+        editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         if index.isValid() and type(index.data()) == str:
-            # editor.setFocusPolicy(QtCore.Qt.ClickFocus)
-
             return editor
 
     def commit_editor(self):
@@ -239,12 +258,12 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
         value: str = index.data(QtCore.Qt.DisplayRole)
-        editor.setText(value)
+        self._line_edit.setText(value)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
 
-        value: str = editor.text()
+        value: str = self._line_edit.text()
         model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,

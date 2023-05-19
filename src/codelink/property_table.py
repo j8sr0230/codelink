@@ -1,5 +1,6 @@
 from typing import Optional
 
+import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
@@ -12,6 +13,7 @@ class PropertyTable(QtWidgets.QTableView):
 
         self.setFont(self._font)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
+        self.setSelectionBehavior(QtWidgets.QTableView.SelectItems)
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
@@ -57,3 +59,9 @@ class PropertyTable(QtWidgets.QTableView):
                 border: none;
             }
         """)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if event.key() == QtCore.Qt.Key_Tab:
+            pass
+        else:
+            super().keyPressEvent(event)
