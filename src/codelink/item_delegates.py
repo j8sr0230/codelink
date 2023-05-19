@@ -201,7 +201,6 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
-        # editor.setFocusPolicy(QtCore.Qt.StrongFocus)
 
         editor.textChanged.connect(self.commit_editor)
 
@@ -244,7 +243,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
                      index: QtCore.QModelIndex) -> None:
 
         value: str = editor.text()
-        model.setData(index, value, QtCore.Qt.EditRole | QtCore.Qt.EditRole)
+        model.setData(index, value, QtCore.Qt.DisplayRole | QtCore.Qt.EditRole)
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
