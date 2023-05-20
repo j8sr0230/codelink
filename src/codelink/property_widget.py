@@ -1,6 +1,7 @@
 from typing import Optional
 
 import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
 
 from item_delegates import BooleanDelegate, IntegerDelegate, StringDelegate
 from property_table import PropertyTable
@@ -50,3 +51,9 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout.setSpacing(0)
 		self.setLayout(self._layout)
 		self.setFixedWidth(self._width)
+
+	def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+		if event.key() == QtCore.Qt.Key_Tab:
+			super().keyPressEvent(event)
+		else:
+			super().keyPressEvent(event)
