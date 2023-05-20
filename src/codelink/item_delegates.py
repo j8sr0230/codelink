@@ -284,14 +284,16 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_Tab:
-            current_prop_table: PropertyTable = self.parent()
-            current_row: int = self._current_index.row()
-            print(current_prop_table.currentIndex(), self._current_index)
-
-            # if current_prop_table.currentIndex() == self._current_index:
-            #     new_index: QtCore.QModelIndex = current_prop_table.model().index(current_row + 1, 1)
-            #     current_prop_table.setCurrentIndex(new_index)
-            #     print("New row:", current_prop_table.currentIndex().row(), current_prop_table.currentIndex().column())
+            # current_prop_table: PropertyTable = self.parent()
+            # current_row: int = self._current_index.row()
+            # print(current_prop_table.currentIndex().row(), self._current_index.row())
+            #
+            # new_index: QtCore.QModelIndex = current_prop_table.model().index(current_row + 1, 1)
+            # setCurrentIndex(new_index)
+            # print("New row:", current_prop_table.currentIndex().row(), current_prop_table.currentIndex().column())
+            self.commitData.emit(editor.parent())
+            self.closeEditor.emit(self._line_edit)
+            print("Tab")
 
             return False
 
