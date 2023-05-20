@@ -55,6 +55,7 @@ class PropertyWidget(QtWidgets.QWidget):
 
 	def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
 		if event.key() == QtCore.Qt.Key_Tab:
-			super().keyPressEvent(event)
+			pass
+			# super().keyPressEvent(event)
 		else:
 			super().keyPressEvent(event)

@@ -2,6 +2,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from property_table import PropertyTable
+
 
 class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
@@ -206,6 +208,8 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
         super().__init__(parent)
 
+        self._current_index: QtCore.QModelIndex = QtCore.QModelIndex()
+
         self._line_edit: QtWidgets.QLineEdit = QtWidgets.QLineEdit()
         self._line_edit.setFont(QtGui.QFont("Sans Serif", 10))
         self._line_edit.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -244,6 +248,9 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex) -> QtWidgets.QWidget:
+
+        self._current_index: QtCore.QModelIndex = index
+
         editor: QtWidgets.QWidget = QtWidgets.QWidget(parent)
         editor.setStyleSheet("background-color: transparent")
         editor_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
@@ -274,3 +281,19 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
         editor.setGeometry(option.rect)
+
+    def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if type(event) == QtGui.QKeyEvent and event.key() == QtCore.Qt.Key_Tab:
+            current_prop_table: PropertyTable = self.parent()
+            current_row: int = self._current_index.row()
+            print(current_prop_table.currentIndex(), self._current_index)
+
+            # if current_prop_table.currentIndex() == self._current_index:
+            #     new_index: QtCore.QModelIndex = current_prop_table.model().index(current_row + 1, 1)
+            #     current_prop_table.setCurrentIndex(new_index)
+            #     print("New row:", current_prop_table.currentIndex().row(), current_prop_table.currentIndex().column())
+
+            return False
+
+        else:
+            return super().eventFilter(editor, event)

@@ -62,7 +62,9 @@ class PropertyTable(QtWidgets.QTableView):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.key() == QtCore.Qt.Key_Tab:
-            print("Tab")
+            pass
+            # print("Tab")
+            # super().keyPressEvent(event)
 
         else:
             super().keyPressEvent(event)
