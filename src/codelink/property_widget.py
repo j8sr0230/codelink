@@ -1,5 +1,6 @@
 from typing import Optional
 
+import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
