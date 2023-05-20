@@ -14,43 +14,43 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         self._spin_box.setSingleStep(10)
 
         self._spin_box.setStyleSheet("""
-               QSpinBox {
-                    color: #E5E5E5;
-                    background-color: transparent;
-                    selection-background-color: #334D80;
-                    border-radius: 0px;
-                    padding-left: 3px;
-                    padding-right: 0px;
-                    padding-top: 0px;
-                    padding-bottom: 0px;
-                    margin: 0px;
-                    border: none;
-                }
-                QSpinBox:focus {
-                    color: #E5E5E5;
-                    background-color: transparent;
-                }
-                QSpinBox::up-arrow {
-                    width: 12px; 
-                    height: 12px;
-                    background-color: transparent;
-                    image: url(icon:images_dark-light/up_arrow_light.svg);
-                    /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-                }
-                QSpinBox::up-button{
-                    background-color: transparent;
-                }
-                QSpinBox::down-arrow {
-                    width: 12px; 
-                    height: 12px;
-                    background-color: transparent;           
-                    image: url(icon:images_dark-light/down_arrow_light.svg);
-                    /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-                }
-                QSpinBox::down-button{
-                    background-color: transparent;
-                }
-            """)
+           QSpinBox {
+                color: #E5E5E5;
+                background-color: transparent;
+                selection-background-color: #334D80;
+                border-radius: 0px;
+                padding-left: 3px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 0px;
+                margin: 0px;
+                border: none;
+            }
+            QSpinBox:focus {
+                color: #E5E5E5;
+                background-color: transparent;
+            }
+            QSpinBox::up-arrow {
+                width: 12px; 
+                height: 12px;
+                background-color: transparent;
+                image: url(icon:images_dark-light/up_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+            QSpinBox::up-button{
+                background-color: transparent;
+            }
+            QSpinBox::down-arrow {
+                width: 12px; 
+                height: 12px;
+                background-color: transparent;           
+                image: url(icon:images_dark-light/down_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+            QSpinBox::down-button{
+                background-color: transparent;
+            }
+        """)
         self._spin_box.valueChanged.connect(self.commit_editor)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
@@ -102,23 +102,12 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
         self._items: list[str] = ["False", "True"]
 
-    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
-              index: QtCore.QModelIndex) -> None:
+        self._combo_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._combo_box.setFont(QtGui.QFont("Sans Serif", 10))
+        self._combo_box.addItems(self._items)
+        self._combo_box.currentIndexChanged.connect(self.commit_editor)
 
-        if (isinstance(self.parent(), QtWidgets.QAbstractItemView) and index.column() == 1 and
-                type(index.data()) == bool):
-            self.parent().openPersistentEditor(index)
-
-        if index.isValid() and not index.column() == 1:
-            super().paint(painter, option, index)
-
-    def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                     index: QtCore.QModelIndex) -> QtWidgets.QWidget:
-        editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
-        editor.addItems(self._items)
-        editor.currentIndexChanged.connect(self.commit_editor)
-
-        editor.setStyleSheet("""
+        self._combo_box.setStyleSheet("""
            QComboBox {
                 color: #E5E5E5;
                 background-color: transparent;
@@ -151,38 +140,59 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
             }
         """)
 
-        item_list_view: QtWidgets.QAbstractItemView = editor.view()
+        item_list_view: QtWidgets.QAbstractItemView = self._combo_box.view()
         item_list_view.setSpacing(2)
         item_list_view.setStyleSheet("""
-           QAbstractItemView {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                selection-background-color: #334D80;
-                margin: 0px;
-                padding: 0px;
-                border: none;
-                border-radius: 0px;
-                outline: none;
-            }
-        """)
+                   QAbstractItemView {
+                        color: #E5E5E5;
+                        selection-color: #E5E5E5;
+                        background-color: #282828;
+                        selection-background-color: #334D80;
+                        margin: 0px;
+                        padding: 0px;
+                        border: none;
+                        border-radius: 0px;
+                        outline: none;
+                    }
+                """)
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem,
+              index: QtCore.QModelIndex) -> None:
+
+        if (isinstance(self.parent(), QtWidgets.QAbstractItemView) and index.column() == 1 and
+                type(index.data()) == bool):
+            self.parent().openPersistentEditor(index)
+
+        if index.isValid() and not index.column() == 1:
+            super().paint(painter, option, index)
+
+    def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                     index: QtCore.QModelIndex) -> QtWidgets.QWidget:
+
+        editor: QtWidgets.QWidget = QtWidgets.QWidget(parent)
+        editor.setStyleSheet("background-color: transparent")
+        editor_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        editor_layout.setSpacing(0)
+        editor_layout.setMargin(0)
+        editor_layout.addWidget(self._combo_box)
+        editor.setLayout(editor_layout)
 
         if index.isValid() and type(index.data()) == bool:
             return editor
 
     def commit_editor(self):
         editor: QtCore.QObject = self.sender()
-        self.commitData.emit(editor)
+        self.commitData.emit(editor.parent())
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
         value: str = str(index.data(QtCore.Qt.DisplayRole))
         num: int = self._items.index(value)
-        editor.setCurrentIndex(num)
+        self._combo_box.setCurrentIndex(num)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        value: bool = eval(editor.currentText())
+        value: bool = eval(self._combo_box.currentText())
 
         # noinspection PyTypeChecker
         model.setData(index, value, QtCore.Qt.EditRole)
@@ -248,7 +258,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
     def commit_editor(self):
         editor: QtCore.QObject = self.sender()
-        self.commitData.emit(editor)
+        self.commitData.emit(editor.parent())
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex) -> None:
         # noinspection PyTypeChecker
