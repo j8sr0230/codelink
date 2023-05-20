@@ -22,12 +22,12 @@ class PropertyWidget(QtWidgets.QWidget):
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
 		self._node_prop_table.setModel(self._node_item.prop_model)
-		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(6, IntegerDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
+		# self._node_prop_table.setItemDelegateForRow(6, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setFixedHeight(
 			self._node_prop_table.model().rowCount() * self._node_prop_table.rowHeight(0) +
 			self._node_prop_table.horizontalHeader().height()
@@ -43,9 +43,9 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
 				socket_prop_table.horizontalHeader().height()
 			)
-			socket_prop_table.setItemDelegateForRow(1, StringDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
+			# socket_prop_table.setItemDelegateForRow(1, StringDelegate(socket_prop_table))
+			# socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
+			# socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)
 
 		self._layout.setMargin(0)
@@ -53,9 +53,9 @@ class PropertyWidget(QtWidgets.QWidget):
 		self.setLayout(self._layout)
 		self.setFixedWidth(self._width)
 
-	def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-		if event.key() == QtCore.Qt.Key_Tab:
-			pass
-			# super().keyPressEvent(event)
-		else:
-			super().keyPressEvent(event)
+	# def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+	# 	if event.key() == QtCore.Qt.Key_Tab:
+	# 		pass
+	# 		# super().keyPressEvent(event)
+	# 	else:
+	# 		super().keyPressEvent(event)

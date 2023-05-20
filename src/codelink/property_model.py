@@ -73,11 +73,11 @@ class PropertyModel(QtCore.QAbstractTableModel):
         #     return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
         #
         # if index.column() == 0:
-        #     return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
-
-        return QtCore.Qt.ItemFlags(
-            QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable
-        )
+        #     return None
+        if index.column() == 1 and index.row() > 0:
+            return QtCore.Qt.ItemFlags(
+                QtCore.QAbstractTableModel.flags(self, index) | QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsSelectable
+            )
 
     def __getstate__(self) -> dict:
         return self._properties
