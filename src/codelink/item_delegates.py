@@ -230,3 +230,12 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex) -> None:
         editor.setGeometry(option.rect)
+
+    def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if type(event) == QtCore.QEvent.KeyPress:
+            print("Here")
+            if event.key() == QtCore.Qt.Key_Tab:
+                self.closeEditor(editor, QtWidgets.QAbstractItemDelegate.EditNextItem)
+                return False
+        else:
+            return super().eventFilter(editor, event)
