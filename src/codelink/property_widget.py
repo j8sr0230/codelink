@@ -66,3 +66,16 @@ class PropertyWidget(QtWidgets.QWidget):
 			table_index = 0
 
 		return table_views[table_index]
+
+	def get_prev_prop_table(self, current_table: PropertyTable) -> PropertyTable:
+		table_views: list[PropertyTable] = []
+		for child in self.children():
+			if type(child) == PropertyTable:
+				table_views.append(child)
+
+		table_index: int = table_views.index(current_table)
+		table_index -= 1
+		if table_index == -1:
+			table_index = len(table_views) - 1
+
+		return table_views[table_index]

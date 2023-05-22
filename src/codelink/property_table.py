@@ -61,7 +61,9 @@ class PropertyTable(QtWidgets.QTableView):
         """)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.key() == QtCore.Qt.Key_Tab:
+        scroll_area: QtWidgets.QScrollArea = self.parent().parent().parent()
+
+        if event.key() == QtCore.Qt.Key_Tab or event.key() == QtCore.Qt.Key_Down:
             new_row = self.currentIndex().row() + 1
 
             if new_row == self.model().rowCount():
@@ -71,9 +73,33 @@ class PropertyTable(QtWidgets.QTableView):
                 next_table_view: PropertyTable = self.parent().get_next_prop_table(self)
                 next_table_view.setFocus()
                 next_table_view.setCurrentIndex(next_table_view.model().index(0, 1))
+
             else:
                 # Stay in current property table and increment row selection
                 new_index = self.model().index(new_row, 1)
                 self.setCurrentIndex(new_index)
+
+            scroll_area.ensureWidgetVisible(self)
+
+        elif event.key() == QtCore.Qt.Key_Up:
+            new_row = self.currentIndex().row() - 1
+
+            if new_row == -1:
+                # Switch to next property table and select first row
+                self.clearFocus()
+                self.clearSelection()
+                next_table_view: PropertyTable = self.parent().get_prev_prop_table(self)
+                next_table_view.setFocus()
+                next_table_view.setCurrentIndex(next_table_view.model().index(
+                    next_table_view.model().rowCount() - 1, 1)
+                )
+
+            else:
+                # Stay in current property table and increment row selection
+                new_index = self.model().index(new_row, 1)
+                self.setCurrentIndex(new_index)
+
+            scroll_area.ensureWidgetVisible(self)
+
         else:
             super().keyPressEvent(event)
