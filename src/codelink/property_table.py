@@ -13,8 +13,8 @@ class PropertyTable(QtWidgets.QTableView):
 
         self.setFont(self._font)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
-        self.setSelectionBehavior(QtWidgets.QTableView.SelectItems)
-        self.setEditTriggers(QtWidgets.QTableView.DoubleClicked)
+        self.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
+        #self.setEditTriggers(QtWidgets.QTableView.DoubleClicked | QtWidgets.QTableView.DoubleClicked)
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
@@ -50,7 +50,7 @@ class PropertyTable(QtWidgets.QTableView):
                 padding: 0px;
             }
             QTableView::item:selected {
-                background-color: transparent;
+                background-color: red;
             }
             QTableView::item:hover {
                 border: none;
