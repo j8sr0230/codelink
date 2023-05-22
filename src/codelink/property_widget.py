@@ -53,3 +53,16 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout.setSpacing(0)
 		self.setLayout(self._layout)
 		self.setFixedWidth(self._width)
+
+	def get_next_prop_table(self, current_table: PropertyTable) -> PropertyTable:
+		table_views: list[PropertyTable] = []
+		for child in self.children():
+			if type(child) == PropertyTable:
+				table_views.append(child)
+
+		table_index: int = table_views.index(current_table)
+		table_index += 1
+		if table_index == len(table_views):
+			table_index = 0
+
+		return table_views[table_index]

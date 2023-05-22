@@ -63,10 +63,17 @@ class PropertyTable(QtWidgets.QTableView):
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.key() == QtCore.Qt.Key_Tab:
             new_row = self.currentIndex().row() + 1
-            if new_row == self.model().rowCount():
-                new_row = 0
-            new_index = self.model().index(new_row, 1)
-            self.setCurrentIndex(new_index)
 
+            if new_row == self.model().rowCount():
+                # Switch to next property table and select first row
+                self.clearFocus()
+                self.clearSelection()
+                next_table_view: PropertyTable = self.parent().get_next_prop_table(self)
+                next_table_view.setFocus()
+                next_table_view.setCurrentIndex(next_table_view.model().index(0, 1))
+            else:
+                # Stay in current property table and increment row selection
+                new_index = self.model().index(new_row, 1)
+                self.setCurrentIndex(new_index)
         else:
             super().keyPressEvent(event)

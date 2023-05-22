@@ -143,7 +143,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 color: #E5E5E5;
                 selection-color: #E5E5E5;
                 background-color: #282828;
-                selection-background-color: #4772B3;
+                selection-background-color: black;
                 min-width: 20px;
                 min-height: 24px;
                 padding-left: 5px;

@@ -138,6 +138,7 @@ class SocketWidget(QtWidgets.QWidget):
                 self._input_widget.setStyleSheet(
                     "color: #E5E5E5;"
                     "background-color: #545454;"
+                    "selection-background-color: black;"
                     "min-width: 5px;"
                     "min-height: 24px;"
                     "max-height: 24px;"
