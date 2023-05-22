@@ -22,7 +22,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
             QSpinBox {
                color: #E5E5E5;
                background-color: #545454;
-               selection-background-color: #334D80;
+               selection-background-color: black;
                border-radius: 0px;
                padding-left: 3px;
                padding-right: 0px;
@@ -145,7 +145,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 color: #E5E5E5;
                 selection-color: #E5E5E5;
                 background-color: #282828;
-                selection-background-color: #334D80;
+                selection-background-color: #545454;
                 margin: 0px;
                 padding: 0px;
                 border: none;
@@ -192,7 +192,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
             QLineEdit {
                 color: #E5E5E5;
                 background-color: #545454;
-                selection-background-color: #334D80;
+                selection-background-color: black;
                 border-radius: 0px;
                 padding: 0px;
                 margin: 0px;

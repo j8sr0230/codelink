@@ -14,7 +14,7 @@ class PropertyTable(QtWidgets.QTableView):
         self.setFont(self._font)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QTableView.SelectItems)
-        #self.setEditTriggers(QtWidgets.QTableView.DoubleClicked)
+        self.setEditTriggers(QtWidgets.QTableView.DoubleClicked)
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
@@ -27,7 +27,6 @@ class PropertyTable(QtWidgets.QTableView):
                 selection-color: #E5E5E5;
                 background-color: #282828;
                 alternate-background-color: #2B2B2B;
-                selection-background-color: #334D80;
                 gridline-color: black;
                 padding: 0px;
                 margin: 0px;
@@ -51,7 +50,7 @@ class PropertyTable(QtWidgets.QTableView):
                 padding: 0px;
             }
             QTableView::item:selected {
-                background-color: #334D80;
+                background-color: transparent;
             }
             QTableView::item:hover {
                 border: none;
