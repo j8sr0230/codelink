@@ -14,7 +14,7 @@ class PropertyTable(QtWidgets.QTableView):
         self.setFont(self._font)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QTableView.SelectItems)
-        #self.setEditTriggers(QtWidgets.QTableView.DoubleClicked | QtWidgets.QTableView.DoubleClicked)
+        #self.setEditTriggers(QtWidgets.QTableView.DoubleClicked)
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)

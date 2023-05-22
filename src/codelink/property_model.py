@@ -4,13 +4,16 @@ import PySide2.QtCore as QtCore
 
 
 class PropertyModel(QtCore.QAbstractTableModel):
-    def __init__(self, properties: Optional[dict] = None, parent: Optional[QtCore.QObject] = None) -> None:
+    def __init__(self, properties: Optional[dict] = None, header_left: str = "Property", header_right: str = "Value",
+                 parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
 
         if properties is None:
             properties: dict = {}
 
         self._properties = properties
+        self._header_left: str = header_left
+        self._header_right: str = header_right
 
     @property
     def properties(self) -> dict:
@@ -19,6 +22,24 @@ class PropertyModel(QtCore.QAbstractTableModel):
     @properties.setter
     def properties(self, value: dict) -> None:
         self._properties: dict = value
+
+    @property
+    def header_left(self) -> str:
+        return self._header_left
+
+    @header_left.setter
+    def header_left(self, value: str) -> None:
+        self._header_left: str = value
+        self.headerDataChanged.emit(QtCore.Qt.Orientation, 0, 0)
+
+    @property
+    def header_right(self) -> str:
+        return self._header_right
+
+    @header_right.setter
+    def header_right(self, value: str) -> None:
+        self._header_right: str = value
+        self.headerDataChanged.emit(QtCore.Qt.Orientation, 1, 1)
 
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._properties.keys())
@@ -49,9 +70,9 @@ class PropertyModel(QtCore.QAbstractTableModel):
 
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
-                return "Property"
+                return self._header_left
             elif section == 1:
-                return "Value"
+                return self._header_right
 
         return None
 

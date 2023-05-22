@@ -20,7 +20,9 @@ class SocketWidget(QtWidgets.QWidget):
                         "Name": label,
                         "Is Input": is_input,
                         "Input": 0
-                        }
+                        },
+            header_left="Socket Property",
+            header_right="Value"
         )
 
         self._socket_type: object = socket_type

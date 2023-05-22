@@ -20,8 +20,6 @@ class PropertyWidget(QtWidgets.QWidget):
 
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
-		print(self._node_item.prop_model.setHeaderData(0, QtCore.Qt.Horizontal, "Base Properties", QtCore.Qt.EditRole))
-		print(self._node_item.prop_model.headerData(0, QtCore.Qt.Horizontal))
 		self._node_prop_table: PropertyTable = PropertyTable(self)
 		self._node_prop_table.setModel(self._node_item.prop_model)
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
@@ -37,8 +35,9 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._height += self._node_prop_table.height()
 		self._layout.addWidget(self._node_prop_table)
 
-		for socket_widget in self._node_item.socket_widgets:
+		for idx, socket_widget in enumerate(self._node_item.socket_widgets):
 			socket_model: PropertyModel = socket_widget.prop_model
+			socket_model.header_left = "Socket " + str(idx + 1) + " Prop"
 			socket_prop_table: PropertyTable = PropertyTable(self)
 			socket_prop_table.setModel(socket_model)
 			socket_prop_table.setFixedHeight(

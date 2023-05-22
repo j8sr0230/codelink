@@ -22,7 +22,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
                         "X": 100,
                         "Y": 100,
                         "Width": 160
-                        }
+                        },
+            header_left="Base Prop",
+            header_right="Value"
         )
 
         self._visited_count: int = 0
