@@ -83,6 +83,16 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
                              index: QtCore.QModelIndex) -> None:
         editor.setGeometry(option.rect)
 
+    def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if type(event) == QtGui.QKeyEvent:
+            if event.key() == QtCore.Qt.Key_Tab:
+                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
 class BooleanDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
@@ -178,6 +188,16 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                              index: QtCore.QModelIndex) -> None:
         editor.setGeometry(option.rect)
 
+    def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
+        if type(event) == QtGui.QKeyEvent:
+            if event.key() == QtCore.Qt.Key_Tab:
+                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
 class StringDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
@@ -232,11 +252,12 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
-        if type(event) == QtCore.QEvent.KeyPress:
-            print("Here")
+        if type(event) == QtGui.QKeyEvent:
             if event.key() == QtCore.Qt.Key_Tab:
-                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.EditNextItem)
-                print("Here")
+                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+            else:
                 return False
         else:
-            return super().eventFilter(editor, event)
+            return False
+
