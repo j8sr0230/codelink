@@ -67,3 +67,5 @@ class PropertyTable(QtWidgets.QTableView):
                 new_row = 0
             new_index = self.model().index(new_row, 1)
             self.setCurrentIndex(new_index)
+        else:
+            super().keyPressEvent(event)
