@@ -20,45 +20,44 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
 
         editor.setStyleSheet("""    
             QSpinBox {
-               color: #E5E5E5;
-               background-color: #545454;
-               selection-background-color: black;
-               border-radius: 0px;
-               padding-left: 3px;
-               padding-right: 0px;
-               padding-top: 0px;
-               padding-bottom: 0px;
-               margin: 0px;
-               border: none;
-           }
-           QSpinBox:focus {
-                   color: #E5E5E5;
-                   background-color: #545454;
-           }
-           QSpinBox:selected {
-                   color: #E5E5E5;
-                   background-color: #545454;
-           }
-           QSpinBox::up-arrow {
-               width: 12px; 
-               height: 12px;
-               background-color: transparent;
-               image: url(icon:images_dark-light/up_arrow_light.svg);
-               /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-           }
-           QSpinBox::up-button{
-               background-color: transparent;
-           }
-           QSpinBox::down-arrow {
-               width: 12px; 
-               height: 12px;
-               background-color: transparent;           
-               image: url(icon:images_dark-light/down_arrow_light.svg);
-               /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-           }
-           QSpinBox::down-button{
-               background-color: transparent;
-           }
+                color: #E5E5E5;
+                background-color: #545454;
+                selection-background-color: black;
+                padding-left: 1px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 1px;
+                margin: 0px;
+                border: none;
+            }
+            QSpinBox:focus {
+                color: #E5E5E5;
+                background-color: #545454;
+            }
+            QSpinBox:selected {
+                color: #E5E5E5;
+                background-color: #545454;
+            }
+            QSpinBox::up-arrow {
+                width: 12px; 
+                height: 12px;
+                background-color: transparent;
+                image: url(icon:images_dark-light/up_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+            QSpinBox::up-button{
+                background-color: transparent;
+            }
+            QSpinBox::down-arrow {
+                width: 12px; 
+                height: 12px;
+                background-color: transparent;           
+                image: url(icon:images_dark-light/down_arrow_light.svg);
+                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
+            }
+            QSpinBox::down-button{
+                background-color: transparent;
+            }
        """)
 
         if index.isValid():
@@ -115,17 +114,17 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
                 padding-left: 3px;
                 padding-right: 0px;
                 padding-top: 0px;
-                padding-bottom: 0px;
+                padding-bottom: 1px;
                 margin: 0px;
                 border: none;
             }
             QComboBox:focus {
-                   color: #E5E5E5;
-                   background-color: #545454;
+                color: #E5E5E5;
+                background-color: #545454;
            }
            QComboBox:selected {
-                   color: #E5E5E5;
-                   background-color: #545454;
+                color: #E5E5E5;
+                background-color: #545454;
            }
             QComboBox::drop-down {
                 background-color: transparent;
@@ -213,8 +212,10 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
                 color: #E5E5E5;
                 background-color: #545454;
                 selection-background-color: black;
-                border-radius: 0px;
-                padding: 0px;
+                padding-left: 1px;
+                padding-right: 0px;
+                padding-top: 0px;
+                padding-bottom: 1px;
                 margin: 0px;
                 border: none;
             }
@@ -260,4 +261,3 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
                 return False
         else:
             return False
-
