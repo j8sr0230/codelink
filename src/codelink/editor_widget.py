@@ -10,7 +10,7 @@ import PySide2.QtGui as QtGui
 
 from property_widget import PropertyWidget
 from socket_item import SocketItem
-from socket_widget import SocketWidget
+from socket_widget import SocketWidget, OutputSocketWidget
 from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
