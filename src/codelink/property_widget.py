@@ -25,7 +25,7 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._node_prop_table: PropertyTable = PropertyTable(self)
 		self._node_prop_table.setModel(self._node_item.prop_model)
 
-		self._node_prop_table.table_top_reached.connect(self.focus_up)
+		# self._node_prop_table.table_top_reached.connect(self.focus_up)
 		self._node_prop_table.table_bottom_reached.connect(self.focus_down)
 
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
@@ -47,7 +47,8 @@ class PropertyWidget(QtWidgets.QWidget):
 			socket_prop_table: PropertyTable = PropertyTable(self)
 
 			socket_prop_table.table_top_reached.connect(self.focus_up)
-			socket_prop_table.table_bottom_reached.connect(self.focus_down)
+			if idx < len(self._node_item.socket_widgets) - 1:
+				socket_prop_table.table_bottom_reached.connect(self.focus_down)
 
 			socket_prop_table.setModel(socket_model)
 			socket_prop_table.setFixedHeight(
