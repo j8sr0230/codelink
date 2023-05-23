@@ -21,6 +21,10 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
+
+		self._node_prop_table.table_top_reached.connect(self.my_slot)
+		self._node_prop_table.table_bottom_reached.connect(self.my_slot)
+
 		self._node_prop_table.setModel(self._node_item.prop_model)
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
@@ -79,3 +83,7 @@ class PropertyWidget(QtWidgets.QWidget):
 			table_index = len(table_views) - 1
 
 		return table_views[table_index]
+
+	@QtCore.Slot(QtWidgets.QTableView)
+	def my_slot(sender: QtWidgets.QTableView):
+		print(sender)

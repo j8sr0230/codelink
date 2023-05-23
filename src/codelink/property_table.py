@@ -9,6 +9,9 @@ class PropertyTable(QtWidgets.QTableView):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
+        table_top_reached: QtCore.Signal = QtCore.Signal(QtWidgets.QTableView)
+        table_bottom_reached: QtCore.Signal = QtCore.Signal(QtWidgets.QTableView)
+
         self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
 
         self.setFont(self._font)
@@ -70,6 +73,7 @@ class PropertyTable(QtWidgets.QTableView):
                 # Switch to next property table and select first row
                 self.clearFocus()
                 self.clearSelection()
+                table_bottom_reached.emit(self)
                 next_table_view: PropertyTable = self.parent().get_next_prop_table(self)
                 next_table_view.setFocus()
                 next_table_view.setCurrentIndex(next_table_view.model().index(0, 1))
@@ -88,6 +92,7 @@ class PropertyTable(QtWidgets.QTableView):
                 # Switch to next property table and select first row
                 self.clearFocus()
                 self.clearSelection()
+                table_top_reached_reached.emit(self)
                 next_table_view: PropertyTable = self.parent().get_prev_prop_table(self)
                 next_table_view.setFocus()
                 next_table_view.setCurrentIndex(next_table_view.model().index(
