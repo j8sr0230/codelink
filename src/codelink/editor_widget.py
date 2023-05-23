@@ -322,4 +322,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     @QtCore.Slot(QtWidgets.QTableView)
     def focus_prop_scoller(self, focus_target: QtWidgets.QTableView):
-        self._prop_scroller.ensureWidgetVisible(focus_target)
+        x: int = focus_target.pos().x()
+        y: int = focus_target.pos().y()
+        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
