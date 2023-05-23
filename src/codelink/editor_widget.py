@@ -134,6 +134,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         width=self._prop_scroller.width(),
                         parent=self._prop_scroller
                     )
+                    prop_widget.focus_changed.connect(self.focus_prop_scoller)
                     self._prop_scroller.setWidget(prop_widget)
                     self._prop_scroller.show()
                 else:
@@ -318,3 +319,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         self._prop_scroller.hide()
 
         super().keyPressEvent(event)
+
+    @QtCore.Slot(QtWidgets.QTableView)
+    def focus_prop_scoller(self, focus_target: QtWidgets.QTableView):
+        self._prop_scroller.ensureWidgetVisible(focus_target)

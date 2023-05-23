@@ -10,6 +10,8 @@ from node_item import NodeItem
 
 
 class PropertyWidget(QtWidgets.QWidget):
+	focus_changed: QtCore.Signal = QtCore.Signal(QtWidgets.QTableView)
+
 	def __init__(self, node_item: Optional[NodeItem] = None, width: int = 250, parent: Optional[QtWidgets.QWidget] = None):
 		super().__init__(parent)
 
@@ -21,11 +23,11 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
-
-		self._node_prop_table.table_top_reached.connect(self.my_slot)
-		self._node_prop_table.table_bottom_reached.connect(self.my_slot)
-
 		self._node_prop_table.setModel(self._node_item.prop_model)
+
+		self._node_prop_table.table_top_reached.connect(self.focus_up)
+		self._node_prop_table.table_bottom_reached.connect(self.focus_down)
+
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
@@ -43,6 +45,10 @@ class PropertyWidget(QtWidgets.QWidget):
 			socket_model: PropertyModel = socket_widget.prop_model
 			socket_model.header_left = "Socket " + str(idx + 1) + " Prop"
 			socket_prop_table: PropertyTable = PropertyTable(self)
+
+			socket_prop_table.table_top_reached.connect(self.focus_up)
+			socket_prop_table.table_bottom_reached.connect(self.focus_down)
+
 			socket_prop_table.setModel(socket_model)
 			socket_prop_table.setFixedHeight(
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
@@ -58,8 +64,8 @@ class PropertyWidget(QtWidgets.QWidget):
 		self.setLayout(self._layout)
 		self.setFixedWidth(self._width)
 
-	def get_next_prop_table(self, current_table: PropertyTable) -> PropertyTable:
-		table_views: list[PropertyTable] = []
+	def get_next_prop_table(self, current_table: QtWidgets.QTableView) -> QtWidgets.QTableView:
+		table_views: list[QtWidgets.QTableView] = []
 		for child in self.children():
 			if type(child) == PropertyTable:
 				table_views.append(child)
@@ -71,8 +77,8 @@ class PropertyWidget(QtWidgets.QWidget):
 
 		return table_views[table_index]
 
-	def get_prev_prop_table(self, current_table: PropertyTable) -> PropertyTable:
-		table_views: list[PropertyTable] = []
+	def get_prev_prop_table(self, current_table: QtWidgets.QTableView) -> QtWidgets.QTableView:
+		table_views: list[QtWidgets.QTableView] = []
 		for child in self.children():
 			if type(child) == PropertyTable:
 				table_views.append(child)
@@ -85,5 +91,23 @@ class PropertyWidget(QtWidgets.QWidget):
 		return table_views[table_index]
 
 	@QtCore.Slot(QtWidgets.QTableView)
-	def my_slot(sender: QtWidgets.QTableView):
-		print(sender)
+	def focus_up(self, current_table: QtWidgets.QTableView):
+		current_table.clearFocus()
+		current_table.clearSelection()
+
+		next_table_view: QtWidgets.QTableView = self.get_prev_prop_table(current_table)
+		next_table_view.setFocus()
+		next_table_view.setCurrentIndex(next_table_view.model().index(
+			next_table_view.model().rowCount() - 1, 1)
+		)
+		self.focus_changed.emit(next_table_view)
+
+	@QtCore.Slot(stQtWidgets.QTableViewr)
+	def focus_down(self, current_table: QtWidgets.QTableView):
+		current_table.clearFocus()
+		current_table.clearSelection()
+
+		next_table_view: QtWidgets.QTableView = self.get_next_prop_table(current_table)
+		next_table_view.setFocus()
+		next_table_view.setCurrentIndex(next_table_view.model().index(0, 1))
+		self.focus_changed.emit(next_table_view)
