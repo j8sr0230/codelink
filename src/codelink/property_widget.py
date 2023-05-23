@@ -102,7 +102,7 @@ class PropertyWidget(QtWidgets.QWidget):
 		)
 		self.focus_changed.emit(next_table_view)
 
-	@QtCore.Slot(stQtWidgets.QTableViewr)
+	@QtCore.Slot(QtWidgets.QTableViewr)
 	def focus_down(self, current_table: QtWidgets.QTableView):
 		current_table.clearFocus()
 		current_table.clearSelection()
