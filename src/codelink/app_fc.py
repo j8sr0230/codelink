@@ -6,7 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 
 import FreeCADGui
 
-from app_style import APP_STYLE
+from app_style import MAIN_STYLE
 from node_item import NodeItem
 from editor_scene import EditorScene
 from editor_widget import EditorWidget
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     fc_wnd = FreeCADGui.getMainWindow()
     editor_scene: EditorScene = EditorScene()
     editor_widget: EditorWidget = EditorWidget(parent=fc_wnd)
-    editor_widget.setStyleSheet(APP_STYLE)
+    editor_widget.setStyleSheet(MAIN_STYLE)
 
     editor_widget.setScene(editor_scene)
     editor_widget.resize(1200, 600)

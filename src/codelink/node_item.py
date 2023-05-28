@@ -5,6 +5,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from app_style import NODE_STYLE
 from property_model import PropertyModel
 from socket_widget import SocketWidget
 from utils import crop_text
@@ -89,7 +90,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Node content container
         self._content_widget: QtWidgets.QWidget = QtWidgets.QWidget()
-        self._content_widget.setStyleSheet("background-color: transparent")
+        self._content_widget.setStyleSheet(NODE_STYLE)
         self._content_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         self._content_layout.setMargin(0)
         self._content_layout.setSpacing(5)
@@ -100,62 +101,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._font)
         self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
-        self._option_box.setStyleSheet("""
-            QComboBox {
-                color: #E5E5E5;
-                background-color: #282828;
-                border-radius: 5px;
-                min-width: 5px;
-                min-height: 24px;
-                max-height: 24px;
-                padding-left: 10px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: 0px;
-            }
-            QComboBox::drop-down {
-                background-color: #545454;
-                subcontrol-origin: border;
-                subcontrol-position: top right;
-                width: 20px;
-                border-top-right-radius: 5px;
-                border-bottom-right-radius: 5px;
-                border-top-left-radius: 0px;
-                border-bottom-left-radius: 0px;
-            }
-            QComboBox::down-arrow {
-                width: 10px; 
-                height: 10px;
-                image: url(icon:images_dark-light/down_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QListView{
-                border: none;
-            }
-        """)
-
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
-        item_list_view.setStyleSheet("""
-            QAbstractItemView {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                selection-background-color: black;
-                min-width: 20px;
-                min-height: 24px;
-                padding-left: 5px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                margin: 0px;
-                border: 0px;
-                border-radius: 0px;
-            }
-        """)
-
         self._content_layout.addWidget(self._option_box)
 
         # Socket widgets
