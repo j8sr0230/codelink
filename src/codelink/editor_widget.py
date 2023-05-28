@@ -34,7 +34,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
 
-        self.setStyleSheet("selection-background-color: black")
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -57,16 +56,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._prop_scroller.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self._prop_scroller.setFixedWidth(300)
         self._prop_scroller.hide()
-        self._prop_scroller.setStyleSheet("""
-            QScrollArea {
-                background-color: transparent;
-                padding: 0px;
-                margin: 0px;
-                border: none;
-                border-radius: 0px;
-            }
-        """)
-
         self._layout.addWidget(self._prop_scroller)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:

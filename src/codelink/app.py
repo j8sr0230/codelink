@@ -4,6 +4,7 @@ import sys
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from app_style import APP_STYLE
 from node_item import NodeItem
 from editor_scene import EditorScene
 from editor_widget import EditorWidget
@@ -18,6 +19,7 @@ if __name__ == "__main__":
 
     editor_scene: EditorScene = EditorScene()
     editor_widget: EditorWidget = EditorWidget()
+    editor_widget.setStyleSheet(APP_STYLE)
 
     editor_widget.setScene(editor_scene)
     editor_widget.resize(1200, 600)
