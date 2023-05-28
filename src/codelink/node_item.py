@@ -6,7 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from property_model import PropertyModel
-from socket_widget import SocketWidget, OutputSocketWidget
+from socket_widget import SocketWidget
 from utils import crop_text
 
 
@@ -162,7 +162,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._socket_widgets: list[SocketWidget] = [
             SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
             SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
-            OutputSocketWidget(label="Res", socket_type=int, parent_node=self)
+            SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
