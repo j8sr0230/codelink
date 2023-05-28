@@ -18,48 +18,6 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor.setSingleStep(10)
         editor.valueChanged.connect(self.commit_editor)
 
-        editor.setStyleSheet("""    
-            QSpinBox {
-                color: #E5E5E5;
-                background-color: #545454;
-                selection-background-color: black;
-                padding-left: 1px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 1px;
-                margin: 0px;
-                border: none;
-            }
-            QSpinBox:focus {
-                color: #E5E5E5;
-                background-color: #545454;
-            }
-            QSpinBox:selected {
-                color: #E5E5E5;
-                background-color: #545454;
-            }
-            QSpinBox::up-arrow {
-                width: 12px; 
-                height: 12px;
-                background-color: transparent;
-                image: url(icon:images_dark-light/up_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QSpinBox::up-button{
-                background-color: transparent;
-            }
-            QSpinBox::down-arrow {
-                width: 12px; 
-                height: 12px;
-                background-color: transparent;           
-                image: url(icon:images_dark-light/down_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QSpinBox::down-button{
-                background-color: transparent;
-            }
-       """)
-
         if index.isValid():
             return editor
 
@@ -106,62 +64,8 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
         editor.addItems(self._items)
         editor.currentIndexChanged.connect(self.commit_editor)
 
-        editor.setStyleSheet("""
-            QComboBox {
-                color: #E5E5E5;
-                background-color: #545454;
-                border-radius: 0px;
-                padding-left: 3px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 1px;
-                margin: 0px;
-                border: none;
-            }
-            QComboBox:focus {
-                color: #E5E5E5;
-                background-color: #545454;
-           }
-           QComboBox:selected {
-                color: #E5E5E5;
-                background-color: #545454;
-           }
-            QComboBox::drop-down {
-                background-color: transparent;
-                subcontrol-origin: border;
-                subcontrol-position: top right;
-                padding-left: 0px;
-                padding-right: 8px;
-                padding-top: 0px;
-                padding-bottom: 0px;
-                border-radius: 0px;
-            }
-            QComboBox::down-arrow {
-                width: 10px; 
-                height: 10px;
-                image: url(icon:images_dark-light/down_arrow_light.svg);
-                /*image: url(qss:images_dark-light/down_arrow_light.svg);*/
-            }
-            QListView{
-                border: none;
-            }
-        """)
-
         item_list_view: QtWidgets.QAbstractItemView = editor.view()
         item_list_view.setSpacing(2)
-        item_list_view.setStyleSheet("""
-            QAbstractItemView {
-                color: #E5E5E5;
-                selection-color: #E5E5E5;
-                background-color: #282828;
-                selection-background-color: #545454;
-                margin: 0px;
-                padding: 0px;
-                border: none;
-                border-radius: 0px;
-                outline: none;
-            }
-        """)
 
         if index.isValid():
             return editor
@@ -207,27 +111,6 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
         editor.setFocusPolicy(QtCore.Qt.StrongFocus)
-        editor.setStyleSheet("""
-            QLineEdit {
-                color: #E5E5E5;
-                background-color: #545454;
-                selection-background-color: black;
-                padding-left: 1px;
-                padding-right: 0px;
-                padding-top: 0px;
-                padding-bottom: 1px;
-                margin: 0px;
-                border: none;
-            }
-            QLineEdit:focus {
-                color: #E5E5E5;
-                background-color: #545454;
-            }
-            QLineEdit:selected {
-                color: #E5E5E5;
-                background-color: #545454;
-            }
-        """)
         editor.textChanged.connect(self.commit_editor)
 
         if index.isValid():
