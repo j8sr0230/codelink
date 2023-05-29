@@ -100,78 +100,14 @@ class SocketWidget(QtWidgets.QWidget):
             self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
             if self._socket.has_edges():
-                self._label_widget.setStyleSheet(
-                    "color: #E5E5E5;"
-                    "background-color: transparent;"
-                    "min-height: 24px;"
-                    "max-height: 24px;"
-                    "margin: 0px;"
-                    "padding-left: 10px;"
-                    "padding-right: 0px;"
-                    "padding-top: 0px;"
-                    "padding-bottom: 0px;"
-                    "border-radius: 0px;"
-                    "border: 0px;"
-                )
+                self._label_widget.setStyleSheet("background-color: transparent")
                 self._input_widget.hide()
             else:
-                self._label_widget.setStyleSheet(
-                    "color: #E5E5E5;"
-                    "background-color: #545454;"
-                    "min-height: 24px;"
-                    "max-height: 24px;"
-                    "margin-left: 0px;"
-                    "margin-right: 1px;"
-                    "margin-top: 0px;"
-                    "margin-bottom: 0px;"
-                    "padding-left: 10px;"
-                    "padding-right: 10px;"
-                    "padding-top: 0px;"
-                    "padding-bottom: 0px;"
-                    "border-top-left-radius: 5px;"
-                    "border-bottom-left-radius: 5px;"
-                    "border-top-right-radius: 0px;"
-                    "border-bottom-right-radius: 0px;"
-                    "border: 0px;"
-                )
-
-                self._input_widget.setStyleSheet(
-                    "color: #E5E5E5;"
-                    "background-color: #545454;"
-                    "selection-background-color: black;"
-                    "min-width: 5px;"
-                    "min-height: 24px;"
-                    "max-height: 24px;"
-                    "margin-left: 1px;"
-                    "margin-right: 0px;"
-                    "margin-top: 0px;"
-                    "margin-bottom: 0px;"
-                    "padding-left: 10px;"
-                    "padding-right: 10px;"
-                    "padding-top: 0px;"
-                    "padding-bottom: 0px;"
-                    "border-top-left-radius: 0px;"
-                    "border-bottom-left-radius: 0px;"
-                    "border-top-right-radius: 5px;"
-                    "border-bottom-right-radius: 5px;"
-                    "border: 0px;"
-                )
+                self._label_widget.setStyleSheet("background-color: #545454")
                 self._input_widget.show()
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-            self._label_widget.setStyleSheet(
-                "color: #E5E5E5;"
-                "background-color: transparent;"
-                "min-height: 24px;"
-                "max-height: 24px;"
-                "margin: 0px;"
-                "padding-left: 0px;"
-                "padding-right: 10px;"
-                "padding-top: 0px;"
-                "padding-bottom: 0px;"
-                "border-radius: 0px;"
-                "border: 0px;"
-            )
+            self._label_widget.setStyleSheet("background-color: transparent")
             self._input_widget.hide()
 
     def update_socket_position(self) -> None:

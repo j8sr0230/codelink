@@ -177,6 +177,48 @@ NODE_STYLE: str = """
 		background-color: transparent;
 	}
 	
+	QLabel {
+		color: #E5E5E5;
+		background-color: #545454;
+		min-height: 24px;
+		max-height: 24px;
+		margin-left: 0px;
+		margin-right: 1px;
+		margin-top: 0px;
+		margin-bottom: 0px;
+		padding-left: 10px;
+		padding-right: 10px;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		border-top-left-radius: 5px;
+		border-bottom-left-radius: 5px;
+		border-top-right-radius: 0px;
+		border-bottom-right-radius: 0px;
+		border: 0px;
+	}
+	
+	QLineEdit {
+		color: #E5E5E5;
+		background-color: #545454;
+		selection-background-color: black;
+		min-width: 5px;
+		min-height: 24px;
+		max-height: 24px;
+		margin-left: 1px;
+		margin-right: 0px;
+		margin-top: 0px;
+		margin-bottom: 0px;
+		padding-left: 10px;
+		padding-right: 10px;
+		padding-top: 0px;
+		padding-bottom: 0px;
+		border-top-left-radius: 0px;
+		border-bottom-left-radius: 0px;
+		border-top-right-radius: 5px;
+		border-bottom-right-radius: 5px;
+		border: 0px;
+	}
+	
 	QComboBox {
 		color: #E5E5E5;
 		background-color: #282828;
