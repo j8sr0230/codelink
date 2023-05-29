@@ -178,8 +178,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._temp_edge.end_pin = self.itemAt(event.pos())
 
                 # Validate edge here!
-                socket_type_start: object = self._temp_edge.start_pin.socket_widget.pin_type
-                socket_type_end: object = self._temp_edge.end_pin.socket_widget.pin_type
+                socket_type_start: object = self._temp_edge.start_pin.pin_type
+                socket_type_end: object = self._temp_edge.end_pin.pin_type
                 if socket_type_start == socket_type_end:
                     if self._temp_edge.start_pin.parentItem() is self._temp_edge.end_pin.parentItem():
                         # Sockets of the same node

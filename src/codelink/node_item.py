@@ -102,6 +102,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._font)
         self._option_box.addItems(["Add", "Sub", "Mul"])
+        self._option_box.currentIndexChanged.connect(self.option_box_callback)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
         self._content_layout.addWidget(self._option_box)
@@ -204,6 +205,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_widget.show()
             self.update_all()
 
+    @staticmethod
+    def option_box_callback(selected_index: int):
+        print(selected_index)
+
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input and socket_widget.has_edges():
@@ -234,13 +239,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_1(a: int, b: int, *args, **kwargs) -> int:
-        return a + b
+    def eval_socket_1(*args) -> int:
+        if len(args) > 1:
+            return args[0] + args[1]
+        else:
+            return 0
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_2(a: int, b: int, *args, **kwargs) -> int:
-        return a - b
+    def eval_socket_2(*args) -> int:
+        if len(args) > 1:
+            return args[0] - args[1]
+        else:
+            return 0
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
