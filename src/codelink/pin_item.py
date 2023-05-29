@@ -6,12 +6,14 @@ import PySide2.QtGui as QtGui
 
 
 class PinItem(QtWidgets.QGraphicsItem):
-    def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
+    def __init__(self, pin_type: object, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
                  parent_node: Optional['NodeItem'] = None) -> None:
         super().__init__(parent_node)
 
+        self._pin_type: object = pin_type
         self._color: QtGui.QColor = QtGui.QColor(color)
         self._socket_widget: Optional['SocketWidget'] = socket_widget
+        self._parent_widget: Optional['NodeItem'] = parent_node
 
         self._edges: list['EdgeItem'] = []
 
@@ -19,6 +21,14 @@ class PinItem(QtWidgets.QGraphicsItem):
 
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
+    @property
+    def pin_type(self) -> object:
+        return self._color
+
+    @pin_type.setter
+    def pin_type(self, value: object) -> None:
+        self._pin_type: object = value
 
     @property
     def color(self) -> QtGui.QColor:
@@ -31,6 +41,10 @@ class PinItem(QtWidgets.QGraphicsItem):
     @property
     def socket_widget(self) -> Optional['SocketWidget']:
         return self._socket_widget
+
+    @property
+    def parent_node(self) -> Optional['NodeItem']:
+        return self.parentItem()
 
     @property
     def edges(self) -> list['EdgeItem']:

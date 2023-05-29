@@ -29,6 +29,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._parent_node: Optional['NodeItem'] = parent_node
 
         self._pin_item: PinItem = PinItem(
+            pin_type=int,
             color=QtGui.QColor("#00D6A3"),
             parent_node=parent_node, socket_widget=self
         )
