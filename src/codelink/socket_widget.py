@@ -28,7 +28,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_type: object = socket_type
         self._parent_node: Optional['NodeItem'] = parent_node
 
-        self._socket: PinItem = PinItem(
+        self._pin_item: PinItem = PinItem(
             color=QtGui.QColor("#00D6A3"),
             parent_node=parent_node, socket_widget=self
         )
@@ -77,18 +77,18 @@ class SocketWidget(QtWidgets.QWidget):
 
     @property
     def socket(self) -> PinItem:
-        return self._socket
+        return self._pin_item
 
     @property
     def input_widget(self) -> QtWidgets.QWidget:
         return self._input_widget
 
     def has_edges(self) -> bool:
-        return self._socket.has_edges()
+        return self._pin_item.has_edges()
 
     def input_data(self) -> Union['NodeItem', int]:
         if self.has_edges():
-            return self._socket.edges[0].start_socket.socket_widget
+            return self._pin_item.edges[0].start_socket.socket_widget
         else:
             if self._input_widget.text() != "":
                 return int(self._input_widget.text())
@@ -99,7 +99,7 @@ class SocketWidget(QtWidgets.QWidget):
         if self._prop_model.properties["Is Input"]:
             self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
-            if self._socket.has_edges():
+            if self._pin_item.has_edges():
                 self._label_widget.setStyleSheet("background-color: transparent")
                 self._input_widget.hide()
             else:
@@ -112,21 +112,21 @@ class SocketWidget(QtWidgets.QWidget):
 
     def update_socket_position(self) -> None:
         if not self._parent_node.is_collapsed:
-            y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._socket.size) / 2)
+            y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._pin_item.size) / 2)
 
             if self._prop_model.properties["Is Input"]:
-                self._socket.setPos(-self._socket.size / 2, y_pos)
+                self._pin_item.setPos(-self._pin_item.size / 2, y_pos)
             else:
-                self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
-            self._socket.show()
+                self._pin_item.setPos(self._parent_node.boundingRect().width() - self._pin_item.size / 2, y_pos)
+            self._pin_item.show()
 
         else:
-            y_pos: float = (self._parent_node.header_height - self._socket.size) / 2
+            y_pos: float = (self._parent_node.header_height - self._pin_item.size) / 2
             if self._prop_model.properties["Is Input"]:
-                self._socket.setPos(-self._socket.size / 2, y_pos)
+                self._pin_item.setPos(-self._pin_item.size / 2, y_pos)
             else:
-                self._socket.setPos(self._parent_node.boundingRect().width() - self._socket.size / 2, y_pos)
-            self._socket.hide()
+                self._pin_item.setPos(self._parent_node.boundingRect().width() - self._pin_item.size / 2, y_pos)
+            self._pin_item.hide()
 
     def update_all(self):
         self._label_widget.setText(self._prop_model.properties["Name"])
