@@ -5,7 +5,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 
-class SocketItem(QtWidgets.QGraphicsItem):
+class PinItem(QtWidgets.QGraphicsItem):
     def __init__(self, color: QtGui.QColor, socket_widget: Optional['SocketWidget'],
                  parent_node: Optional['NodeItem'] = None) -> None:
         super().__init__(parent_node)

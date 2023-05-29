@@ -9,7 +9,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from property_widget import PropertyWidget
-from socket_item import SocketItem
+from pin_item import PinItem
 from socket_widget import SocketWidget
 from node_item import NodeItem
 from edge_item import EdgeItem
@@ -26,7 +26,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._mode: str = ""
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
-        self._last_socket: Optional[SocketItem] = None
+        self._last_pin: Optional[PinItem] = None
         self._last_node: Optional[NodeItem] = None
         self._temp_edge: Optional[EdgeItem] = None
         self._cutter: Optional[CutterItem] = None
@@ -66,25 +66,25 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == SocketItem:
-                self._last_socket: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
+            if type(self.itemAt(event.pos())) == PinItem:
+                self._last_pin: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
-                if (not self._last_socket.socket_widget.is_input or
-                        (self._last_socket.socket_widget.is_input and not self._last_socket.has_edges())):
+                if (not self._last_pin.socket_widget.is_input or
+                        (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
                     self._mode: str = "EDGE_ADD"
-                    self._temp_edge: EdgeItem = EdgeItem(color=self._last_socket.color)
-                    self._temp_edge.start_socket = self._last_socket
+                    self._temp_edge: EdgeItem = EdgeItem(color=self._last_pin.color)
+                    self._temp_edge.start_socket = self._last_pin
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
+                    temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
 
                     self._temp_edge.end_socket = temp_target
                     self.scene().add_edge(self._temp_edge)
 
-                if self._last_socket.socket_widget.is_input and self._last_socket.has_edges():
+                if self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
 
-                    self._temp_edge: EdgeItem = self._last_socket.edges[-1]
+                    self._temp_edge: EdgeItem = self._last_pin.edges[-1]
                     connected_sockets: list[QtWidgets.QGraphicsItem] = [
                         self._temp_edge.start_socket,
                         self._temp_edge.end_socket
@@ -93,7 +93,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         socket.remove_edge(self._temp_edge)
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPos(self._last_socket.parentItem().mapToScene(self._last_socket.center()))
+                    temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
 
                     self._temp_edge.end_socket = temp_target
                     self._mode = "EDGE_ADD"
@@ -135,7 +135,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseMoveEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == SocketItem:
+            if type(self.itemAt(event.pos())) == PinItem:
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )
@@ -174,7 +174,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == SocketItem:
+            if type(self.itemAt(event.pos())) == PinItem:
                 self._temp_edge.end_socket = self.itemAt(event.pos())
 
                 # Validate edge here!
@@ -221,7 +221,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 # No target socket
                 self.scene().remove_edge(self._temp_edge)
 
-            self._last_socket.socket_widget.update_stylesheets()
+            self._last_pin.socket_widget.update_stylesheets()
 
             for node in self.scene().graph_ends():
                 dsk: dict = self.scene().graph_to_dict(node, {})

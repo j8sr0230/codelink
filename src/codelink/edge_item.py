@@ -4,7 +4,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from socket_item import SocketItem
+from pin_item import PinItem
 
 
 class EdgeItem(QtWidgets.QGraphicsPathItem):
@@ -47,7 +47,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_socket.parentItem().mapToScene(self._start_socket.center())
 
-        if type(self._end_socket) == SocketItem:
+        if type(self._end_socket) == PinItem:
             end_point: QtCore.QPointF = self._end_socket.parentItem().mapToScene(self._end_socket.center())
         else:
             end_point: QtCore.QPointF = self._end_socket.pos()
@@ -92,10 +92,10 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
 
     def __setstate__(self, state):
         start_node: 'NodeItem' = self.scene().nodes[state["Start Node Idx"]]
-        self._start_socket: SocketItem = start_node.socket_widgets[state["Start Socket Idx"]].socket
+        self._start_socket: PinItem = start_node.socket_widgets[state["Start Socket Idx"]].socket
 
         end_node: 'NodeItem' = self.scene().nodes[state["End Node Idx"]]
-        self._end_socket: SocketItem = end_node.socket_widgets[state["End Socket Idx"]].socket
+        self._end_socket: PinItem = end_node.socket_widgets[state["End Socket Idx"]].socket
 
         self._start_socket.add_edge(self)
         self._end_socket.add_edge(self)

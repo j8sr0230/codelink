@@ -5,7 +5,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from property_model import PropertyModel
-from socket_item import SocketItem
+from pin_item import PinItem
 
 
 class SocketWidget(QtWidgets.QWidget):
@@ -28,7 +28,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_type: object = socket_type
         self._parent_node: Optional['NodeItem'] = parent_node
 
-        self._socket: SocketItem = SocketItem(
+        self._socket: PinItem = PinItem(
             color=QtGui.QColor("#00D6A3"),
             parent_node=parent_node, socket_widget=self
         )
@@ -76,7 +76,7 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model.properties["Is Input"]
 
     @property
-    def socket(self) -> SocketItem:
+    def socket(self) -> PinItem:
         return self._socket
 
     @property
