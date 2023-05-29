@@ -9,8 +9,7 @@ from pin_item import PinItem
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, label: str = "In", socket_type: object = int, is_input: bool = True,
-                 parent_node: Optional['NodeItem'] = None,
+    def __init__(self, label: str = "In", is_input: bool = True, parent_node: Optional['NodeItem'] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
@@ -19,19 +18,19 @@ class SocketWidget(QtWidgets.QWidget):
                         "Class": self.__class__.__name__,
                         "Name": label,
                         "Is Input": is_input,
-                        "Input": 0
+                        "Data": 0
                         },
             header_left="Socket Property",
             header_right="Value"
         )
 
-        self._socket_type: object = socket_type
         self._parent_node: Optional['NodeItem'] = parent_node
 
         self._pin_item: PinItem = PinItem(
             pin_type=int,
             color=QtGui.QColor("#00D6A3"),
-            parent_node=parent_node, socket_widget=self
+            socket_widget=self,
+            parent_node=parent_node
         )
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
@@ -49,7 +48,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.setFont(self._parent_node.font)
         self._input_widget.setMinimumWidth(5)
         # self._input_widget.setPlaceholderText("Enter value")
-        self._input_widget.setText(str(self._prop_model.properties["Input"]))
+        self._input_widget.setText(str(self._prop_model.properties["Data"]))
 
         # noinspection PyTypeChecker
         self._input_widget.textChanged.connect(lambda: self._prop_model.setData(
@@ -69,15 +68,15 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model
 
     @property
-    def socket_type(self) -> object:
-        return self._socket_type
+    def pin_type(self) -> object:
+        return self._pin_item.pin_type
 
     @property
     def is_input(self) -> bool:
         return self._prop_model.properties["Is Input"]
 
     @property
-    def socket(self) -> PinItem:
+    def pin(self) -> PinItem:
         return self._pin_item
 
     @property
@@ -89,7 +88,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     def input_data(self) -> Union['NodeItem', int]:
         if self.has_edges():
-            return self._pin_item.edges[0].start_socket.socket_widget
+            return self._pin_item.edges[0].start_pin.socket_widget
         else:
             if self._input_widget.text() != "":
                 return int(self._input_widget.text())
@@ -111,7 +110,7 @@ class SocketWidget(QtWidgets.QWidget):
             self._label_widget.setStyleSheet("background-color: transparent")
             self._input_widget.hide()
 
-    def update_socket_position(self) -> None:
+    def update_pin_position(self) -> None:
         if not self._parent_node.is_collapsed:
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._pin_item.size) / 2)
 
@@ -131,6 +130,6 @@ class SocketWidget(QtWidgets.QWidget):
 
     def update_all(self):
         self._label_widget.setText(self._prop_model.properties["Name"])
-        self._input_widget.setText(str(self._prop_model.properties["Input"]))
+        self._input_widget.setText(str(self._prop_model.properties["Data"]))
         self.update_stylesheets()
-        self.update_socket_position()
+        self.update_pin_position()

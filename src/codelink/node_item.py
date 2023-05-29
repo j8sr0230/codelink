@@ -8,6 +8,7 @@ import PySide2.QtGui as QtGui
 from app_style import NODE_STYLE
 from property_model import PropertyModel
 from socket_widget import SocketWidget
+from edge_item import EdgeItem
 from utils import crop_text
 
 
@@ -17,7 +18,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
-                        "Name": "Add",
+                        "Name": "Scalar Math",
                         "Color": "#1D1D1D",
                         "Collapse State": False,
                         "X": 100,
@@ -100,16 +101,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._font)
-        self._option_box.addItems(["Option 1", "Option 2", "Option 3"])
+        self._option_box.addItems(["Add", "Sub", "Mul"])
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
         self._content_layout.addWidget(self._option_box)
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            SocketWidget(label="A", socket_type=int, is_input=True, parent_node=self),
-            SocketWidget(label="B", socket_type=int, is_input=True, parent_node=self),
-            SocketWidget(label="Res", socket_type=int, is_input=False, parent_node=self)
+            SocketWidget(label="A", is_input=True, parent_node=self),
+            SocketWidget(label="B", is_input=True, parent_node=self),
+            SocketWidget(label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
@@ -186,7 +187,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_widget.hide()
 
             remove_widget: SocketWidget = self._socket_widgets[remove_idx]
-            self.scene().removeItem(remove_widget.socket)
+            remove_edges: list[EdgeItem] = remove_widget.pin.edges
+
+            for edge_item in remove_edges:
+                edge_item.start_pin.edges.remove(edge_item)
+                edge_item.end_pin.edges.remove(edge_item)
+                self.scene().remove_edge(edge_item)
+
+            self.scene().removeItem(remove_widget.pin)
             self._content_layout.removeWidget(remove_widget)
             # noinspection PyTypeChecker
             remove_widget.setParent(None)
@@ -212,16 +220,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
         result: list['NodeItem'] = []
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input:
-                for edge in socket_widget.socket.edges:
-                    result.append(edge.start_socket.parentItem())
+                for edge in socket_widget.pin.edges:
+                    result.append(edge.start_pin.parent_node)
         return result
 
     def successors(self) -> list['NodeItem']:
         result: list['NodeItem'] = []
         for socket_widget in self._socket_widgets:
             if not socket_widget.is_input:
-                for edge in socket_widget.socket.edges:
-                    result.append(edge.end_socket.parentItem())
+                for edge in socket_widget.pin.edges:
+                    result.append(edge.end_pin.parent_node)
         return result
 
     # noinspection PyUnusedLocal
@@ -351,7 +359,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
         self._content_proxy.setGeometry(content_rect)
         self.update_name(self._prop_model.properties["Name"])
-        self.update_socket_positions()
+        self.update_pin_positions()
 
     def update_height(self):
         # Reset content proxy
@@ -375,14 +383,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
             content_proxy_height
         )
 
-        # Update node height, content proxy height and socket positions
+        # Update node height, content proxy height and pin positions
         self._content_proxy.setGeometry(content_rect)
         self._height = self._header_height + 2 * self._content_padding + content_proxy_height
-        self.update_socket_positions()
+        self.update_pin_positions()
 
-    def update_socket_positions(self) -> None:
+    def update_pin_positions(self) -> None:
         for widget in self._socket_widgets:
-            widget.update_socket_position()
+            widget.update_pin_position()
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])
@@ -444,7 +452,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
             new_socket_widget: SocketWidgetClass = SocketWidgetClass(
                 label=socket_widget_props["Name"],
-                socket_type=int,
                 is_input=socket_widget_props["Is Input"],
                 parent_node=self
             )
