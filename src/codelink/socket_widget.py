@@ -41,11 +41,9 @@ class SocketWidget(QtWidgets.QWidget):
         self.setLayout(self._layout)
 
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
-        self._label_widget.setFont(self._parent_node.font)
         self._layout.addWidget(self._label_widget)
 
         self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
-        self._input_widget.setFont(self._parent_node.font)
         self._input_widget.setMinimumWidth(5)
         # self._input_widget.setPlaceholderText("Enter value")
         self._input_widget.setText(str(self._prop_model.properties["Data"]))

@@ -54,7 +54,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
         self._selected_border_pen.setWidthF(1.5)
 
-        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
+        self._header_font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
 
         self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
         self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
@@ -79,11 +79,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Node name
         self._name_item = QtWidgets.QGraphicsTextItem(self)
         self._name_item.setDefaultTextColor(self._font_color)
-        self._name_item.setFont(self._font)
+        self._name_item.setFont(self._header_font)
         self._name_item.setPlainText(
             crop_text(self._prop_model.properties["Name"],
                       self._prop_model.properties["Width"] - self._title_left_padding - self._content_padding,
-                      self._font)
+                      self._header_font)
         )
         self._name_item.setPos(self._title_left_padding,
                                (self._header_height - self._name_item.boundingRect().height()) / 2
@@ -100,7 +100,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Option combo box
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setMinimumWidth(5)
-        self._option_box.setFont(self._font)
         self._option_box.addItems(["Add", "Sub", "Mul"])
         self._option_box.currentIndexChanged.connect(self.update_socket_widgets)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
@@ -155,10 +154,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def is_collapsed(self) -> str:
         return self._prop_model.properties["Collapse State"]
-
-    @property
-    def font(self) -> QtGui.QFont:
-        return self._font
 
     @property
     def socket_widgets(self) -> list[SocketWidget]:
@@ -350,7 +345,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._name_item.setPlainText(
             crop_text(value,
                       self._prop_model.properties["Width"] - self._title_left_padding - self._content_padding,
-                      self._font)
+                      self._header_font)
         )
 
     def update_width(self, new_width: int = 160) -> None:

@@ -183,6 +183,9 @@ MAIN_STYLE: str = """
 
 NODE_STYLE: str = """
 	QWidget {
+		font-family: Sans Serif;
+		font-size: 12px;
+		font-weight: Normal;
 		background-color: transparent;
 	}
 	
