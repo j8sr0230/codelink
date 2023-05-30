@@ -12,16 +12,12 @@ class PropertyTable(QtWidgets.QTableView):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
-        self._font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
-
-        self.setFont(self._font)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.setEditTriggers(QtWidgets.QTableView.AnyKeyPressed | QtWidgets.QTableView.DoubleClicked)
         self.setAlternatingRowColors(True)
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.horizontalHeader().setFont(self._font)
         self.verticalHeader().hide()
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:

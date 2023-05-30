@@ -6,6 +6,9 @@ MAIN_STYLE: str = """
 	}
 	
 	QTableView {
+		font-family: Sans Serif;
+		font-size: 12px;
+		font-weight: Normal;
 		color: #E5E5E5;
 		selection-color: #E5E5E5;
 		background-color: #282828;
@@ -16,6 +19,12 @@ MAIN_STYLE: str = """
 		border: none;
 		border-radius: 0px;
 		outline: none;
+	}
+	
+	QHeaderView {
+		font-family: Sans Serif;
+		font-size: 12px;
+		font-weight: Normal;
 	}
 
 	QHeaderView::section:horizontal {
