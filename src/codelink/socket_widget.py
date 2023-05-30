@@ -66,10 +66,6 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model
 
     @property
-    def pin_type(self) -> object:
-        return self._pin_item.pin_type
-
-    @property
     def is_input(self) -> bool:
         return self._prop_model.properties["Is Input"]
 
