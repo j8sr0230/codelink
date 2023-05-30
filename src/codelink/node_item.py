@@ -54,7 +54,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
         self._selected_border_pen.setWidthF(1.5)
 
-        self._header_font: QtGui.QFont = QtGui.QFont("Sans Serif", 10)
+        self._header_font: QtGui.QFont = QtGui.QFont()
 
         self._collapse_img_down: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
         self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
@@ -96,6 +96,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.setMargin(0)
         self._content_layout.setSpacing(5)
         self._content_widget.setLayout(self._content_layout)
+
+        # Hack for setting node_item ont to qss ont defined in app_style.py -> NODE_STYLE -> QWidget
+        self._content_widget.style().unpolish(self._content_widget)  # Unload qss
+        self._content_widget.style().polish(self._content_widget)  # Reload qss
+        self._content_widget.update()
+        self._header_font: QtGui.QFont = self._content_widget.font()
+        self._name_item.setFont(self._header_font)
+        self._name_item.setPos(self._title_left_padding,
+                               (self._header_height - self._name_item.boundingRect().height()) / 2
+                               )
 
         # Option combo box
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
