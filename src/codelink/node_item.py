@@ -102,7 +102,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setMinimumWidth(5)
         self._option_box.setFont(self._font)
         self._option_box.addItems(["Add", "Sub", "Mul"])
-        self._option_box.currentIndexChanged.connect(self.option_box_callback)
+        self._option_box.currentIndexChanged.connect(self.update_socket_widgets)
         item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
         item_list_view.setSpacing(2)
         self._content_layout.addWidget(self._option_box)
@@ -204,10 +204,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             self._content_widget.show()
             self.update_all()
-
-    @staticmethod
-    def option_box_callback(selected_index: int):
-        print(selected_index)
 
     def has_in_edges(self) -> bool:
         for socket_widget in self._socket_widgets:
@@ -402,6 +398,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def update_pin_positions(self) -> None:
         for widget in self._socket_widgets:
             widget.update_pin_position()
+
+    def update_socket_widgets(self):
+        option_name: str = self._option_box.currentText()
+        input_widget_count: int = len(self.input_socket_widgets)
+
+        if option_name == "Add":
+            while input_widget_count < 2:
+                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
+                insert_idx: int = len(self.input_socket_widgets)
+                self.add_socket_widget(new_socket_widget, insert_idx)
+                input_widget_count += 1
+
+            while input_widget_count > 2:
+                remove_idx: int = len(self.input_socket_widgets) - 1
+                self.remove_socket_widget(remove_idx)
+                input_widget_count -= 1
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])
