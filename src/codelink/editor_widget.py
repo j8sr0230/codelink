@@ -198,7 +198,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for node in self.scene().graph_ends():
                 dsk: dict = self.scene().graph_to_dsk(node, {})
-                print(get(dsk, node.socket_widgets[-1]))
+                print(get(dsk, node.socket_widgets[-1].pin))
 
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)

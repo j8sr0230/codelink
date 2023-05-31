@@ -42,6 +42,12 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def edges(self) -> list[EdgeItem]:
         return self._edges
 
+    @edges.setter
+    def edges(self, value: list[EdgeItem]) -> None:
+        self._edges: list[EdgeItem] = value
+
+    # --- Scene manipulation ---
+
     def add_node(self, node: NodeItem) -> None:
         self._nodes.append(node)
         self.addItem(node)
@@ -82,6 +88,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.removeItem(edge)
         self._edges.remove(edge)
 
+    # --- Digraph analytics ---
+
     def graph_ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
         for node in self._nodes:
@@ -100,7 +108,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
         for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
             if not socket_widget.is_input:
-                graph_dict[socket_widget] = (visited_node.evals[idx], *task_inputs)
+                graph_dict[socket_widget.pin] = (visited_node.evals[idx], *task_inputs)
 
         return graph_dict
 
@@ -116,6 +124,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def is_graph_cyclic(self) -> bool:
         nx_graph: nx.DiGraph = self.graph_to_nx()
         return len(list(nx.simple_cycles(nx_graph))) > 0
+
+    # --- Background and serialization ---
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)

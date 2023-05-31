@@ -29,7 +29,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             header_right="Value"
         )
 
-        self._visited_count: int = 0
         self._mode: str = ""
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
@@ -142,28 +141,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return self._prop_model
 
     @property
-    def visited_count(self) -> int:
-        return self._visited_count
-
-    @visited_count.setter
-    def visited_count(self, value: int) -> None:
-        self._visited_count: int = value
-
-    @property
     def evals(self) -> list[object]:
         return self._evals
-
-    @property
-    def header_height(self) -> int:
-        return self._header_height
-
-    @property
-    def content_y(self) -> float:
-        return self._content_y
-
-    @property
-    def is_collapsed(self) -> str:
-        return self._prop_model.properties["Collapse State"]
 
     @property
     def socket_widgets(self) -> list[SocketWidget]:
@@ -180,6 +159,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return [
             socket_widget for socket_widget in self._socket_widgets if not socket_widget.is_input
         ]
+
+    @property
+    def header_height(self) -> int:
+        return self._header_height
+
+    @property
+    def content_y(self) -> float:
+        return self._content_y
+
+    @property
+    def is_collapsed(self) -> str:
+        return self._prop_model.properties["Collapse State"]
 
     def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
         self._content_widget.hide()
@@ -214,13 +205,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def has_in_edges(self) -> bool:
         for socket_widget in self.input_socket_widgets:
-            if socket_widget.has_edges():
+            if socket_widget.pin.has_edges():
                 return True
         return False
 
     def has_out_edges(self) -> bool:
         for socket_widget in self.output_socket_widgets:
-            if socket_widget.has_edges():
+            if socket_widget.pin.has_edges():
                 return True
         return False
 

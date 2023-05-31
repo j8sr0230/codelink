@@ -65,10 +65,7 @@ class PinItem(QtWidgets.QGraphicsItem):
         self._edges.remove(edge)
 
     def has_edges(self) -> bool:
-        if len(self._edges) > 0:
-            return True
-        else:
-            return False
+        return len(self._edges) > 0
 
     def center(self) -> QtCore.QPointF:
         return QtCore.QPointF(

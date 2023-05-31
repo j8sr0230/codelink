@@ -77,12 +77,9 @@ class SocketWidget(QtWidgets.QWidget):
     def input_widget(self) -> QtWidgets.QWidget:
         return self._input_widget
 
-    def has_edges(self) -> bool:
-        return self._pin_item.has_edges()
-
     def input_data(self) -> Union['NodeItem', int]:
-        if self.has_edges():
-            return self._pin_item.edges[0].start_pin.socket_widget
+        if self._pin_item.has_edges():
+            return self._pin_item.edges[0].start_pin  # .socket_widget
         else:
             if self._input_widget.text() != "":
                 return int(self._input_widget.text())
