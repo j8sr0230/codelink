@@ -157,7 +157,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
             # Reset node state
             new_node.__setstate__(node_dict)
             new_node.update()
-            self.scene().update()
+            self.update()
 
     def serialize_edges(self) -> list[dict]:
         edges_dict: list[dict] = []
@@ -180,4 +180,4 @@ class EditorScene(QtWidgets.QGraphicsScene):
             self.add_edge(start_pin, end_pin)
             start_socket_widget.update_all()
             end_socket_widget.update_all()
-            self.scene().update()
+            self.update()
