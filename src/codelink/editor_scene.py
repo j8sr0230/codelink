@@ -7,6 +7,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from node_item import NodeItem
+from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
 
@@ -60,9 +61,11 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def remove_edge(self, edge: EdgeItem) -> None:
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
+            edge.start_pin.remove_edge(edge)
             edge.start_pin.socket_widget.update_stylesheets()
 
         if type(edge.end_pin) == PinItem and len(edge.end_pin.edges) > 0:
+            edge.end_pin.remove_edge(edge)
             edge.end_pin.socket_widget.update_stylesheets()
 
         self._edges.remove(edge)
@@ -158,9 +161,13 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def deserialize_edges(self, edges_dict: list[dict]):
         for edge_dict in edges_dict:
             start_node: NodeItem = self._nodes[edge_dict["Start Node Idx"]]
-            start_pin: PinItem = start_node.socket_widgets[edge_dict["Start Socket Idx"]].pin
+            start_socket_widget: SocketWidget = start_node.socket_widgets[edge_dict["Start Socket Idx"]]
+            start_pin: PinItem = start_socket_widget.pin
 
             end_node: NodeItem = self._nodes[edge_dict["End Node Idx"]]
-            end_pin: PinItem = end_node.socket_widgets[edge_dict["End Socket Idx"]].pin
+            end_socket_widget: SocketWidget = end_node.socket_widgets[edge_dict["End Socket Idx"]]
+            end_pin: PinItem = end_socket_widget.pin
 
             self.add_edge(start_pin, end_pin)
+            start_socket_widget.update_all()
+            end_socket_widget.update_all()

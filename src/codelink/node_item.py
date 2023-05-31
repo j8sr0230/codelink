@@ -196,8 +196,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             remove_edges: list[EdgeItem] = remove_widget.pin.edges
 
             for edge_item in remove_edges:
-                edge_item.start_pin.edges.remove(edge_item)
-                edge_item.end_pin.edges.remove(edge_item)
                 self.scene().remove_edge(edge_item)
 
             self.scene().removeItem(remove_widget.pin)
@@ -211,14 +209,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.update_all()
 
     def has_in_edges(self) -> bool:
-        for socket_widget in self._socket_widgets:
-            if socket_widget.is_input and socket_widget.has_edges():
+        for socket_widget in self.input_socket_widgets:
+            if socket_widget.has_edges():
                 return True
         return False
 
     def has_out_edges(self) -> bool:
-        for socket_widget in self._socket_widgets:
-            if not socket_widget.is_input and socket_widget.has_edges():
+        for socket_widget in self.output_socket_widgets:
+            if socket_widget.has_edges():
                 return True
         return False
 
