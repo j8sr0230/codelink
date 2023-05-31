@@ -42,9 +42,21 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self._nodes.remove(node)
         self.removeItem(node)
 
-    def add_edge(self, edge: EdgeItem) -> None:
+    def add_edge(self, start_pin: PinItem, end_pin: QtWidgets.QGraphicsItem) -> EdgeItem:
+        edge_color: QtGui.QColor = start_pin.color
+        edge: EdgeItem = EdgeItem(color=edge_color)
+
+        edge.start_pin = start_pin
+        edge.start_pin.add_edge(edge)
+
+        edge.end_pin = end_pin
+        if type(end_pin) == PinItem:
+            edge.end_pin.add_edge(edge)
+
         self._edges.append(edge)
         self.addItem(edge)
+
+        return edge
 
     def remove_edge(self, edge: EdgeItem) -> None:
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
@@ -145,9 +157,10 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def deserialize_edges(self, edges_dict: list[dict]):
         for edge_dict in edges_dict:
-            new_edge: EdgeItem = EdgeItem()
-            self.add_edge(new_edge)
+            start_node: NodeItem = self._nodes[edge_dict["Start Node Idx"]]
+            start_pin: PinItem = start_node.socket_widgets[edge_dict["Start Socket Idx"]].pin
 
-            # Reset node state
-            new_edge.__setstate__(edge_dict)
-            new_edge.update()
+            end_node: NodeItem = self._nodes[edge_dict["End Node Idx"]]
+            end_pin: PinItem = end_node.socket_widgets[edge_dict["End Socket Idx"]].pin
+
+            self.add_edge(start_pin, end_pin)

@@ -89,15 +89,3 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
             "End Socket Idx": self._end_pin.parentItem().socket_widgets.index(self._end_pin.socket_widget)
         }
         return data_dict
-
-    def __setstate__(self, state):
-        start_node: 'NodeItem' = self.scene().nodes[state["Start Node Idx"]]
-        self._start_pin: PinItem = start_node.socket_widgets[state["Start Socket Idx"]].pin
-
-        end_node: 'NodeItem' = self.scene().nodes[state["End Node Idx"]]
-        self._end_pin: PinItem = end_node.socket_widgets[state["End Socket Idx"]].pin
-
-        self._start_pin.add_edge(self)
-        self._end_pin.add_edge(self)
-        self.end_pin.socket_widget.update_stylesheets()
-        self._color: QtGui.QColor = self._start_pin.color

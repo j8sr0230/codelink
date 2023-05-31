@@ -2,9 +2,9 @@ from typing import Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
 
 from item_delegates import BooleanDelegate, IntegerDelegate, StringDelegate
+from property_model import PropertyModel
 from property_table import PropertyTable
 from node_item import NodeItem
 

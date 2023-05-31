@@ -72,14 +72,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if (not self._last_pin.socket_widget.is_input or
                         (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
                     self._mode: str = "EDGE_ADD"
-                    self._temp_edge: EdgeItem = EdgeItem(color=self._last_pin.color)
-                    self._temp_edge.start_pin = self._last_pin
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
-
-                    self._temp_edge.end_pin = temp_target
-                    self.scene().add_edge(self._temp_edge)
+                    self._temp_edge = self.scene().add_edge(self._last_pin, temp_target)
 
                 if self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
