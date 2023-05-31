@@ -172,6 +172,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def is_collapsed(self) -> str:
         return self._prop_model.properties["Collapse State"]
 
+    @property
+    def content_widget(self) -> QtWidgets.QWidget:
+        return self._content_widget
+
     def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
         self._content_widget.hide()
         self._socket_widgets.insert(insert_idx, input_widget)
