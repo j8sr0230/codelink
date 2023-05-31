@@ -66,13 +66,13 @@
                     "Class": "SocketWidget",
                     "Name": "C",
                     "Is Input": true,
-                    "Data": 0
+                    "Data": 30
                 },
                 {
                     "Class": "SocketWidget",
                     "Name": "D",
                     "Is Input": true,
-                    "Data": 0
+                    "Data": 40
                 },
                 {
                     "Class": "SocketWidget",
