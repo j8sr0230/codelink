@@ -244,8 +244,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
+            while len(self.scene().edges) > 0:
+                edge: EdgeItem = self.scene().edges[-1]
+                self.scene().remove_edge(edge)
+
+            while len(self.scene().nodes) > 0:
+                node: NodeItem = self.scene().nodes[-1]
+                self.scene().remove_node(node)
+
             self.scene().clear()
-            self.scene().nodes: list[NodeItem] = []
+            self.scene().update()
             self._prop_scroller.hide()
 
             with open(file_path, "r", encoding="utf8") as json_file:

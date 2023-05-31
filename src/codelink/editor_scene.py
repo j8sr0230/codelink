@@ -28,6 +28,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self._grid_pen.setWidth(5)
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.setSortCacheEnabled(True)
 
     @property
     def nodes(self) -> list[NodeItem]:
@@ -37,13 +38,17 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def nodes(self, value: list[NodeItem]) -> None:
         self._nodes: list[NodeItem] = value
 
+    @property
+    def edges(self) -> list[EdgeItem]:
+        return self._edges
+
     def add_node(self, node: NodeItem) -> None:
         self._nodes.append(node)
         self.addItem(node)
 
     def remove_node(self, node: NodeItem) -> None:
-        self._nodes.remove(node)
         self.removeItem(node)
+        self._nodes.remove(node)
 
     def add_edge(self, start_pin: PinItem, end_pin: QtWidgets.QGraphicsItem) -> EdgeItem:
         edge_color: QtGui.QColor = start_pin.color
@@ -57,6 +62,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
             edge.end_pin.add_edge(edge)
 
         edge.update()
+
         self._edges.append(edge)
         self.addItem(edge)
 
@@ -73,8 +79,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 edge.end_pin.remove_edge(edge)
                 edge.end_pin.socket_widget.update_stylesheets()
 
-        self._edges.remove(edge)
         self.removeItem(edge)
+        self._edges.remove(edge)
 
     def graph_ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
@@ -151,6 +157,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
             # Reset node state
             new_node.__setstate__(node_dict)
             new_node.update()
+            self.scene().update()
 
     def serialize_edges(self) -> list[dict]:
         edges_dict: list[dict] = []
@@ -173,3 +180,4 @@ class EditorScene(QtWidgets.QGraphicsScene):
             self.add_edge(start_pin, end_pin)
             start_socket_widget.update_all()
             end_socket_widget.update_all()
+            self.scene().update()
