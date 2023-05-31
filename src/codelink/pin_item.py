@@ -52,7 +52,7 @@ class PinItem(QtWidgets.QGraphicsItem):
 
     @edges.setter
     def edges(self, value: list['EdgeItem']) -> None:
-        self._edges: list[Edge] = value
+        self._edges: list['EdgeItem'] = value
 
     @property
     def size(self) -> int:

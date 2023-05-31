@@ -48,11 +48,9 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def remove_edge(self, edge: EdgeItem) -> None:
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
-            edge.start_pin.remove_edge(edge)
             edge.start_pin.socket_widget.update_stylesheets()
 
         if type(edge.end_pin) == PinItem and len(edge.end_pin.edges) > 0:
-            edge.end_pin.remove_edge(edge)
             edge.end_pin.socket_widget.update_stylesheets()
 
         self._edges.remove(edge)

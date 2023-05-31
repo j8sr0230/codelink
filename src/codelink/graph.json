@@ -3,42 +3,24 @@
         {
             "Properties": {
                 "Class": "NodeItem",
-                "Name": "Start",
-                "Color": "green",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31510,
-                "Y": 31790,
+                "X": 31600,
+                "Y": 31800,
                 "Width": 160
             },
             "Option_idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "X",
-                    "Is Input": true,
-                    "Data": 30
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "Y",
-                    "Is Input": true,
-                    "Data": 70
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "N",
+                    "Name": "A",
                     "Is Input": true,
                     "Data": 0
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "N",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "N",
+                    "Name": "B",
                     "Is Input": true,
                     "Data": 0
                 },
@@ -53,14 +35,14 @@
         {
             "Properties": {
                 "Class": "NodeItem",
-                "Name": "End",
-                "Color": "red",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32050,
-                "Y": 31820,
+                "X": 32200,
+                "Y": 32050,
                 "Width": 160
             },
-            "Option_idx": 2,
+            "Option_idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -76,25 +58,7 @@
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "N",
-                    "Is Input": true,
-                    "Data": 10
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "N",
-                    "Is Input": true,
-                    "Data": 20
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "N",
-                    "Is Input": true,
-                    "Data": 30
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "Sum",
+                    "Name": "Res",
                     "Is Input": false,
                     "Data": 0
                 }
@@ -103,14 +67,14 @@
         {
             "Properties": {
                 "Class": "NodeItem",
-                "Name": "Very long node title",
-                "Color": "olive",
-                "Collapse State": true,
-                "X": 31750,
-                "Y": 32040,
-                "Width": 106
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 31900,
+                "Y": 32100,
+                "Width": 160
             },
-            "Option_idx": 1,
+            "Option_idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -122,7 +86,7 @@
                     "Class": "SocketWidget",
                     "Name": "B",
                     "Is Input": true,
-                    "Data": 10
+                    "Data": 0
                 },
                 {
                     "Class": "SocketWidget",
@@ -136,7 +100,7 @@
     "Edges": [
         {
             "Start Node Idx": 0,
-            "Start Socket Idx": 5,
+            "Start Socket Idx": 2,
             "End Node Idx": 2,
             "End Socket Idx": 0
         },
@@ -145,12 +109,6 @@
             "Start Socket Idx": 2,
             "End Node Idx": 1,
             "End Socket Idx": 1
-        },
-        {
-            "Start Node Idx": 0,
-            "Start Socket Idx": 5,
-            "End Node Idx": 1,
-            "End Socket Idx": 0
         }
     ]
 }
