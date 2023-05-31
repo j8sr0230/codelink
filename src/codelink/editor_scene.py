@@ -61,12 +61,14 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def remove_edge(self, edge: EdgeItem) -> None:
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
-            edge.start_pin.remove_edge(edge)
-            edge.start_pin.socket_widget.update_stylesheets()
+            if edge in edge.start_pin.edges:
+                edge.start_pin.remove_edge(edge)
+                edge.start_pin.socket_widget.update_stylesheets()
 
         if type(edge.end_pin) == PinItem and len(edge.end_pin.edges) > 0:
-            edge.end_pin.remove_edge(edge)
-            edge.end_pin.socket_widget.update_stylesheets()
+            if edge in edge.end_pin.edges:
+                edge.end_pin.remove_edge(edge)
+                edge.end_pin.socket_widget.update_stylesheets()
 
         self._edges.remove(edge)
         self.removeItem(edge)
@@ -79,14 +81,19 @@ class EditorScene(QtWidgets.QGraphicsScene):
         return result
 
     def is_node_cyclic(self, visited_node: NodeItem, predecessor_count: int = 0) -> bool:
-        if predecessor_count > 500:
+        if predecessor_count > 300:
             return True
         elif len(visited_node.predecessors()) == 0:
             return False
         else:
             predecessor_count += len(visited_node.predecessors())
+            eval_list: list[bool] = []
             for node in visited_node.predecessors():
-                return self.is_node_cyclic(node, predecessor_count)
+                if any(eval_list):
+                    break
+                eval_list.append(self.is_node_cyclic(node, predecessor_count))
+
+            return any(eval_list)
 
     def is_graph_cyclic(self) -> bool:
         temp_res: list[bool] = []

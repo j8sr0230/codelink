@@ -182,8 +182,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     else:
                         # Maybe valid connection ...
-                        self._temp_edge.start_pin.add_edge(self._temp_edge)
-                        self._temp_edge.end_pin.add_edge(self._temp_edge)
+                        self._temp_edge.end_pin.add_edge(self._temp_edge)  # Has not been set till here
                         self._temp_edge.sort_pins()
                         self._temp_edge.end_pin.socket_widget.update_stylesheets()
 
