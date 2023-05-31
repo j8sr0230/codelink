@@ -7,6 +7,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from node_item import NodeItem
+from pin_item import PinItem
 from edge_item import EdgeItem
 
 
@@ -46,6 +47,14 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.addItem(edge)
 
     def remove_edge(self, edge: EdgeItem) -> None:
+        if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
+            edge.start_pin.remove_edge(edge)
+            edge.start_pin.socket_widget.update_stylesheets()
+
+        if type(edge.end_pin) == PinItem and len(edge.end_pin.edges) > 0:
+            edge.end_pin.remove_edge(edge)
+            edge.end_pin.socket_widget.update_stylesheets()
+
         self._edges.remove(edge)
         self.removeItem(edge)
 

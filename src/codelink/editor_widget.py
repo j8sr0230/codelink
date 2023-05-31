@@ -160,14 +160,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for item in selected_items:
                 if type(item) is EdgeItem:
-                    connected_sockets: list[QtWidgets.QGraphicsItem] = [
-                        item.start_pin,
-                        item.end_pin
-                    ]
-                    for socket in connected_sockets:
-                        socket.remove_edge(item)
-                        socket.socket_widget.update_stylesheets()
-
                     self.scene().remove_edge(item)
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -204,14 +196,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                         if self.scene().is_graph_cyclic():
                             # ... if cyclic graph
-                            connected_sockets: list[QtWidgets.QGraphicsItem] = [
-                                self._temp_edge.start_pin,
-                                self._temp_edge.end_pin
-                            ]
-                            for socket in connected_sockets:
-                                socket.remove_edge(self._temp_edge)
-                                socket.socket_widget.update_stylesheets()
-
                             self.scene().remove_edge(self._temp_edge)
 
                 else:
