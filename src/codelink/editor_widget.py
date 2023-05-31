@@ -189,7 +189,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         if self.scene().is_graph_cyclic():
                             # ... if cyclic graph
                             self.scene().remove_edge(self._temp_edge)
-
                 else:
                     # Incompatible pin types
                     self.scene().remove_edge(self._temp_edge)

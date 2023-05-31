@@ -56,6 +56,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         if type(end_pin) == PinItem:
             edge.end_pin.add_edge(edge)
 
+        edge.update()
         self._edges.append(edge)
         self.addItem(edge)
 
@@ -82,10 +83,6 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 result.append(node)
         return result
 
-    def is_graph_cyclic(self) -> bool:
-        nx_graph: nx.DiGraph = self.graph_to_nx()
-        return len(list(nx.simple_cycles(nx_graph))) > 0
-
     def graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
             self.graph_to_dsk(node, graph_dict)
@@ -109,6 +106,10 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 edge.end_pin.parent_node
             )
         return nx_graph
+
+    def is_graph_cyclic(self) -> bool:
+        nx_graph: nx.DiGraph = self.graph_to_nx()
+        return len(list(nx.simple_cycles(nx_graph))) > 0
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
