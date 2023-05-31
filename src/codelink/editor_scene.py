@@ -6,6 +6,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+import networkx as nx
+
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from pin_item import PinItem
@@ -80,30 +82,13 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 result.append(node)
         return result
 
-    def is_node_cyclic(self, visited_node: NodeItem, predecessor_count: int = 0) -> bool:
-        if predecessor_count > 300:
-            return True
-        elif len(visited_node.predecessors()) == 0:
-            return False
-        else:
-            predecessor_count += len(visited_node.predecessors())
-            eval_list: list[bool] = []
-            for node in visited_node.predecessors():
-                if any(eval_list):
-                    break
-                eval_list.append(self.is_node_cyclic(node, predecessor_count))
-
-            return any(eval_list)
-
     def is_graph_cyclic(self) -> bool:
-        temp_res: list[bool] = []
-        for node in self._nodes:
-            temp_res.append(self.is_node_cyclic(node))
-        return any(temp_res)
+        nx_graph: nx.DiGraph = self.graph_to_nx()
+        return len(list(nx.simple_cycles(nx_graph))) > 0
 
-    def graph_to_dict(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    def graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
-            self.graph_to_dict(node, graph_dict)
+            self.graph_to_dsk(node, graph_dict)
 
         task_inputs: list = []
         for socket_widget in visited_node.input_socket_widgets:
@@ -115,6 +100,15 @@ class EditorScene(QtWidgets.QGraphicsScene):
                 graph_dict[socket_widget] = (visited_node.evals[idx], *task_inputs)
 
         return graph_dict
+
+    def graph_to_nx(self) -> nx.DiGraph:
+        nx_graph: nx.DiGraph = nx.DiGraph()
+        for edge in self._edges:
+            nx_graph.add_edge(
+                edge.start_pin.parent_node,
+                edge.end_pin.parent_node
+            )
+        return nx_graph
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)

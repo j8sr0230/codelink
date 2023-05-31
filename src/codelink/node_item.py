@@ -471,6 +471,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Remove predefined socket widgets
         for i in range(len(self._socket_widgets)):
             self.remove_socket_widget(0)
+            #self.update()
 
         # Add socket widgets from state
         for i in range(len(state["Sockets"])):
@@ -484,3 +485,4 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_socket_widget.prop_model.__setstate__(socket_widget_props)
             self.add_socket_widget(new_socket_widget, i)
             new_socket_widget.update_all()
+            #new_socket_widget.update()

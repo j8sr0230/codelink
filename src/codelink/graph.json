@@ -6,8 +6,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32250,
-                "Y": 31800,
+                "X": 31880,
+                "Y": 31770,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -38,8 +38,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31940,
-                "Y": 31920,
+                "X": 32160,
+                "Y": 31890,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -70,8 +70,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31560,
-                "Y": 31950,
+                "X": 31460,
+                "Y": 32000,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -99,9 +99,9 @@
     ],
     "Edges": [
         {
-            "Start Node Idx": 1,
+            "Start Node Idx": 0,
             "Start Socket Idx": 2,
-            "End Node Idx": 0,
+            "End Node Idx": 1,
             "End Socket Idx": 0
         },
         {
@@ -109,6 +109,18 @@
             "Start Socket Idx": 2,
             "End Node Idx": 1,
             "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 2,
+            "End Node Idx": 0,
+            "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 2,
+            "End Node Idx": 0,
+            "End Socket Idx": 0
         }
     ]
 }
