@@ -22,6 +22,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
+    def color(self) -> QtGui.QColor:
+        return self._color
+
+    @color.setter
+    def color(self, value: QtGui.QColor) -> None:
+        self._color: QtGui.QColor = value
+
+    @property
     def start_pin(self) -> QtWidgets.QGraphicsItem:
         return self._start_pin
 
@@ -43,6 +51,47 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         if old_start_socket.socket_widget.is_input:
             self._start_pin: QtWidgets.QGraphicsItem = self._end_pin
             self._end_pin: QtWidgets.QGraphicsItem = old_start_socket
+
+    def is_valid(self, eval_target: QtWidgets.QGraphicsItem) -> bool:
+        result: bool = True
+
+        if type(eval_target) == PinItem and (eval_target != self._start_pin):
+            self._end_pin = eval_target
+            self._end_pin.add_edge(self)
+            self.sort_pins()
+
+            socket_type_start: object = self._start_pin.pin_type
+            socket_type_end: object = self._end_pin.pin_type
+
+            if socket_type_start == socket_type_end:
+                if self._start_pin.parentItem() is self._end_pin.parentItem():
+                    # Sockets of the same node
+                    result: bool = False
+
+                elif self.start_pin.socket_widget.is_input and self._end_pin.socket_widget.is_input:
+                    # Input with input pin
+                    result: bool = False
+
+                elif not self._start_pin.socket_widget.is_input and not self._end_pin.socket_widget.is_input:
+                    # Output with output pin
+                    result: bool = False
+
+                elif self.scene().is_graph_cyclic():
+                    # Cyclic graph
+                    result: bool = False
+
+                # In any case, reset target to QtWidgets.QGraphicsEllipseItem
+                self._end_pin.remove_edge(self)
+                temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                temp_target.setPos(self._end_pin.parent_node.mapToScene(self._end_pin.center()))
+                self._end_pin = temp_target
+
+            else:
+                result: bool = False
+        else:
+            result: bool = False
+
+        return result
 
     def path(self) -> QtGui.QPainterPath:
         start_point: QtCore.QPointF = self._start_pin.parentItem().mapToScene(self._start_pin.center())

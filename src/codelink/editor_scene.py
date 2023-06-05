@@ -125,7 +125,12 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def is_graph_cyclic(self) -> bool:
         nx_graph: nx.DiGraph = self.graph_to_nx()
-        return len(list(nx.simple_cycles(nx_graph))) > 0
+        result: bool = True
+        try:
+            nx.find_cycle(nx_graph)
+        except nx.exception.NetworkXNoCycle:
+            result: bool = False
+        return result
 
     # --- Background and serialization ---
 

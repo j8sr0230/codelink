@@ -128,14 +128,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseMoveEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == PinItem:
+            if type(self.itemAt(event.pos())) == PinItem and (self.itemAt(event.pos()) != self._temp_edge.start_pin):
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )
                 snap_x: float = snapping_pos.x() + self.itemAt(event.pos()).size / 2
                 snap_y: float = snapping_pos.y() + self.itemAt(event.pos()).size / 2
                 self._temp_edge.end_pin.setPos(snap_x, snap_y)
+
+                if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
+                    self._temp_edge.color = self._temp_edge.start_pin.color
+                else:
+                    self._temp_edge.color = QtGui.QColor("red")
             else:
+                self._temp_edge.color = self._temp_edge.start_pin.color
                 self._temp_edge.end_pin.setPos(self.mapToScene(event.pos()))
 
         if self._mode == "SCENE_DRAG":
@@ -160,40 +166,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
-                self._temp_edge.end_pin = self.itemAt(event.pos())
-
-                # Validate edge here!
-                socket_type_start: object = self._temp_edge.start_pin.pin_type
-                socket_type_end: object = self._temp_edge.end_pin.pin_type
-                if socket_type_start == socket_type_end:
-                    if self._temp_edge.start_pin.parentItem() is self._temp_edge.end_pin.parentItem():
-                        # Sockets of the same node
-                        self.scene().remove_edge(self._temp_edge)
-
-                    elif (self._temp_edge.start_pin.socket_widget.is_input and
-                          self._temp_edge.end_pin.socket_widget.is_input):
-                        # Input with input pin
-                        self.scene().remove_edge(self._temp_edge)
-
-                    elif (not self._temp_edge.start_pin.socket_widget.is_input and
-                          not self._temp_edge.end_pin.socket_widget.is_input):
-                        # Output with output pin
-                        self.scene().remove_edge(self._temp_edge)
-
-                    else:
-                        # Maybe valid connection ...
-                        self._temp_edge.end_pin.add_edge(self._temp_edge)  # Has not been set till here
-                        self._temp_edge.sort_pins()
-                        self._temp_edge.end_pin.socket_widget.update_stylesheets()
-
-                        if self.scene().is_graph_cyclic():
-                            # ... if cyclic graph
-                            self.scene().remove_edge(self._temp_edge)
+                if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
+                    self._temp_edge.end_pin = self.itemAt(event.pos())
+                    self._temp_edge.end_pin.add_edge(self._temp_edge)
+                    self._temp_edge.sort_pins()
+                    self._temp_edge.end_pin.socket_widget.update_stylesheets()
                 else:
-                    # Incompatible pin types
                     self.scene().remove_edge(self._temp_edge)
             else:
-                # No target pin
                 self.scene().remove_edge(self._temp_edge)
 
             for node in self.scene().graph_ends():
@@ -263,23 +243,24 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().deserialize_edges(data_dict["Edges"])
 
         if event.matches(QtGui.QKeySequence.AddTab):
-            if type(self.scene().selectedItems()[0]) is NodeItem:
-                selected_node_item: NodeItem = self.scene().selectedItems()[0]
-                new_socket_widget: SocketWidget = SocketWidget(
-                    label="N",
-                    is_input=True,
-                    parent_node=selected_node_item
-                )
-
-                if len(selected_node_item.input_socket_widgets) > 0:
-                    insert_idx: int = (
-                            selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1]) + 1
+            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
+                if type(self.scene().selectedItems()[0]) is NodeItem:
+                    selected_node_item: NodeItem = self.scene().selectedItems()[0]
+                    new_socket_widget: SocketWidget = SocketWidget(
+                        label="N",
+                        is_input=True,
+                        parent_node=selected_node_item
                     )
-                else:
-                    insert_idx: int = 0
 
-                selected_node_item.add_socket_widget(new_socket_widget, insert_idx)
-                self._prop_scroller.hide()
+                    if len(selected_node_item.input_socket_widgets) > 0:
+                        insert_idx: int = (
+                                selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1]) + 1
+                        )
+                    else:
+                        insert_idx: int = 0
+
+                    selected_node_item.add_socket_widget(new_socket_widget, insert_idx)
+                    self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Cancel):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
