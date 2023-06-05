@@ -295,7 +295,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for edge in selected_edges:
                 selected_edges_dict_list.append(edge.__getstate__())
 
-            # Generate custom node from selected nodes
+            # Generate custom node from selected node sockets
             socket_dict_list: list[dict] = []
             for node in selected_nodes:
                 for idx, socket_widget in enumerate(node.socket_widgets):
