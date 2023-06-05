@@ -273,6 +273,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         )
                         self._prop_scroller.hide()
 
+        if event.matches(QtGui.QKeySequence.SelectAll):
+            new_node = NodeItem()
+            new_node.setPos(QtCore.QPointF(32000, 32000))
+            self.scene().add_node(new_node)
+
         super().keyPressEvent(event)
 
     @QtCore.Slot(QtWidgets.QTableView)
