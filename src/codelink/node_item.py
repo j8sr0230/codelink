@@ -33,6 +33,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
+        self._sub_nodes_dict: list[dict] = []
+        self._sub_edges_dict: list[dict] = []
+
         # Node geometry
         self._title_left_padding: int = 20
         self._min_width: int = 80
@@ -159,6 +162,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return [
             socket_widget for socket_widget in self._socket_widgets if not socket_widget.is_input
         ]
+
+    @property
+    def sub_nodes_dict(self) -> list[dict]:
+        return self._sub_nodes_dict
+
+    @property
+    def sub_edge_dict(self) -> list[dict]:
+        return self._sub_edge_dict
 
     @property
     def header_height(self) -> int:
@@ -461,6 +472,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         data_dict["Sockets"] = sockets_list
 
+        data_dict["Sub Nodes"] = [sub_dict for sub_dict in self._sub_nodes_dict]
+        data_dict["Sub Edges"] = [sub_dict for sub_dict in self._sub_edges_dict]
+
         return data_dict
 
     def __setstate__(self, state: dict):
@@ -485,3 +499,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             new_socket_widget.update_all()
             new_socket_widget.update()
+
+        # Reset sub graph data
+        self._sub_nodes_dict: list[dict] = state["Sub Nodes"]
+        self._sub_edges_dict: list[dict] = state["Sub Edges"]

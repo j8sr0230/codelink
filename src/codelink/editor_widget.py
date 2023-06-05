@@ -92,7 +92,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
 
                     self.scene().remove_edge(self._temp_edge)
-                    self._temp_edge = self.scene().add_edge(start_pin, temp_target)
+                    self._temp_edge = self.scene().add_edge_from_pins(start_pin, temp_target)
                     self._mode = "EDGE_ADD"
 
         if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
@@ -283,9 +283,19 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.scene().add_node(new_node)
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
+            # Serialize selected nodes and edges (sub graph)
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
 
+            selected_nodes_dict_list: list[dict] = []
+            for node in selected_nodes:
+                selected_nodes_dict_list.append(node.__getstate__())
+
+            selected_edges_dict_list: list[dict] = []
+            for edge in selected_edges:
+                selected_edges_dict_list.append(edge.__getstate__())
+
+            # Generate custom node from selected nodes
             socket_dict_list: list[dict] = []
             for node in selected_nodes:
                 for idx, socket_widget in enumerate(node.socket_widgets):
@@ -295,14 +305,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     if socket_widget.pin.has_edges() and any(is_outer_edge):
                         socket_dict_list.append(socket_widget.prop_model.__getstate__())
 
-            c_node: NodeItem = NodeItem()
-            c_node.setPos(32000, 32000)
+            custom_node: NodeItem = NodeItem()
+            custom_node.setPos(32000, 32000)
 
-            state: dict = c_node.__getstate__()
+            state: dict = custom_node.__getstate__()
             state["Sockets"] = socket_dict_list
+            state["Sub Nodes"] = selected_nodes_dict_list
+            state["Sub Edges"] = selected_edges_dict_list
 
-            self.scene().add_node(c_node)
-            c_node.__setstate__(state)
+            self.scene().add_node(custom_node)
+            custom_node.__setstate__(state)
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)
