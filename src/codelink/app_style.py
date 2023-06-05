@@ -1,4 +1,8 @@
 MAIN_STYLE: str = """
+	QGraphicsView {
+		selection-background-color: black;
+	}
+		
 	QScrollArea {
 		padding: 0px;
 		margin: 0px;

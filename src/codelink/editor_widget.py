@@ -38,6 +38,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        self.setRubberBandSelectionMode(QtCore.Qt.ContainsItemShape)
         self.setAcceptDrops(True)
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
@@ -273,10 +274,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         )
                         self._prop_scroller.hide()
 
-        if event.matches(QtGui.QKeySequence.SelectAll):
+        if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
             new_node = NodeItem()
             new_node.setPos(QtCore.QPointF(32000, 32000))
             self.scene().add_node(new_node)
+
+        if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
+            print("Make custom node")
+            for item in self.scene().selectedItems():
+                print(item)
 
         super().keyPressEvent(event)
 
