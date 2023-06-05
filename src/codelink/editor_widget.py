@@ -8,6 +8,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from editor_scene import EditorScene
 from property_widget import PropertyWidget
 from pin_item import PinItem
 from socket_widget import SocketWidget
@@ -24,6 +25,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
         self._mode: str = ""
+
+        self._temp_scene: Optional[QtWidgets.QGraphicsScene] = None
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
@@ -78,7 +81,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
-                    self._temp_edge = self.scene().add_edge(self._last_pin, temp_target)
+                    self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
 
                 if self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
@@ -280,9 +283,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.scene().add_node(new_node)
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
-            print("Make custom node")
-            for item in self.scene().selectedItems():
-                print(item)
+            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+            selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
+
+            new_scene: EditorScene = EditorScene()
+            for node in selected_nodes:
+                new_scene.add_node(node)
+
+            for edge in selected_edges:
+                new_scene.add_edge(edge)
+
+            self._temp_scene: QtWidgets.QGraphicsScene = self.scene()
+            self.setScene(new_scene)
+
+        if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
+            self.setScene(self._temp_scene)
 
         super().keyPressEvent(event)
 

@@ -58,7 +58,12 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.removeItem(node)
         self._nodes.remove(node)
 
-    def add_edge(self, start_pin: PinItem, end_pin: QtWidgets.QGraphicsItem) -> EdgeItem:
+    def add_edge(self, edge: EdgeItem) -> EdgeItem:
+        self._edges.append(edge)
+        self.addItem(edge)
+        return edge
+
+    def add_edge_from_pins(self, start_pin: PinItem, end_pin: QtWidgets.QGraphicsItem) -> EdgeItem:
         edge_color: QtGui.QColor = start_pin.color
         edge: EdgeItem = EdgeItem(color=edge_color)
 
@@ -194,7 +199,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
             end_socket_widget: SocketWidget = end_node.socket_widgets[edge_dict["End Socket Idx"]]
             end_pin: PinItem = end_socket_widget.pin
 
-            self.add_edge(start_pin, end_pin)
+            self.add_edge_from_pins(start_pin, end_pin)
             start_socket_widget.update_all()
             end_socket_widget.update_all()
             self.update()
