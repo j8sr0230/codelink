@@ -286,15 +286,23 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
 
-            new_scene: EditorScene = EditorScene()
+            socket_dict_list: list[dict] = []
             for node in selected_nodes:
-                new_scene.add_node(node)
+                for idx, socket_widget in enumerate(node.socket_widgets):
+                    connected_edges: list[EdgeItem] = socket_widget.pin.edges
+                    is_outer_edge: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
 
-            for edge in selected_edges:
-                new_scene.add_edge(edge)
+                    if socket_widget.pin.has_edges() and any(is_outer_edge):
+                        socket_dict_list.append(socket_widget.prop_model.__getstate__())
 
-            self._temp_scene: QtWidgets.QGraphicsScene = self.scene()
-            self.setScene(new_scene)
+            c_node: NodeItem = NodeItem()
+            c_node.setPos(32000, 32000)
+
+            state: dict = c_node.__getstate__()
+            state["Sockets"] = socket_dict_list
+
+            self.scene().add_node(c_node)
+            c_node.__setstate__(state)
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)
