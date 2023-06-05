@@ -6,109 +6,7 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31500,
-                "Y": 31780,
-                "Width": 160
-            },
-            "Option_idx": 0,
-            "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
-                }
-            ],
-            "Sub Nodes": [],
-            "Sub Edges": []
-        },
-        {
-            "Properties": {
-                "Class": "NodeItem",
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 31980,
-                "Y": 31900,
-                "Width": 160
-            },
-            "Option_idx": 0,
-            "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
-                }
-            ],
-            "Sub Nodes": [],
-            "Sub Edges": []
-        },
-        {
-            "Properties": {
-                "Class": "NodeItem",
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 31790,
-                "Y": 32050,
-                "Width": 160
-            },
-            "Option_idx": 0,
-            "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
-                }
-            ],
-            "Sub Nodes": [],
-            "Sub Edges": []
-        },
-        {
-            "Properties": {
-                "Class": "NodeItem",
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 32270,
+                "X": 31600,
                 "Y": 31800,
                 "Width": 160
             },
@@ -142,8 +40,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32050,
-                "Y": 32070,
+                "X": 32200,
+                "Y": 32050,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -156,120 +54,60 @@
                 },
                 {
                     "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
                     "Name": "Res",
                     "Is Input": false,
                     "Data": 0
-                },
+                }
+            ],
+            "Sub Nodes": [],
+            "Sub Edges": []
+        },
+        {
+            "Properties": {
+                "Class": "NodeItem",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 31870,
+                "Y": 31890,
+                "Width": 160
+            },
+            "Option_idx": 0,
+            "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Name": "A",
                     "Is Input": true,
                     "Data": 0
-                }
-            ],
-            "Sub Nodes": [
-                {
-                    "Properties": {
-                        "Class": "NodeItem",
-                        "Name": "Scalar Math",
-                        "Color": "#1D1D1D",
-                        "Collapse State": false,
-                        "X": 31980,
-                        "Y": 31900,
-                        "Width": 160
-                    },
-                    "Option_idx": 0,
-                    "Sockets": [
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "A",
-                            "Is Input": true,
-                            "Data": 0
-                        },
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "B",
-                            "Is Input": true,
-                            "Data": 0
-                        },
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "Res",
-                            "Is Input": false,
-                            "Data": 0
-                        }
-                    ],
-                    "Sub Nodes": [],
-                    "Sub Edges": []
                 },
                 {
-                    "Properties": {
-                        "Class": "NodeItem",
-                        "Name": "Scalar Math",
-                        "Color": "#1D1D1D",
-                        "Collapse State": false,
-                        "X": 31790,
-                        "Y": 32050,
-                        "Width": 160
-                    },
-                    "Option_idx": 0,
-                    "Sockets": [
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "A",
-                            "Is Input": true,
-                            "Data": 0
-                        },
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "B",
-                            "Is Input": true,
-                            "Data": 0
-                        },
-                        {
-                            "Class": "SocketWidget",
-                            "Name": "Res",
-                            "Is Input": false,
-                            "Data": 0
-                        }
-                    ],
-                    "Sub Nodes": [],
-                    "Sub Edges": []
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Is Input": false,
+                    "Data": 0
                 }
             ],
-            "Sub Edges": [
-                {
-                    "Start Node Idx": 2,
-                    "Start Socket Idx": 2,
-                    "End Node Idx": 1,
-                    "End Socket Idx": 1
-                }
-            ]
+            "Sub Nodes": [],
+            "Sub Edges": []
         }
     ],
     "Edges": [
         {
-            "Start Node Idx": 0,
-            "Start Socket Idx": 2,
-            "End Node Idx": 1,
-            "End Socket Idx": 0
-        },
-        {
-            "Start Node Idx": 0,
-            "Start Socket Idx": 2,
-            "End Node Idx": 2,
-            "End Socket Idx": 0
-        },
-        {
             "Start Node Idx": 2,
             "Start Socket Idx": 2,
             "End Node Idx": 1,
-            "End Socket Idx": 1
-        },
-        {
-            "Start Node Idx": 1,
-            "Start Socket Idx": 2,
-            "End Node Idx": 3,
             "End Socket Idx": 1
         }
     ]

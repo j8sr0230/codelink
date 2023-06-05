@@ -58,7 +58,6 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         if type(eval_target) == PinItem and (eval_target != self._start_pin):
             self._end_pin = eval_target
             self._end_pin.add_edge(self)
-            self.sort_pins()
 
             socket_type_start: object = self._start_pin.pin_type
             socket_type_end: object = self._end_pin.pin_type

@@ -132,7 +132,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseMoveEvent(event)
 
         if self._mode == "EDGE_ADD":
-            if type(self.itemAt(event.pos())) == PinItem and (self.itemAt(event.pos()) != self._temp_edge.start_pin):
+            if type(self.itemAt(event.pos())) == PinItem:
                 snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
                     self.itemAt(event.pos()).pos()
                 )

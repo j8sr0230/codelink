@@ -122,10 +122,16 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def graph_to_nx(self) -> nx.DiGraph:
         nx_graph: nx.DiGraph = nx.DiGraph()
         for edge in self._edges:
-            nx_graph.add_edge(
-                edge.start_pin.parent_node,
-                edge.end_pin.parent_node
-            )
+            if edge.start_pin.socket_widget.is_input:
+                nx_graph.add_edge(
+                    edge.start_pin.parent_node,
+                    edge.end_pin.parent_node
+                )
+            else:
+                nx_graph.add_edge(
+                    edge.end_pin.parent_node,
+                    edge.start_pin.parent_node
+                )
         return nx_graph
 
     def is_graph_cyclic(self) -> bool:
