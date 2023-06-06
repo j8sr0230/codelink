@@ -80,8 +80,8 @@
                 "Name": "Very long node title",
                 "Color": "olive",
                 "Collapse State": false,
-                "X": 31760,
-                "Y": 31970,
+                "X": 31810,
+                "Y": 31830,
                 "Width": 120
             },
             "Option_idx": 2,
@@ -148,7 +148,7 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32240,
+                "X": 32270,
                 "Y": 32030,
                 "Width": 160
             },
@@ -257,19 +257,73 @@
                     "End Socket Idx": 1
                 }
             ]
+        },
+        {
+            "Properties": {
+                "Class": "NodeItem",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 31960,
+                "Y": 32030,
+                "Width": 160
+            },
+            "Option_idx": 0,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Sum",
+                    "Is Input": false,
+                    "Data": 0
+                }
+            ],
+            "Sub Nodes": [
+                {
+                    "Start Node Idx": 2,
+                    "Start Socket Idx": 2,
+                    "End Node Idx": 1,
+                    "End Socket Idx": 1
+                }
+            ],
+            "Sub Edges": [
+                {
+                    "Start Node Idx": 2,
+                    "Start Socket Idx": 2,
+                    "End Node Idx": 1,
+                    "End Socket Idx": 1
+                }
+            ]
         }
     ],
     "Edges": [
         {
             "Start Node Idx": 0,
             "Start Socket Idx": 3,
-            "End Node Idx": 1,
-            "End Socket Idx": 0
+            "End Node Idx": 5,
+            "End Socket Idx": 2
         },
         {
             "Start Node Idx": 0,
             "Start Socket Idx": 3,
-            "End Node Idx": 2,
+            "End Node Idx": 5,
             "End Socket Idx": 0
         },
         {
@@ -281,18 +335,18 @@
         {
             "Start Node Idx": 0,
             "Start Socket Idx": 3,
-            "End Node Idx": 2,
+            "End Node Idx": 5,
             "End Socket Idx": 1
         },
         {
-            "Start Node Idx": 1,
-            "Start Socket Idx": 2,
+            "Start Node Idx": 5,
+            "Start Socket Idx": 3,
             "End Node Idx": 3,
             "End Socket Idx": 0
         },
         {
-            "Start Node Idx": 1,
-            "Start Socket Idx": 2,
+            "Start Node Idx": 5,
+            "Start Socket Idx": 3,
             "End Node Idx": 3,
             "End Socket Idx": 1
         }

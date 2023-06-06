@@ -1,6 +1,7 @@
 from typing import Optional
 import json
 import os
+import importlib
 
 from dask.threaded import get
 
@@ -277,6 +278,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         )
                         self._prop_scroller.hide()
 
+        if event.matches(QtGui.QKeySequence.Delete):
+            for selected_item in self.scene().selectedItems():
+                if type(selected_item) is NodeItem:
+                    self.scene().remove_node(selected_item)
+
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
             new_node = NodeItem()
             new_node.setPos(QtCore.QPointF(32000, 32000))
@@ -287,34 +293,64 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
 
-            selected_nodes_dict_list: list[dict] = []
+            sub_nodes_dict: list[dict] = []
             for node in selected_nodes:
-                selected_nodes_dict_list.append(node.__getstate__())
+                sub_nodes_dict.append(node.__getstate__())
 
-            selected_edges_dict_list: list[dict] = []
+            sub_edges_dict: list[dict] = []
             for edge in selected_edges:
-                selected_edges_dict_list.append(edge.__getstate__())
+                sub_edges_dict.append(edge.__getstate__())
 
-            # Generate custom node from selected node sockets
-            socket_dict_list: list[dict] = []
-            for node in selected_nodes:
-                for idx, socket_widget in enumerate(node.socket_widgets):
-                    connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                    is_outer_edge: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
-
-                    if socket_widget.pin.has_edges() and any(is_outer_edge):
-                        socket_dict_list.append(socket_widget.prop_model.__getstate__())
-
+            # Add custom node, remove predefined socket widgets and save sub graph
             custom_node: NodeItem = NodeItem()
-            custom_node.setPos(32000, 32000)
-
-            state: dict = custom_node.__getstate__()
-            state["Sockets"] = socket_dict_list
-            state["Sub Nodes"] = selected_nodes_dict_list
-            state["Sub Edges"] = selected_edges_dict_list
-
+            custom_node.sub_nodes_dict = sub_nodes_dict
+            custom_node.sub_edges_dict = sub_edges_dict
             self.scene().add_node(custom_node)
-            custom_node.__setstate__(state)
+            custom_node.setPos(32000, 32000)
+            for i in range(len(custom_node.socket_widgets)):
+                custom_node.remove_socket_widget(0)
+
+            # Transfer outside connected sockets and edges to custom node
+            for node in selected_nodes:
+                for idx, socket_widget in enumerate(node.input_socket_widgets):
+                    connected_edges: list[EdgeItem] = socket_widget.pin.edges
+                    outer_socket_edges: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
+                    if len(outer_socket_edges) > 0:
+                        socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
+                        SocketWidgetClass = getattr(
+                            importlib.import_module("socket_widget"), socket_widget_dict["Class"]
+                        )
+                        new_socket_widget: SocketClass = SocketWidgetClass(
+                            label=socket_widget_dict["Name"],
+                            is_input=socket_widget_dict["Is Input"],
+                            parent_node=custom_node
+                        )
+                        new_socket_widget.prop_model.__setstate__(socket_widget_dict)
+                        custom_node.add_socket_widget(new_socket_widget, idx)
+                        for edge in socket_widget.pin.edges:
+                            new_socket_widget.pin.add_edge(edge)
+                            socket_widget.pin.remove_edge(edge)
+                            edge.end_pin = custom_node.input_socket_widgets[idx].pin
+
+                for idx, socket_widget in enumerate(node.output_socket_widgets):
+                    connected_edges: list[EdgeItem] = socket_widget.pin.edges
+                    outer_socket_edges: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
+                    if len(outer_socket_edges) > 0:
+                        socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
+                        SocketWidgetClass = getattr(
+                            importlib.import_module("socket_widget"), socket_widget_dict["Class"]
+                        )
+                        new_socket_widget: SocketClass = SocketWidgetClass(
+                            label=socket_widget_dict["Name"],
+                            is_input=socket_widget_dict["Is Input"],
+                            parent_node=custom_node
+                        )
+                        new_socket_widget.prop_model.__setstate__(socket_widget_dict)
+                        custom_node.add_socket_widget(new_socket_widget, len(custom_node.input_socket_widgets) + idx)
+                        for edge in socket_widget.pin.edges:
+                            new_socket_widget.pin.add_edge(edge)
+                            socket_widget.pin.remove_edge(edge)
+                            edge.start_pin = custom_node.output_socket_widgets[idx].pin
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)

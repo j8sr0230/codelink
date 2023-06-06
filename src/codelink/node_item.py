@@ -167,9 +167,17 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def sub_nodes_dict(self) -> list[dict]:
         return self._sub_nodes_dict
 
+    @sub_nodes_dict.setter
+    def sub_nodes_dict(self, value: list[dict]) -> None:
+        self._sub_nodes_dict: list[dict] = value
+
     @property
-    def sub_edge_dict(self) -> list[dict]:
-        return self._sub_edge_dict
+    def sub_edges_dict(self) -> list[dict]:
+        return self._sub_edges_dict
+
+    @sub_edges_dict.setter
+    def sub_edges_dict(self, value: list[dict]) -> None:
+        self._sub_edges_dict: list[dict] = value
 
     @property
     def header_height(self) -> int:
