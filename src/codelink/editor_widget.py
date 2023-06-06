@@ -314,7 +314,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for node in selected_nodes:
                 for idx, socket_widget in enumerate(node.input_socket_widgets):
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                    outer_socket_edges: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
+                    outer_socket_edges: list[EdgeItem] = [
+                        edge for edge in connected_edges if edge not in selected_edges
+                    ]
                     if len(outer_socket_edges) > 0:
                         socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
                         SocketWidgetClass = getattr(
@@ -334,7 +336,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 for idx, socket_widget in enumerate(node.output_socket_widgets):
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                    outer_socket_edges: list[EdgeItem] = [edge for edge in connected_edges if edge not in selected_edges]
+                    outer_socket_edges: list[EdgeItem] = [
+                        edge for edge in connected_edges if edge not in selected_edges
+                    ]
                     if len(outer_socket_edges) > 0:
                         socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
                         SocketWidgetClass = getattr(
