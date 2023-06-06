@@ -479,9 +479,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             sockets_list.append(socket_widget.prop_model.__getstate__())
 
         data_dict["Sockets"] = sockets_list
-
-        data_dict["Sub Nodes"] = [sub_dict for sub_dict in self._sub_nodes_dict]
-        data_dict["Sub Edges"] = [sub_dict for sub_dict in self._sub_edges_dict]
+        data_dict["Subgraph"] = {
+            "Nodes": [sub_dict for sub_dict in self._sub_nodes_dict],
+            "Edges": [sub_dict for sub_dict in self._sub_edges_dict]
+        }
 
         return data_dict
 
@@ -509,5 +510,5 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_socket_widget.update()
 
         # Reset sub graph data
-        self._sub_nodes_dict: list[dict] = state["Sub Nodes"]
-        self._sub_edges_dict: list[dict] = state["Sub Edges"]
+        self._sub_nodes_dict: list[dict] = state["Subgraph"]["Nodes"]
+        self._sub_edges_dict: list[dict] = state["Subgraph"]["Edges"]

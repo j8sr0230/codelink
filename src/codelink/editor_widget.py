@@ -333,6 +333,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             new_socket_widget.pin.add_edge(edge)
                             socket_widget.pin.remove_edge(edge)
                             edge.end_pin = custom_node.input_socket_widgets[idx].pin
+                        new_socket_widget.update_all()
+                        new_socket_widget.update()
 
                 for idx, socket_widget in enumerate(node.output_socket_widgets):
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
@@ -355,6 +357,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             new_socket_widget.pin.add_edge(edge)
                             socket_widget.pin.remove_edge(edge)
                             edge.start_pin = custom_node.output_socket_widgets[idx].pin
+                        new_socket_widget.update_all()
+                        new_socket_widget.update()
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)
