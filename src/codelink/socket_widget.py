@@ -9,8 +9,8 @@ from pin_item import PinItem
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, label: str = "In", is_input: bool = True, parent_node: Optional['NodeItem'] = None,
-                 parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, label: str = "In", is_input: bool = True, data: object = 0,
+                 parent_node: Optional['NodeItem'] = None, parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
         self._prop_model: PropertyModel = PropertyModel(
@@ -18,7 +18,7 @@ class SocketWidget(QtWidgets.QWidget):
                         "Class": self.__class__.__name__,
                         "Name": label,
                         "Is Input": is_input,
-                        "Data": 0
+                        "Data": data
                         },
             header_left="Socket Property",
             header_right="Value"
@@ -124,3 +124,15 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         self.update_stylesheets()
         self.update_pin_position()
+
+    def __copy__(self) -> 'SocketWidget':
+        copy: 'SocketWidget' = type(self)(
+            label=self._prop_model.properties["Name"],
+            is_input=self._prop_model.properties["Is Input"],
+            data=self._prop_model.properties["Data"],
+            parent_node=self._parent_node,
+            parent_widget=self.parentWidget()
+        )
+        return copy
+
+

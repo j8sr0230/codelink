@@ -312,53 +312,29 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Transfer outside connected sockets and edges to custom node
             for node in selected_nodes:
-                for idx, socket_widget in enumerate(node.input_socket_widgets):
+                for idx, socket_widget in enumerate(node.socket_widgets):
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
                     outer_socket_edges: list[EdgeItem] = [
                         edge for edge in connected_edges if edge not in selected_edges
                     ]
                     if len(outer_socket_edges) > 0:
-                        socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
-                        SocketWidgetClass = getattr(
-                            importlib.import_module("socket_widget"), socket_widget_dict["Class"]
-                        )
-                        new_socket_widget: SocketClass = SocketWidgetClass(
-                            label=socket_widget_dict["Name"],
-                            is_input=socket_widget_dict["Is Input"],
-                            parent_node=custom_node
-                        )
-                        new_socket_widget.prop_model.__setstate__(socket_widget_dict)
-                        custom_node.add_socket_widget(new_socket_widget, idx)
+                        new_socket_widget: SocketWidget = socket_widget.__copy__()
+                        custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
                         for edge in socket_widget.pin.edges:
-                            new_socket_widget.pin.add_edge(edge)
-                            socket_widget.pin.remove_edge(edge)
-                            edge.end_pin = custom_node.input_socket_widgets[idx].pin
-                        new_socket_widget.update_all()
-                        new_socket_widget.update()
+                            if edge in outer_socket_edges:
+                                new_socket_widget.pin.add_edge(edge)
+                                socket_widget.pin.remove_edge(edge)
 
-                for idx, socket_widget in enumerate(node.output_socket_widgets):
-                    connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                    outer_socket_edges: list[EdgeItem] = [
-                        edge for edge in connected_edges if edge not in selected_edges
-                    ]
-                    if len(outer_socket_edges) > 0:
-                        socket_widget_dict: dict = socket_widget.prop_model.__getstate__()
-                        SocketWidgetClass = getattr(
-                            importlib.import_module("socket_widget"), socket_widget_dict["Class"]
-                        )
-                        new_socket_widget: SocketClass = SocketWidgetClass(
-                            label=socket_widget_dict["Name"],
-                            is_input=socket_widget_dict["Is Input"],
-                            parent_node=custom_node
-                        )
-                        new_socket_widget.prop_model.__setstate__(socket_widget_dict)
-                        custom_node.add_socket_widget(new_socket_widget, len(custom_node.input_socket_widgets) + idx)
-                        for edge in socket_widget.pin.edges:
-                            new_socket_widget.pin.add_edge(edge)
-                            socket_widget.pin.remove_edge(edge)
-                            edge.start_pin = custom_node.output_socket_widgets[idx].pin
-                        new_socket_widget.update_all()
-                        new_socket_widget.update()
+                                if socket_widget.is_input:
+                                    edge.end_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
+                                        new_socket_widget)].pin
+                                else:
+                                    edge.start_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
+                                        new_socket_widget)].pin
+
+            new_socket_widget.update_all()
+            new_socket_widget.update()
+            custom_node.sort_socket_widgets()
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)

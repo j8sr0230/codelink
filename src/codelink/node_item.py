@@ -196,6 +196,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return self._content_widget
 
     def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
+        input_widget.pin.setParentItem(self)
+
         self._content_widget.hide()
         self._socket_widgets.insert(insert_idx, input_widget)
         self._content_layout.insertWidget(insert_idx + 1, input_widget)
@@ -225,6 +227,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_widget.update()
             self.update_all()
             self.update()
+
+    def sort_socket_widgets(self) -> None:
+        for socket_widget in self._socket_widgets:
+            if not socket_widget.is_input:
+                self._content_layout.removeWidget(socket_widget)
+                self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
+
+        self._socket_widgets = [child for child in self._content_widget.children() if type(child) == SocketWidget]
 
     def has_in_edges(self) -> bool:
         for socket_widget in self.input_socket_widgets:
