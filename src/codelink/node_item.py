@@ -234,7 +234,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 self._content_layout.removeWidget(socket_widget)
                 self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
 
-        self._socket_widgets = [child for child in self._content_widget.children() if type(child) == SocketWidget]
+        self._socket_widgets = [
+            child for child in self._content_widget.children() if type(child) == SocketWidget and child.is_input
+        ] + [
+            child for child in self._content_widget.children() if type(child) == SocketWidget and not child.is_input
+        ]
 
     def has_in_edges(self) -> bool:
         for socket_widget in self.input_socket_widgets:

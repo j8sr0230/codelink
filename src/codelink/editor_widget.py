@@ -299,7 +299,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             sub_edges_dict: list[dict] = []
             for edge in selected_edges:
-                sub_edges_dict.append(edge.__getstate__())
+                edge_dict_mod: dict = edge.__getstate__()
+
+                # Reset subgraph indexing
+                edge_dict_mod["Start Node Idx"] = selected_nodes.index(edge.start_pin.parentItem())
+                edge_dict_mod["End Node Idx"] = selected_nodes.index(edge.end_pin.parentItem())
+
+                sub_edges_dict.append(edge_dict_mod)
 
             # Add custom node, remove predefined socket widgets and save sub graph
             custom_node: NodeItem = NodeItem()
@@ -312,7 +318,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Transfer outside connected sockets and edges to custom node
             for node in selected_nodes:
-                for idx, socket_widget in enumerate(node.socket_widgets):
+                for socket_widget in node.socket_widgets:
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
                     outer_socket_edges: list[EdgeItem] = [
                         edge for edge in connected_edges if edge not in selected_edges
@@ -332,8 +338,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                                     edge.start_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
                                         new_socket_widget)].pin
 
-            new_socket_widget.update_all()
-            new_socket_widget.update()
+                        new_socket_widget.update_all()
+                        new_socket_widget.update()
+
             custom_node.sort_socket_widgets()
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
