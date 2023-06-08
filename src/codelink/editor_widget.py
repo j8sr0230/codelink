@@ -293,6 +293,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
 
+            # Calculate selection center
+            selection_rect: QtCore.QRectF = self.scene().selectionArea().boundingRect()
+            selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
+            selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
+
             sub_nodes_dict: list[dict] = []
             for node in selected_nodes:
                 sub_nodes_dict.append(node.__getstate__())
@@ -309,14 +314,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Add custom node, remove predefined socket widgets and save sub graph
             custom_node: NodeItem = NodeItem()
-            custom_node.sub_nodes_dict = sub_nodes_dict
-            custom_node.sub_edges_dict = sub_edges_dict
             self.scene().add_node(custom_node)
-            custom_node.setPos(32000, 32000)
-            for i in range(len(custom_node.socket_widgets)):
-                custom_node.remove_socket_widget(0)
+            custom_node.clear_socket_widgets()
+            custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
+            custom_node.sub_scene.deserialize_edges(sub_edges_dict)
+            custom_node.setPos(selection_center_x - 80, selection_center_y - 80)
 
-            # Transfer outside connected sockets and edges to custom node
+            # Transfer inputs and output widgets custom node and reconnect edges
             for node in selected_nodes:
                 for socket_widget in node.socket_widgets:
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
@@ -342,6 +346,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         new_socket_widget.update()
 
             custom_node.sort_socket_widgets()
+
+            # Remove selected nodes including inner edges
+            for node in selected_nodes:
+                self.scene().remove_node(node)
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
             self.setScene(self._temp_scene)

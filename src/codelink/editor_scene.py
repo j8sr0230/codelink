@@ -121,6 +121,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
             if not socket_widget.is_input:
                 graph_dict[socket_widget.pin] = (visited_node.evals[idx], *task_inputs)
 
+        visited_node.subgraph_to_dsk()
+
         return graph_dict
 
     def graph_to_nx(self) -> nx.DiGraph:

@@ -33,8 +33,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
-        self._sub_nodes_dict: list[dict] = []
-        self._sub_edges_dict: list[dict] = []
+        SubScene = getattr(importlib.import_module("editor_scene"), "EditorScene")  # Hack to prevent cyclic import
+        self._sub_scene: SubScene = SubScene()
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -164,6 +164,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
         ]
 
     @property
+    def sub_scene(self) -> QtWidgets.QGraphicsScene:
+        return self._sub_scene
+
+    @property
     def sub_nodes_dict(self) -> list[dict]:
         return self._sub_nodes_dict
 
@@ -228,6 +232,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.update_all()
             self.update()
 
+    def clear_socket_widgets(self):
+        for i in range(len(self.socket_widgets)):
+            self.remove_socket_widget(0)
+
     def sort_socket_widgets(self) -> None:
         for socket_widget in self._socket_widgets:
             if not socket_widget.is_input:
@@ -267,6 +275,15 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 for edge in socket_widget.pin.edges:
                     result.append(edge.end_pin.parent_node)
         return result
+
+    def subgraph_to_dsk(self) -> None:
+        pass
+        # sub_scene: 'EditorScene' = SubScene()
+        # sub_scene.deserialize_nodes(self._sub_nodes_dict)
+        # sub_scene.deserialize_edges(self._sub_edges_dict)
+        #
+        # print(sub_scene.nodes)
+        # print(sub_scene.edges)
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -494,8 +511,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         data_dict["Sockets"] = sockets_list
         data_dict["Subgraph"] = {
-            "Nodes": [sub_dict for sub_dict in self._sub_nodes_dict],
-            "Edges": [sub_dict for sub_dict in self._sub_edges_dict]
+            "Nodes": self.sub_scene.serialize_nodes(),  # [sub_dict for sub_dict in self._sub_nodes_dict],
+            "Edges": self.sub_scene.serialize_edges()  # [sub_dict for sub_dict in self._sub_edges_dict]
         }
 
         return data_dict
@@ -505,8 +522,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setCurrentIndex(state["Option_idx"])
 
         # Remove predefined socket widgets
-        for i in range(len(self._socket_widgets)):
-            self.remove_socket_widget(0)
+        self.clear_socket_widgets()
 
         # Add socket widgets from state
         for i in range(len(state["Sockets"])):
@@ -524,5 +540,5 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_socket_widget.update()
 
         # Reset sub graph data
-        self._sub_nodes_dict: list[dict] = state["Subgraph"]["Nodes"]
-        self._sub_edges_dict: list[dict] = state["Subgraph"]["Edges"]
+        self.sub_scene.deserialize_nodes(state["Subgraph"]["Nodes"])
+        self.sub_scene.deserialize_edges(state["Subgraph"]["Edges"])
