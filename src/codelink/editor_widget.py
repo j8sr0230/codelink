@@ -291,7 +291,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
             # Serialize selected nodes and edges (sub graph)
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
+            # selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
+            selected_edges: list[EdgeItem] = []
+
+            for edge in self.scene().edges:
+                if edge.start_pin.parentItem() in selected_nodes and edge.end_pin.parentItem() in selected_nodes:
+                    selected_edges.append(edge)
 
             # Calculate selection center
             selection_rect: QtCore.QRectF = self.scene().selectionArea().boundingRect()

@@ -12,7 +12,8 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._color: QtGui.QColor = color
+        self._default_color: QtGui.QColor = color
+        self._selected_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
         self._start_pin: Optional[QtWidgets.QGraphicsItem] = None
         self._end_pin: Optional[QtWidgets.QGraphicsItem] = None
@@ -23,11 +24,11 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
 
     @property
     def color(self) -> QtGui.QColor:
-        return self._color
+        return self._default_color
 
     @color.setter
     def color(self, value: QtGui.QColor) -> None:
-        self._color: QtGui.QColor = value
+        self._default_color: QtGui.QColor = value
 
     @property
     def start_pin(self) -> QtWidgets.QGraphicsItem:
@@ -122,8 +123,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
-        pen: QtGui.QPen = QtGui.QPen(self._color)
+
+        pen: QtGui.QPen = QtGui.QPen(self._default_color)
         pen.setWidthF(3.0)
+
+        if self.isSelected():
+            pen.setColor(self._selected_color)
+        else:
+            pen.setColor(self._default_color)
 
         painter.setBrush(QtCore.Qt.NoBrush)
         painter.setPen(pen)
