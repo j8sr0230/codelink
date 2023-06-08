@@ -358,8 +358,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for node in selected_nodes:
                 self.scene().remove_node(node)
 
-        if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ALT:
-            self.setScene(self._temp_scene)
+        if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
+            for selected_item in self.scene().selectedItems():
+                if type(selected_item) is NodeItem:
+                    selected_node: NodeItem = selected_item
+
+                    for idx, node in enumerate(selected_node.sub_scene.nodes):
+                        self.scene().add_node(node)
+                        node_pos: QtCore.QPointF = QtCore.QPointF(
+                            selected_node.x() + 50 * idx, selected_node.y() + 50 * idx
+                        )
+                        node.setPos(node_pos)
+
+                    for edge in selected_node.sub_scene.edges:
+                        self.scene().add_edge(edge)
+
+                    self.scene().remove_node(selected_node)
 
         super().keyPressEvent(event)
 
