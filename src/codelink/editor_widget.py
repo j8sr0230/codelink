@@ -319,8 +319,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
             custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
             custom_node.sub_scene.deserialize_edges(sub_edges_dict)
             custom_node.setPos(selection_center_x - 80, selection_center_y - 80)
+            custom_node.prop_model.setData(
+                custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", QtCore.Qt.EditRole
+            )
 
-            # Transfer inputs and output widgets custom node and reconnect edges
+            # Generate input and output widgets for custom node and reconnect edges
             for node in selected_nodes:
                 for socket_widget in node.socket_widgets:
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
@@ -329,7 +332,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     ]
                     if len(outer_socket_edges) > 0:
                         new_socket_widget: SocketWidget = socket_widget.__copy__()
+                        new_socket_widget.parent_node = custom_node
+                        new_socket_widget.pin.setParentItem(custom_node)
                         custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
+
                         for edge in socket_widget.pin.edges:
                             if edge in outer_socket_edges:
                                 new_socket_widget.pin.add_edge(edge)
@@ -346,6 +352,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         new_socket_widget.update()
 
             custom_node.sort_socket_widgets()
+            custom_node.update_all()
 
             # Remove selected nodes including inner edges
             for node in selected_nodes:

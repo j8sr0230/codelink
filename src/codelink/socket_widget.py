@@ -70,6 +70,14 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model.properties["Is Input"]
 
     @property
+    def parent_node(self) -> 'NodeItem':
+        return self._parent_node
+
+    @parent_node.setter
+    def parent_node(self, value: 'NodeItem') -> None:
+        self._parent_node: 'NodeItem' = value
+
+    @property
     def pin(self) -> PinItem:
         return self._pin_item
 
