@@ -291,9 +291,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
             # Serialize selected nodes and edges (sub graph)
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            # selected_edges: list[EdgeItem] = [item for item in self.scene().selectedItems() if type(item) == EdgeItem]
             selected_edges: list[EdgeItem] = []
-
             for edge in self.scene().edges:
                 if edge.start_pin.parentItem() in selected_nodes and edge.end_pin.parentItem() in selected_nodes:
                     selected_edges.append(edge)
@@ -329,8 +327,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             )
 
             # Generate input and output widgets for custom node and reconnect edges
-            for node in selected_nodes:
-                for socket_widget in node.socket_widgets:
+            for node_idx, node in enumerate(selected_nodes):
+                for socket_idx, socket_widget in enumerate(node.socket_widgets):
                     connected_edges: list[EdgeItem] = socket_widget.pin.edges
                     outer_socket_edges: list[EdgeItem] = [
                         edge for edge in connected_edges if edge not in selected_edges
@@ -339,6 +337,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         new_socket_widget: SocketWidget = socket_widget.__copy__()
                         new_socket_widget.parent_node = custom_node
                         new_socket_widget.pin.setParentItem(custom_node)
+
+                        custom_node.pin_map[len(custom_node.socket_widgets)] = [node_idx, socket_idx]
                         custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
                         for edge in socket_widget.pin.edges:
@@ -358,6 +358,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             custom_node.sort_socket_widgets()
             custom_node.update_all()
+            print(custom_node.pin_map)
 
             # Remove selected nodes including inner edges
             for node in selected_nodes:

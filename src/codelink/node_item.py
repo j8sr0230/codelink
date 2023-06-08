@@ -35,6 +35,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         SubScene = getattr(importlib.import_module("editor_scene"), "EditorScene")  # Hack to prevent cyclic import
         self._sub_scene: SubScene = SubScene()
+        self._pin_map: dict = {}
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -166,6 +167,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def sub_scene(self) -> QtWidgets.QGraphicsScene:
         return self._sub_scene
+
+    @property
+    def pin_map(self) -> dict:
+        return self._pin_map
+
+    @pin_map.setter
+    def pin_map(self, value: dict) -> None:
+        self._pin_map: dict = value
 
     @property
     def sub_nodes_dict(self) -> list[dict]:
@@ -512,7 +521,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         data_dict["Sockets"] = sockets_list
         data_dict["Subgraph"] = {
             "Nodes": self.sub_scene.serialize_nodes(),  # [sub_dict for sub_dict in self._sub_nodes_dict],
-            "Edges": self.sub_scene.serialize_edges()  # [sub_dict for sub_dict in self._sub_edges_dict]
+            "Edges": self.sub_scene.serialize_edges(),  # [sub_dict for sub_dict in self._sub_edges_dict]
+            "Pin Map": self._pin_map
         }
 
         return data_dict
@@ -542,3 +552,4 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Reset sub graph data
         self.sub_scene.deserialize_nodes(state["Subgraph"]["Nodes"])
         self.sub_scene.deserialize_edges(state["Subgraph"]["Edges"])
+        self._pin_map: dict = state["Subgraph"]["Pin Map"]
