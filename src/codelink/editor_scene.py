@@ -54,8 +54,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
     def remove_node(self, node: NodeItem) -> None:
         for socket_widget in node.socket_widgets:
-            for edge in socket_widget.pin.edges:
-                self.remove_edge(edge)
+            for i in range(len(socket_widget.pin.edges)):
+                self.remove_edge(socket_widget.pin.edges[0])
 
         # noinspection PyTypeChecker
         node.content_widget.setParent(None)
