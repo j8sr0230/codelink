@@ -238,10 +238,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.remove_socket_widget(0)
 
     def sort_socket_widgets(self) -> None:
-
         input_pin_map: dict = {}
         output_pin_map: dict = {}
 
+        # Sorts widgets in layout
         for socket_idx, socket_widget in enumerate(self._socket_widgets):
             if not socket_widget.is_input:
                 self._content_layout.removeWidget(socket_widget)
@@ -250,11 +250,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
             else:
                 input_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
 
+        # Sorts pin map
         sorted_pin_map: dict = {}
         for idx, value in enumerate(list(input_pin_map.values()) + list(output_pin_map.values())):
             sorted_pin_map[str(idx)] = value
         self._pin_map: dict = sorted_pin_map
 
+        # Sorts socket widget list
         self._socket_widgets = [
             child for child in self._content_widget.children() if type(child) == SocketWidget and child.is_input
         ] + [
