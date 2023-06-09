@@ -376,7 +376,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     sub_scene_bbox: QtCore.QRectF = selected_node.sub_scene.itemsBoundingRect()
                     sub_scene_center: QtCore.QPointF = QtCore.QPointF(
-                        sub_scene_bbox.y() + sub_scene_bbox.width() / 2,
+                        sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
                         sub_scene_bbox.y() + sub_scene_bbox.height() / 2
                     )
 
