@@ -122,9 +122,15 @@ class EditorScene(QtWidgets.QGraphicsScene):
             if not socket_widget.is_input:
                 graph_dict[socket_widget.pin] = (visited_node.evals[idx], *task_inputs)
 
-        visited_node.subgraph_to_dsk()
-
         return graph_dict
+
+    def deep_graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+        for pre in visited_node.predecessors():
+            print(pre.prop_model.properties["Name"])
+            if len(pre.sub_scene.items()) > 0:
+                for sub_node in pre.sub_scene.nodes:
+                    self.deep_graph_to_dsk(sub_node, {})
+                    print(sub_node.prop_model.properties["Name"])
 
     def graph_to_nx(self) -> nx.DiGraph:
         nx_graph: nx.DiGraph = nx.DiGraph()
