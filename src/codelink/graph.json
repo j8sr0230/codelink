@@ -43,8 +43,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32150,
-                "Y": 31940,
+                "X": 31940,
+                "Y": 32000,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -77,11 +77,11 @@
         {
             "Properties": {
                 "Class": "NodeItem",
-                "Name": "Custom Node",
+                "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31860,
-                "Y": 31860,
+                "X": 31920,
+                "Y": 31770,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -94,106 +94,58 @@
                 },
                 {
                     "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
                     "Name": "Res",
                     "Is Input": false,
                     "Data": 0
                 }
             ],
             "Subgraph": {
-                "Nodes": [
-                    {
-                        "Properties": {
-                            "Class": "NodeItem",
-                            "Name": "Scalar Math",
-                            "Color": "#1D1D1D",
-                            "Collapse State": false,
-                            "X": 31930,
-                            "Y": 32060,
-                            "Width": 160
-                        },
-                        "Option_idx": 0,
-                        "Sockets": [
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "B",
-                                "Is Input": true,
-                                "Data": 0
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
-                            }
-                        ],
-                        "Subgraph": {
-                            "Nodes": [],
-                            "Edges": [],
-                            "Pin Map": {}
-                        }
-                    },
-                    {
-                        "Properties": {
-                            "Class": "NodeItem",
-                            "Name": "Scalar Math",
-                            "Color": "#1D1D1D",
-                            "Collapse State": false,
-                            "X": 31910,
-                            "Y": 31840,
-                            "Width": 160
-                        },
-                        "Option_idx": 0,
-                        "Sockets": [
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "B",
-                                "Is Input": true,
-                                "Data": 0
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
-                            }
-                        ],
-                        "Subgraph": {
-                            "Nodes": [],
-                            "Edges": [],
-                            "Pin Map": {}
-                        }
-                    }
-                ],
-                "Edges": [
-                    {
-                        "Start Node Idx": 1,
-                        "Start Socket Idx": 2,
-                        "End Node Idx": 0,
-                        "End Socket Idx": 0
-                    }
-                ],
-                "Pin Map": {
-                    "0": [
-                        0,
-                        2
-                    ],
-                    "1": [
-                        1,
-                        0
-                    ]
+                "Nodes": [],
+                "Edges": [],
+                "Pin Map": {}
+            }
+        },
+        {
+            "Properties": {
+                "Class": "NodeItem",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 32220,
+                "Y": 31900,
+                "Width": 160
+            },
+            "Option_idx": 0,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Is Input": false,
+                    "Data": 0
                 }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Pin Map": {}
             }
         }
     ],
@@ -206,8 +158,38 @@
         },
         {
             "Start Node Idx": 2,
-            "Start Socket Idx": 1,
+            "Start Socket Idx": 2,
             "End Node Idx": 1,
+            "End Socket Idx": 0
+        },
+        {
+            "Start Node Idx": 1,
+            "Start Socket Idx": 2,
+            "End Node Idx": 3,
+            "End Socket Idx": 0
+        },
+        {
+            "Start Node Idx": 0,
+            "Start Socket Idx": 2,
+            "End Node Idx": 2,
+            "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 0,
+            "Start Socket Idx": 2,
+            "End Node Idx": 1,
+            "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 2,
+            "End Node Idx": 1,
+            "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 2,
+            "End Node Idx": 3,
             "End Socket Idx": 0
         }
     ]

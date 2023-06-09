@@ -177,28 +177,19 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._pin_map: dict = value
 
     @property
-    def sub_nodes_dict(self) -> list[dict]:
-        return self._sub_nodes_dict
-
-    @sub_nodes_dict.setter
-    def sub_nodes_dict(self, value: list[dict]) -> None:
-        self._sub_nodes_dict: list[dict] = value
-
-    @property
-    def sub_edges_dict(self) -> list[dict]:
-        return self._sub_edges_dict
-
-    @sub_edges_dict.setter
-    def sub_edges_dict(self, value: list[dict]) -> None:
-        self._sub_edges_dict: list[dict] = value
-
-    @property
     def header_height(self) -> int:
         return self._header_height
 
     @property
     def content_y(self) -> float:
         return self._content_y
+
+    @property
+    def center(self) -> QtCore.QPointF:
+        return QtCore.QPointF(
+            self.x() + self.boundingRect().width() / 2,
+            self.y() + self.boundingRect().height() / 2
+        )
 
     @property
     def is_collapsed(self) -> str:
@@ -246,10 +237,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.remove_socket_widget(0)
 
     def sort_socket_widgets(self) -> None:
-        for socket_widget in self._socket_widgets:
+
+        input_pin_map: dict = {}
+        output_pin_map: dict = {}
+
+        for socket_idx, socket_widget in enumerate(self._socket_widgets):
             if not socket_widget.is_input:
                 self._content_layout.removeWidget(socket_widget)
                 self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
+                output_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
+            else:
+                input_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
+
+        sorted_pin_map: dict = {}
+        for idx, value in enumerate(list(input_pin_map.values()) + list(output_pin_map.values())):
+            sorted_pin_map[str(idx)] = value
+        self._pin_map: dict = sorted_pin_map
 
         self._socket_widgets = [
             child for child in self._content_widget.children() if type(child) == SocketWidget and child.is_input

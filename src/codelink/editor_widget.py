@@ -321,7 +321,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             custom_node.clear_socket_widgets()
             custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
             custom_node.sub_scene.deserialize_edges(sub_edges_dict)
-            custom_node.setPos(selection_center_x - 80, selection_center_y - 80)
             custom_node.prop_model.setData(
                 custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", QtCore.Qt.EditRole
             )
@@ -338,7 +337,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         new_socket_widget.parent_node = custom_node
                         new_socket_widget.pin.setParentItem(custom_node)
 
-                        custom_node.pin_map[len(custom_node.socket_widgets)] = [node_idx, socket_idx]
+                        custom_node.pin_map[str(len(custom_node.socket_widgets))] = [node_idx, socket_idx]
                         custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
                         for edge in socket_widget.pin.edges:
@@ -353,12 +352,18 @@ class EditorWidget(QtWidgets.QGraphicsView):
                                     edge.start_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
                                         new_socket_widget)].pin
 
+                                edge.sort_pins()
+
                         new_socket_widget.update_all()
                         new_socket_widget.update()
 
+            custom_node.setPos(
+                selection_center_x - custom_node.boundingRect().width() / 2,
+                selection_center_y - custom_node.boundingRect().height() / 2
+            )
+
             custom_node.sort_socket_widgets()
             custom_node.update_all()
-            print(custom_node.pin_map)
 
             # Remove selected nodes including inner edges
             for node in selected_nodes:
@@ -369,15 +374,46 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(selected_item) is NodeItem:
                     selected_node: NodeItem = selected_item
 
+                    sub_scene_bbox: QtCore.QRectF = selected_node.sub_scene.itemsBoundingRect()
+                    sub_scene_center: QtCore.QPointF = QtCore.QPointF(
+                        sub_scene_bbox.y() + sub_scene_bbox.width() / 2,
+                        sub_scene_bbox.y() + sub_scene_bbox.height() / 2
+                    )
+
+                    unzipped_nodes: list[NodeItem] = []
                     for idx, node in enumerate(selected_node.sub_scene.nodes):
                         self.scene().add_node(node)
                         node_pos: QtCore.QPointF = QtCore.QPointF(
-                            selected_node.x() + 50 * idx, selected_node.y() + 50 * idx
+                            node.x() + (selected_node.center.x() - sub_scene_center.x()),
+                            node.y() + (selected_node.center.y() - sub_scene_center.y())
                         )
                         node.setPos(node_pos)
+                        unzipped_nodes.append(node)
 
                     for edge in selected_node.sub_scene.edges:
                         self.scene().add_edge(edge)
+
+                    for socket_idx, socket_widget in enumerate(selected_node.socket_widgets):
+                        for edge in socket_widget.pin.edges:
+                            if str(socket_idx) in selected_node.pin_map.keys():
+                                target_node: NodeItem = unzipped_nodes[
+                                    selected_node.pin_map[str(socket_idx)][0]
+                                ]
+                                target_socket: SocketWidget = target_node.socket_widgets[
+                                    selected_node.pin_map[str(socket_idx)][1]
+                                ]
+
+                                target_socket.pin.add_edge(edge)
+                                socket_widget.pin.remove_edge(edge)
+
+                                if target_socket.is_input:
+                                    edge.end_pin = target_socket.pin
+                                else:
+                                    edge.start_pin = target_socket.pin
+
+                                edge.sort_pins()
+                                target_socket.update_all()
+                                target_socket.update()
 
                     self.scene().remove_node(selected_node)
 
