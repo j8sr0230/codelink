@@ -217,8 +217,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             remove_widget: SocketWidget = self._socket_widgets[remove_idx]
             remove_edges: list[EdgeItem] = remove_widget.pin.edges
 
-            for edge_item in remove_edges:
-                self.scene().remove_edge(edge_item)
+            while len(remove_edges) > 0:
+                edge: EdgeItem = remove_edges.pop()
+                self.scene().remove_edge(edge)
 
             self.scene().removeItem(remove_widget.pin)
             self._content_layout.removeWidget(remove_widget)
@@ -233,7 +234,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.update()
 
     def clear_socket_widgets(self):
-        for i in range(len(self.socket_widgets)):
+        while len(self.socket_widgets) > 0:
             self.remove_socket_widget(0)
 
     def sort_socket_widgets(self) -> None:

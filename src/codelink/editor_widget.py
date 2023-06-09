@@ -366,7 +366,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             custom_node.update_all()
 
             # Remove selected nodes including inner edges
-            for node in selected_nodes:
+            while len(selected_nodes) > 0:
+                node: NodeItem = selected_nodes.pop()
                 self.scene().remove_node(node)
 
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
