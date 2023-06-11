@@ -277,12 +277,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def predecessors(self) -> list['NodeItem']:
         # TODO: Implement sub scene traveling
-
         result: list['NodeItem'] = []
-        for socket_widget in self._socket_widgets:
-            if socket_widget.is_input:
-                for edge in socket_widget.pin.edges:
-                    result.append(edge.start_pin.parent_node)
+
+        if len(self._sub_scene.nodes) > 0:
+            # If custom node
+            pass
+
+        else:
+            # Simple node (top level node or custom node child)
+            for socket_widget in self._socket_widgets:
+                if socket_widget.is_input:
+                    for edge in socket_widget.pin.edges:
+                        result.append(edge.start_pin.parent_node)
         return result
 
     def successors(self) -> list['NodeItem']:
