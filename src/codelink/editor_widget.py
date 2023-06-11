@@ -319,6 +319,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Add custom node, remove predefined socket widgets and save sub graph
             custom_node: NodeItem = NodeItem()
+            custom_node.sub_scene.parent_custom_node = custom_node
             self.scene().add_node(custom_node)
             custom_node.clear_socket_widgets()
             custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)

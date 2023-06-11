@@ -559,3 +559,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.sub_scene.deserialize_nodes(state["Subgraph"]["Nodes"])
         self.sub_scene.deserialize_edges(state["Subgraph"]["Edges"])
         self._pin_map: dict = state["Subgraph"]["Pin Map"]
+
+        if len(self.sub_scene.nodes) > 0:
+            # If custom node with sub scene
+            for sub_node in self.sub_scene.nodes:
+                sub_node.parent_custom_node = self

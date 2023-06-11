@@ -21,6 +21,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self._nodes: list[NodeItem] = []
         self._edges: list[EdgeItem] = []
 
+        self._parent_custom_node: Optional[NodeItem] = None
+
         self._grid_spacing: int = 50
         self._background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
         self._grid_color: QtGui.QColor = QtGui.QColor("#282828")
@@ -45,6 +47,14 @@ class EditorScene(QtWidgets.QGraphicsScene):
     @edges.setter
     def edges(self, value: list[EdgeItem]) -> None:
         self._edges: list[EdgeItem] = value
+
+    @property
+    def parent_custom_node(self) -> Optional[NodeItem]:
+        return self._parent_custom_node
+
+    @parent_custom_node.setter
+    def parent_custom_node(self, value: Optional[NodeItem]) -> None:
+        self._parent_custom_node: Optional[NodeItem] = value
 
     # --- Scene manipulation ---
 
