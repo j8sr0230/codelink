@@ -276,6 +276,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return False
 
     def predecessors(self) -> list['NodeItem']:
+        # TODO: Implement sub scene traveling
+
         result: list['NodeItem'] = []
         for socket_widget in self._socket_widgets:
             if socket_widget.is_input:
