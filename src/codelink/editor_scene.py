@@ -134,9 +134,26 @@ class EditorScene(QtWidgets.QGraphicsScene):
     #
     #     return graph_dict
 
-    def deep_graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    # def deep_graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    #     for node in visited_node.predecessors():
+    #         self.deep_graph_to_dsk(node, graph_dict)
+    #
+    #     print(visited_node.prop_model.properties["Name"])
+    #
+    #     # task_inputs: list = []
+    #     # for socket_widget in visited_node.input_socket_widgets:
+    #     #     if socket_widget.is_input:
+    #     #         task_inputs.append(socket_widget.input_data())
+    #     #
+    #     # for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
+    #     #     if not socket_widget.is_input:
+    #     #         graph_dict[socket_widget.parent_node.prop_model.properties["Name"]] = task_inputs
+    #
+    #     return graph_dict
+
+    def graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
-            self.deep_graph_to_dsk(node, graph_dict)
+            self.graph_to_dsk(node, graph_dict)
 
         task_inputs: list = []
         for socket_widget in visited_node.input_socket_widgets:
@@ -145,7 +162,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
         for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
             if not socket_widget.is_input:
-                graph_dict[socket_widget.parent_node.prop_model.properties["Name"]] = task_inputs
+                graph_dict[socket_widget.pin] = (visited_node.evals[idx], *task_inputs)
 
         return graph_dict
 

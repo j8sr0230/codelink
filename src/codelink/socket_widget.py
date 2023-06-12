@@ -86,47 +86,56 @@ class SocketWidget(QtWidgets.QWidget):
         return self._input_widget
 
     def input_data(self) -> Union['NodeItem', int]:
-        result: list = []
-
-        # Process all connected edges
-        for edge in self._pin_item.edges:
-            if len(edge.start_pin.socket_widget.parent_node.sub_scene.nodes) == 0:
-                # If edge end IS NOT a custom node socket, go along edge
-                result.append(edge.start_pin.socket_widget.prop_model.properties["Name"])  # .socket_widget
-            else:
-                # If edge end IS a custom node socket, step into custom node
-                custom_node: 'NodeItem' = edge.start_pin.socket_widget.parent_node
-                custom_socket_key: str = str(custom_node.socket_widgets.index(edge.start_pin.socket_widget))
-                inner_pin_map: dict = custom_node.pin_map
-                inner_socket_idx: list[int] = inner_pin_map[custom_socket_key]
-                inner_node: 'NodeItem' = custom_node.sub_scene.nodes[inner_socket_idx[0]]
-                inner_socket: 'SocketWidget' = inner_node.socket_widgets[inner_socket_idx[1]]
-                result.append(inner_socket.prop_model.properties["Name"])
-
-        # In addition to connected edges, check for inputs from upper level
-        socket_idx: list[int] = [
-            self.parent_node.scene().nodes.index(self.parent_node),
-            self.parent_node.socket_widgets.index(self)
-        ]
-
-        parent_custom: Optiona['NodeItem'] = self.parent_node.scene().parent_custom_node
-        if parent_custom and socket_idx in list(parent_custom.pin_map.values()):
-            # If node is in custom node (inner node), step out from inner node to custom node input
-            parent_socket_idx: int = list(parent_custom.pin_map.values()).index(socket_idx)
-            upper_level_socket_widget: 'SocketWidget' = parent_custom.socket_widgets[parent_socket_idx]
-
-            # TODO: Issues with compound in compound
-            for edge in upper_level_socket_widget.pin.edges:
-                result.append(edge.start_pin.socket_widget.prop_model.properties["Name"])
-
-        # If result still empty, grab data from input widget
-        if len(result) == 0:
+        if self._pin_item.has_edges():
+            return self._pin_item.edges[0].start_pin  # .socket_widget
+        else:
             if self._input_widget.text() != "":
-                result.append(int(self._input_widget.text()))
+                return int(self._input_widget.text())
             else:
-                result.append(0)
+                return 0
 
-        return result
+    # def input_data(self) -> Union['NodeItem', int]:
+    #     result: list = []
+    #
+    #     # Process all connected edges
+    #     for edge in self._pin_item.edges:
+    #         if len(edge.start_pin.socket_widget.parent_node.sub_scene.nodes) == 0:
+    #             # If edge end IS NOT a custom node socket, go along edge
+    #             result.append(edge.start_pin.socket_widget.prop_model.properties["Name"])  # .socket_widget
+    #         else:
+    #             # If edge end IS a custom node socket, step into custom node
+    #             custom_node: 'NodeItem' = edge.start_pin.socket_widget.parent_node
+    #             custom_socket_key: str = str(custom_node.socket_widgets.index(edge.start_pin.socket_widget))
+    #             inner_pin_map: dict = custom_node.pin_map
+    #             inner_socket_idx: list[int] = inner_pin_map[custom_socket_key]
+    #             inner_node: 'NodeItem' = custom_node.sub_scene.nodes[inner_socket_idx[0]]
+    #             inner_socket: 'SocketWidget' = inner_node.socket_widgets[inner_socket_idx[1]]
+    #             result.append(inner_socket.prop_model.properties["Name"])
+    #
+    #     # In addition to connected edges, check for inputs from upper level
+    #     socket_idx: list[int] = [
+    #         self.parent_node.scene().nodes.index(self.parent_node),
+    #         self.parent_node.socket_widgets.index(self)
+    #     ]
+    #
+    #     parent_custom: Optiona['NodeItem'] = self.parent_node.scene().parent_custom_node
+    #     if parent_custom and socket_idx in list(parent_custom.pin_map.values()):
+    #         # If node is in custom node (inner node), step out from inner node to custom node input
+    #         parent_socket_idx: int = list(parent_custom.pin_map.values()).index(socket_idx)
+    #         upper_level_socket_widget: 'SocketWidget' = parent_custom.socket_widgets[parent_socket_idx]
+    #
+    #         # TODO: Issues with compound in compound
+    #         for edge in upper_level_socket_widget.pin.edges:
+    #             result.append(edge.start_pin.socket_widget.prop_model.properties["Name"])
+    #
+    #     # If result still empty, grab data from input widget
+    #     if len(result) == 0:
+    #         if self._input_widget.text() != "":
+    #             result.append(int(self._input_widget.text()))
+    #         else:
+    #             result.append(0)
+    #
+    #     return result
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:
