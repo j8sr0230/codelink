@@ -182,10 +182,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().remove_edge(self._temp_edge)
 
             for node in self.scene().graph_ends():
-                # dsk: dict = self.scene().graph_to_dsk(node, {})
-                print(self.scene().deep_graph_to_dsk(node, {}))
+                dsk: dict = self.scene().graph_to_dsk(node, {})
+                #self.scene().deep_graph_to_dsk(node, {})
 
-                # print(get(dsk, node.socket_widgets[-1].pin))
+                print(get(dsk, node.socket_widgets[-1].pin))
 
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)
@@ -376,50 +376,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
             for selected_item in self.scene().selectedItems():
                 if type(selected_item) is NodeItem:
-                    selected_node: NodeItem = selected_item
-
-                    sub_scene_bbox: QtCore.QRectF = selected_node.sub_scene.itemsBoundingRect()
-                    sub_scene_center: QtCore.QPointF = QtCore.QPointF(
-                        sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
-                        sub_scene_bbox.y() + sub_scene_bbox.height() / 2
-                    )
-
-                    unzipped_nodes: list[NodeItem] = []
-                    for idx, node in enumerate(selected_node.sub_scene.nodes):
-                        self.scene().add_node(node)
-                        node_pos: QtCore.QPointF = QtCore.QPointF(
-                            node.x() + (selected_node.center.x() - sub_scene_center.x()),
-                            node.y() + (selected_node.center.y() - sub_scene_center.y())
-                        )
-                        node.setPos(node_pos)
-                        unzipped_nodes.append(node)
-
-                    for edge in selected_node.sub_scene.edges:
-                        self.scene().add_edge(edge)
-
-                    for socket_idx, socket_widget in enumerate(selected_node.socket_widgets):
-                        for edge in socket_widget.pin.edges:
-                            if str(socket_idx) in selected_node.pin_map.keys():
-                                target_node: NodeItem = unzipped_nodes[
-                                    selected_node.pin_map[str(socket_idx)][0]
-                                ]
-                                target_socket: SocketWidget = target_node.socket_widgets[
-                                    selected_node.pin_map[str(socket_idx)][1]
-                                ]
-
-                                target_socket.pin.add_edge(edge)
-                                socket_widget.pin.remove_edge(edge)
-
-                                if target_socket.is_input:
-                                    edge.end_pin = target_socket.pin
-                                else:
-                                    edge.start_pin = target_socket.pin
-
-                                edge.sort_pins()
-                                target_socket.update_all()
-                                target_socket.update()
-
-                    self.scene().remove_node(selected_node)
+                    self.scene().resolve_custom_node(selected_item)
 
         super().keyPressEvent(event)
 

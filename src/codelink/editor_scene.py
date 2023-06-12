@@ -110,6 +110,51 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.removeItem(edge)
         self._edges.remove(edge)
 
+    def resolve_custom_node(self, custom_node: NodeItem):
+        if len(custom_node.sub_scene.nodes) > 0:
+            sub_scene_bbox: QtCore.QRectF = custom_node.sub_scene.itemsBoundingRect()
+            sub_scene_center: QtCore.QPointF = QtCore.QPointF(
+                sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
+                sub_scene_bbox.y() + sub_scene_bbox.height() / 2
+            )
+
+            unzipped_nodes: list[NodeItem] = []
+            for idx, node in enumerate(custom_node.sub_scene.nodes):
+                self.add_node(node)
+                node_pos: QtCore.QPointF = QtCore.QPointF(
+                    node.x() + (custom_node.center.x() - sub_scene_center.x()),
+                    node.y() + (custom_node.center.y() - sub_scene_center.y())
+                )
+                node.setPos(node_pos)
+                unzipped_nodes.append(node)
+
+            for edge in custom_node.sub_scene.edges:
+                self.add_edge(edge)
+
+            for socket_idx, socket_widget in enumerate(custom_node.socket_widgets):
+                for edge in socket_widget.pin.edges:
+                    if str(socket_idx) in custom_node.pin_map.keys():
+                        target_node: NodeItem = unzipped_nodes[
+                            custom_node.pin_map[str(socket_idx)][0]
+                        ]
+                        target_socket: SocketWidget = target_node.socket_widgets[
+                            custom_node.pin_map[str(socket_idx)][1]
+                        ]
+
+                        target_socket.pin.add_edge(edge)
+                        socket_widget.pin.remove_edge(edge)
+
+                        if target_socket.is_input:
+                            edge.end_pin = target_socket.pin
+                        else:
+                            edge.start_pin = target_socket.pin
+
+                        edge.sort_pins()
+                        target_socket.update_all()
+                        target_socket.update()
+
+            self.remove_node(custom_node)
+
     # --- Digraph analytics ---
 
     def graph_ends(self) -> list[NodeItem]:
@@ -134,9 +179,26 @@ class EditorScene(QtWidgets.QGraphicsScene):
     #
     #     return graph_dict
 
-    def deep_graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    # def deep_graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    #     for node in visited_node.predecessors():
+    #         self.deep_graph_to_dsk(node, graph_dict)
+    #
+    #     print(visited_node.prop_model.properties["Name"])
+    #
+    #     # task_inputs: list = []
+    #     # for socket_widget in visited_node.input_socket_widgets:
+    #     #     if socket_widget.is_input:
+    #     #         task_inputs.append(socket_widget.input_data())
+    #     #
+    #     # for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
+    #     #     if not socket_widget.is_input:
+    #     #         graph_dict[socket_widget.parent_node.prop_model.properties["Name"]] = task_inputs
+    #
+    #     return graph_dict
+
+    def graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
-            self.deep_graph_to_dsk(node, graph_dict)
+            self.graph_to_dsk(node, graph_dict)
 
         task_inputs: list = []
         for socket_widget in visited_node.input_socket_widgets:
@@ -145,7 +207,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
         for idx, socket_widget in enumerate(visited_node.output_socket_widgets):
             if not socket_widget.is_input:
-                graph_dict[socket_widget.parent_node.prop_model.properties["Name"]] = task_inputs
+                graph_dict[socket_widget.pin] = (visited_node.evals[idx], *task_inputs)
 
         return graph_dict
 

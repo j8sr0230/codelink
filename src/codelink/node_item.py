@@ -275,37 +275,56 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 return True
         return False
 
+    # def predecessors(self) -> list['NodeItem']:
+    #     result: list['NodeItem'] = []
+    #
+    #     if len(self._sub_scene.nodes) > 0:
+    #         # If node is custom node, collect to output connected sub nodes
+    #         for idx, socket_widget in enumerate(self._socket_widgets):
+    #             if not socket_widget.is_input:
+    #                 mapped_node_idx:  int = self._pin_map[str(idx)][0]
+    #                 #result.append(self._sub_scene.nodes[mapped_node_idx])
+    #                 return self._sub_scene.nodes[mapped_node_idx].predecessors()
+    #
+    #     else:
+    #         # Process top level nodes or custom node children
+    #         for socket_widget in self.input_socket_widgets:
+    #
+    #             for edge in socket_widget.pin.edges:
+    #                 # Collect all connected nodes (default behavior)
+    #                 result.append(edge.start_pin.parent_node)
+    #
+    #             socket_idx: list[int] = [
+    #                 self.scene().nodes.index(self),
+    #                 self.socket_widgets.index(socket_widget)
+    #             ]
+    #             parent_custom: Optiona['NodeItem'] = self.scene().parent_custom_node
+    #             if parent_custom is not None and socket_idx in list(parent_custom.pin_map.values()):
+    #                 # Collect all nodes, that are connected to custom node input
+    #                 parent_socket_idx: int = list(parent_custom.pin_map.values()).index(socket_idx)
+    #                 upper_level_socket_widget: SocketWidget = parent_custom.socket_widgets[parent_socket_idx]
+    #
+    #                 for edge in upper_level_socket_widget.pin.edges:
+    #                     result.append(edge.start_pin.parent_node)
+    #
+    #     return result
+
     def predecessors(self) -> list['NodeItem']:
+        # TODO: Implement sub scene traveling
+
         result: list['NodeItem'] = []
-
-        if len(self._sub_scene.nodes) > 0:
-            # If node is custom node, collect to output connected sub nodes
-            for idx, socket_widget in enumerate(self._socket_widgets):
-                if not socket_widget.is_input:
-                    mapped_node_idx:  int = self._pin_map[str(idx)][0]
-                    result.append(self._sub_scene.nodes[mapped_node_idx])
-
-        else:
-            # Process top level nodes or custom node children
-            for socket_widget in self.input_socket_widgets:
-
+        for socket_widget in self._socket_widgets:
+            if socket_widget.is_input:
                 for edge in socket_widget.pin.edges:
-                    # Collect all connected nodes (default behavior)
                     result.append(edge.start_pin.parent_node)
+        return result
 
-                socket_idx: list[int] = [
-                    self.scene().nodes.index(self),
-                    self.socket_widgets.index(socket_widget)
-                ]
-                parent_custom: Optiona['NodeItem'] = self.scene().parent_custom_node
-                if parent_custom is not None and socket_idx in list(parent_custom.pin_map.values()):
-                    # Collect all nodes, that are connected to custom node input
-                    parent_socket_idx: int = list(parent_custom.pin_map.values()).index(socket_idx)
-                    upper_level_socket_widget: SocketWidget = parent_custom.socket_widgets[parent_socket_idx]
-
-                    for edge in upper_level_socket_widget.pin.edges:
-                        result.append(edge.start_pin.parent_node)
-
+    def successors(self) -> list['NodeItem']:
+        result: list['NodeItem'] = []
+        for socket_widget in self._socket_widgets:
+            if not socket_widget.is_input:
+                for edge in socket_widget.pin.edges:
+                    result.append(edge.end_pin.parent_node)
         return result
 
     # noinspection PyUnusedLocal
