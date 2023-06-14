@@ -11,11 +11,13 @@ import PySide2.QtGui as QtGui
 
 from editor_scene import EditorScene
 from property_widget import PropertyWidget
+from property_table import PropertyTable
 from pin_item import PinItem
 from socket_widget import SocketWidget
 from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
+from frame_item import FrameItem
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
@@ -129,6 +131,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.show()
                 else:
                     self._prop_scroller.hide()
+
+                    if type(self.itemAt(event.pos())) == FrameItem:
+                        frame_item: FrameItem = self.itemAt(event.pos())
+                        self.table_view: PropertyTable = PropertyTable()
+                        self.table_view.setModel(frame_item.prop_model)
+                        self.table_view.show()
 
                 super().mousePressEvent(event)
 
@@ -383,6 +391,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for selected_item in self.scene().selectedItems():
                 if type(selected_item) is NodeItem:
                     self.scene().resolve_custom_node(selected_item)
+
+        if event.key() == QtCore.Qt.Key_F:
+            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+
+            frame_item: FrameItem = FrameItem()
+            self.scene().addItem(frame_item)
+            for node in selected_nodes:
+                node.setParentItem(frame_item)
 
         super().keyPressEvent(event)
 
