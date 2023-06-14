@@ -116,10 +116,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self.scene().clearSelection()
                     self._last_node: NodeItem = self.itemAt(event.pos())
 
-                    for socket_w in self._last_node.socket_widgets:
-                        linked_s: SocketWidget = self._last_node.linked_lowest_socket(socket_w)
-                        print(socket_w.prop_model.properties["Name"], "->", linked_s.prop_model.properties["Name"])
-                        print(linked_s.parent_node.linked_highest_socket(linked_s).prop_model.properties["Name"], "<-", linked_s.prop_model.properties["Name"])
+                    print("Pres", [node.prop_model.properties["Name"] for node in self._last_node.predecessors()])
 
                     self._last_node.setSelected(True)
                     prop_widget: PropertyWidget = PropertyWidget(
@@ -253,8 +250,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().deserialize_nodes(data_dict["Nodes"])
                 self.scene().deserialize_edges(data_dict["Edges"])
 
-            #self.scene().flatten_scene()
-
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
                 if type(self.scene().selectedItems()[0]) is NodeItem:
@@ -349,10 +344,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         custom_node.pin_map[str(len(custom_node.socket_widgets))] = [node_idx, socket_idx]
                         custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
-                        for edge in socket_widget.pin.edges:
+                        while len(socket_widget.pin.edges) > 0:
+                            edge: EdgeItem = socket_widget.pin.edges.pop()
+
                             if edge in outer_socket_edges:
                                 new_socket_widget.pin.add_edge(edge)
-                                socket_widget.pin.remove_edge(edge)
 
                                 if socket_widget.is_input:
                                     edge.end_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
@@ -374,7 +370,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
             custom_node.sort_socket_widgets()
             custom_node.update_all()
 
-            # Remove selected nodes including inner edges
+            # Remove selected nodes and inner edges
+            while len(selected_edges) > 0:
+                edge: EdgeItem = selected_edges.pop()
+                self.scene().remove_edge(edge)
+
             while len(selected_nodes) > 0:
                 node: NodeItem = selected_nodes.pop()
                 self.scene().remove_node(node)
