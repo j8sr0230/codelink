@@ -9,6 +9,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from item_delegates import StringDelegate
 from editor_scene import EditorScene
 from property_widget import PropertyWidget
 from property_table import PropertyTable
@@ -128,12 +129,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.show()
 
                 elif type(self.itemAt(event.pos())) == FrameItem:
+                    self.scene().clearSelection()
                     frame_item: FrameItem = self.itemAt(event.pos())
                     table_view: PropertyTable = PropertyTable()
                     table_view.setModel(frame_item.prop_model)
+                    table_view.setItemDelegateForRow(1, StringDelegate(table_view))
+                    table_view.setItemDelegateForRow(2, StringDelegate(table_view))
+                    table_view.setFixedWidth(self._prop_scroller.width())
+                    table_view.setFixedHeight(
+                        table_view.model().rowCount() * table_view.rowHeight(0) +
+                        table_view.horizontalHeader().height()
+                    )
                     self._prop_scroller.setWidget(table_view)
                     self._prop_scroller.show()
                 else:
+                    self.scene().clearSelection()
                     self._prop_scroller.hide()
 
                 super().mousePressEvent(event)

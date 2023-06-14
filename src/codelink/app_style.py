@@ -7,7 +7,7 @@ MAIN_STYLE: str = """
 		padding: 0px;
 		margin: 0px;
 		border: none;
-		background-color: transparent;
+		background-color: #282828;
 	}
 	
 	QTableView {
