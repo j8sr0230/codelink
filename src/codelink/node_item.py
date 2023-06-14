@@ -275,6 +275,30 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 return True
         return False
 
+    def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+        if len(self._sub_scene.nodes) > 0:
+            linked_node_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][0]
+            linked_socket_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][1]
+            linked_socket: SocketWidget = self._sub_scene.nodes[linked_node_idx].socket_widgets[linked_socket_idx]
+            return linked_socket.parent_node.linked_lowest_socket(linked_socket)
+        else:
+            return socket
+
+    def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+        if self.scene().parent_custom_node:
+            pin_map: dict = self.scene().parent_custom_node.pin_map
+            linked_node_idx: int = self.scene().nodes.index(self)
+            linked_socket_idx: int = self.scene().nodes[linked_node_idx].socket_widgets.index(socket)
+            if [linked_node_idx, linked_socket_idx] in list(pin_map.values()):
+                linked_socket: SocketWidget = self.scene().parent_custom_node.socket_widgets[
+                    list(pin_map.values()).index(linked_socket_id)
+                ]
+                return self.scene().parent_custom_node.linked_highest_socket(linked_socket)
+            else:
+                return socket
+        else:
+            return socket
+
     # def predecessors(self) -> list['NodeItem']:
     #     result: list['NodeItem'] = []
     #
@@ -283,7 +307,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     #         for idx, socket_widget in enumerate(self._socket_widgets):
     #             if not socket_widget.is_input:
     #                 mapped_node_idx:  int = self._pin_map[str(idx)][0]
-    #                 #result.append(self._sub_scene.nodes[mapped_node_idx])
+    #                 result.append(self._sub_scene.nodes[mapped_node_idx])
     #                 return self._sub_scene.nodes[mapped_node_idx].predecessors()
     #
     #     else:

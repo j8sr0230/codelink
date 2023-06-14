@@ -115,6 +115,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(self.itemAt(event.pos())) == NodeItem:
                     self.scene().clearSelection()
                     self._last_node: NodeItem = self.itemAt(event.pos())
+
+                    for socket_w in self._last_node.socket_widgets:
+                        linked_s: SocketWidget = self._last_node.linked_lowest_socket(socket_w)
+                        print(socket_w.prop_model.properties["Name"], "->", linked_s.prop_model.properties["Name"])
+                        print(linked_s.parent_node.linked_highest_socket(linked_s).prop_model.properties["Name"], "<-", linked_s.prop_model.properties["Name"])
+
                     self._last_node.setSelected(True)
                     prop_widget: PropertyWidget = PropertyWidget(
                         self._last_node,
@@ -183,8 +189,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for node in self.scene().graph_ends():
                 dsk: dict = self.scene().graph_to_dsk(node, {})
-                #self.scene().deep_graph_to_dsk(node, {})
-
                 print(get(dsk, node.socket_widgets[-1].pin))
 
         if self._mode == "EDGE_CUT":
@@ -248,6 +252,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 self.scene().deserialize_nodes(data_dict["Nodes"])
                 self.scene().deserialize_edges(data_dict["Edges"])
+
+            #self.scene().flatten_scene()
 
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
