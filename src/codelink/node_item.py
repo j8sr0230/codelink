@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Union, Any
 import importlib
 
 import PySide2.QtCore as QtCore
@@ -8,6 +8,7 @@ import PySide2.QtGui as QtGui
 from app_style import NODE_STYLE
 from property_model import PropertyModel
 from socket_widget import SocketWidget
+from pin_item import PinItem
 from edge_item import EdgeItem
 from utils import crop_text
 
@@ -329,7 +330,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_1(*args) -> list:
+    def eval_socket_1(*args) -> Union[PinItem, int]:
         if len(args) > 1:
             return args[0] + args[1]
         else:
@@ -337,7 +338,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # noinspection PyUnusedLocal
     @staticmethod
-    def eval_socket_2(*args) -> list:
+    def eval_socket_2(*args) -> Union[PinItem, int]:
         if len(args) > 1:
             return args[0] - args[1]
         else:
@@ -553,8 +554,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         data_dict["Sockets"] = sockets_list
         data_dict["Subgraph"] = {
-            "Nodes": self.sub_scene.serialize_nodes(),  # [sub_dict for sub_dict in self._sub_nodes_dict],
-            "Edges": self.sub_scene.serialize_edges(),  # [sub_dict for sub_dict in self._sub_edges_dict]
+            "Nodes": self.sub_scene.serialize_nodes(),
+            "Edges": self.sub_scene.serialize_edges(),
             "Pin Map": self._pin_map
         }
 

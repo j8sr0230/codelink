@@ -85,8 +85,8 @@ class SocketWidget(QtWidgets.QWidget):
     def input_widget(self) -> QtWidgets.QWidget:
         return self._input_widget
 
-    def input_data(self) -> Union['PinItem', int]:
-        result = None
+    def input_data(self) -> Optional[Union['PinItem', int]]:
+        result: Optional[Union['PinItem', int]] = None
         if self._pin_item.has_edges():
             pre_node: NodeItem = self._pin_item.edges[0].start_pin.parent_node
             if len(pre_node.sub_scene.nodes) > 0:
