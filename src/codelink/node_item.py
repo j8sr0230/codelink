@@ -371,7 +371,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
 
-        self.setZValue(1)
+        self.setZValue(2)
 
         if event.button() == QtCore.Qt.LeftButton:
             if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
@@ -418,7 +418,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        self.setZValue(0)
+        self.setZValue(1)
 
         intersection_items: list = self.scene().collidingItems(self)
         for item in intersection_items:

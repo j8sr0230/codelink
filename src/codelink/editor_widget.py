@@ -117,9 +117,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(self.itemAt(event.pos())) == NodeItem:
                     self.scene().clearSelection()
                     self._last_node: NodeItem = self.itemAt(event.pos())
-
-                    print("Pres", [node.prop_model.properties["Name"] for node in self._last_node.predecessors()])
-
                     self._last_node.setSelected(True)
                     prop_widget: PropertyWidget = PropertyWidget(
                         self._last_node,
@@ -129,14 +126,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     prop_widget.focus_changed.connect(self.focus_prop_scoller)
                     self._prop_scroller.setWidget(prop_widget)
                     self._prop_scroller.show()
+
+                elif type(self.itemAt(event.pos())) == FrameItem:
+                    frame_item: FrameItem = self.itemAt(event.pos())
+                    table_view: PropertyTable = PropertyTable()
+                    table_view.setModel(frame_item.prop_model)
+                    self._prop_scroller.setWidget(table_view)
+                    self._prop_scroller.show()
                 else:
                     self._prop_scroller.hide()
-
-                    if type(self.itemAt(event.pos())) == FrameItem:
-                        frame_item: FrameItem = self.itemAt(event.pos())
-                        self.table_view: PropertyTable = PropertyTable()
-                        self.table_view.setModel(frame_item.prop_model)
-                        self.table_view.show()
 
                 super().mousePressEvent(event)
 
@@ -397,6 +395,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             frame_item: FrameItem = FrameItem()
             self.scene().addItem(frame_item)
+            frame_item.setZValue(-1)
             for node in selected_nodes:
                 node.setParentItem(frame_item)
 
