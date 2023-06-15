@@ -243,7 +243,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 json.dump(
                     {
                         "Nodes": self.scene().serialize_nodes(),
-                        "Edges": self.scene().serialize_edges()
+                        "Edges": self.scene().serialize_edges(),
+                        "Frames": self.scene().serialize_frames()
                     },
                     json_file,
                     indent=4)
@@ -266,6 +267,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 self.scene().deserialize_nodes(data_dict["Nodes"])
                 self.scene().deserialize_edges(data_dict["Edges"])
+                self.scene().deserialize_frames(data_dict["Frames"])
 
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
@@ -297,6 +299,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
                         )
                         self._prop_scroller.hide()
+
+                if type(self.scene().selectedItems()[0]) is FrameItem:
+                    selected_frame: FrameItem = self.scene().selectedItems()[0]
+
+                    self.scene().remove_frame(selected_frame)
+                    self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Delete):
             for selected_item in self.scene().selectedItems():
@@ -403,9 +411,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.key() == QtCore.Qt.Key_F:
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-
-            frame_item: FrameItem = FrameItem(framed_nodes=selected_nodes)
-            self.scene().addItem(frame_item)
+            self.scene().add_frame(selected_nodes)
 
         super().keyPressEvent(event)
 

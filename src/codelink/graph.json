@@ -49,8 +49,8 @@
                 "Name": "End",
                 "Color": "red",
                 "Collapse State": false,
-                "X": 32180,
-                "Y": 31790,
+                "X": 32350,
+                "Y": 31770,
                 "Width": 160
             },
             "Option_idx": 2,
@@ -86,8 +86,8 @@
                 "Name": "Custom Node",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31900,
-                "Y": 31970,
+                "X": 31800,
+                "Y": 31960,
                 "Width": 160
             },
             "Option_idx": 0,
@@ -329,6 +329,43 @@
                     ]
                 }
             }
+        },
+        {
+            "Properties": {
+                "Class": "NodeItem",
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 32050,
+                "Y": 31960,
+                "Width": 160
+            },
+            "Option_idx": 0,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Is Input": false,
+                    "Data": 0
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Pin Map": {}
+            }
         }
     ],
     "Edges": [
@@ -367,6 +404,31 @@
             "Start Socket Idx": 3,
             "End Node Idx": 1,
             "End Socket Idx": 0
+        },
+        {
+            "Start Node Idx": 2,
+            "Start Socket Idx": 4,
+            "End Node Idx": 3,
+            "End Socket Idx": 1
+        },
+        {
+            "Start Node Idx": 3,
+            "Start Socket Idx": 2,
+            "End Node Idx": 1,
+            "End Socket Idx": 1
+        }
+    ],
+    "Frames": [
+        {
+            "Properties": {
+                "Class": "FrameItem",
+                "Name": "My Group",
+                "Color": "yellow"
+            },
+            "Framed Nodes": [
+                2,
+                3
+            ]
         }
     ]
 }

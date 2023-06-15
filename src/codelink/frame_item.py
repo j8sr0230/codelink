@@ -28,10 +28,16 @@ class FrameItem(QtWidgets.QGraphicsItem):
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
 
+        self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
+        self._selected_border_pen.setWidthF(1.5)
+
         self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._font: QtGui.QFont = QtGui.QFont("Helvetica", 12)
 
         self.setZValue(0)
+
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -47,7 +53,10 @@ class FrameItem(QtWidgets.QGraphicsItem):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
-        painter.setPen(self._default_border_pen)
+        if self.isSelected():
+            painter.setPen(self._selected_border_pen)
+        else:
+            painter.setPen(self._default_border_pen)
         background_color: QtGui.QColor = QtGui.QColor(self._prop_model.properties["Color"])
         background_color.setAlpha(50)
         painter.setBrush(background_color)
@@ -59,3 +68,14 @@ class FrameItem(QtWidgets.QGraphicsItem):
             QtCore.QPointF(self.boundingRect().x() + 5, self.boundingRect().y() - 5),
             self._prop_model.properties["Name"]
         )
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = {
+            "Properties": self.prop_model.__getstate__(),
+            "Framed Nodes": [self.scene().nodes.index(node) for node in self._framed_nodes]
+        }
+        return data_dict
+
+    def __setstate__(self, state: dict):
+        self.prop_model.__setstate__(state["Properties"])
+        self.update()

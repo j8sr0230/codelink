@@ -8,6 +8,7 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
+from frame_item import FrameItem
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from pin_item import PinItem
@@ -20,6 +21,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
         self._nodes: list[NodeItem] = []
         self._edges: list[EdgeItem] = []
+        self._frames: list[FrameItem] = []
 
         self._parent_custom_node: Optional[NodeItem] = None
 
@@ -155,6 +157,22 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
             self.remove_node(custom_node)
 
+    # def add_frame(self, frame_item: FrameItem) -> None:
+    #     self._frames.append(frame_item)
+    #     self.addItem(frame_item)
+
+    def add_frame(self, nodes: list[NodeItem]) -> FrameItem:
+        frame_item: FrameItem = FrameItem(framed_nodes=nodes)
+        self._frames.append(frame_item)
+        self.addItem(frame_item)
+        self.clearSelection()
+
+        return frame_item
+
+    def remove_frame(self, frame_item: FrameItem) -> None:
+        self.removeItem(frame_item)
+        self._frames.remove(frame_item)
+
     # --- Digraph analytics ---
 
     def graph_ends(self) -> list[NodeItem]:
@@ -268,4 +286,22 @@ class EditorScene(QtWidgets.QGraphicsScene):
             self.add_edge_from_pins(start_pin, end_pin)
             start_socket_widget.update_all()
             end_socket_widget.update_all()
+            self.update()
+
+    def serialize_frames(self) -> list[dict]:
+        frames_dict: list[dict] = []
+
+        for frame in self._frames:
+            frames_dict.append(frame.__getstate__())
+
+        return frames_dict
+
+    def deserialize_frames(self, frames_dict: list[dict]) -> None:
+        for frame_dict in frames_dict:
+            framed_nodes_idx: list[int] = frame_dict["Framed Nodes"]
+            framed_nodes: list[NodeItem] = [self._nodes[idx] for idx in framed_nodes_idx]
+            new_frame: FrameItem = self.add_frame(framed_nodes)
+
+            # Reset node state
+            new_frame.__setstate__(frame_dict)
             self.update()
