@@ -1,7 +1,6 @@
 from typing import Optional
 import json
 import os
-import importlib
 
 from dask.threaded import get
 
@@ -10,7 +9,6 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from item_delegates import StringDelegate
-from editor_scene import EditorScene
 from property_widget import PropertyWidget
 from property_table import PropertyTable
 from pin_item import PinItem

@@ -1,10 +1,9 @@
-from typing import Optional, Any
+from typing import Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from app_style import NODE_STYLE
 from property_model import PropertyModel
 
 
