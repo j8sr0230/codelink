@@ -19,7 +19,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         self._end_pin: Optional[QtWidgets.QGraphicsItem] = None
 
         self.setAcceptHoverEvents(True)
-        self.setZValue(-1)
+        self.setZValue(1)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property

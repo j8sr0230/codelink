@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -10,7 +10,7 @@ from node_item import NodeItem
 
 
 class FrameItem(QtWidgets.QGraphicsItem):
-    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, framed_nodes: list[NodeItem], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
@@ -20,34 +20,41 @@ class FrameItem(QtWidgets.QGraphicsItem):
                         }
         )
 
+        self._framed_nodes: list[NodeItem] = framed_nodes
+
+        self._offset: int = 10
+
         # Assets
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
-        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
-        self._header_font: QtGui.QFont = QtGui.QFont()
 
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
+        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._font: QtGui.QFont = QtGui.QFont("Helvetica", 12)
+
+        self.setZValue(0)
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
         return self._prop_model
 
     def boundingRect(self) -> QtCore.QRectF:
-        return self.childrenBoundingRect()
+        x_min: float = min([node.x() for node in self._framed_nodes]) - self._offset
+        x_max: float = max([node.x() + node.boundingRect().width() for node in self._framed_nodes]) + self._offset
+        y_min: float = min([node.y() for node in self._framed_nodes]) - self._offset
+        y_max: float = max([node.y() + node.boundingRect().height() for node in self._framed_nodes]) + self._offset
+        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
         painter.setPen(self._default_border_pen)
-
         background_color: QtGui.QColor = QtGui.QColor(self._prop_model.properties["Color"])
-        background_color.setAlpha(20)
+        background_color.setAlpha(50)
         painter.setBrush(background_color)
-
         painter.drawRoundedRect(self.boundingRect(), 5, 5)
 
         painter.setPen(self._font_color)
-        painter.setFont(QtGui.QFont("Helvetica", 12))
+        painter.setFont(self._font)
         painter.drawText(
             QtCore.QPointF(self.boundingRect().x() + 5, self.boundingRect().y() - 5),
             self._prop_model.properties["Name"]

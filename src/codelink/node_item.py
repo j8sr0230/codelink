@@ -133,7 +133,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_proxy.setWidget(self._content_widget)
 
         self.update_all()
-
+        self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
@@ -371,7 +371,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
 
-        self.setZValue(2)
+        self.setZValue(3)
 
         if event.button() == QtCore.Qt.LeftButton:
             if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
@@ -418,7 +418,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        self.setZValue(1)
+        self.setZValue(2)
 
         intersection_items: list = self.scene().collidingItems(self)
         for item in intersection_items:

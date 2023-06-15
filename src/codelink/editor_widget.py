@@ -153,14 +153,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
-                snapping_pos: QtCore.QPointF = self.itemAt(event.pos()).parentItem().mapToScene(
-                    self.itemAt(event.pos()).pos()
+                temp_pin: PinItem = self.itemAt(event.pos())
+                snapping_pos: QtCore.QPointF = temp_pin.parentItem().mapToScene(
+                    temp_pin.pos()
                 )
                 snap_x: float = snapping_pos.x() + self.itemAt(event.pos()).size / 2
                 snap_y: float = snapping_pos.y() + self.itemAt(event.pos()).size / 2
                 self._temp_edge.end_pin.setPos(snap_x, snap_y)
 
-                if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
+                if self._temp_edge.is_valid(eval_target=temp_pin):
                     self._temp_edge.color = self._temp_edge.start_pin.color
                 else:
                     self._temp_edge.color = QtGui.QColor("red")
@@ -403,11 +404,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_F:
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
 
-            frame_item: FrameItem = FrameItem()
+            frame_item: FrameItem = FrameItem(framed_nodes=selected_nodes)
             self.scene().addItem(frame_item)
-            frame_item.setZValue(-1)
-            for node in selected_nodes:
-                node.setParentItem(frame_item)
 
         super().keyPressEvent(event)
 
