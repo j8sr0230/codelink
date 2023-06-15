@@ -10,6 +10,7 @@ from property_model import PropertyModel
 from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
+from frame_item import FrameItem
 from utils import crop_text
 
 
@@ -34,6 +35,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
+        self._parent_frame: Optional[FrameItem] = None
         SubScene = getattr(importlib.import_module("editor_scene"), "EditorScene")  # Hack to prevent cyclic import
         self._sub_scene: SubScene = SubScene()
         self._pin_map: dict = {}
@@ -164,6 +166,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return [
             socket_widget for socket_widget in self._socket_widgets if not socket_widget.is_input
         ]
+
+    @property
+    def parent_frame(self) -> FrameItem:
+        return self._parent_frame
+
+    @parent_frame.setter
+    def parent_frame(self, value: FrameItem) -> None:
+        self._parent_frame: FrameItem = value
 
     @property
     def sub_scene(self) -> QtWidgets.QGraphicsScene:

@@ -6,11 +6,10 @@ import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
 from property_model import PropertyModel
-from node_item import NodeItem
 
 
 class FrameItem(QtWidgets.QGraphicsItem):
-    def __init__(self, framed_nodes: list[NodeItem], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, framed_nodes: list['NodeItem'], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
@@ -20,7 +19,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
                         }
         )
 
-        self._framed_nodes: list[NodeItem] = framed_nodes
+        self._framed_nodes: list['NodeItem'] = framed_nodes
 
         self._offset: int = 10
 
@@ -42,6 +41,10 @@ class FrameItem(QtWidgets.QGraphicsItem):
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
         return self._prop_model
+
+    @property
+    def framed_nodes(self) -> list['NodeItem']:
+        return self._framed_nodes
 
     def boundingRect(self) -> QtCore.QRectF:
         x_min: float = min([node.x() for node in self._framed_nodes]) - self._offset
