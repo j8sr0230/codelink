@@ -65,14 +65,16 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
 
     def remove_node(self, node: NodeItem) -> None:
+        if node.parent_frame is not None:
+            node.parent_frame.framed_nodes.remove(node)
+            node.parent_frame.update()
+            if len(node.parent_frame.framed_nodes) == 0:
+                self.remove_frame(node.parent_frame)
+
         for socket_widget in node.socket_widgets:
             while len(socket_widget.pin.edges) > 0:
                 edge: EdgeItem = socket_widget.pin.edges.pop()
                 self.remove_edge(edge)
-
-        if node.parent_frame is not None:
-            node.parent_frame.framed_nodes.remove(node)
-            node.parent_frame.update()
 
         # noinspection PyTypeChecker
         node.content_widget.setParent(None)
@@ -158,6 +160,11 @@ class EditorScene(QtWidgets.QGraphicsScene):
                         edge.sort_pins()
                         target_socket.update_all()
                         target_socket.update()
+
+            if custom_node.parent_frame is not None:
+                for node in unzipped_nodes:
+                    node.parent_frame = custom_node.parent_frame
+                    node.parent_frame.framed_nodes.append(node)
 
             self.remove_node(custom_node)
 
