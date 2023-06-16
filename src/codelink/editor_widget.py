@@ -65,6 +65,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._prop_scroller.hide()
         self._layout.addWidget(self._prop_scroller)
 
+        # Actions
+        self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
+        self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
+        self._copy_action.triggered.connect(lambda e: print(e))
+        self.addAction(self._copy_action)
+
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
@@ -233,6 +239,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+    def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
+        print("Context Menu")
+        # context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+        # context_menu.addAction(self._copy_action)
+        # context_menu.exec_(event.globalPos())
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
