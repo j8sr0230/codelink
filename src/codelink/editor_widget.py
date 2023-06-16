@@ -11,6 +11,7 @@ import PySide2.QtGui as QtGui
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
+from editor_scene import EditorScene
 from pin_item import PinItem
 from socket_widget import SocketWidget
 from node_item import NodeItem
@@ -429,6 +430,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 node.remove_from_frame()
 
             self.scene().add_frame_from_nodes(selected_nodes)
+
+        if event.key() == QtCore.Qt.Key_Q:
+            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+            if len(selected_nodes) > 0:
+                sub_scene: QtWidgets.QGraphicsScene = selected_nodes[0].sub_scene
+                self.setScene(sub_scene)
+
+        if event.key() == QtCore.Qt.Key_W:
+            if self.scene().parent_custom_node:
+                top_scene: EditorScene = self.scene().parent_custom_node.scene()
+                self.setScene(top_scene)
 
         super().keyPressEvent(event)
 
