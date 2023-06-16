@@ -29,7 +29,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._rm_pressed: bool = False
         self._mode: str = ""
 
-        self._temp_scene: Optional[QtWidgets.QGraphicsScene] = None
+        self._temp_scenes: list[QtWidgets.QGraphicsScene] = []
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
@@ -435,12 +435,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             if len(selected_nodes) > 0:
                 sub_scene: QtWidgets.QGraphicsScene = selected_nodes[0].sub_scene
+                self._temp_scenes.append(self.scene())
                 self.setScene(sub_scene)
 
         if event.key() == QtCore.Qt.Key_W:
             if self.scene().parent_custom_node:
-                top_scene: EditorScene = self.scene().parent_custom_node.scene()
-                self.setScene(top_scene)
+                # print(self.scene().parent_custom_node)
+                # top_scene: EditorScene = self.scene().parent_custom_node.scene()
+                self.setScene(self._temp_scenes.pop())
 
         super().keyPressEvent(event)
 
