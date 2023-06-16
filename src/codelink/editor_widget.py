@@ -440,8 +440,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.key() == QtCore.Qt.Key_W:
             if self.scene().parent_custom_node:
-                # print(self.scene().parent_custom_node)
-                # top_scene: EditorScene = self.scene().parent_custom_node.scene()
                 self.setScene(self._temp_scenes.pop())
 
         super().keyPressEvent(event)
