@@ -341,6 +341,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 sub_edges_dict.append(edge_dict_mod)
 
+            sub_frames: set[FrameItem] = {node.parent_frame for node in selected_nodes if node.parent_frame is not None}
+            inner_sub_frames: list[FrameItem] = []
+            for sub_frame in sub_frames:
+                framed_nodes_set: set[NodeItem] = set(sub_frame.framed_nodes)
+                selected_nodes_set: set[NodeItem] = set(selected_nodes)
+                if framed_nodes_set.issubset(selected_nodes_set):
+                    inner_sub_frames.append(sub_frame)
+
+            sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
+            for sub_frame_dict in sub_frames_dict:
+                new_idx_map: list[int] = []
+                for node_id in sub_frame_dict["Framed Nodes"]:
+                    new_idx_map.append(selected_nodes.index(self.scene().nodes[node_id]))
+                sub_frame_dict["Framed Nodes"] = new_idx_map
+
             # Add custom node, remove predefined socket widgets and save sub graph
             custom_node: NodeItem = NodeItem()
             custom_node.sub_scene.parent_custom_node = custom_node
@@ -348,6 +363,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             custom_node.clear_socket_widgets()
             custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
             custom_node.sub_scene.deserialize_edges(sub_edges_dict)
+            custom_node.sub_scene.deserialize_frames(sub_frames_dict)
             custom_node.prop_model.setData(
                 custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", QtCore.Qt.EditRole
             )
@@ -409,7 +425,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.key() == QtCore.Qt.Key_F:
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            self.scene().add_frame(selected_nodes)
+            for node in selected_nodes:
+                node.remove_from_frame()
+
+            self.scene().add_frame_from_nodes(selected_nodes)
 
         super().keyPressEvent(event)
 

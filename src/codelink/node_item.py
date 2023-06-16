@@ -338,6 +338,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     result.append(edge.end_pin.parent_node)
         return result
 
+    def remove_from_frame(self):
+        if self.parent_frame is not None:
+            self.parent_frame.framed_nodes.remove(self)
+            self.parent_frame.update()
+            if len(self.parent_frame.framed_nodes) == 0:
+                self.scene().remove_frame(self.parent_frame)
+
     # noinspection PyUnusedLocal
     @staticmethod
     def eval_socket_1(*args) -> Union[PinItem, int]:
@@ -566,6 +573,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         data_dict["Subgraph"] = {
             "Nodes": self.sub_scene.serialize_nodes(),
             "Edges": self.sub_scene.serialize_edges(),
+            "Frames": self.sub_scene.serialize_frames(),
             "Pin Map": self._pin_map
         }
 
@@ -596,6 +604,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Reset sub graph data
         self.sub_scene.deserialize_nodes(state["Subgraph"]["Nodes"])
         self.sub_scene.deserialize_edges(state["Subgraph"]["Edges"])
+        self.sub_scene.deserialize_frames(state["Subgraph"]["Frames"])
         self._pin_map: dict = state["Subgraph"]["Pin Map"]
 
         if len(self.sub_scene.nodes) > 0:

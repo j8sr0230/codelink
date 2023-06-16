@@ -46,6 +46,10 @@ class EditorScene(QtWidgets.QGraphicsScene):
     def edges(self) -> list[EdgeItem]:
         return self._edges
 
+    @property
+    def frames(self) -> list[FrameItem]:
+        return self._frames
+
     @edges.setter
     def edges(self, value: list[EdgeItem]) -> None:
         self._edges: list[EdgeItem] = value
@@ -65,11 +69,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
 
     def remove_node(self, node: NodeItem) -> None:
-        if node.parent_frame is not None:
-            node.parent_frame.framed_nodes.remove(node)
-            node.parent_frame.update()
-            if len(node.parent_frame.framed_nodes) == 0:
-                self.remove_frame(node.parent_frame)
+        node.remove_from_frame()
 
         for socket_widget in node.socket_widgets:
             while len(socket_widget.pin.edges) > 0:
@@ -139,6 +139,10 @@ class EditorScene(QtWidgets.QGraphicsScene):
             for edge in custom_node.sub_scene.edges:
                 self.add_edge(edge)
 
+            for frame in custom_node.sub_scene.frames:
+                new_frame: FrameItem = self.add_frame_from_nodes(frame.framed_nodes)
+                new_frame.__setstate__(frame.__getstate__())
+
             for socket_idx, socket_widget in enumerate(custom_node.socket_widgets):
                 while len(socket_widget.pin.edges) > 0:
                     edge: EdgeItem = socket_widget.pin.edges.pop()
@@ -161,18 +165,18 @@ class EditorScene(QtWidgets.QGraphicsScene):
                         target_socket.update_all()
                         target_socket.update()
 
-            if custom_node.parent_frame is not None:
-                for node in unzipped_nodes:
-                    node.parent_frame = custom_node.parent_frame
-                    node.parent_frame.framed_nodes.append(node)
+            # if custom_node.parent_frame is not None and all([node.parent_frame is None for node in unzipped_nodes]):
+            #     for node in unzipped_nodes:
+            #         node.parent_frame = custom_node.parent_frame
+            #         node.parent_frame.framed_nodes.append(node)
 
             self.remove_node(custom_node)
 
-    # def add_frame(self, frame_item: FrameItem) -> None:
+    # def add_frames(self, frame_item: FrameItem) -> None:
     #     self._frames.append(frame_item)
     #     self.addItem(frame_item)
 
-    def add_frame(self, nodes: list[NodeItem]) -> FrameItem:
+    def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame_item: FrameItem = FrameItem(framed_nodes=nodes)
         for node in nodes:
             node.parent_frame = frame_item
@@ -317,7 +321,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         for frame_dict in frames_dict:
             framed_nodes_idx: list[int] = frame_dict["Framed Nodes"]
             framed_nodes: list[NodeItem] = [self._nodes[idx] for idx in framed_nodes_idx]
-            new_frame: FrameItem = self.add_frame(framed_nodes)
+            new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes)
 
             # Reset node state
             new_frame.__setstate__(frame_dict)
