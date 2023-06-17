@@ -18,6 +18,7 @@ from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
+from undo_commands import DeleteNodeCommand
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
@@ -70,6 +71,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
         self._copy_action.triggered.connect(lambda e: print(e))
         self.addAction(self._copy_action)
+
+        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(self)
+
+        self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
+        self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+        self.addAction(self._undo_action)
+
+        self._redio_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+        self._redio_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(self._redio_action)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
@@ -318,9 +329,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Delete):
-            for selected_item in self.scene().selectedItems():
-                if type(selected_item) is NodeItem:
-                    self.scene().remove_node(selected_item)
+            # for selected_item in self.scene().selectedItems():
+            #     if type(selected_item) is NodeItem:
+            #         self.scene().remove_node(selected_item)
+            delete_node_command: DeleteNodeCommand = DeleteNodeCommand(self.scene())
+            self._undo_stack.push(delete_node_command)
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
             new_node = NodeItem()
