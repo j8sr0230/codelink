@@ -96,6 +96,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         edge.end_pin = end_pin
         if type(end_pin) == PinItem:
             edge.end_pin.add_edge(edge)
+            end_pin.socket_widget.update_stylesheets()
 
         edge.update()
 
