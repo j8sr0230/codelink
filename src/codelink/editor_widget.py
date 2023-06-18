@@ -336,14 +336,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self.scene().remove_frame(selected_frame)
                     self._prop_scroller.hide()
 
-        if event.matches(QtGui.QKeySequence.Delete):
-            # for selected_item in self.scene().selectedItems():
-            #     if type(selected_item) is NodeItem:
-            #         self.scene().remove_node(selected_item)
-            # delete_node_command: DeleteSelectedCommand = DeleteSelectedCommand(self.scene())
-            # self._undo_stack.push(delete_node_command)
-            pass
-
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
             new_node = NodeItem()
             new_node.setPos(QtCore.QPointF(32000, 32000))
