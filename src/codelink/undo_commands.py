@@ -5,6 +5,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from editor_scene import EditorScene
+from frame_item import FrameItem
 from node_item import NodeItem
 from edge_item import EdgeItem
 
@@ -17,6 +18,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 		self._scene: QtWidgets.QGraphicsScene = scene
 		self._selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if type(item) == NodeItem]
 		self._connected_edges: list[EdgeItem] = []
+		self._frames: list[FrameItem] = []
 
 	def undo(self) -> None:
 		for node in self._selected_nodes:
@@ -24,6 +26,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 			self._scene.addItem(node)
 
 			if node.parent_frame:
+				# Todo: Recreate parent frame if frame was deleted by the last remaining framed node
 				node.parent_frame.framed_nodes.append(node)
 
 			for edge in self._connected_edges:
@@ -31,7 +34,9 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 	def redo(self) -> None:
 		for node in self._selected_nodes:
-			node.remove_from_frame()
+			if node.parent_frame:
+				self._frames.append(node.parent_frame)
+				node.remove_from_frame()
 
 			for socket_widget in node.socket_widgets:
 				while len(socket_widget.pin.edges) > 0:
