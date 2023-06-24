@@ -108,6 +108,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
                 selected_edges.append(edge)
 
+        sub_frames: set[FrameItem] = {node.parent_frame for node in nodes if node.parent_frame is not None}
+        inner_sub_frames: list[FrameItem] = []
+        for sub_frame in sub_frames:
+            framed_nodes_set: set[NodeItem] = set(sub_frame.framed_nodes)
+            selected_nodes_set: set[NodeItem] = set(nodes)
+            if framed_nodes_set.issubset(selected_nodes_set):
+                inner_sub_frames.append(sub_frame)
+
         # Calculate selection center
         selection_rect: QtCore.QRectF = self.bounding_rect(nodes)
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
@@ -126,14 +134,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             edge_dict_mod["End Node Idx"] = nodes.index(edge.end_pin.parentItem())
 
             sub_edges_dict.append(edge_dict_mod)
-
-        sub_frames: set[FrameItem] = {node.parent_frame for node in nodes if node.parent_frame is not None}
-        inner_sub_frames: list[FrameItem] = []
-        for sub_frame in sub_frames:
-            framed_nodes_set: set[NodeItem] = set(sub_frame.framed_nodes)
-            selected_nodes_set: set[NodeItem] = set(nodes)
-            if framed_nodes_set.issubset(selected_nodes_set):
-                inner_sub_frames.append(sub_frame)
 
         sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
         for sub_frame_dict in sub_frames_dict:
