@@ -102,6 +102,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
         return node
 
+    def add_node_from_nodes(self, nodes: list[NodeItem]) -> NodeItem:
+        # Todo: Move method from EditorWidget to here
+        pass
+
     def remove_node(self, node: NodeItem) -> None:
         node.remove_from_frame()
 
