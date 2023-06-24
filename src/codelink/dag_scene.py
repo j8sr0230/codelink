@@ -115,6 +115,60 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.removeItem(node)
         self._nodes.remove(node)
 
+    def resolve_node(self, node: NodeItem):
+        if len(node.sub_scene.nodes) > 0:
+            sub_scene_bbox: QtCore.QRectF = node.sub_scene.itemsBoundingRect()
+            sub_scene_center: QtCore.QPointF = QtCore.QPointF(
+                sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
+                sub_scene_bbox.y() + sub_scene_bbox.height() / 2
+            )
+
+            sub_nodes: list[NodeItem] = []
+            for sub_node in node.sub_scene.nodes:
+                self.add_node(sub_node)
+                node_pos: QtCore.QPointF = QtCore.QPointF(
+                    sub_node.x() + (node.center.x() - sub_scene_center.x()),
+                    sub_node.y() + (node.center.y() - sub_scene_center.y())
+                )
+                sub_node.setPos(node_pos)
+                sub_nodes.append(sub_node)
+
+            for edge in node.sub_scene.edges:
+                self.add_edge(edge)
+
+            for frame in node.sub_scene.frames:
+                new_frame: FrameItem = self.add_frame_from_nodes(frame.framed_nodes)
+                new_frame.__setstate__(frame.__getstate__())
+
+            for socket_idx, socket_widget in enumerate(node.socket_widgets):
+                while len(socket_widget.pin.edges) > 0:
+                    edge: EdgeItem = socket_widget.pin.edges.pop()
+                    if str(socket_idx) in node.pin_map.keys():
+                        target_node: NodeItem = sub_nodes[
+                            node.pin_map[str(socket_idx)][0]
+                        ]
+                        target_socket: SocketWidget = target_node.socket_widgets[
+                            node.pin_map[str(socket_idx)][1]
+                        ]
+
+                        target_socket.pin.add_edge(edge)
+
+                        if target_socket.is_input:
+                            edge.end_pin = target_socket.pin
+                        else:
+                            edge.start_pin = target_socket.pin
+
+                        edge.sort_pins()
+                        target_socket.update_all()
+                        target_socket.update()
+
+            # if node.parent_frame is not None and all([node.parent_frame is None for node in unzipped_nodes]):
+            #     for node in unzipped_nodes:
+            #         node.parent_frame = node.parent_frame
+            #         node.parent_frame.framed_nodes.append(node)
+
+            self.remove_node(node)
+
     def add_edge(self, edge: EdgeItem) -> EdgeItem:
         self._edges.append(edge)
         self.addItem(edge)
@@ -150,60 +204,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self.removeItem(edge)
         self._edges.remove(edge)
-
-    def resolve_node(self, custom_node: NodeItem):
-        if len(custom_node.sub_scene.nodes) > 0:
-            sub_scene_bbox: QtCore.QRectF = custom_node.sub_scene.itemsBoundingRect()
-            sub_scene_center: QtCore.QPointF = QtCore.QPointF(
-                sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
-                sub_scene_bbox.y() + sub_scene_bbox.height() / 2
-            )
-
-            unzipped_nodes: list[NodeItem] = []
-            for idx, node in enumerate(custom_node.sub_scene.nodes):
-                self.add_node(node)
-                node_pos: QtCore.QPointF = QtCore.QPointF(
-                    node.x() + (custom_node.center.x() - sub_scene_center.x()),
-                    node.y() + (custom_node.center.y() - sub_scene_center.y())
-                )
-                node.setPos(node_pos)
-                unzipped_nodes.append(node)
-
-            for edge in custom_node.sub_scene.edges:
-                self.add_edge(edge)
-
-            for frame in custom_node.sub_scene.frames:
-                new_frame: FrameItem = self.add_frame_from_nodes(frame.framed_nodes)
-                new_frame.__setstate__(frame.__getstate__())
-
-            for socket_idx, socket_widget in enumerate(custom_node.socket_widgets):
-                while len(socket_widget.pin.edges) > 0:
-                    edge: EdgeItem = socket_widget.pin.edges.pop()
-                    if str(socket_idx) in custom_node.pin_map.keys():
-                        target_node: NodeItem = unzipped_nodes[
-                            custom_node.pin_map[str(socket_idx)][0]
-                        ]
-                        target_socket: SocketWidget = target_node.socket_widgets[
-                            custom_node.pin_map[str(socket_idx)][1]
-                        ]
-
-                        target_socket.pin.add_edge(edge)
-
-                        if target_socket.is_input:
-                            edge.end_pin = target_socket.pin
-                        else:
-                            edge.start_pin = target_socket.pin
-
-                        edge.sort_pins()
-                        target_socket.update_all()
-                        target_socket.update()
-
-            # if custom_node.parent_frame is not None and all([node.parent_frame is None for node in unzipped_nodes]):
-            #     for node in unzipped_nodes:
-            #         node.parent_frame = custom_node.parent_frame
-            #         node.parent_frame.framed_nodes.append(node)
-
-            self.remove_node(custom_node)
 
     # --------------- DAG analytics ---------------
 
