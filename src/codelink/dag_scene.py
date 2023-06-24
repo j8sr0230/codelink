@@ -204,6 +204,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
             node: NodeItem = nodes.pop()
             self.remove_node(node)
 
+        return custom_node
+
     def remove_node(self, node: NodeItem) -> None:
         node.remove_from_frame()
 
