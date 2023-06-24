@@ -72,7 +72,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def parent_node(self, value: Optional[NodeItem]) -> None:
         self._parent_node: Optional[NodeItem] = value
 
-    # --------------- Scene editing methods ---------------
+    # --------------- DAG editing methods ---------------
 
     def add_frame(self, frame_item: FrameItem) -> FrameItem:
         self._frames.append(frame_item)
@@ -109,7 +109,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 selected_edges.append(edge)
 
         # Calculate selection center
-        selection_rect: QtCore.QRectF = self.selectionArea().boundingRect()
+        selection_rect: QtCore.QRectF = self.bounding_rect(nodes)
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
         selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
@@ -304,16 +304,24 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- DAG analytics ---------------
 
-    def graph_ends(self) -> list[NodeItem]:
+    @staticmethod
+    def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:
+        x_min: float = min([node.x() for node in nodes]) - offset
+        x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
+        y_min: float = min([node.y() for node in nodes]) - offset
+        y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
+        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+
+    def ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
         for node in self._nodes:
             if not node.has_out_edges():
                 result.append(node)
         return result
 
-    def graph_to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
+    def to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
-            self.graph_to_dsk(node, graph_dict)
+            self.to_dsk(node, graph_dict)
 
         task_inputs: list = []
         for socket_widget in visited_node.input_socket_widgets:
@@ -326,7 +334,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return graph_dict
 
-    def graph_to_nx(self) -> nx.DiGraph:
+    def to_nx(self) -> nx.DiGraph:
         nx_graph: nx.DiGraph = nx.DiGraph()
         for edge in self._edges:
             if edge.start_pin.socket_widget.is_input:
@@ -341,8 +349,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 )
         return nx_graph
 
-    def is_graph_cyclic(self) -> bool:
-        nx_graph: nx.DiGraph = self.graph_to_nx()
+    def is_cyclic(self) -> bool:
+        nx_graph: nx.DiGraph = self.to_nx()
         result: bool = True
         try:
             nx.find_cycle(nx_graph)
