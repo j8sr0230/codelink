@@ -358,7 +358,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
             result: bool = False
         return result
 
-    # --------------- Background and serialization ---------------
+    # --------------- Background ---------------
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
@@ -380,6 +380,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         painter.setPen(self._grid_pen)
         painter.drawPoints(points)
+
+    # --------------- Serialization ---------------
 
     def serialize_nodes(self) -> list[dict]:
         nodes_dict: list[dict] = []
@@ -442,3 +444,16 @@ class DAGScene(QtWidgets.QGraphicsScene):
             # Reset node state
             new_frame.__setstate__(frame_dict)
             self.update()
+
+    def serialize(self) -> dict:
+        dag_dict: dict = {
+            "Nodes": self.serialize_nodes(),
+            "Edges": self.serialize_edges(),
+            "Frames": self.serialize_frames()
+        }
+        return dag_dict
+
+    def deserialize(self, data_dict: dict) -> None:
+        self.deserialize_nodes(data_dict["Nodes"])
+        self.deserialize_edges(data_dict["Edges"])
+        self.deserialize_frames(data_dict["Frames"])

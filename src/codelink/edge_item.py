@@ -76,7 +76,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
                     # Output with output pin
                     result: bool = False
 
-                elif self.scene().is_graph_cyclic():
+                elif self.scene().is_cyclic():
                     # Cyclic graph
                     result: bool = False
 

@@ -225,8 +225,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             else:
                 self.scene().remove_edge(self._temp_edge)
 
-            for node in self.scene().graph_ends():
-                dsk: dict = self.scene().graph_to_dsk(node, {})
+            for node in self.scene().ends():
+                dsk: dict = self.scene().to_dsk(node, {})
                 print(get(dsk, node.socket_widgets[-1].pin))
 
         if self._mode == "EDGE_CUT":
@@ -270,14 +270,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.matches(QtGui.QKeySequence.Save):
             with open(file_path, "w", encoding="utf8") as json_file:
-                json.dump(
-                    {
-                        "Nodes": self.scene().serialize_nodes(),
-                        "Edges": self.scene().serialize_edges(),
-                        "Frames": self.scene().serialize_frames()
-                    },
-                    json_file,
-                    indent=4)
+                json.dump(self.scene().serialize(), json_file, indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
             while len(self.scene().edges) > 0:
@@ -294,10 +287,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             with open(file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
-
-                self.scene().deserialize_nodes(data_dict["Nodes"])
-                self.scene().deserialize_edges(data_dict["Edges"])
-                self.scene().deserialize_frames(data_dict["Frames"])
+                self.scene().deserialize(data_dict)
 
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
