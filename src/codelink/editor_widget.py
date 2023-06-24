@@ -448,7 +448,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
             for selected_item in self.scene().selectedItems():
                 if type(selected_item) is NodeItem:
-                    self.scene().resolve_custom_node(selected_item)
+                    self.scene().resolve_node(selected_item)
 
         if event.key() == QtCore.Qt.Key_F:
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
@@ -461,8 +461,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             if len(selected_nodes) > 0:
                 sub_scene: QtWidgets.QGraphicsScene = selected_nodes[0].sub_scene
-                self._temp_scenes.append(self.scene())
-                self.setScene(sub_scene)
+                if len(sub_scene.nodes) > 0:
+                    self._temp_scenes.append(self.scene())
+                    self.setScene(sub_scene)
 
         if event.key() == QtCore.Qt.Key_W:
             if self.scene().parent_node:

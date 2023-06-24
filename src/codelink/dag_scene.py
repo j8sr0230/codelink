@@ -72,11 +72,35 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def parent_node(self, value: Optional[NodeItem]) -> None:
         self._parent_node: Optional[NodeItem] = value
 
-    # --- Scene manipulation ---
+    # --------------- Scene editing methods ---------------
 
-    def add_node(self, node: NodeItem) -> None:
+    def add_frame(self, frame_item: FrameItem) -> FrameItem:
+        self._frames.append(frame_item)
+        self.addItem(frame_item)
+        return frame_item
+
+    def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
+        frame_item: FrameItem = FrameItem(framed_nodes=nodes)
+        for node in nodes:
+            node.parent_frame = frame_item
+
+        self._frames.append(frame_item)
+        self.addItem(frame_item)
+        self.clearSelection()
+
+        return frame_item
+
+    def remove_frame(self, frame_item: FrameItem) -> None:
+        for node in frame_item.framed_nodes:
+            node.parent_frame = None
+
+        self.removeItem(frame_item)
+        self._frames.remove(frame_item)
+
+    def add_node(self, node: NodeItem) -> NodeItem:
         self._nodes.append(node)
         self.addItem(node)
+        return node
 
     def remove_node(self, node: NodeItem) -> None:
         node.remove_from_frame()
@@ -108,8 +132,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             edge.end_pin.add_edge(edge)
             end_pin.socket_widget.update_stylesheets()
 
-        edge.update()
-
         self._edges.append(edge)
         self.addItem(edge)
 
@@ -129,7 +151,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.removeItem(edge)
         self._edges.remove(edge)
 
-    def resolve_custom_node(self, custom_node: NodeItem):
+    def resolve_node(self, custom_node: NodeItem):
         if len(custom_node.sub_scene.nodes) > 0:
             sub_scene_bbox: QtCore.QRectF = custom_node.sub_scene.itemsBoundingRect()
             sub_scene_center: QtCore.QPointF = QtCore.QPointF(
@@ -183,29 +205,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             self.remove_node(custom_node)
 
-    def add_frame(self, frame_item: FrameItem) -> None:
-        self._frames.append(frame_item)
-        self.addItem(frame_item)
-
-    def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
-        frame_item: FrameItem = FrameItem(framed_nodes=nodes)
-        for node in nodes:
-            node.parent_frame = frame_item
-
-        self._frames.append(frame_item)
-        self.addItem(frame_item)
-        self.clearSelection()
-
-        return frame_item
-
-    def remove_frame(self, frame_item: FrameItem) -> None:
-        for node in frame_item.framed_nodes:
-            node.parent_frame = None
-
-        self.removeItem(frame_item)
-        self._frames.remove(frame_item)
-
-    # --- Digraph analytics ---
+    # --------------- DAG analytics ---------------
 
     def graph_ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
@@ -253,7 +253,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
             result: bool = False
         return result
 
-    # --- Background and serialization ---
+    # --------------- Background and serialization ---------------
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
