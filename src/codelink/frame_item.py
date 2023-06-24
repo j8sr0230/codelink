@@ -1,4 +1,5 @@
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -6,9 +7,12 @@ import PySide2.QtGui as QtGui
 
 from property_model import PropertyModel
 
+if TYPE_CHECKING:
+    from node_item import NodeItem
+
 
 class FrameItem(QtWidgets.QGraphicsItem):
-    def __init__(self, framed_nodes: list['NodeItem'], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, framed_nodes: list[NodeItem], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         self._prop_model: PropertyModel = PropertyModel(
@@ -18,7 +22,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
                         }
         )
 
-        self._framed_nodes: list['NodeItem'] = framed_nodes
+        self._framed_nodes: list[NodeItem] = framed_nodes
 
         self._offset: int = 10
 
@@ -38,11 +42,11 @@ class FrameItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
-    def prop_model(self) -> QtCore.QAbstractTableModel:
+    def prop_model(self) -> PropertyModel:
         return self._prop_model
 
     @property
-    def framed_nodes(self) -> list['NodeItem']:
+    def framed_nodes(self) -> list[NodeItem]:
         return self._framed_nodes
 
     def boundingRect(self) -> QtCore.QRectF:
@@ -72,12 +76,13 @@ class FrameItem(QtWidgets.QGraphicsItem):
         )
 
     def __getstate__(self) -> dict:
+        # noinspection PyUnresolvedReferences
         data_dict: dict = {
-            "Properties": self.prop_model.__getstate__(),
+            "Properties": self._prop_model.__getstate__(),
             "Framed Nodes": [self.scene().nodes.index(node) for node in self._framed_nodes]
         }
         return data_dict
 
     def __setstate__(self, state: dict):
-        self.prop_model.__setstate__(state["Properties"])
+        self._prop_model.__setstate__(state["Properties"])
         self.update()
