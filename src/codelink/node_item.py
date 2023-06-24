@@ -36,7 +36,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
         self._parent_frame: Optional[FrameItem] = None
-        SubScene = getattr(importlib.import_module("graph_scene"), "GraphScene")  # Hack to prevent cyclic import
+        SubScene = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack to prevent cyclic import
         self._sub_scene: SubScene = SubScene()
         self._pin_map: dict = {}
 

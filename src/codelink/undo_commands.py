@@ -4,7 +4,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from graph_scene import GraphScene
+from dag_scene import DAGScene
 from frame_item import FrameItem
 from node_item import NodeItem
 from edge_item import EdgeItem

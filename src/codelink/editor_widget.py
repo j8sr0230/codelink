@@ -11,7 +11,7 @@ import PySide2.QtGui as QtGui
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
-from graph_scene import GraphScene
+from dag_scene import DAGScene
 from pin_item import PinItem
 from socket_widget import SocketWidget
 from node_item import NodeItem

@@ -15,23 +15,28 @@ from pin_item import PinItem
 from edge_item import EdgeItem
 
 
-class GraphScene(QtWidgets.QGraphicsScene):
+class DAGScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
         # Scene items
+        self._frames: list[FrameItem] = []
         self._nodes: list[NodeItem] = []
         self._edges: list[EdgeItem] = []
-        self._frames: list[FrameItem] = []
 
-        self._parent_custom_node: Optional[NodeItem] = None
+        # Reference to parent node, if scene is sub scene
+        self._parent_node: Optional[NodeItem] = None
 
+        # Background
         self._grid_spacing: int = 50
+
+        # Assets
         self._background_color: QtGui.QColor = QtGui.QColor("#1D1D1D")
         self._grid_color: QtGui.QColor = QtGui.QColor("#282828")
         self._grid_pen: QtGui.QPen = QtGui.QPen(self._grid_color)
         self._grid_pen.setWidth(5)
 
+        # Widget setup
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
         self.setSortCacheEnabled(True)
 
@@ -57,11 +62,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     @property
     def parent_custom_node(self) -> Optional[NodeItem]:
-        return self._parent_custom_node
+        return self._parent_node
 
     @parent_custom_node.setter
     def parent_custom_node(self, value: Optional[NodeItem]) -> None:
-        self._parent_custom_node: Optional[NodeItem] = value
+        self._parent_node: Optional[NodeItem] = value
 
     # --- Scene manipulation ---
 
