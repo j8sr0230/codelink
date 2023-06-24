@@ -210,6 +210,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def content_widget(self) -> QtWidgets.QWidget:
         return self._content_widget
 
+    def index(self) -> int:
+        # Todo: Return index of item in scene
+        pass
+
     def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
         input_widget.pin.setParentItem(self)
 
