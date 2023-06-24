@@ -296,15 +296,15 @@ class NodeItem(QtWidgets.QGraphicsItem):
             return socket
 
     def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
-        if self.scene().parent_custom_node:
-            pin_map: dict = self.scene().parent_custom_node.pin_map
+        if self.scene().parent_node:
+            pin_map: dict = self.scene().parent_node.pin_map
             linked_node_idx: int = self.scene().nodes.index(self)
             linked_socket_idx: int = self.scene().nodes[linked_node_idx].socket_widgets.index(socket)
             if [linked_node_idx, linked_socket_idx] in list(pin_map.values()):
-                linked_socket: SocketWidget = self.scene().parent_custom_node.socket_widgets[
+                linked_socket: SocketWidget = self.scene().parent_node.socket_widgets[
                     list(pin_map.values()).index([linked_node_idx, linked_socket_idx])
                 ]
-                return self.scene().parent_custom_node.linked_highest_socket(linked_socket)
+                return self.scene().parent_node.linked_highest_socket(linked_socket)
             else:
                 return socket
         else:
@@ -610,4 +610,4 @@ class NodeItem(QtWidgets.QGraphicsItem):
         if len(self.sub_scene.nodes) > 0:
             # If custom node with sub scene
             for sub_node in self.sub_scene.nodes:
-                sub_node.scene().parent_custom_node = self
+                sub_node.scene().parent_node = self

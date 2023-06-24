@@ -41,6 +41,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.setSortCacheEnabled(True)
 
     @property
+    def frames(self) -> list[FrameItem]:
+        return self._frames
+
+    @frames.setter
+    def frames(self, value: list[FrameItem]) -> None:
+        self._frames: list[FrameItem] = value
+
+    @property
     def nodes(self) -> list[NodeItem]:
         return self._nodes
 
@@ -52,20 +60,16 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def edges(self) -> list[EdgeItem]:
         return self._edges
 
-    @property
-    def frames(self) -> list[FrameItem]:
-        return self._frames
-
     @edges.setter
     def edges(self, value: list[EdgeItem]) -> None:
         self._edges: list[EdgeItem] = value
 
     @property
-    def parent_custom_node(self) -> Optional[NodeItem]:
+    def parent_node(self) -> Optional[NodeItem]:
         return self._parent_node
 
-    @parent_custom_node.setter
-    def parent_custom_node(self, value: Optional[NodeItem]) -> None:
+    @parent_node.setter
+    def parent_node(self, value: Optional[NodeItem]) -> None:
         self._parent_node: Optional[NodeItem] = value
 
     # --- Scene manipulation ---
