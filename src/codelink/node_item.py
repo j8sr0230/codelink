@@ -176,7 +176,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._parent_frame: FrameItem = value
 
     @property
-    def sub_scene(self) -> QtWidgets.QGraphicsScene:
+    def sub_scene(self) -> Any:
         return self._sub_scene
 
     @property

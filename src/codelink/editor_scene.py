@@ -1,6 +1,6 @@
-from typing import Optional
-import math
+from typing import Optional, Union
 import importlib
+import math
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -86,7 +86,7 @@ class EditorScene(QtWidgets.QGraphicsScene):
         self.addItem(edge)
         return edge
 
-    def add_edge_from_pins(self, start_pin: PinItem, end_pin: QtWidgets.QGraphicsItem) -> EdgeItem:
+    def add_edge_from_pins(self, start_pin: PinItem, end_pin: Union[QtWidgets.QGraphicsItem, PinItem]) -> EdgeItem:
         edge_color: QtGui.QColor = start_pin.color
         edge: EdgeItem = EdgeItem(color=edge_color)
 
@@ -278,8 +278,8 @@ class EditorScene(QtWidgets.QGraphicsScene):
         for node_dict in nodes_dict:
             # Create node from dict
             node_props: dict = node_dict["Properties"]
-            NodeClass = getattr(importlib.import_module("node_item"), node_props["Class"])
-            new_node: NodeClass = NodeClass()
+            node_class = getattr(importlib.import_module("node_item"), node_props["Class"])
+            new_node: node_class = node_class()
             self.add_node(new_node)
 
             # Reset node state
