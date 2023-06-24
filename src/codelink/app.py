@@ -6,7 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from app_style import MAIN_STYLE
 from node_item import NodeItem
-from editor_scene import EditorScene
+from graph_scene import GraphScene
 from editor_widget import EditorWidget
 
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    editor_scene: EditorScene = EditorScene()
+    editor_scene: GraphScene = GraphScene()
     editor_widget: EditorWidget = EditorWidget()
     editor_widget.setStyleSheet(MAIN_STYLE)
 

@@ -15,10 +15,11 @@ from pin_item import PinItem
 from edge_item import EdgeItem
 
 
-class EditorScene(QtWidgets.QGraphicsScene):
+class GraphScene(QtWidgets.QGraphicsScene):
     def __init__(self, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
+        # Scene items
         self._nodes: list[NodeItem] = []
         self._edges: list[EdgeItem] = []
         self._frames: list[FrameItem] = []

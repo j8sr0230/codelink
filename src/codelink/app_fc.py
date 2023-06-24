@@ -7,7 +7,7 @@ import FreeCADGui
 
 from app_style import MAIN_STYLE
 from node_item import NodeItem
-from editor_scene import EditorScene
+from graph_scene import GraphScene
 from editor_widget import EditorWidget
 
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     fc_wnd = FreeCADGui.getMainWindow()
-    editor_scene: EditorScene = EditorScene()
+    editor_scene: GraphScene = GraphScene()
     editor_widget: EditorWidget = EditorWidget(parent=fc_wnd)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
