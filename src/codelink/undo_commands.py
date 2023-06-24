@@ -26,7 +26,8 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 			self._scene.addItem(node)
 
 			if node.parent_frame:
-				# Todo: Recreate parent frame if frame was deleted by the last remaining framed node
+				if node.parent_frame not in self._scene.frames:
+					self._scene.add_frame(node.parent_frame)
 				node.parent_frame.framed_nodes.append(node)
 
 			for edge in self._connected_edges:

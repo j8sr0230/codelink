@@ -173,9 +173,9 @@ class EditorScene(QtWidgets.QGraphicsScene):
 
             self.remove_node(custom_node)
 
-    # def add_frames(self, frame_item: FrameItem) -> None:
-    #     self._frames.append(frame_item)
-    #     self.addItem(frame_item)
+    def add_frame(self, frame_item: FrameItem) -> None:
+        self._frames.append(frame_item)
+        self.addItem(frame_item)
 
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame_item: FrameItem = FrameItem(framed_nodes=nodes)
