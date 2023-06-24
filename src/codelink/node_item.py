@@ -286,6 +286,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 return True
         return False
 
+    def has_sub_scene(self) -> bool:
+        return len(self._sub_scene.nodes) > 0
+
     def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if len(self._sub_scene.nodes) > 0:
             linked_node_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][0]

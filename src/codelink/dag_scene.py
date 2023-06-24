@@ -116,12 +116,15 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._nodes.remove(node)
 
     def resolve_node(self, node: NodeItem):
-        if len(node.sub_scene.nodes) > 0:
+        if node.has_sub_scene():
             sub_scene_bbox: QtCore.QRectF = node.sub_scene.itemsBoundingRect()
             sub_scene_center: QtCore.QPointF = QtCore.QPointF(
                 sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
                 sub_scene_bbox.y() + sub_scene_bbox.height() / 2
             )
+
+            for frame in node.sub_scene.frames:
+                self.add_frame(frame)
 
             sub_nodes: list[NodeItem] = []
             for sub_node in node.sub_scene.nodes:
@@ -136,12 +139,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
             for edge in node.sub_scene.edges:
                 self.add_edge(edge)
 
-            for frame in node.sub_scene.frames:
-                new_frame: FrameItem = self.add_frame_from_nodes(frame.framed_nodes)
-                new_frame.__setstate__(frame.__getstate__())
-
             for socket_idx, socket_widget in enumerate(node.socket_widgets):
-                while len(socket_widget.pin.edges) > 0:
+                while socket_widget.pin.has_edges():
                     edge: EdgeItem = socket_widget.pin.edges.pop()
                     if str(socket_idx) in node.pin_map.keys():
                         target_node: NodeItem = sub_nodes[
@@ -160,12 +159,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
                         edge.sort_pins()
                         target_socket.update_all()
-                        target_socket.update()
-
-            # if node.parent_frame is not None and all([node.parent_frame is None for node in unzipped_nodes]):
-            #     for node in unzipped_nodes:
-            #         node.parent_frame = node.parent_frame
-            #         node.parent_frame.framed_nodes.append(node)
 
             self.remove_node(node)
 
