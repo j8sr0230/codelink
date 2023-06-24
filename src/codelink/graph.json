@@ -10,7 +10,7 @@
                 "Y": 31850,
                 "Width": 160
             },
-            "Option_idx": 0,
+            "Option Idx": 1,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -48,7 +48,7 @@
                 "Y": 31870,
                 "Width": 160
             },
-            "Option_idx": 0,
+            "Option Idx": 1,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -86,7 +86,7 @@
                 "Y": 32070,
                 "Width": 116
             },
-            "Option_idx": 0,
+            "Option Idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -124,7 +124,7 @@
                 "Y": 32060,
                 "Width": 160
             },
-            "Option_idx": 0,
+            "Option Idx": 1,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -162,7 +162,7 @@
                 "Y": 31860,
                 "Width": 160
             },
-            "Option_idx": 0,
+            "Option Idx": 2,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -189,7 +189,7 @@
                             "Y": 31920,
                             "Width": 160
                         },
-                        "Option_idx": 0,
+                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
@@ -227,7 +227,7 @@
                             "Y": 31890,
                             "Width": 80
                         },
-                        "Option_idx": 1,
+                        "Option Idx": 1,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
@@ -265,7 +265,7 @@
                             "Y": 31840,
                             "Width": 160
                         },
-                        "Option_idx": 0,
+                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
@@ -303,7 +303,7 @@
                             "Y": 31880,
                             "Width": 80
                         },
-                        "Option_idx": 2,
+                        "Option Idx": 2,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
@@ -341,7 +341,7 @@
                             "Y": 31750,
                             "Width": 160
                         },
-                        "Option_idx": 1,
+                        "Option Idx": 1,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",

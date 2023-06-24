@@ -565,7 +565,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "Properties": self.prop_model.__getstate__(),
-            "Option_idx": self._option_box.currentIndex()
+            "Option Idx": self._option_box.currentIndex()
         }
 
         sockets_list: list[dict] = []
@@ -584,7 +584,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def __setstate__(self, state: dict):
         self.prop_model.__setstate__(state["Properties"])
-        self._option_box.setCurrentIndex(state["Option_idx"])
+        self._option_box.setCurrentIndex(state["Option Idx"])
 
         # Remove predefined socket widgets
         self.clear_socket_widgets()
