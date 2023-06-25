@@ -1,4 +1,4 @@
-from typing import Optional, Union, Any
+from typing import Optional, Union, Any, cast
 import importlib
 
 import PySide2.QtCore as QtCore
@@ -18,6 +18,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
                         "Name": "Scalar Math",
@@ -118,7 +119,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Add", "Sub", "Mul"])
         self._option_box.currentIndexChanged.connect(self.update_socket_widgets)
-        item_list_view: QtWidgets.QAbstractItemView = self._option_box.view()
+        item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_layout.addWidget(self._option_box)
 
