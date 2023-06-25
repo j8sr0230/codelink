@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional, Union, Any, cast
 import importlib
 
@@ -37,8 +38,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._socket_widgets: list[QtWidgets.QWidget] = []
 
         self._parent_frame: Optional[FrameItem] = None
-        SubScene = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack to prevent cyclic import
-        self._sub_scene: SubScene = SubScene()
+        # Hack: Load classes for type hints here, to prevent cyclic import
+        DAGSceneClass = getattr(importlib.import_module("dag_scene"), "DAGScene")
+        self._sub_scene: DAGSceneClass = DAGSceneClass()
         self._pin_map: dict = {}
 
         # Node geometry
@@ -142,7 +144,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
         # Listeners
-        self._prop_model.dataChanged.connect(lambda: self.update_all())
+        cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -241,7 +243,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._content_layout.removeWidget(remove_widget)
             # noinspection PyTypeChecker
             remove_widget.setParent(None)
-            # remove_widget.deleteLater()
             self._socket_widgets.remove(remove_widget)
 
             self._content_widget.show()
