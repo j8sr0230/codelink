@@ -76,10 +76,9 @@ class FrameItem(QtWidgets.QGraphicsItem):
         )
 
     def __getstate__(self) -> dict:
-        # noinspection PyUnresolvedReferences
         data_dict: dict = {
             "Properties": self._prop_model.__getstate__(),
-            "Framed Nodes": [self.scene().nodes.index(node) for node in self._framed_nodes]
+            "Framed Nodes": [node.dag_index() for node in self._framed_nodes]
         }
         return data_dict
 

@@ -210,9 +210,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def content_widget(self) -> QtWidgets.QWidget:
         return self._content_widget
 
-    def index(self) -> int:
-        # Todo: Return index of item in scene
-        pass
+    def dag_index(self) -> int:
+        # noinspection PyUnresolvedReferences
+        return self.scene().nodes.index(self)
 
     def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
         input_widget.pin.setParentItem(self)
