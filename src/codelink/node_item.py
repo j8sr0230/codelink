@@ -33,14 +33,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
             header_right="Value"
         )
 
+        # Non persistent data model
         self._mode: str = ""
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
-
         self._parent_frame: Optional[FrameItem] = None
-        # Hack: Load classes for type hints here, to prevent cyclic import
-        DAGSceneClass = getattr(importlib.import_module("dag_scene"), "DAGScene")
-        self._sub_scene: DAGSceneClass = DAGSceneClass()
+        dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
+        self._sub_scene: dag_scene_cls = dag_scene_cls()
         self._pin_map: dict = {}
 
         # Node geometry
@@ -147,7 +146,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
-    def prop_model(self) -> QtCore.QAbstractTableModel:
+    def prop_model(self) -> PropertyModel:
         return self._prop_model
 
     @property
@@ -369,6 +368,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             return args[0] - args[1]
         else:
             return 0
+
+    def scene(self) -> Any:
+        return super().scene()
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
@@ -598,8 +600,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Add socket widgets from state
         for i in range(len(state["Sockets"])):
             socket_widget_props: dict = state["Sockets"][i]
-            SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
-            new_socket_widget: SocketWidgetClass = SocketWidgetClass(
+            # SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
+            new_socket_widget: SocketWidget = SocketWidget(
                 label=socket_widget_props["Name"],
                 is_input=socket_widget_props["Is Input"],
                 parent_node=self
