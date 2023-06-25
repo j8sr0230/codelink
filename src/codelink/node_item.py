@@ -103,7 +103,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.setSpacing(5)
         self._content_widget.setLayout(self._content_layout)
 
-        # Hack for setting node_item ont to qss ont defined in app_style.py -> NODE_STYLE -> QWidget
+        # Hack for setting node_item font to qss font defined in app_style.py -> NODE_STYLE -> QWidget
         self._content_widget.style().unpolish(self._content_widget)  # Unload qss
         self._content_widget.style().polish(self._content_widget)  # Reload qss
         self._content_widget.update()

@@ -15,6 +15,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
     def __init__(self, framed_nodes: list[NodeItem], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
                         "Name": "Frame Label",
@@ -22,32 +23,48 @@ class FrameItem(QtWidgets.QGraphicsItem):
                         }
         )
 
+        # Reference to framed nodes
         self._framed_nodes: list[NodeItem] = framed_nodes
 
+        # Geometry
         self._offset: int = 10
 
         # Assets
+        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
-
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
         self._selected_border_pen.setWidthF(1.5)
 
-        self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
-        self._font: QtGui.QFont = QtGui.QFont("Helvetica", 12)
+        # Hack for setting frame_item font to qss font defined in app_style.py -> NODE_STYLE -> QWidget
+        self.framed_nodes[0].content_widget.style().unpolish(self.framed_nodes[0].content_widget)  # Unload qss
+        self.framed_nodes[0].content_widget.style().polish(self.framed_nodes[0].content_widget)  # Reload qss
+        self.framed_nodes[0].content_widget.update()
+        self._font: QtGui.QFont = self.framed_nodes[0].content_widget.font()
+        self._font.setPixelSize(self._font.pixelSize() + 4)
 
+        # Widget setup
         self.setZValue(0)
-
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
+    @prop_model.setter
+    def prop_model(self, value: PropertyModel) -> None:
+        self._prop_model: PropertyModel = value
+
     @property
     def framed_nodes(self) -> list[NodeItem]:
         return self._framed_nodes
+
+    @framed_nodes.setter
+    def framed_nodes(self, value: list[NodeItem]) -> None:
+        self._framed_nodes: list[NodeItem] = value
+
+    # --------------- Shape and painting ---------------
 
     def boundingRect(self) -> QtCore.QRectF:
         x_min: float = min([node.x() for node in self._framed_nodes]) - self._offset
@@ -74,6 +91,8 @@ class FrameItem(QtWidgets.QGraphicsItem):
             QtCore.QPointF(self.boundingRect().x() + 5, self.boundingRect().y() - 5),
             self._prop_model.properties["Name"]
         )
+
+    # --------------- Serialization ---------------
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
