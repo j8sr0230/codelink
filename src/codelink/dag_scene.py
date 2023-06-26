@@ -151,7 +151,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         custom_node.sub_scene.deserialize_edges(sub_edges_dict)
         custom_node.sub_scene.deserialize_frames(sub_frames_dict)
         custom_node.prop_model.setData(
-            custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", QtCore.Qt.EditRole
+            custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", 2  # QtCore.Qt.EditRole
         )
 
         # Generate input and output widgets for custom node and reconnect edges
