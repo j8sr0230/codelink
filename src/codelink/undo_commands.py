@@ -1,29 +1,28 @@
-from typing import Optional
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional
 
-import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
 
-from dag_scene import DAGScene
-from frame_item import FrameItem
 from node_item import NodeItem
-from edge_item import EdgeItem
+
+if TYPE_CHECKING:
+	from dag_scene import DAGScene
+	from frame_item import FrameItem
+	from edge_item import EdgeItem
 
 
 class DeleteSelectedCommand(QtWidgets.QUndoCommand):
-
-	def __init__(self, scene: QtWidgets.QGraphicsScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
 		super().__init__(parent)
 
-		self._scene: QtWidgets.QGraphicsScene = scene
+		self._scene: DAGScene = scene
 		self._selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if type(item) == NodeItem]
 		self._connected_edges: list[EdgeItem] = []
 		self._frames: list[FrameItem] = []
 
 	def undo(self) -> None:
 		for node in self._selected_nodes:
-			self._scene.nodes.append(node)
-			self._scene.addItem(node)
+			self._scene.add_node(node)
 
 			if node.parent_frame:
 				if node.parent_frame not in self._scene.frames:
@@ -45,7 +44,4 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 					self._connected_edges.append(edge)
 					self._scene.remove_edge(edge)
 
-			# noinspection PyTypeChecker
-			node.content_widget.setParent(None)
-			self._scene.removeItem(node)
-			self._scene.nodes.remove(node)
+			self._scene.remove_node(node)
