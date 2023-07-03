@@ -401,7 +401,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             # Reset node state
             new_node.__setstate__(node_dict)
-            new_node.update()
             self.update()
 
     def serialize_edges(self) -> list[dict]:
