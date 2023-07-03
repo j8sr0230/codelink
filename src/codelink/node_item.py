@@ -222,7 +222,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def content_widget(self) -> QtWidgets.QWidget:
         return self._content_widget
 
-    # --------------- Socket widget editing methods ---------------
+    # --------------- Socket widget editing ---------------
 
     def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0):
         socket_widget.pin.setParentItem(self)

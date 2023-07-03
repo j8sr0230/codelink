@@ -72,7 +72,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def parent_node(self, value: Optional[NodeItem]) -> None:
         self._parent_node: Optional[NodeItem] = value
 
-    # --------------- DAG editing methods ---------------
+    # --------------- DAG editing ---------------
 
     def add_frame(self, frame_item: FrameItem) -> FrameItem:
         self._frames.append(frame_item)
@@ -422,8 +422,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             end_pin: PinItem = end_socket_widget.pin
 
             self.add_edge_from_pins(start_pin, end_pin)
-            start_socket_widget.update_all()
-            end_socket_widget.update_all()
             self.update()
 
     def serialize_frames(self) -> list[dict]:
