@@ -1,4 +1,5 @@
-from typing import Optional, Union
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional, Union
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -7,12 +8,16 @@ import PySide2.QtGui as QtGui
 from property_model import PropertyModel
 from pin_item import PinItem
 
+if TYPE_CHECKING:
+    from node_item import NodeItem
+
 
 class SocketWidget(QtWidgets.QWidget):
     def __init__(self, label: str = "In", is_input: bool = True, data: object = 0,
-                 parent_node: Optional['NodeItem'] = None, parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
+                 parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
+        # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={
                         "Class": self.__class__.__name__,
@@ -24,7 +29,8 @@ class SocketWidget(QtWidgets.QWidget):
             header_right="Value"
         )
 
-        self._parent_node: Optional['NodeItem'] = parent_node
+        # Non persistent data model
+        self._parent_node: Optional[NodeItem] = parent_node
 
         self._pin_item: PinItem = PinItem(
             pin_type=int,
@@ -33,27 +39,27 @@ class SocketWidget(QtWidgets.QWidget):
             parent_node=parent_node
         )
 
+        # UI
+        # Layout
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setMargin(0)
         self._layout.setSpacing(0)
         self.setFixedHeight(24)
-
         self.setLayout(self._layout)
 
+        # Label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
         self._layout.addWidget(self._label_widget)
 
+        # Input widget
         self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
         self._input_widget.setMinimumWidth(5)
-        # self._input_widget.setPlaceholderText("Enter value")
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
-
-        # noinspection PyTypeChecker
+        # self._input_widget.setPlaceholderText("Enter value")
         self._input_widget.textChanged.connect(lambda: self._prop_model.setData(
             self._prop_model.index(3, 1, QtCore.QModelIndex()),
-            int(self.input_widget.text()), QtCore.Qt.EditRole
+            int(self.input_widget.text()), 2  # QtCore.Qt.EditRole
         ))
-
         self._layout.addWidget(self._input_widget)
 
         self.update_stylesheets()
@@ -70,11 +76,11 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model.properties["Is Input"]
 
     @property
-    def parent_node(self) -> 'NodeItem':
+    def parent_node(self) -> NodeItem:
         return self._parent_node
 
     @parent_node.setter
-    def parent_node(self, value: 'NodeItem') -> None:
+    def parent_node(self, value: NodeItem) -> None:
         self._parent_node: 'NodeItem' = value
 
     @property
@@ -85,8 +91,8 @@ class SocketWidget(QtWidgets.QWidget):
     def input_widget(self) -> QtWidgets.QWidget:
         return self._input_widget
 
-    def input_data(self) -> Optional[Union['PinItem', int]]:
-        result: Optional[Union['PinItem', int]] = None
+    def input_data(self) -> Optional[Union[PinItem, int]]:
+        result: Optional[Union[PinItem, int]] = None
         if self._pin_item.has_edges():
             pre_node: NodeItem = self._pin_item.edges[0].start_pin.parent_node
             if len(pre_node.sub_scene.nodes) > 0:
@@ -106,6 +112,8 @@ class SocketWidget(QtWidgets.QWidget):
                 result: int = 0
 
         return result
+
+    # --------------- Callbacks for QAbstractTableModel.dataChanged signal ---------------
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:
@@ -146,8 +154,10 @@ class SocketWidget(QtWidgets.QWidget):
         self.update_stylesheets()
         self.update_pin_position()
 
-    def __copy__(self) -> 'SocketWidget':
-        copy: 'SocketWidget' = type(self)(
+    # --------------- Serialization ---------------
+
+    def __copy__(self) -> SocketWidget:
+        copy: SocketWidget = type(self)(
             label=self._prop_model.properties["Name"],
             is_input=self._prop_model.properties["Is Input"],
             data=self._prop_model.properties["Data"],
