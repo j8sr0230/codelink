@@ -1,4 +1,4 @@
-from typing import Any, Optional, cast
+from typing import Any, Optional, Union, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -12,12 +12,15 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        # Non persistent data model
+        self._start_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
+        self._end_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
+
+        # Assets
         self._default_color: QtGui.QColor = color
         self._selected_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
-        self._start_pin: Optional[QtWidgets.QGraphicsItem] = None
-        self._end_pin: Optional[QtWidgets.QGraphicsItem] = None
-
+        # Widget setup
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
@@ -52,6 +55,8 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         if old_start_socket.socket_widget.is_input:
             self._start_pin: QtWidgets.QGraphicsItem = self._end_pin
             self._end_pin: QtWidgets.QGraphicsItem = old_start_socket
+
+    # --------------- Edge validation ---------------
 
     def is_valid(self, eval_target: QtWidgets.QGraphicsItem) -> bool:
         result: bool = True
