@@ -71,6 +71,10 @@ class SocketWidget(QtWidgets.QWidget):
     def prop_model(self) -> QtCore.QAbstractTableModel:
         return self._prop_model
 
+    @prop_model.setter
+    def prop_model(self, value: PropertyModel) -> None:
+        self._prop_model: PropertyModel = value
+
     @property
     def is_input(self) -> bool:
         return self._prop_model.properties["Is Input"]
