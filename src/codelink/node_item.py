@@ -484,7 +484,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-    # --------------- Update callbacks ---------------
+    # --------------- Callbacks for QAbstractTableModel.dataChanged signal ---------------
 
     def update_name(self, value: str) -> None:
         self._name_item.setPlainText(
