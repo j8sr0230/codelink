@@ -10,6 +10,7 @@ class CutterItem(QtWidgets.QGraphicsPathItem):
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
+        # Non persistent data model
         self._start_point: QtCore.QPointF = start
         self._end_point: QtCore.QPointF = end
 
@@ -28,6 +29,8 @@ class CutterItem(QtWidgets.QGraphicsPathItem):
     @end_point.setter
     def end_point(self, value: QtCore.QPointF) -> None:
         self._end_point = value
+
+    # --------------- Shape and painting ---------------
 
     def path(self) -> QtGui.QPainterPath:
         path: QtGui.QPainterPath = QtGui.QPainterPath(self._start_point)
