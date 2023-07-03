@@ -99,7 +99,6 @@ class PropertyWidget(QtWidgets.QWidget):
 
 	# --------------- Callbacks for PropertyTable.table_top_reached and .table_bottom_reached signals ---------------
 
-	@QtCore.Slot(QtWidgets.QTableView)
 	def focus_up(self, current_table: QtWidgets.QTableView):
 		current_table.clearFocus()
 		current_table.clearSelection()
@@ -109,9 +108,8 @@ class PropertyWidget(QtWidgets.QWidget):
 		next_table_view.setCurrentIndex(next_table_view.model().index(
 			next_table_view.model().rowCount() - 1, 1)
 		)
-		self.focus_changed.emit(next_table_view)
+		cast(QtCore.SignalInstance, self.focus_changed).emit(next_table_view)
 
-	@QtCore.Slot(QtWidgets.QTableView)
 	def focus_down(self, current_table: QtWidgets.QTableView):
 		current_table.clearFocus()
 		current_table.clearSelection()
@@ -119,4 +117,4 @@ class PropertyWidget(QtWidgets.QWidget):
 		next_table_view: QtWidgets.QTableView = self.get_next_prop_table(current_table)
 		next_table_view.setFocus()
 		next_table_view.setCurrentIndex(next_table_view.model().index(0, 1))
-		self.focus_changed.emit(next_table_view)
+		cast(QtCore.SignalInstance, self.focus_changed).emit(next_table_view)

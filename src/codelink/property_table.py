@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -28,7 +28,7 @@ class PropertyTable(QtWidgets.QTableView):
             new_row = self.currentIndex().row() + 1
 
             if new_row == self.model().rowCount():
-                self.table_bottom_reached.emit(self)
+                cast(QtCore.SignalInstance, self.table_bottom_reached).emit(self)
             else:
                 new_index = self.model().index(new_row, 1)
                 self.setCurrentIndex(new_index)
@@ -37,7 +37,7 @@ class PropertyTable(QtWidgets.QTableView):
             new_row = self.currentIndex().row() - 1
 
             if new_row == -1:
-                self.table_top_reached.emit(self)
+                cast(QtCore.SignalInstance, self.table_top_reached).emit(self)
             else:
                 new_index = self.model().index(new_row, 1)
                 self.setCurrentIndex(new_index)
