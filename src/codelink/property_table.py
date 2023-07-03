@@ -12,6 +12,7 @@ class PropertyTable(QtWidgets.QTableView):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
+        # Widget setup
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.setEditTriggers(QtWidgets.QTableView.AnyKeyPressed | QtWidgets.QTableView.DoubleClicked)
@@ -19,6 +20,8 @@ class PropertyTable(QtWidgets.QTableView):
 
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().hide()
+
+    # --------------- Overwrites ---------------
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.key() == QtCore.Qt.Key_Tab or event.key() == QtCore.Qt.Key_Down:

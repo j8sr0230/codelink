@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import PySide2.QtCore as QtCore
 
@@ -30,7 +30,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
     @header_left.setter
     def header_left(self, value: str) -> None:
         self._header_left: str = value
-        self.headerDataChanged.emit(QtCore.Qt.Orientation, 0, 0)
+        cast(QtCore.SignalInstance, self.headerDataChanged).emit(QtCore.Qt.Orientation, 0, 0)
 
     @property
     def header_right(self) -> str:
@@ -39,7 +39,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
     @header_right.setter
     def header_right(self, value: str) -> None:
         self._header_right: str = value
-        self.headerDataChanged.emit(QtCore.Qt.Orientation, 1, 1)
+        cast(QtCore.SignalInstance, self.headerDataChanged).emit(QtCore.Qt.Orientation, 1, 1)
 
     def rowCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return len(self._properties.keys())
@@ -81,7 +81,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
             key: str = list(self._properties.keys())[index.row()]
             data_type = type(self._properties[key])
             self._properties[key] = data_type(value)
-            self.dataChanged.emit(index, index)
+            cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
             return True
 
         return False
