@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -52,20 +52,20 @@ class SocketWidget(QtWidgets.QWidget):
         self._layout.addWidget(self._label_widget)
 
         # Input widget
-        self._input_widget: QtWidgets.QWidget = QtWidgets.QLineEdit(self)
+        self._input_widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
         self._input_widget.setMinimumWidth(5)
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         # self._input_widget.setPlaceholderText("Enter value")
-        self._input_widget.textChanged.connect(lambda: self._prop_model.setData(
-            self._prop_model.index(3, 1, QtCore.QModelIndex()),
-            int(self.input_widget.text()), 2  # QtCore.Qt.EditRole
-        ))
         self._layout.addWidget(self._input_widget)
 
         self.update_stylesheets()
 
         # Listeners
-        self._prop_model.dataChanged.connect(lambda: self.update_all())
+        cast(QtCore.SignalInstance,  self._prop_model.dataChanged).connect(lambda: self.update_all())
+        cast(QtCore.SignalInstance, self._input_widget.textChanged).connect(lambda: self._prop_model.setData(
+            self._prop_model.index(3, 1, QtCore.QModelIndex()),
+            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
+        ))
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
