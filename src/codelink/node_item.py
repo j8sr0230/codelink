@@ -7,12 +7,12 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
+from utils import crop_text
 from property_model import PropertyModel
+from frame_item import FrameItem
 from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
-from frame_item import FrameItem
-from utils import crop_text
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
@@ -34,13 +34,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
 
         # Non persistent data model
-        self._mode: str = ""
-        self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._socket_widgets: list[QtWidgets.QWidget] = []
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
         self._sub_scene: dag_scene_cls = dag_scene_cls()
         self._pin_map: dict = {}
+        self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
+        self._mode: str = ""
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -119,7 +119,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Add", "Sub", "Mul"])
-        cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_layout.addWidget(self._option_box)
@@ -143,6 +142,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
         # Listeners
+        cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
@@ -150,12 +150,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return self._prop_model
 
     @property
-    def evals(self) -> list[object]:
-        return self._evals
+    def is_collapsed(self) -> str:
+        return self._prop_model.properties["Collapse State"]
 
     @property
     def socket_widgets(self) -> list[SocketWidget]:
         return self._socket_widgets
+
+    @socket_widgets.setter
+    def socket_widgets(self, value: list[SocketWidget]) -> None:
+        self.clear_socket_widgets()
+        for idx, socket_widget in enumerate(value):
+            self.add_socket_widget(socket_widget, idx)
 
     @property
     def input_socket_widgets(self) -> list[SocketWidget]:
@@ -185,9 +191,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def pin_map(self) -> dict:
         return self._pin_map
 
-    @pin_map.setter
-    def pin_map(self, value: dict) -> None:
-        self._pin_map: dict = value
+    @property
+    def evals(self) -> list[object]:
+        return self._evals
+
+    @evals.setter
+    def evals(self, value: list[object]) -> None:
+        self._evals: list[object] = value
 
     @property
     def header_height(self) -> int:
@@ -205,25 +215,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
 
     @property
-    def is_collapsed(self) -> str:
-        return self._prop_model.properties["Collapse State"]
-
-    @property
     def content_widget(self) -> QtWidgets.QWidget:
         return self._content_widget
 
-    def dag_index(self) -> int:
-        # noinspection PyUnresolvedReferences
-        return self.scene().nodes.index(self)
+    # --------------- Socket widget editing methods ---------------
 
-    def add_socket_widget(self, input_widget: SocketWidget, insert_idx: int = 0):
-        input_widget.pin.setParentItem(self)
+    def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0):
+        socket_widget.pin.setParentItem(self)
 
         self._content_widget.hide()
-        self._socket_widgets.insert(insert_idx, input_widget)
-        self._content_layout.insertWidget(insert_idx + 1, input_widget)
+        self._socket_widgets.insert(insert_idx, socket_widget)
+        self._content_layout.insertWidget(insert_idx + 1, socket_widget)
         self._content_widget.show()
         self._content_widget.update()
+
+        socket_widget.update_all()
+        socket_widget.update()
         self.update_all()
         self.update()
 
@@ -279,6 +286,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
             child for child in self._content_widget.children() if type(child) == SocketWidget and not child.is_input
         ]
 
+    def remove_from_frame(self):
+        if self.parent_frame is not None:
+            self.parent_frame.framed_nodes.remove(self)
+            self.parent_frame.update()
+            if len(self.parent_frame.framed_nodes) == 0:
+                self.scene().remove_frame(self.parent_frame)
+
+    # --------------- DAG analytics ---------------
+
+    def dag_index(self) -> int:
+        return self.scene().nodes.index(self)
+
     def has_in_edges(self) -> bool:
         for socket_widget in self.input_socket_widgets:
             if socket_widget.pin.has_edges():
@@ -290,6 +309,34 @@ class NodeItem(QtWidgets.QGraphicsItem):
             if socket_widget.pin.has_edges():
                 return True
         return False
+
+    def predecessors(self) -> list[NodeItem]:
+        result: list[NodeItem] = []
+        for socket_widget in self.input_socket_widgets:
+            if len(socket_widget.pin.edges) > 0:
+                for edge in socket_widget.pin.edges:
+                    pre_node: NodeItem = edge.start_pin.parent_node
+                    if len(pre_node.sub_scene.nodes) > 0:
+                        linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
+                        result.append(linked_lowest.parent_node)
+                    else:
+                        result.append(edge.start_pin.parent_node)
+
+            else:
+                linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
+                if linked_highest != socket_widget:
+                    for edge in linked_highest.pin.edges:
+                        result.append(edge.start_pin.parent_node)
+
+        return result
+
+    def successors(self) -> list[NodeItem]:
+        result: list[NodeItem] = []
+        for socket_widget in self._socket_widgets:
+            if not socket_widget.is_input:
+                for edge in socket_widget.pin.edges:
+                    result.append(edge.end_pin.parent_node)
+        return result
 
     def has_sub_scene(self) -> bool:
         return len(self._sub_scene.nodes) > 0
@@ -318,42 +365,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         else:
             return socket
 
-    def predecessors(self) -> list['NodeItem']:
-        result: list['NodeItem'] = []
-        for socket_widget in self.input_socket_widgets:
-            if len(socket_widget.pin.edges) > 0:
-                for edge in socket_widget.pin.edges:
-                    pre_node: NodeItem = edge.start_pin.parent_node
-                    if len(pre_node.sub_scene.nodes) > 0:
-                        linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
-                        result.append(linked_lowest.parent_node)
-                    else:
-                        result.append(edge.start_pin.parent_node)
+    # --------------- Node eval methods ---------------
 
-            else:
-                linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
-                if linked_highest != socket_widget:
-                    for edge in linked_highest.pin.edges:
-                        result.append(edge.start_pin.parent_node)
-
-        return result
-
-    def successors(self) -> list['NodeItem']:
-        result: list['NodeItem'] = []
-        for socket_widget in self._socket_widgets:
-            if not socket_widget.is_input:
-                for edge in socket_widget.pin.edges:
-                    result.append(edge.end_pin.parent_node)
-        return result
-
-    def remove_from_frame(self):
-        if self.parent_frame is not None:
-            self.parent_frame.framed_nodes.remove(self)
-            self.parent_frame.update()
-            if len(self.parent_frame.framed_nodes) == 0:
-                self.scene().remove_frame(self.parent_frame)
-
-    # noinspection PyUnusedLocal
     @staticmethod
     def eval_socket_1(*args) -> Union[PinItem, int]:
         if len(args) > 1:
@@ -361,13 +374,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
         else:
             return 0
 
-    # noinspection PyUnusedLocal
     @staticmethod
     def eval_socket_2(*args) -> Union[PinItem, int]:
         if len(args) > 1:
             return args[0] - args[1]
         else:
             return 0
+
+    # --------------- Overwrites ---------------
 
     def scene(self) -> Any:
         return super().scene()
@@ -383,13 +397,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
             x_mode_row: int = list(self._prop_model.properties.keys()).index("X")
             y_mode_row: int = list(self._prop_model.properties.keys()).index("Y")
 
-            # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(x_mode_row, 1, QtCore.QModelIndex()), int(x_snap), QtCore.Qt.EditRole
+                self._prop_model.index(x_mode_row, 1, QtCore.QModelIndex()), int(x_snap), 2  # QtCore.Qt.EditRole
             )
-            # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(y_mode_row, 1, QtCore.QModelIndex()), int(y_snap), QtCore.Qt.EditRole
+                self._prop_model.index(y_mode_row, 1, QtCore.QModelIndex()), int(y_snap), 2  # QtCore.Qt.EditRole
             )
 
             return QtCore.QPointF(x_snap, y_snap)
@@ -436,9 +448,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             width_row: int = list(self._prop_model.properties.keys()).index("Width")
 
-            # noinspection PyTypeChecker
             self._prop_model.setData(
-                self._prop_model.index(width_row, 1, QtCore.QModelIndex()), new_width, QtCore.Qt.EditRole
+                self._prop_model.index(width_row, 1, QtCore.QModelIndex()), new_width, 2  # QtCore.Qt.EditRole
             )
         else:
             super().mouseMoveEvent(event)
@@ -468,6 +479,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
+
+    # --------------- Update callbacks ---------------
 
     def update_name(self, value: str) -> None:
         self._name_item.setPlainText(
@@ -549,6 +562,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
+    # --------------- Background and shape---------------
+
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
 
@@ -570,6 +585,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             painter.setPen(self._default_border_pen)
         painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
 
+    # --------------- Serialization ---------------
+
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "Properties": self.prop_model.__getstate__(),
@@ -579,14 +596,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
         sockets_list: list[dict] = []
         for idx, socket_widget in enumerate(self._socket_widgets):
             sockets_list.append(socket_widget.prop_model.__getstate__())
-
         data_dict["Sockets"] = sockets_list
-        data_dict["Subgraph"] = {
-            "Nodes": self.sub_scene.serialize_nodes(),
-            "Edges": self.sub_scene.serialize_edges(),
-            "Frames": self.sub_scene.serialize_frames(),
-            "Pin Map": self._pin_map
-        }
+
+        data_dict["Subgraph"] = self.sub_scene.serialize()
+        data_dict["Subgraph"]["Pin Map"] = self._pin_map
 
         return data_dict
 
@@ -594,28 +607,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.prop_model.__setstate__(state["Properties"])
         self._option_box.setCurrentIndex(state["Option Idx"])
 
-        # Remove predefined socket widgets
-        self.clear_socket_widgets()
-
         # Add socket widgets from state
+        self.clear_socket_widgets()
         for i in range(len(state["Sockets"])):
             socket_widget_props: dict = state["Sockets"][i]
-            # SocketWidgetClass = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
-            new_socket_widget: SocketWidget = SocketWidget(
+            socket_widget_cls: type = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
+            new_socket_widget: socket_widget_cls = socket_widget_cls(
                 label=socket_widget_props["Name"],
                 is_input=socket_widget_props["Is Input"],
+                data=socket_widget_props["Data"],
                 parent_node=self
             )
-            new_socket_widget.prop_model.__setstate__(socket_widget_props)
+            # new_socket_widget.prop_model.__setstate__(socket_widget_props)
             self.add_socket_widget(new_socket_widget, i)
 
-            new_socket_widget.update_all()
-            new_socket_widget.update()
-
         # Reset sub graph data
-        self.sub_scene.deserialize_nodes(state["Subgraph"]["Nodes"])
-        self.sub_scene.deserialize_edges(state["Subgraph"]["Edges"])
-        self.sub_scene.deserialize_frames(state["Subgraph"]["Frames"])
+        self.sub_scene.deserialize(state["Subgraph"])
         self._pin_map: dict = state["Subgraph"]["Pin Map"]
 
         if len(self.sub_scene.nodes) > 0:
