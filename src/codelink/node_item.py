@@ -136,6 +136,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_proxy.setWidget(self._content_widget)
 
         self.update_all()
+
+        # Widget setup
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
