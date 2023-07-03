@@ -12,12 +12,12 @@ if TYPE_CHECKING:
 
 
 class PinItem(QtWidgets.QGraphicsItem):
-    def __init__(self, pin_type: object, color: QtGui.QColor, socket_widget: Optional[SocketWidget],
+    def __init__(self, pin_type: type, color: QtGui.QColor, socket_widget: Optional[SocketWidget],
                  parent_node: Optional[NodeItem] = None) -> None:
         super().__init__(parent_node)
 
         # Non persistent data model
-        self._pin_type: object = pin_type
+        self._pin_type: type = pin_type
         self._color: QtGui.QColor = QtGui.QColor(color)
         self._socket_widget: Optional[SocketWidget] = socket_widget
         self._parent_widget: Optional[NodeItem] = parent_node
@@ -31,12 +31,12 @@ class PinItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     @property
-    def pin_type(self) -> object:
-        return self._color
+    def pin_type(self) -> type:
+        return self._pin_type
 
     @pin_type.setter
-    def pin_type(self, value: object) -> None:
-        self._pin_type: object = value
+    def pin_type(self, value: type) -> None:
+        self._pin_type: type = value
 
     @property
     def color(self) -> QtGui.QColor:

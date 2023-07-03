@@ -1,4 +1,5 @@
-from typing import Optional
+from __future__ import annotations
+from typing import Any, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -47,7 +48,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         self._end_pin: QtWidgets.QGraphicsItem = value
 
     def sort_pins(self) -> None:
-        old_start_socket: QtWidgets.QGraphicsItem = self._start_pin
+        old_start_socket: PinItem = cast(PinItem, self._start_pin)
 
         if old_start_socket.socket_widget.is_input:
             self._start_pin: QtWidgets.QGraphicsItem = self._end_pin
@@ -56,19 +57,20 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def is_valid(self, eval_target: QtWidgets.QGraphicsItem) -> bool:
         result: bool = True
 
-        if type(eval_target) == PinItem and (eval_target != self._start_pin):
-            self._end_pin = eval_target
+        if type(eval_target) == PinItem and type(self._start_pin) == PinItem and (eval_target != self._start_pin):
+            self._start_pin: PinItem = cast(PinItem, self._start_pin)
+            self._end_pin: PinItem = cast(PinItem, eval_target)
             self._end_pin.add_edge(self)
 
-            socket_type_start: object = self._start_pin.pin_type
-            socket_type_end: object = self._end_pin.pin_type
+            socket_type_start: type = self._start_pin.pin_type
+            socket_type_end: type = self._end_pin.pin_type
 
             if socket_type_start == socket_type_end:
                 if self._start_pin.parentItem() is self._end_pin.parentItem():
                     # Sockets of the same node
                     result: bool = False
 
-                elif self.start_pin.socket_widget.is_input and self._end_pin.socket_widget.is_input:
+                elif self._start_pin.socket_widget.is_input and self._end_pin.socket_widget.is_input:
                     # Input with input pin
                     result: bool = False
 
@@ -93,17 +95,26 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
 
         return result
 
+    # --------------- Overwrites ---------------
+
+    def scene(self) -> Any:
+        return super().scene()
+
+    # --------------- Shape and painting ---------------
+
     def path(self) -> QtGui.QPainterPath:
-        start_point: QtCore.QPointF = self._start_pin.parentItem().mapToScene(self._start_pin.center())
+        start_pin: PinItem = cast(PinItem, self._start_pin)
+        start_point: QtCore.QPointF = self._start_pin.parentItem().mapToScene(start_pin.center())
 
         if type(self._end_pin) == PinItem:
-            end_point: QtCore.QPointF = self._end_pin.parentItem().mapToScene(self._end_pin.center())
+            end_pin: PinItem = cast(PinItem, self._end_pin)
+            end_point: QtCore.QPointF = self._end_pin.parentItem().mapToScene(end_pin.center())
         else:
             end_point: QtCore.QPointF = self._end_pin.pos()
 
         ctr_pt_offset: float = abs(end_point.x() - start_point.x()) / 2.5
 
-        if not self._start_pin.socket_widget.is_input:
+        if not start_pin.socket_widget.is_input:
             ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + ctr_pt_offset, start_point.y())
             ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - ctr_pt_offset, end_point.y())
         else:
@@ -136,11 +147,18 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         painter.setPen(pen)
         painter.drawPath(self.path())
 
+    # --------------- Serialization ---------------
+
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "Start Node Idx": self.scene().nodes.index(self._start_pin.parentItem()),
-            "Start Socket Idx": self._start_pin.parentItem().socket_widgets.index(self._start_pin.socket_widget),
+            "Start Socket Idx": self._start_pin.parentItem().socket_widgets.index(
+                cast(PinItem, self._start_pin).socket_widget
+            ),
             "End Node Idx": self.scene().nodes.index(self._end_pin.parentItem()),
-            "End Socket Idx": self._end_pin.parentItem().socket_widgets.index(self._end_pin.socket_widget)
+            "End Socket Idx": self._end_pin.parentItem().socket_widgets.index(
+
+                cast(PinItem, self._end_pin).socket_widget
+            )
         }
         return data_dict
