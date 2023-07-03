@@ -149,6 +149,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
+    @prop_model.setter
+    def prop_model(self, value: PropertyModel) -> None:
+        self._prop_model: PropertyModel = value
+
     @property
     def is_collapsed(self) -> str:
         return self._prop_model.properties["Collapse State"]
@@ -562,7 +566,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
-    # --------------- Background and shape---------------
+    # --------------- Shape and painting ---------------
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
