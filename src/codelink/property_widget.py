@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -15,18 +15,22 @@ class PropertyWidget(QtWidgets.QWidget):
 	def __init__(self, node_item: Optional[NodeItem] = None, width: int = 250, parent: Optional[QtWidgets.QWidget] = None):
 		super().__init__(parent)
 
+		# Non persistent data model
 		self._node_item: NodeItem = node_item
 
+		# Widget geometry
 		self._height: int = 0
 		self._width: int = width
 
+		# UI
+		# Node property table
 		self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
 
 		self._node_prop_table: PropertyTable = PropertyTable(self)
 		self._node_prop_table.setModel(self._node_item.prop_model)
 
-		# self._node_prop_table.table_top_reached.connect(self.focus_up)
-		self._node_prop_table.table_bottom_reached.connect(self.focus_down)
+		# cast(QtCore.SignalInstance, self._node_prop_table.table_top_reached).connect(self.focus_up)
+		cast(QtCore.SignalInstance, self._node_prop_table.table_bottom_reached).connect(self.focus_down)
 
 		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
@@ -41,14 +45,15 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._height += self._node_prop_table.height()
 		self._layout.addWidget(self._node_prop_table)
 
+		# Socket property tables
 		for idx, socket_widget in enumerate(self._node_item.socket_widgets):
 			socket_model: PropertyModel = socket_widget.prop_model
 			socket_model.header_left = "Socket " + str(idx + 1) + " Prop"
 			socket_prop_table: PropertyTable = PropertyTable(self)
 
-			socket_prop_table.table_top_reached.connect(self.focus_up)
+			cast(QtCore.SignalInstance, socket_prop_table.table_top_reached).connect(self.focus_up)
 			if idx < len(self._node_item.socket_widgets) - 1:
-				socket_prop_table.table_bottom_reached.connect(self.focus_down)
+				cast(QtCore.SignalInstance, socket_prop_table.table_bottom_reached).connect(self.focus_down)
 
 			socket_prop_table.setModel(socket_model)
 			socket_prop_table.setFixedHeight(
@@ -60,6 +65,7 @@ class PropertyWidget(QtWidgets.QWidget):
 			socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)
 
+		# Widget setup
 		self._layout.setMargin(0)
 		self._layout.setSpacing(0)
 		self.setLayout(self._layout)
@@ -90,6 +96,8 @@ class PropertyWidget(QtWidgets.QWidget):
 			table_index = len(table_views) - 1
 
 		return table_views[table_index]
+
+	# --------------- Callbacks for PropertyTable.table_top_reached and .table_bottom_reached signals ---------------
 
 	@QtCore.Slot(QtWidgets.QTableView)
 	def focus_up(self, current_table: QtWidgets.QTableView):
