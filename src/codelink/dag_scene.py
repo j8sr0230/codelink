@@ -267,8 +267,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
             self.remove_node(node)
 
     def add_edge(self, edge: EdgeItem) -> EdgeItem:
+        edge.start_pin.add_edge(edge)
+        edge.end_pin.add_edge(edge)
+        edge.end_pin.socket_widget.update_stylesheets()
+
         self._edges.append(edge)
         self.addItem(edge)
+
         return edge
 
     def add_edge_from_pins(self, start_pin: PinItem, end_pin: Union[QtWidgets.QGraphicsItem, PinItem]) -> EdgeItem:
