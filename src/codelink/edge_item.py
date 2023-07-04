@@ -15,10 +15,13 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         # Non persistent data model
         self._start_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
         self._end_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
+        self._mode: str = ""
 
         # Assets
         self._default_color: QtGui.QColor = color
         self._selected_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
+        self._pen: QtGui.QPen = QtGui.QPen(self._default_color)
+        self._pen.setWidthF(3.0)
 
         # Widget setup
         self.setAcceptHoverEvents(True)
@@ -104,6 +107,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def scene(self) -> Any:
         return super().scene()
 
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+        self._mode: str = "HOVER"
+
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverLeaveEvent(event)
+        self._mode: str = ""
+
     # --------------- Shape and painting ---------------
 
     def path(self) -> QtGui.QPainterPath:
@@ -139,16 +150,13 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
-        pen: QtGui.QPen = QtGui.QPen(self._default_color)
-        pen.setWidthF(3.0)
-
-        if self.isSelected():
-            pen.setColor(self._selected_color)
+        if self.isSelected() or self._mode == "HOVER":
+            self._pen.setColor(self._selected_color)
         else:
-            pen.setColor(self._default_color)
+            self._pen.setColor(self._default_color)
 
         painter.setBrush(QtCore.Qt.NoBrush)
-        painter.setPen(pen)
+        painter.setPen(self._pen)
         painter.drawPath(self.path())
 
     # --------------- Serialization ---------------
