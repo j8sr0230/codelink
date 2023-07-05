@@ -103,6 +103,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return node
 
     def add_node_from_nodes(self, nodes: list[NodeItem]) -> NodeItem:
+        # TODO: Adjust parent pin map, if scene is a sub scene
         selected_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
