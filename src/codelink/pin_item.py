@@ -79,10 +79,12 @@ class PinItem(QtWidgets.QGraphicsItem):
     # --------------- Edge editing ---------------
 
     def add_edge(self, edge: EdgeItem) -> None:
-        self._edges.append(edge)
+        if edge not in self._edges:
+            self._edges.append(edge)
 
     def remove_edge(self, edge: EdgeItem) -> None:
-        self._edges.remove(edge)
+        if edge in self._edges:
+            self._edges.remove(edge)
 
     def has_edges(self) -> bool:
         return len(self._edges) > 0
@@ -92,6 +94,7 @@ class PinItem(QtWidgets.QGraphicsItem):
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
+        print(self._edges)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)

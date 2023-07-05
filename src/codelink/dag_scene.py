@@ -195,11 +195,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         custom_node.sort_socket_widgets()
         custom_node.update_all()
 
-        # Remove selected nodes and inner edges
-        while len(selected_edges) > 0:
-            edge: EdgeItem = selected_edges.pop()
-            self.remove_edge(edge)
-
+        # Remove selected nodes with inner edges
         while len(nodes) > 0:
             node: NodeItem = nodes.pop()
             self.remove_node(node)

@@ -52,6 +52,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def end_pin(self, value: QtWidgets.QGraphicsItem) -> None:
         self._end_pin: QtWidgets.QGraphicsItem = value
 
+    @property
+    def mode(self) -> str:
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: str) -> None:
+        self._mode: str = value
+
     def sort_pins(self) -> None:
         old_start_socket: PinItem = cast(PinItem, self._start_pin)
 

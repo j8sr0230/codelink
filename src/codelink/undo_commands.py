@@ -17,20 +17,29 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 		self._scene: DAGScene = scene
 		self._selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if type(item) == NodeItem]
-		self._selected_edges: set[EdgeItem] = {item for item in scene.selectedItems() if type(item) == EdgeItem}
-		self._selected_frames: set[FrameItem] = {item for item in scene.selectedItems() if type(item) == FrameItem}
+		self._selected_edges: list[EdgeItem] = [item for item in scene.selectedItems() if type(item) == EdgeItem]
+		self._selected_frames: list[FrameItem] = [item for item in scene.selectedItems() if type(item) == FrameItem]
+
+		self._linked_frames: dict[FrameItem, list[NodeItem]] = dict()
+		self._linked_edges: set[EdgeItem] = set()
 
 	def undo(self) -> None:
 		for node in self._selected_nodes:
 			self._scene.add_node(node)
 
-			if node.parent_frame:
-				if node.parent_frame not in self._scene.frames:
-					self._scene.add_frame(node.parent_frame)
-				node.parent_frame.framed_nodes.append(node)
+			while len(self._linked_edges) > 0:
+				edge: EdgeItem = self._linked_edges.pop()
+				self._scene.add_edge(edge)
 
-			for edge in self._selected_edges:
-				self._scene.add_edge_from_pins(edge.start_pin, edge.end_pin)
+			for frame, framed_nodes in self._linked_frames.items():
+				if frame not in self._scene.frames:
+					self._scene.add_frame(frame)
+
+				frame.framed_nodes.extend(framed_nodes)
+				while len(framed_nodes) > 0:
+					framed_node: NodeItem = framed_nodes.pop()
+					framed_node.parent_frame = frame
+					frame.update()
 
 		for edge in self._selected_edges:
 			if edge not in self._scene.edges:
@@ -39,22 +48,26 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 		for frame in self._selected_frames:
 			if frame not in self._scene.frames:
 				self._scene.add_frame(frame)
+				for node in frame.framed_nodes:
+					node.parent_frame = frame
 
 	def redo(self) -> None:
 		for frame in self._selected_frames:
 			self._scene.remove_frame(frame)
 
 		for edge in self._selected_edges:
+			edge.mode = ""
 			self._scene.remove_edge(edge)
 
 		for node in self._selected_nodes:
 			if node.parent_frame:
-				self._selected_frames.add(node.parent_frame)
+				if node.parent_frame not in self._linked_frames.keys():
+					self._linked_frames[node.parent_frame] = []
+
+				self._linked_frames[node.parent_frame].append(node)
 
 			for socket_widget in node.socket_widgets:
-				while len(socket_widget.pin.edges) > 0:
-					edge: EdgeItem = socket_widget.pin.edges.pop()
-					self._selected_edges.add(edge)
-					self._scene.remove_edge(edge)
+				for edge in socket_widget.pin.edges:
+					self._linked_edges.add(edge)
 
 			self._scene.remove_node(node)
