@@ -75,12 +75,18 @@ class DAGScene(QtWidgets.QGraphicsScene):
     # --------------- DAG editing ---------------
 
     def add_frame(self, frame_item: FrameItem) -> FrameItem:
+        if frame_item.item_index == -1:
+            frame_item.item_index = len(self._frames + self._nodes + self._edges)
+
         self._frames.append(frame_item)
         self.addItem(frame_item)
         return frame_item
 
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame_item: FrameItem = FrameItem(framed_nodes=nodes)
+        if frame_item.item_index == -1:
+            frame_item.item_index = len(self._frames + self._nodes + self._edges)
+
         for node in nodes:
             node.parent_frame = frame_item
 

@@ -32,12 +32,12 @@ class PropertyWidget(QtWidgets.QWidget):
 		# cast(QtCore.SignalInstance, self._node_prop_table.table_top_reached).connect(self.focus_up)
 		cast(QtCore.SignalInstance, self._node_prop_table.table_bottom_reached).connect(self.focus_down)
 
-		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(2, StringDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(3, BooleanDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(3, StringDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(4, BooleanDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setItemDelegateForRow(6, IntegerDelegate(self._node_prop_table))
+		self._node_prop_table.setItemDelegateForRow(7, IntegerDelegate(self._node_prop_table))
 		self._node_prop_table.setFixedHeight(
 			self._node_prop_table.model().rowCount() * self._node_prop_table.rowHeight(0) +
 			self._node_prop_table.horizontalHeader().height()
@@ -60,9 +60,9 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
 				socket_prop_table.horizontalHeader().height()
 			)
-			socket_prop_table.setItemDelegateForRow(1, StringDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(3, IntegerDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(2, StringDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(3, BooleanDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(4, IntegerDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)
 
 		# Widget setup

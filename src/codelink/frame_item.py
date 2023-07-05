@@ -18,6 +18,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
         # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
+                        "Item Index": -1,
                         "Name": "Frame Label",
                         "Color": "green"
                         }
@@ -56,6 +57,18 @@ class FrameItem(QtWidgets.QGraphicsItem):
     @prop_model.setter
     def prop_model(self, value: PropertyModel) -> None:
         self._prop_model: PropertyModel = value
+
+    @property
+    def item_index(self) -> int:
+        return self._prop_model.properties["Item Index"]
+
+    @item_index.setter
+    def item_index(self, value: str) -> None:
+        item_index_row: int = list(self._prop_model.properties.keys()).index("Item Index")
+
+        self._prop_model.setData(
+            self._prop_model.index(item_index_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
 
     @property
     def framed_nodes(self) -> list[NodeItem]:

@@ -8,9 +8,12 @@ from pin_item import PinItem
 
 
 class EdgeItem(QtWidgets.QGraphicsPathItem):
-    def __init__(self, color: QtGui.QColor = QtGui.QColor("#E5E5E5"),
+    def __init__(self, item_index: int = -1, color: QtGui.QColor = QtGui.QColor("#E5E5E5"),
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
+
+        # Persistent data model
+        self.item_index: int = item_index
 
         # Non persistent data model
         self._start_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
@@ -27,6 +30,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(1)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+
+    @property
+    def item_index(self) -> int:
+        return self._item_index
+
+    @item_index.setter
+    def item_index(self, value: int) -> None:
+        self._item_index: int = value
 
     @property
     def color(self) -> QtGui.QColor:
@@ -171,6 +182,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
+            "Item Index": self.item_index,
             "Start Node Idx": self.scene().nodes.index(self._start_pin.parentItem()),
             "Start Socket Idx": self._start_pin.parentItem().socket_widgets.index(
                 cast(PinItem, self._start_pin).socket_widget
