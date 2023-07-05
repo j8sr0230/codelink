@@ -46,6 +46,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
 
         # Widget setup
         self.setZValue(0)
+        self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
@@ -91,6 +92,12 @@ class FrameItem(QtWidgets.QGraphicsItem):
             QtCore.QPointF(self.boundingRect().x() + 5, self.boundingRect().y() - 5),
             self._prop_model.properties["Name"]
         )
+
+    # --------------- Overwrites ---------------
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+        print(self._framed_nodes)
 
     # --------------- Serialization ---------------
 
