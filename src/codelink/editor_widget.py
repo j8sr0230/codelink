@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 import json
 import os
 
@@ -89,6 +89,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+
+    def scene(self) -> Any:
+        return super().scene()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
@@ -273,16 +276,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 json.dump(self.scene().serialize(), json_file, indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
-            while len(self.scene().edges) > 0:
-                edge: EdgeItem = self.scene().edges[-1]
-                self.scene().remove_edge(edge)
-
-            while len(self.scene().nodes) > 0:
-                node: NodeItem = self.scene().nodes[-1]
-                self.scene().remove_node(node)
-
-            self.scene().clear()
-            self.scene().update()
+            self.scene().clear_scene()
             self._prop_scroller.hide()
 
             with open(file_path, "r", encoding="utf8") as json_file:

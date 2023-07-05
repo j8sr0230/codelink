@@ -384,6 +384,18 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- Serialization ---------------
 
+    def clear_scene(self):
+        while len(self._edges) > 0:
+            edge: EdgeItem = self._edges[-1]
+            self.remove_edge(edge)
+
+        while len(self._nodes) > 0:
+            node: NodeItem = self._nodes[-1]
+            self.remove_node(node)
+
+        self.clear()
+        self.update()
+
     def serialize_nodes(self) -> list[dict]:
         nodes_dict: list[dict] = []
 
