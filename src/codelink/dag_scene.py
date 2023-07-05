@@ -1,5 +1,6 @@
 from typing import Optional, Union
 import importlib
+import uuid
 import math
 
 import PySide2.QtCore as QtCore
@@ -75,8 +76,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
     # --------------- DAG editing ---------------
 
     def add_frame(self, frame_item: FrameItem) -> FrameItem:
-        if frame_item.item_index == -1:
-            frame_item.item_index = len(self._frames + self._nodes + self._edges)
+        if frame_item.uuid == "":
+            frame_item.uuid = uuid.uuid1()
 
         self._frames.append(frame_item)
         self.addItem(frame_item)
@@ -84,8 +85,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame_item: FrameItem = FrameItem(framed_nodes=nodes)
-        if frame_item.item_index == -1:
-            frame_item.item_index = len(self._frames + self._nodes + self._edges)
+        if frame_item.uuid == "":
+            frame_item.uuid = uuid.uuid1()
 
         for node in nodes:
             node.parent_frame = frame_item
@@ -104,6 +105,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._frames.remove(frame_item)
 
     def add_node(self, node: NodeItem) -> NodeItem:
+        if node.uuid == "":
+            node.uuid = uuid.uuid1()
+
         self._nodes.append(node)
         self.addItem(node)
         return node
