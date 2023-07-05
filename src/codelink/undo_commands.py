@@ -23,9 +23,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 		self._selected_frames: list[FrameItem] = [item for item in scene.selectedItems() if type(item) == FrameItem]
 
 	def undo(self) -> None:
-		self._scene.clear()
-		self._scene.update()
-
+		self._scene.clear_scene()
 		self._scene.deserialize(self._old_scene_dict)
 
 	def redo(self) -> None:

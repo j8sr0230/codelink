@@ -385,6 +385,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
     # --------------- Serialization ---------------
 
     def clear_scene(self):
+        while len(self._frames) > 0:
+            frame: FrameItem = self._frames[-1]
+            self.remove_frame(frame)
+
         while len(self._edges) > 0:
             edge: EdgeItem = self._edges[-1]
             self.remove_edge(edge)
