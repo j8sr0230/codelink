@@ -13,6 +13,7 @@ class PropertyTable(QtWidgets.QTableView):
         super().__init__(parent)
 
         # Widget setup
+        self.setWordWrap(False)
         self.setSelectionMode(QtWidgets.QTableView.SingleSelection)
         self.setSelectionBehavior(QtWidgets.QTableView.SelectRows)
         self.setEditTriggers(QtWidgets.QTableView.AnyKeyPressed | QtWidgets.QTableView.DoubleClicked)
