@@ -4,6 +4,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from property_model import PropertyModel
 from pin_item import PinItem
 
 
@@ -13,7 +14,15 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         super().__init__(parent)
 
         # Persistent data model
-        self._uuid: str = uuid
+        self._prop_model: PropertyModel = PropertyModel(
+            properties={"Class": self.__class__.__name__,
+                        "UUID": uuid if uuid != "" else QtCore.QUuid().createUuid().toString(),
+                        "Start Node UUID": "",
+                        "Start Socket Idx": -1,
+                        "End Node UUID": "",
+                        "End Socket Idx": -1,
+                        }
+        )
 
         # Non persistent data model
         self._start_pin: Optional[Union[QtWidgets.QGraphicsItem, PinItem]] = None
@@ -32,12 +41,72 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
+    def prop_model(self) -> PropertyModel:
+        return self._prop_model
+
+    @prop_model.setter
+    def prop_model(self, value: PropertyModel) -> None:
+        self._prop_model: PropertyModel = value
+
+    @property
     def uuid(self) -> str:
-        return self._uuid
+        return self._prop_model.properties["UUID"]
 
     @uuid.setter
     def uuid(self, value: str) -> None:
-        self._uuid: str = value
+        uuid_row: int = list(self._prop_model.properties.keys()).index("UUID")
+
+        self._prop_model.setData(
+            self._prop_model.index(uuid_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
+
+    @property
+    def start_node_uuid(self) -> str:
+        return self._prop_model.properties["Start Node UUID"]
+
+    @start_node_uuid.setter
+    def start_node_uuid(self, value: str) -> None:
+        start_node_uuid_row: int = list(self._prop_model.properties.keys()).index("Start Node UUID")
+
+        self._prop_model.setData(
+            self._prop_model.index(start_node_uuid_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
+
+    @property
+    def start_socket_idx(self) -> int:
+        return self._prop_model.properties["Start Socket Idx"]
+
+    @start_socket_idx.setter
+    def start_socket_idx(self, value: int) -> None:
+        start_socket_idx_row: int = list(self._prop_model.properties.keys()).index("Start Socket Idx")
+
+        self._prop_model.setData(
+            self._prop_model.index(start_socket_idx_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
+
+    @property
+    def end_node_uuid(self) -> str:
+        return self._prop_model.properties["End Node UUID"]
+
+    @end_node_uuid.setter
+    def end_node_uuid(self, value: str) -> None:
+        end_node_uuid_row: int = list(self._prop_model.properties.keys()).index("End Node UUID")
+
+        self._prop_model.setData(
+            self._prop_model.index(end_node_uuid_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
+
+    @property
+    def end_socket_idx(self) -> int:
+        return self._prop_model.properties["End Socket Idx"]
+
+    @end_socket_idx.setter
+    def end_socket_idx(self, value: int) -> None:
+        end_socket_idx_row: int = list(self._prop_model.properties.keys()).index("End Socket Idx")
+
+        self._prop_model.setData(
+            self._prop_model.index(end_socket_idx_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
+        )
 
     @property
     def color(self) -> QtGui.QColor:

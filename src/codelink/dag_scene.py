@@ -288,10 +288,17 @@ class DAGScene(QtWidgets.QGraphicsScene):
         edge: EdgeItem = EdgeItem(color=edge_color)
 
         edge.start_pin = start_pin
+
+        edge.start_node_uuid = start_pin.parent_node.uuid
+        edge.start_socket_idx = start_pin.parent_node.socket_widgets.index(start_pin.socket_widget)
+
         edge.start_pin.add_edge(edge)
 
         edge.end_pin = end_pin
         if type(end_pin) == PinItem:
+            edge.end_node_uuid = end_pin.parent_node.uuid
+            edge.end_socket_idx = end_pin.parent_node.socket_widgets.index(end_pin.socket_widget)
+
             edge.end_pin.add_edge(edge)
             end_pin.socket_widget.update_stylesheets()
 
