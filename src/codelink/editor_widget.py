@@ -83,9 +83,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
         self.addAction(self._undo_action)
 
-        self._redio_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
-        self._redio_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-        self.addAction(self._redio_action)
+        self._redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+        self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(self._redo_action)
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
@@ -160,21 +160,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     frame_item: FrameItem = self.itemAt(event.pos())
                     table_view: PropertyTable = PropertyTable()
                     table_view.setModel(frame_item.prop_model)
+                    table_view.setItemDelegateForRow(1, StringDelegate(table_view))
                     table_view.setItemDelegateForRow(2, StringDelegate(table_view))
-                    table_view.setItemDelegateForRow(3, StringDelegate(table_view))
-                    table_view.setFixedWidth(self._prop_scroller.width())
-                    table_view.setFixedHeight(
-                        table_view.model().rowCount() * table_view.rowHeight(0) +
-                        table_view.horizontalHeader().height()
-                    )
-                    self._prop_scroller.setWidget(table_view)
-                    self._prop_scroller.show()
-
-                elif type(self.itemAt(event.pos())) == EdgeItem:
-                    self.scene().clearSelection()
-                    edge_item: EdgeItem = self.itemAt(event.pos())
-                    table_view: PropertyTable = PropertyTable()
-                    table_view.setModel(edge_item.prop_model)
                     table_view.setFixedWidth(self._prop_scroller.width())
                     table_view.setFixedHeight(
                         table_view.model().rowCount() * table_view.rowHeight(0) +
