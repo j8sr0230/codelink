@@ -15,21 +15,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "X",
-                    "Is Input": true,
-                    "Data": 1
+                    "Properties": {
+                        "Name": "X",
+                        "Is Input": true,
+                        "Data": 1
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Y",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Y",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Vec",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Vec",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -54,21 +60,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Sum",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Sum",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -93,15 +105,19 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -121,21 +137,27 @@
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "B",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "B",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                }
                             }
                         ],
                         "Subgraph": {
@@ -160,21 +182,27 @@
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "N",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "N",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                }
                             }
                         ],
                         "Subgraph": {
@@ -199,21 +227,27 @@
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "B",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "B",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                }
                             }
                         ],
                         "Subgraph": {
@@ -238,21 +272,27 @@
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "N",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "N",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                }
                             }
                         ],
                         "Subgraph": {
@@ -277,21 +317,27 @@
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
-                                "Name": "A",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "B",
-                                "Is Input": true,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "B",
+                                    "Is Input": true,
+                                    "Data": 0
+                                }
                             },
                             {
                                 "Class": "SocketWidget",
-                                "Name": "Res",
-                                "Is Input": false,
-                                "Data": 0
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                }
                             }
                         ],
                         "Subgraph": {
@@ -394,21 +440,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -433,21 +485,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -472,21 +530,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {
@@ -511,21 +575,27 @@
             "Sockets": [
                 {
                     "Class": "SocketWidget",
-                    "Name": "A",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "B",
-                    "Is Input": true,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    }
                 },
                 {
                     "Class": "SocketWidget",
-                    "Name": "Res",
-                    "Is Input": false,
-                    "Data": 0
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    }
                 }
             ],
             "Subgraph": {

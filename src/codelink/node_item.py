@@ -616,7 +616,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         sockets_list: list[dict] = []
         for idx, socket_widget in enumerate(self._socket_widgets):
-            sockets_list.append(socket_widget.prop_model.__getstate__())
+            sockets_list.append(socket_widget.__getstate__())
         data_dict["Sockets"] = sockets_list
 
         data_dict["Subgraph"] = self.sub_scene.serialize()
@@ -632,12 +632,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Add socket widgets from state
         self.clear_socket_widgets()
         for i in range(len(state["Sockets"])):
-            socket_widget_props: dict = state["Sockets"][i]
-            socket_widget_cls: type = getattr(importlib.import_module("socket_widget"), socket_widget_props["Class"])
+            socket_widget_dict: dict = state["Sockets"][i]
+            socket_widget_cls: type = getattr(importlib.import_module("socket_widget"), socket_widget_dict["Class"])
             new_socket_widget: socket_widget_cls = socket_widget_cls(
-                label=socket_widget_props["Name"],
-                is_input=socket_widget_props["Is Input"],
-                data=socket_widget_props["Data"],
+                label=socket_widget_dict["Properties"]["Name"],
+                is_input=socket_widget_dict["Properties"]["Is Input"],
+                data=socket_widget_dict["Properties"]["Data"],
                 parent_node=self
             )
             # new_socket_widget.prop_model.__setstate__(socket_widget_props)

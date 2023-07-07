@@ -20,7 +20,6 @@ class SocketWidget(QtWidgets.QWidget):
         # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={
-                        "Class": self.__class__.__name__,
                         "Name": label,
                         "Is Input": is_input,
                         "Data": data
@@ -159,6 +158,13 @@ class SocketWidget(QtWidgets.QWidget):
         self.update_pin_position()
 
     # --------------- Serialization ---------------
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = {
+            "Class": self.__class__.__name__,
+            "Properties": self.prop_model.__getstate__(),
+        }
+        return data_dict
 
     def __copy__(self) -> SocketWidget:
         copy: SocketWidget = type(self)(
