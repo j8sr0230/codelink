@@ -423,10 +423,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         else:
             return super().itemChange(change, value)
 
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
-        print("Node Idx:", self.dag_index(), "/ Pin map:", self._pin_map)
-
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
 
