@@ -486,6 +486,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._mode = ""
         QtWidgets.QApplication.restoreOverrideCursor()
 
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+        print("Node UUID:", self._uuid)
+
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
 
@@ -650,3 +654,5 @@ class NodeItem(QtWidgets.QGraphicsItem):
             # If custom node with sub scene
             for sub_node in self.sub_scene.nodes:
                 sub_node.scene().parent_node = self
+
+        self.update()

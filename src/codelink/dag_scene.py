@@ -103,8 +103,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._frames.remove(frame_item)
 
     def add_node(self, node: NodeItem) -> NodeItem:
-        # if node.uuid == "":
-        #     node.uuid = uuid.uuid1()
+        if node.uuid == "":
+            node.uuid = QtCore.QUuid.createUuid().toString()
 
         self._nodes.append(node)
         self.addItem(node)
@@ -272,6 +272,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
             self.remove_node(node)
 
     def add_edge(self, edge: EdgeItem) -> EdgeItem:
+        if edge.uuid == "":
+            edge.uuid = QtCore.QUuid.createUuid().toString()
+
         edge.start_pin.add_edge(edge)
         edge.end_pin.add_edge(edge)
         edge.end_pin.socket_widget.update_stylesheets()
@@ -284,6 +287,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def add_edge_from_pins(self, start_pin: PinItem, end_pin: Union[QtWidgets.QGraphicsItem, PinItem]) -> EdgeItem:
         edge_color: QtGui.QColor = start_pin.color
         edge: EdgeItem = EdgeItem(color=edge_color)
+        edge.uuid = QtCore.QUuid.createUuid().toString()
 
         edge.start_pin = start_pin
 
@@ -454,7 +458,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
             end_socket_widget: SocketWidget = end_node.socket_widgets[edge_dict["End Socket Idx"]]
             end_pin: PinItem = end_socket_widget.pin
 
-            self.add_edge_from_pins(start_pin, end_pin)
+            new_edge: EdgeItem = self.add_edge_from_pins(start_pin, end_pin)
+
+            # Reset edge state
+            new_edge.__setstate__(edge_dict)
             self.update()
 
     def serialize_frames(self) -> list[dict]:
@@ -471,7 +478,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
             framed_nodes: list[NodeItem] = [self._nodes[idx] for idx in framed_nodes_idx]
             new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes)
 
-            # Reset node state
+            # Reset frame state
             new_frame.__setstate__(frame_dict)
             self.update()
 

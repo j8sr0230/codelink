@@ -129,6 +129,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
         self._mode: str = "HOVER"
+        print("Edge UUID", self._uuid)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)
@@ -194,3 +195,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
             )
         }
         return data_dict
+
+    def __setstate__(self, state: dict):
+        self._uuid = state["UUID"]
+        self.update()
