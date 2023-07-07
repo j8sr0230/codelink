@@ -22,7 +22,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Persistent data model
         self._uuid: str = ""
         self._prop_model: PropertyModel = PropertyModel(
-            properties={"Class": self.__class__.__name__,
+            properties={
                         "Name": "Scalar Math",
                         "Color": "#1D1D1D",
                         "Collapse State": False,
@@ -608,6 +608,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
+            "Class": self.__class__.__name__,
             "UUID": self._uuid,
             "Properties": self.prop_model.__getstate__(),
             "Option Idx": self._option_box.currentIndex()

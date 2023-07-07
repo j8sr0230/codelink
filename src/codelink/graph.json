@@ -1,14 +1,14 @@
 {
     "Nodes": [
         {
+            "Class": "NodeItem",
             "UUID": "{db0f0782-788e-41b2-ac29-014866692552}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "Start",
                 "Color": "green",
                 "Collapse State": false,
-                "X": 31680,
-                "Y": 31850,
+                "X": 31760,
+                "Y": 31830,
                 "Width": 160
             },
             "Option Idx": 1,
@@ -40,14 +40,14 @@
             }
         },
         {
+            "Class": "NodeItem",
             "UUID": "{d6f55d81-c4a7-494d-bacf-4b96f23c0a85}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "End",
                 "Color": "red",
                 "Collapse State": false,
-                "X": 32460,
-                "Y": 31870,
+                "X": 32470,
+                "Y": 32020,
                 "Width": 160
             },
             "Option Idx": 1,
@@ -79,9 +79,9 @@
             }
         },
         {
+            "Class": "NodeItem",
             "UUID": "{9fb31d5d-3f7b-4d79-9a01-50d29fb85a76}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "Custom Node",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
@@ -107,9 +107,9 @@
             "Subgraph": {
                 "Nodes": [
                     {
+                        "Class": "NodeItem",
                         "UUID": "{5bc00d72-b22e-4be8-b434-ac76fd1fab8e}",
                         "Properties": {
-                            "Class": "NodeItem",
                             "Name": "Scalar Math",
                             "Color": "#1D1D1D",
                             "Collapse State": false,
@@ -146,9 +146,9 @@
                         }
                     },
                     {
+                        "Class": "NodeItem",
                         "UUID": "{fc37ba10-5ddc-4d63-b0c7-64f46be55389}",
                         "Properties": {
-                            "Class": "NodeItem",
                             "Name": "In",
                             "Color": "olive",
                             "Collapse State": true,
@@ -185,9 +185,9 @@
                         }
                     },
                     {
+                        "Class": "NodeItem",
                         "UUID": "{551d8f2e-673e-427b-8c18-51bdd90d2cc6}",
                         "Properties": {
-                            "Class": "NodeItem",
                             "Name": "Scalar Math",
                             "Color": "#1D1D1D",
                             "Collapse State": false,
@@ -224,9 +224,9 @@
                         }
                     },
                     {
+                        "Class": "NodeItem",
                         "UUID": "{58bbfcaa-17c5-4420-b6a6-2997511b234e}",
                         "Properties": {
-                            "Class": "NodeItem",
                             "Name": "Out",
                             "Color": "olive",
                             "Collapse State": true,
@@ -263,9 +263,9 @@
                         }
                     },
                     {
+                        "Class": "NodeItem",
                         "UUID": "{4c807052-b80c-4bd6-a3ca-38343ef4c4af}",
                         "Properties": {
-                            "Class": "NodeItem",
                             "Name": "Scalar Math",
                             "Color": "#1D1D1D",
                             "Collapse State": false,
@@ -380,9 +380,9 @@
             }
         },
         {
+            "Class": "NodeItem",
             "UUID": "{abcd398c-1bde-46b1-8fe8-4b7f3f98a690}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
@@ -419,9 +419,9 @@
             }
         },
         {
+            "Class": "NodeItem",
             "UUID": "{aac4fb6e-3e89-4e74-a4c6-b227e22f4349}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "Very long node title",
                 "Color": "blue",
                 "Collapse State": true,
@@ -458,14 +458,53 @@
             }
         },
         {
+            "Class": "NodeItem",
             "UUID": "{dd56724a-6f3b-4227-b5ee-e2efa693f52b}",
             "Properties": {
-                "Class": "NodeItem",
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
                 "X": 31680,
                 "Y": 32030,
+                "Width": 160
+            },
+            "Option Idx": 0,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Name": "A",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "B",
+                    "Is Input": true,
+                    "Data": 0
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Name": "Res",
+                    "Is Input": false,
+                    "Data": 0
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": [],
+                "Pin Map": {}
+            }
+        },
+        {
+            "Class": "NodeItem",
+            "UUID": "{68996cd8-439e-452c-901b-bec42b5495fa}",
+            "Properties": {
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 31900,
+                "Y": 32130,
                 "Width": 160
             },
             "Option Idx": 0,
@@ -570,7 +609,7 @@
         {
             "UUID": "{9ffa866d-22c1-4776-8a7e-95cf421534c6}",
             "Properties": {
-                "Name": "Frame Label",
+                "Name": "Cool Frame",
                 "Color": "green"
             },
             "Framed Nodes": [

@@ -431,8 +431,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def deserialize_nodes(self, nodes_dict: list[dict]) -> None:
         for node_dict in nodes_dict:
             # Create node from dict
-            node_props: dict = node_dict["Properties"]
-            node_class = getattr(importlib.import_module("node_item"), node_props["Class"])
+            node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
             new_node: node_class = node_class()
             self.add_node(new_node)
 
