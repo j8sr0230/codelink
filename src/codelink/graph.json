@@ -559,7 +559,7 @@
         {
             "UUID": "{15dfafdb-2809-4b07-910c-6dcf27e678a8}",
             "Properties": {
-                "Name": "Frame Label",
+                "Name": "My Frame",
                 "Color": "orange"
             },
             "Framed Nodes": [

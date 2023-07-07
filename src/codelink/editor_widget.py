@@ -160,8 +160,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     frame_item: FrameItem = self.itemAt(event.pos())
                     table_view: PropertyTable = PropertyTable()
                     table_view.setModel(frame_item.prop_model)
+                    table_view.setItemDelegateForRow(0, StringDelegate(table_view))
                     table_view.setItemDelegateForRow(1, StringDelegate(table_view))
-                    table_view.setItemDelegateForRow(2, StringDelegate(table_view))
                     table_view.setFixedWidth(self._prop_scroller.width())
                     table_view.setFixedHeight(
                         table_view.model().rowCount() * table_view.rowHeight(0) +
