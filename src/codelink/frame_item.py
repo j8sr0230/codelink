@@ -16,9 +16,9 @@ class FrameItem(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         # Persistent data model
+        self._uuid: str = ""
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
-                        "UUID": "",
                         "Name": "Frame Label",
                         "Color": "green"
                         }
@@ -51,24 +51,20 @@ class FrameItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
 
     @property
+    def uuid(self) -> str:
+        return self._uuid
+
+    @uuid.setter
+    def uuid(self, value: str) -> None:
+        self._uuid: str = value
+
+    @property
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
     @prop_model.setter
     def prop_model(self, value: PropertyModel) -> None:
         self._prop_model: PropertyModel = value
-
-    @property
-    def uuid(self) -> str:
-        return self._prop_model.properties["UUID"]
-
-    @uuid.setter
-    def uuid(self, value: str) -> None:
-        uuid_row: int = list(self._prop_model.properties.keys()).index("UUID")
-
-        self._prop_model.setData(
-            self._prop_model.index(uuid_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
-        )
 
     @property
     def framed_nodes(self) -> list[NodeItem]:
@@ -116,11 +112,13 @@ class FrameItem(QtWidgets.QGraphicsItem):
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
+            "UUID": self._uuid,
             "Properties": self._prop_model.__getstate__(),
             "Framed Nodes": [node.dag_index() for node in self._framed_nodes]
         }
         return data_dict
 
     def __setstate__(self, state: dict):
+        self._uuid = state["UUID"]
         self._prop_model.__setstate__(state["Properties"])
         self.update()

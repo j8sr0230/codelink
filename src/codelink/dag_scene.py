@@ -1,6 +1,5 @@
 from typing import Optional, Union
 import importlib
-import uuid
 import math
 
 import PySide2.QtCore as QtCore
@@ -75,27 +74,26 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- DAG editing ---------------
 
-    def add_frame(self, frame_item: FrameItem) -> FrameItem:
-        if frame_item.uuid == "":
-            frame_item.uuid = uuid.uuid1()
+    def add_frame(self, frame: FrameItem) -> FrameItem:
+        if frame.uuid == "":
+            frame.uuid = QtCore.QUuid.createUuid().toString()
 
-        self._frames.append(frame_item)
-        self.addItem(frame_item)
-        return frame_item
+        self._frames.append(frame)
+        self.addItem(frame)
+        return frame
 
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
-        frame_item: FrameItem = FrameItem(framed_nodes=nodes)
-        if frame_item.uuid == "":
-            frame_item.uuid = uuid.uuid1()
+        frame: FrameItem = FrameItem(framed_nodes=nodes)
+        frame.uuid = QtCore.QUuid.createUuid().toString()
 
         for node in nodes:
-            node.parent_frame = frame_item
+            node.parent_frame = frame
 
-        self._frames.append(frame_item)
-        self.addItem(frame_item)
+        self._frames.append(frame)
+        self.addItem(frame)
         self.clearSelection()
 
-        return frame_item
+        return frame
 
     def remove_frame(self, frame_item: FrameItem) -> None:
         for node in frame_item.framed_nodes:
@@ -105,8 +103,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._frames.remove(frame_item)
 
     def add_node(self, node: NodeItem) -> NodeItem:
-        if node.uuid == "":
-            node.uuid = uuid.uuid1()
+        # if node.uuid == "":
+        #     node.uuid = uuid.uuid1()
 
         self._nodes.append(node)
         self.addItem(node)
@@ -289,14 +287,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         edge.start_pin = start_pin
 
-        edge.start_node_uuid = start_pin.parent_node.uuid
+        # edge.start_node_uuid = start_pin.parent_node.uuid
         edge.start_socket_idx = start_pin.parent_node.socket_widgets.index(start_pin.socket_widget)
 
         edge.start_pin.add_edge(edge)
 
         edge.end_pin = end_pin
         if type(end_pin) == PinItem:
-            edge.end_node_uuid = end_pin.parent_node.uuid
+            # edge.end_node_uuid = end_pin.parent_node.uuid
             edge.end_socket_idx = end_pin.parent_node.socket_widgets.index(end_pin.socket_widget)
 
             edge.end_pin.add_edge(edge)

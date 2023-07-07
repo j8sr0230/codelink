@@ -20,9 +20,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().__init__(parent)
 
         # Persistent data model
+        self._uuid: str = ""
         self._prop_model: PropertyModel = PropertyModel(
             properties={"Class": self.__class__.__name__,
-                        "UUID": "",
                         "Name": "Scalar Math",
                         "Color": "#1D1D1D",
                         "Collapse State": False,
@@ -149,24 +149,20 @@ class NodeItem(QtWidgets.QGraphicsItem):
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
+    def uuid(self) -> str:
+        return self._uuid
+
+    @uuid.setter
+    def uuid(self, value: str) -> None:
+        self._uuid: str = value
+
+    @property
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
     @prop_model.setter
     def prop_model(self, value: PropertyModel) -> None:
         self._prop_model: PropertyModel = value
-
-    @property
-    def uuid(self) -> str:
-        return self._prop_model.properties["UUID"]
-
-    @uuid.setter
-    def uuid(self, value: str) -> None:
-        uuid_row: int = list(self._prop_model.properties.keys()).index("UUID")
-
-        self._prop_model.setData(
-            self._prop_model.index(uuid_row, 1, QtCore.QModelIndex()), value, 2  # QtCore.Qt.EditRole
-        )
 
     @property
     def is_collapsed(self) -> str:
@@ -612,6 +608,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def __getstate__(self) -> dict:
         data_dict: dict = {
+            "UUID": self._uuid,
             "Properties": self.prop_model.__getstate__(),
             "Option Idx": self._option_box.currentIndex()
         }
@@ -627,6 +624,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return data_dict
 
     def __setstate__(self, state: dict):
+        self._uuid = state["UUID"]
         self.prop_model.__setstate__(state["Properties"])
         self._option_box.setCurrentIndex(state["Option Idx"])
 
