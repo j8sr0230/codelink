@@ -74,6 +74,12 @@ class FrameItem(QtWidgets.QGraphicsItem):
     def framed_nodes(self, value: list[NodeItem]) -> None:
         self._framed_nodes: list[NodeItem] = value
 
+    # --------------- Overwrites ---------------
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        super().hoverEnterEvent(event)
+        print("Frame UUID:", self._uuid)
+
     # --------------- Shape and painting ---------------
 
     def boundingRect(self) -> QtCore.QRectF:
@@ -101,12 +107,6 @@ class FrameItem(QtWidgets.QGraphicsItem):
             QtCore.QPointF(self.boundingRect().x() + 5, self.boundingRect().y() - 5),
             self._prop_model.properties["Name"]
         )
-
-    # --------------- Overwrites ---------------
-
-    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
-        super().hoverEnterEvent(event)
-        print(self._framed_nodes)
 
     # --------------- Serialization ---------------
 

@@ -522,6 +522,17 @@
                 3,
                 4
             ]
+        },
+        {
+            "UUID": "{0400a2c4-b3af-4d77-8165-386fc8b73b45}",
+            "Properties": {
+                "Class": "FrameItem",
+                "Name": "Frame Label",
+                "Color": "red"
+            },
+            "Framed Nodes": [
+                0
+            ]
         }
     ]
 }
