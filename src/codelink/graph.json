@@ -355,16 +355,15 @@
                 ],
                 "Frames": [
                     {
-                        "UUID": "{5fda6cd3-44dc-4149-8088-0b759343cb28}",
+                        "UUID": "{0043edd3-99e0-4ca5-bce5-ef9223ef2da9}",
                         "Properties": {
-                            "Class": "FrameItem",
-                            "Name": "Operation",
+                            "Name": "Frame Label",
                             "Color": "red"
                         },
                         "Framed Nodes": [
-                            0,
                             4,
-                            2
+                            2,
+                            0
                         ]
                     }
                 ],
@@ -558,26 +557,25 @@
     ],
     "Frames": [
         {
-            "UUID": "{c5767fe1-e803-41ce-b06f-838a9bdf232f}",
+            "UUID": "{15dfafdb-2809-4b07-910c-6dcf27e678a8}",
             "Properties": {
-                "Class": "FrameItem",
-                "Name": "Group",
-                "Color": "green"
+                "Name": "Frame Label",
+                "Color": "orange"
             },
             "Framed Nodes": [
-                3,
-                4
+                4,
+                3
             ]
         },
         {
-            "UUID": "{0400a2c4-b3af-4d77-8165-386fc8b73b45}",
+            "UUID": "{9ffa866d-22c1-4776-8a7e-95cf421534c6}",
             "Properties": {
-                "Class": "FrameItem",
                 "Name": "Frame Label",
-                "Color": "red"
+                "Color": "green"
             },
             "Framed Nodes": [
-                0
+                0,
+                5
             ]
         }
     ]

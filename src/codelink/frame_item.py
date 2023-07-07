@@ -18,7 +18,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
         # Persistent data model
         self._uuid: str = ""
         self._prop_model: PropertyModel = PropertyModel(
-            properties={"Class": self.__class__.__name__,
+            properties={
                         "Name": "Frame Label",
                         "Color": "green"
                         }
