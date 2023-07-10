@@ -19,7 +19,11 @@
                         "Name": "X",
                         "Is Input": true,
                         "Data": 1
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -27,7 +31,11 @@
                         "Name": "Y",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -35,7 +43,11 @@
                         "Name": "Vec",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -64,7 +76,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -72,7 +88,11 @@
                         "Name": "B",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -80,7 +100,11 @@
                         "Name": "Sum",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -109,7 +133,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -117,7 +145,11 @@
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -141,7 +173,11 @@
                                     "Name": "A",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -149,7 +185,11 @@
                                     "Name": "B",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -157,7 +197,11 @@
                                     "Name": "Res",
                                     "Is Input": false,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             }
                         ],
                         "Subgraph": {
@@ -186,7 +230,11 @@
                                     "Name": "A",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -194,7 +242,11 @@
                                     "Name": "N",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -202,7 +254,11 @@
                                     "Name": "Res",
                                     "Is Input": false,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             }
                         ],
                         "Subgraph": {
@@ -231,7 +287,11 @@
                                     "Name": "A",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -239,7 +299,11 @@
                                     "Name": "B",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -247,7 +311,11 @@
                                     "Name": "Res",
                                     "Is Input": false,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             }
                         ],
                         "Subgraph": {
@@ -276,7 +344,11 @@
                                     "Name": "A",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -284,7 +356,11 @@
                                     "Name": "N",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -292,7 +368,11 @@
                                     "Name": "Res",
                                     "Is Input": false,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             }
                         ],
                         "Subgraph": {
@@ -321,7 +401,11 @@
                                     "Name": "A",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -329,7 +413,11 @@
                                     "Name": "B",
                                     "Is Input": true,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             },
                             {
                                 "Class": "SocketWidget",
@@ -337,7 +425,11 @@
                                     "Name": "Res",
                                     "Is Input": false,
                                     "Data": 0
-                                }
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
                             }
                         ],
                         "Subgraph": {
@@ -444,7 +536,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -452,7 +548,11 @@
                         "Name": "B",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -460,7 +560,11 @@
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -489,7 +593,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -497,7 +605,11 @@
                         "Name": "B",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -505,7 +617,11 @@
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -534,7 +650,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -542,7 +662,11 @@
                         "Name": "B",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -550,7 +674,11 @@
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {
@@ -579,7 +707,11 @@
                         "Name": "A",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -587,7 +719,11 @@
                         "Name": "B",
                         "Is Input": true,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 },
                 {
                     "Class": "SocketWidget",
@@ -595,7 +731,11 @@
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
-                    }
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
                 }
             ],
             "Subgraph": {

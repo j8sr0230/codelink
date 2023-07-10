@@ -27,6 +27,7 @@ class SocketWidget(QtWidgets.QWidget):
             header_left="Socket Property",
             header_right="Value"
         )
+        self._link: tuple[str, int] = ("", -1)
 
         # Non persistent data model
         self._parent_node: Optional[NodeItem] = parent_node
@@ -73,6 +74,14 @@ class SocketWidget(QtWidgets.QWidget):
     @prop_model.setter
     def prop_model(self, value: PropertyModel) -> None:
         self._prop_model: PropertyModel = value
+
+    @property
+    def link(self) -> tuple[str, int]:
+        return self._link
+
+    @link.setter
+    def link(self, value: tuple[str, int]) -> None:
+        self._link: tuple[str, int] = value
 
     @property
     def is_input(self) -> bool:
@@ -162,7 +171,8 @@ class SocketWidget(QtWidgets.QWidget):
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "Class": self.__class__.__name__,
-            "Properties": self.prop_model.__getstate__(),
+            "Properties": self._prop_model.__getstate__(),
+            "Link": self._link
         }
         return data_dict
 
@@ -174,4 +184,5 @@ class SocketWidget(QtWidgets.QWidget):
             parent_node=self._parent_node,
             parent_widget=self.parentWidget()
         )
+        copy._link = self._link
         return copy
