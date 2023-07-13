@@ -1,4 +1,4 @@
-from typing import Optional, Union, cast
+from typing import Optional, Any, Union, cast
 import importlib
 import math
 
@@ -333,13 +333,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
         y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
         return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
 
-    def uuid_item(self, uuid: str) -> Optional[QtWidgets.QGraphicsItem]:
+    def dag_item(self, uuid: str = "") -> Any:
         all_items: list = (
                 cast(list[QtWidgets.QGraphicsItem], self._frames) +
                 cast(list[QtWidgets.QGraphicsItem], self._nodes) +
                 cast(list[QtWidgets.QGraphicsItem], self._edges)
         )
-        result: list[QtWidgets.QGraphicsItem] = [item for item in all_items if item.uuid == uuid]
+        result: list[Any] = [item for item in all_items if item.uuid == uuid]
 
         if len(result) == 1:
             return result[0]
@@ -462,11 +462,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def deserialize_edges(self, edges_dict: list[dict]):
         for edge_dict in edges_dict:
-            start_node: NodeItem = self._nodes[edge_dict["Start Node Idx"]]
+            start_node: NodeItem = self.dag_item(edge_dict["Start Node UUID"])
             start_socket_widget: SocketWidget = start_node.socket_widgets[edge_dict["Start Socket Idx"]]
             start_pin: PinItem = start_socket_widget.pin
 
-            end_node: NodeItem = self._nodes[edge_dict["End Node Idx"]]
+            end_node: NodeItem = self.dag_item(edge_dict["End Node UUID"])
             end_socket_widget: SocketWidget = end_node.socket_widgets[edge_dict["End Socket Idx"]]
             end_pin: PinItem = end_socket_widget.pin
 

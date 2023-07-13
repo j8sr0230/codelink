@@ -184,11 +184,11 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "UUID": self._uuid,
-            "Start Node Idx": self.scene().nodes.index(self._start_pin.parentItem()),
+            "Start Node UUID": self._start_pin.parentItem().uuid,
             "Start Socket Idx": self._start_pin.parentItem().socket_widgets.index(
                 cast(PinItem, self._start_pin).socket_widget
             ),
-            "End Node Idx": self.scene().nodes.index(self._end_pin.parentItem()),
+            "End Node UUID": self._end_pin.parentItem().uuid,
             "End Socket Idx": self._end_pin.parentItem().socket_widgets.index(
 
                 cast(PinItem, self._end_pin).socket_widget
