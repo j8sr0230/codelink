@@ -64,8 +64,8 @@
                 "Name": "End",
                 "Color": "red",
                 "Collapse State": false,
-                "X": 32470,
-                "Y": 32020,
+                "X": 32530,
+                "Y": 31860,
                 "Width": 160
             },
             "Option Idx": 1,
@@ -121,8 +121,8 @@
                 "Name": "Custom Node",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32080,
-                "Y": 31790,
+                "X": 31970,
+                "Y": 31830,
                 "Width": 160
             },
             "Option Idx": 2,
@@ -524,8 +524,8 @@
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32240,
-                "Y": 32040,
+                "X": 32310,
+                "Y": 32020,
                 "Width": 160
             },
             "Option Idx": 1,
@@ -581,8 +581,8 @@
                 "Name": "Very long node title",
                 "Color": "blue",
                 "Collapse State": true,
-                "X": 32080,
-                "Y": 32100,
+                "X": 32150,
+                "Y": 32080,
                 "Width": 116
             },
             "Option Idx": 0,
@@ -640,63 +640,6 @@
                 "Collapse State": false,
                 "X": 31680,
                 "Y": 32030,
-                "Width": 160
-            },
-            "Option Idx": 0,
-            "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "A",
-                        "Is Input": true,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "B",
-                        "Is Input": true,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "Res",
-                        "Is Input": false,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                }
-            ],
-            "Subgraph": {
-                "Nodes": [],
-                "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
-            }
-        },
-        {
-            "Class": "NodeItem",
-            "UUID": "{68996cd8-439e-452c-901b-bec42b5495fa}",
-            "Properties": {
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 31900,
-                "Y": 32130,
                 "Width": 160
             },
             "Option Idx": 0,
