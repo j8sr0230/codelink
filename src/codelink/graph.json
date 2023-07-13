@@ -498,10 +498,10 @@
                             "Name": "Frame Label",
                             "Color": "red"
                         },
-                        "Framed Nodes": [
-                            4,
-                            2,
-                            0
+                        "Framed Nodes UUID's": [
+                            "{4c807052-b80c-4bd6-a3ca-38343ef4c4af}",
+                            "{551d8f2e-673e-427b-8c18-51bdd90d2cc6}",
+                            "{5bc00d72-b22e-4be8-b434-ac76fd1fab8e}"
                         ]
                     }
                 ],
@@ -811,9 +811,9 @@
                 "Name": "My Frame",
                 "Color": "orange"
             },
-            "Framed Nodes": [
-                4,
-                3
+            "Framed Nodes UUID's": [
+                "{aac4fb6e-3e89-4e74-a4c6-b227e22f4349}",
+                "{abcd398c-1bde-46b1-8fe8-4b7f3f98a690}"
             ]
         },
         {
@@ -822,9 +822,9 @@
                 "Name": "Cool Frame",
                 "Color": "green"
             },
-            "Framed Nodes": [
-                0,
-                5
+            "Framed Nodes UUID's": [
+                "{db0f0782-788e-41b2-ac29-014866692552}",
+                "{dd56724a-6f3b-4227-b5ee-e2efa693f52b}"
             ]
         }
     ]

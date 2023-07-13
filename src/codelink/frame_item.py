@@ -114,7 +114,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
         data_dict: dict = {
             "UUID": self._uuid,
             "Properties": self._prop_model.__getstate__(),
-            "Framed Nodes": [node.dag_index() for node in self._framed_nodes]
+            "Framed Nodes UUID's": [node.uuid for node in self._framed_nodes],
         }
         return data_dict
 

@@ -486,8 +486,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def deserialize_frames(self, frames_dict: list[dict]) -> None:
         for frame_dict in frames_dict:
-            framed_nodes_idx: list[int] = frame_dict["Framed Nodes"]
-            framed_nodes: list[NodeItem] = [self._nodes[idx] for idx in framed_nodes_idx]
+            framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
+            framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
             new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes)
 
             # Reset frame state
