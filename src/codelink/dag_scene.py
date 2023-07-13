@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, cast
 import importlib
 import math
 
@@ -332,6 +332,19 @@ class DAGScene(QtWidgets.QGraphicsScene):
         y_min: float = min([node.y() for node in nodes]) - offset
         y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
         return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+
+    def uuid_item(self, uuid: str) -> Optional[QtWidgets.QGraphicsItem]:
+        all_items: list = (
+                cast(list[QtWidgets.QGraphicsItem], self._frames) +
+                cast(list[QtWidgets.QGraphicsItem], self._nodes) +
+                cast(list[QtWidgets.QGraphicsItem], self._edges)
+        )
+        result: list[QtWidgets.QGraphicsItem] = [item for item in all_items if item.uuid == uuid]
+
+        if len(result) == 1:
+            return result[0]
+        else:
+            return None
 
     def ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
