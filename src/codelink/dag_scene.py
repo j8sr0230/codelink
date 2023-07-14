@@ -130,26 +130,26 @@ class DAGScene(QtWidgets.QGraphicsScene):
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
         selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
-        sub_nodes_dict: list[dict] = []
-        for node in nodes:
-            sub_nodes_dict.append(node.__getstate__())
+        sub_nodes_dict: list[dict] = [node.__getstate__() for node in nodes]
+        # for node in nodes:
+        #     sub_nodes_dict.append(node.__getstate__())
 
-        sub_edges_dict: list[dict] = []
-        for edge in selected_edges:
-            edge_dict_mod: dict = edge.__getstate__()
+        sub_edges_dict: list[dict] = [sub_edge.__getstate__() for sub_edge in selected_edges]
+        # for edge in selected_edges:
+        #     edge_dict_mod: dict = edge.__getstate__()
 
             # Reset subgraph indexing
-            edge_dict_mod["Start Node Idx"] = nodes.index(edge.start_pin.parentItem())
-            edge_dict_mod["End Node Idx"] = nodes.index(edge.end_pin.parentItem())
-
-            sub_edges_dict.append(edge_dict_mod)
+            # edge_dict_mod["Start Node Idx"] = nodes.index(edge.start_pin.parentItem())
+            # edge_dict_mod["End Node Idx"] = nodes.index(edge.end_pin.parentItem())
+            #
+            # sub_edges_dict.append(edge_dict_mod)
 
         sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
-        for sub_frame_dict in sub_frames_dict:
-            new_idx_map: list[int] = []
-            for node_id in sub_frame_dict["Framed Nodes"]:
-                new_idx_map.append(nodes.index(self._nodes[node_id]))
-            sub_frame_dict["Framed Nodes"] = new_idx_map
+        # for sub_frame_dict in sub_frames_dict:
+        #     new_idx_map: list[int] = []
+        #     for node_id in sub_frame_dict["Framed Nodes"]:
+        #         new_idx_map.append(nodes.index(self._nodes[node_id]))
+        #     sub_frame_dict["Framed Nodes"] = new_idx_map
 
         # Add custom node, remove predefined socket widgets and save sub graph
         custom_node: NodeItem = NodeItem()
@@ -160,7 +160,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         custom_node.sub_scene.deserialize_edges(sub_edges_dict)
         custom_node.sub_scene.deserialize_frames(sub_frames_dict)
         custom_node.prop_model.setData(
-            custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", 2  # QtCore.Qt.EditRole
+            custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", 1  # QtCore.Qt.EditRole
         )
 
         # Generate input and output widgets for custom node and reconnect edges
@@ -175,7 +175,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     new_socket_widget.parent_node = custom_node
                     new_socket_widget.pin.setParentItem(custom_node)
 
-                    custom_node.pin_map[str(len(custom_node.socket_widgets))] = [node_idx, socket_idx]
+                    new_socket_widget.link = (node.uuid, socket_idx)
+
+                    # TODO: Not working
+                    linked_sub_node: NodeItem = custom_node.sub_scene.dag_item(socket_widget.parent_node.uuid)
+                    linked_sub_socket_widget: SocketWidget = linked_sub_node.socket_widgets[socket_idx]
+                    linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
+
+                    # custom_node.pin_map[str(len(custom_node.socket_widgets))] = [node_idx, socket_idx]
                     custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
                     while len(socket_widget.pin.edges) > 0:
@@ -251,23 +258,27 @@ class DAGScene(QtWidgets.QGraphicsScene):
             for socket_idx, socket_widget in enumerate(node.socket_widgets):
                 while socket_widget.pin.has_edges():
                     edge: EdgeItem = socket_widget.pin.edges.pop()
-                    if str(socket_idx) in node.pin_map.keys():
-                        target_node: NodeItem = sub_nodes[
-                            node.pin_map[str(socket_idx)][0]
-                        ]
-                        target_socket: SocketWidget = target_node.socket_widgets[
-                            node.pin_map[str(socket_idx)][1]
-                        ]
 
-                        target_socket.pin.add_edge(edge)
+                    target_node: NodeItem = self.dag_item(socket_widget.link[0])
+                    target_socket: SocketWidget = target_node.socket_widgets[socket_widget.link[1]]
 
-                        if target_socket.is_input:
-                            edge.end_pin = target_socket.pin
-                        else:
-                            edge.start_pin = target_socket.pin
+                    # if str(socket_idx) in node.pin_map.keys():
+                    #     target_node: NodeItem = sub_nodes[
+                    #         node.pin_map[str(socket_idx)][0]
+                    #     ]
+                    #     target_socket: SocketWidget = target_node.socket_widgets[
+                    #         node.pin_map[str(socket_idx)][1]
+                    #     ]
 
-                        edge.sort_pins()
-                        target_socket.update_all()
+                    target_socket.pin.add_edge(edge)
+
+                    if target_socket.is_input:
+                        edge.end_pin = target_socket.pin
+                    else:
+                        edge.start_pin = target_socket.pin
+
+                    edge.sort_pins()
+                    target_socket.update_all()
 
             self.remove_node(node)
 

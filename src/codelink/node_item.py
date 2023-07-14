@@ -276,23 +276,26 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.remove_socket_widget(0)
 
     def sort_socket_widgets(self) -> None:
-        input_pin_map: dict = {}
-        output_pin_map: dict = {}
+        # input_pin_map: dict = {}
+        # output_pin_map: dict = {}
 
         # Sorts widgets in layout
-        for socket_idx, socket_widget in enumerate(self._socket_widgets):
+        # for socket_idx, socket_widget in enumerate(self._socket_widgets):
+        for socket_widget in self._socket_widgets:
             if not socket_widget.is_input:
                 self._content_layout.removeWidget(socket_widget)
                 self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
-                output_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
-            else:
-                input_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
+                linked_node: NodeItem = self.scene().dag_item(socket_widget.link[0])
+                linked_node.link = (self.uuid, self._content_layout.count())
+            #     output_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
+            # else:
+            #     input_pin_map[socket_idx] = self._pin_map[str(socket_idx)]
 
         # Sorts pin map
-        sorted_pin_map: dict = {}
-        for idx, value in enumerate(list(input_pin_map.values()) + list(output_pin_map.values())):
-            sorted_pin_map[str(idx)] = value
-        self._pin_map: dict = sorted_pin_map
+        # sorted_pin_map: dict = {}
+        # for idx, value in enumerate(list(input_pin_map.values()) + list(output_pin_map.values())):
+        #     sorted_pin_map[str(idx)] = value
+        # self._pin_map: dict = sorted_pin_map
 
         # Sorts socket widget list
         self._socket_widgets = [
@@ -358,22 +361,29 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if len(self._sub_scene.nodes) > 0:
-            linked_node_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][0]
-            linked_socket_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][1]
-            linked_socket: SocketWidget = self._sub_scene.nodes[linked_node_idx].socket_widgets[linked_socket_idx]
+            linked_node: NodeItem = self.sub_scene.dag_item(socket.link[0])
+            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+            # linked_node_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][0]
+            # linked_socket_idx: int = self._pin_map[str(self._socket_widgets.index(socket))][1]
+            # linked_socket: SocketWidget = self._sub_scene.nodes[linked_node_idx].socket_widgets[linked_socket_idx]
             return linked_socket.parent_node.linked_lowest_socket(linked_socket)
         else:
             return socket
 
     def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if self.scene().parent_node:
-            pin_map: dict = self.scene().parent_node.pin_map
-            linked_node_idx: int = self.scene().nodes.index(self)
-            linked_socket_idx: int = self.scene().nodes[linked_node_idx].socket_widgets.index(socket)
-            if [linked_node_idx, linked_socket_idx] in list(pin_map.values()):
-                linked_socket: SocketWidget = self.scene().parent_node.socket_widgets[
-                    list(pin_map.values()).index([linked_node_idx, linked_socket_idx])
-                ]
+            # pin_map: dict = self.scene().parent_node.pin_map
+            # linked_node_idx: int = self.scene().nodes.index(self)
+            # linked_socket_idx: int = self.scene().nodes[linked_node_idx].socket_widgets.index(socket)
+            print(socket.link)
+            linked_node: NodeItem = self.scene().dag_item(socket.link[0])
+            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+
+            # if [linked_node_idx, linked_socket_idx] in list(pin_map.values()):
+            #     linked_socket: SocketWidget = self.scene().parent_node.socket_widgets[
+            #         list(pin_map.values()).index([linked_node_idx, linked_socket_idx])
+            #     ]
+            if linked_node is not None:
                 return self.scene().parent_node.linked_highest_socket(linked_socket)
             else:
                 return socket
