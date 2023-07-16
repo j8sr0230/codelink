@@ -2,73 +2,16 @@
     "Nodes": [
         {
             "Class": "NodeItem",
-            "UUID": "{b90d9142-abd8-477e-8b24-a8788a0646da}",
+            "UUID": "{86a7408b-836d-45f7-a402-a3a957504b09}",
             "Properties": {
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
+                "Name": "End",
+                "Color": "red",
                 "Collapse State": false,
-                "X": 31600,
-                "Y": 31800,
+                "X": 32430,
+                "Y": 32010,
                 "Width": 160
             },
-            "Option Idx": 0,
-            "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "A",
-                        "Is Input": true,
-                        "Data": 5
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "B",
-                        "Is Input": true,
-                        "Data": 5
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "Res",
-                        "Is Input": false,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                }
-            ],
-            "Subgraph": {
-                "Nodes": [],
-                "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
-            }
-        },
-        {
-            "Class": "NodeItem",
-            "UUID": "{5d2d3ac6-afef-4e33-9f00-57db585e4421}",
-            "Properties": {
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 32280,
-                "Y": 32000,
-                "Width": 160
-            },
-            "Option Idx": 0,
+            "Option Idx": 2,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
@@ -97,7 +40,7 @@
                 {
                     "Class": "SocketWidget",
                     "Properties": {
-                        "Name": "Res",
+                        "Name": "Sum",
                         "Is Input": false,
                         "Data": 0
                     },
@@ -116,13 +59,82 @@
         },
         {
             "Class": "NodeItem",
-            "UUID": "{e3a15b4e-1119-4d00-be70-81b2372617bb}",
+            "UUID": "{ec3b2566-131e-4a81-8bb7-a9ddb9fc8e40}",
+            "Properties": {
+                "Name": "Start",
+                "Color": "green",
+                "Collapse State": false,
+                "X": 31550,
+                "Y": 31950,
+                "Width": 160
+            },
+            "Option Idx": 1,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "X",
+                        "Is Input": true,
+                        "Data": 1
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "Y",
+                        "Is Input": true,
+                        "Data": 1
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "Z",
+                        "Is Input": true,
+                        "Data": 1
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "Vec",
+                        "Is Input": false,
+                        "Data": 0
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": [],
+                "Pin Map": {}
+            }
+        },
+        {
+            "Class": "NodeItem",
+            "UUID": "{2aba5d6e-f8c5-49d6-bbdb-88c7afc6c243}",
             "Properties": {
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 32100,
-                "Y": 31730,
+                "X": 32160,
+                "Y": 32140,
                 "Width": 160
             },
             "Option Idx": 0,
@@ -173,29 +185,74 @@
         },
         {
             "Class": "NodeItem",
-            "UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
+            "UUID": "{b3c5d542-9de2-4a08-b884-0f784ea4057e}",
+            "Properties": {
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapse State": false,
+                "X": 31900,
+                "Y": 32140,
+                "Width": 160
+            },
+            "Option Idx": 0,
+            "Sockets": [
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "A",
+                        "Is Input": true,
+                        "Data": 0
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "B",
+                        "Is Input": true,
+                        "Data": 0
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "SocketWidget",
+                    "Properties": {
+                        "Name": "Res",
+                        "Is Input": false,
+                        "Data": 0
+                    },
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": [],
+                "Pin Map": {}
+            }
+        },
+        {
+            "Class": "NodeItem",
+            "UUID": "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
             "Properties": {
                 "Name": "Custom Node",
                 "Color": "#1D1D1D",
                 "Collapse State": false,
-                "X": 31840,
-                "Y": 31850,
+                "X": 32020,
+                "Y": 31930,
                 "Width": 160
             },
             "Option Idx": 0,
             "Sockets": [
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "B",
-                        "Is Input": true,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "{d735ab18-35d5-42f8-9cf9-9cd2b896732d}",
-                        1
-                    ]
-                },
                 {
                     "Class": "SocketWidget",
                     "Properties": {
@@ -204,43 +261,19 @@
                         "Data": 0
                     },
                     "Link": [
-                        "{65bd6e8e-8072-4e5e-9efa-43bfc01d1a84}",
+                        "{dd34f1bd-16da-4f1a-8dca-ca1d9eca7590}",
                         0
                     ]
                 },
                 {
                     "Class": "SocketWidget",
                     "Properties": {
-                        "Name": "B",
-                        "Is Input": true,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "{65bd6e8e-8072-4e5e-9efa-43bfc01d1a84}",
-                        1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
                         "Name": "Res",
                         "Is Input": false,
                         "Data": 0
                     },
                     "Link": [
-                        "{d735ab18-35d5-42f8-9cf9-9cd2b896732d}",
-                        2
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "Res",
-                        "Is Input": false,
-                        "Data": 0
-                    },
-                    "Link": [
-                        "{65bd6e8e-8072-4e5e-9efa-43bfc01d1a84}",
+                        "{1ed3a41a-45f5-4314-9591-76f836010af2}",
                         2
                     ]
                 }
@@ -249,13 +282,70 @@
                 "Nodes": [
                     {
                         "Class": "NodeItem",
-                        "UUID": "{d735ab18-35d5-42f8-9cf9-9cd2b896732d}",
+                        "UUID": "{1ed3a41a-45f5-4314-9591-76f836010af2}",
                         "Properties": {
-                            "Name": "Scalar Math",
-                            "Color": "#1D1D1D",
+                            "Name": "Out",
+                            "Color": "olive",
+                            "Collapse State": true,
+                            "X": 32430,
+                            "Y": 31800,
+                            "Width": 80
+                        },
+                        "Option Idx": 0,
+                        "Sockets": [
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "B",
+                                    "Is Input": true,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
+                                    1
+                                ]
+                            }
+                        ],
+                        "Subgraph": {
+                            "Nodes": [],
+                            "Edges": [],
+                            "Frames": [],
+                            "Pin Map": {}
+                        }
+                    },
+                    {
+                        "Class": "NodeItem",
+                        "UUID": "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
+                        "Properties": {
+                            "Name": "OP 1",
+                            "Color": "#1d1d1d",
                             "Collapse State": false,
-                            "X": 31850,
-                            "Y": 32010,
+                            "X": 31950,
+                            "Y": 31700,
                             "Width": 160
                         },
                         "Option Idx": 0,
@@ -280,8 +370,8 @@
                                     "Data": 0
                                 },
                                 "Link": [
-                                    "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-                                    0
+                                    "",
+                                    -1
                                 ]
                             },
                             {
@@ -292,8 +382,8 @@
                                     "Data": 0
                                 },
                                 "Link": [
-                                    "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-                                    3
+                                    "",
+                                    -1
                                 ]
                             }
                         ],
@@ -306,13 +396,70 @@
                     },
                     {
                         "Class": "NodeItem",
-                        "UUID": "{65bd6e8e-8072-4e5e-9efa-43bfc01d1a84}",
+                        "UUID": "{dd34f1bd-16da-4f1a-8dca-ca1d9eca7590}",
                         "Properties": {
-                            "Name": "Scalar Math",
+                            "Name": "In",
+                            "Color": "olive",
+                            "Collapse State": true,
+                            "X": 31730,
+                            "Y": 31810,
+                            "Width": 80
+                        },
+                        "Option Idx": 0,
+                        "Sockets": [
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "A",
+                                    "Is Input": true,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
+                                    0
+                                ]
+                            },
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "B",
+                                    "Is Input": true,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "SocketWidget",
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Is Input": false,
+                                    "Data": 0
+                                },
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            }
+                        ],
+                        "Subgraph": {
+                            "Nodes": [],
+                            "Edges": [],
+                            "Frames": [],
+                            "Pin Map": {}
+                        }
+                    },
+                    {
+                        "Class": "NodeItem",
+                        "UUID": "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
+                        "Properties": {
+                            "Name": "Custom Node 2",
                             "Color": "#1D1D1D",
                             "Collapse State": false,
-                            "X": 31840,
-                            "Y": 31750,
+                            "X": 32160,
+                            "Y": 31890,
                             "Width": 160
                         },
                         "Option Idx": 0,
@@ -325,20 +472,8 @@
                                     "Data": 0
                                 },
                                 "Link": [
-                                    "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-                                    1
-                                ]
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Properties": {
-                                    "Name": "B",
-                                    "Is Input": true,
-                                    "Data": 0
-                                },
-                                "Link": [
-                                    "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-                                    2
+                                    "{0c3b1c13-ad86-4590-85c1-ffd7c7ba3a1a}",
+                                    0
                                 ]
                             },
                             {
@@ -349,14 +484,137 @@
                                     "Data": 0
                                 },
                                 "Link": [
-                                    "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-                                    4
+                                    "{3aae2237-e145-43d3-90b1-04f2031cf3f7}",
+                                    2
                                 ]
                             }
                         ],
                         "Subgraph": {
-                            "Nodes": [],
-                            "Edges": [],
+                            "Nodes": [
+                                {
+                                    "Class": "NodeItem",
+                                    "UUID": "{3aae2237-e145-43d3-90b1-04f2031cf3f7}",
+                                    "Properties": {
+                                        "Name": "Scalar Math",
+                                        "Color": "#1D1D1D",
+                                        "Collapse State": false,
+                                        "X": 32130,
+                                        "Y": 31950,
+                                        "Width": 160
+                                    },
+                                    "Option Idx": 0,
+                                    "Sockets": [
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "A",
+                                                "Is Input": true,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "",
+                                                -1
+                                            ]
+                                        },
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "B",
+                                                "Is Input": true,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "",
+                                                -1
+                                            ]
+                                        },
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "Res",
+                                                "Is Input": false,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
+                                                1
+                                            ]
+                                        }
+                                    ],
+                                    "Subgraph": {
+                                        "Nodes": [],
+                                        "Edges": [],
+                                        "Frames": [],
+                                        "Pin Map": {}
+                                    }
+                                },
+                                {
+                                    "Class": "NodeItem",
+                                    "UUID": "{0c3b1c13-ad86-4590-85c1-ffd7c7ba3a1a}",
+                                    "Properties": {
+                                        "Name": "Scalar Math",
+                                        "Color": "#1D1D1D",
+                                        "Collapse State": false,
+                                        "X": 31920,
+                                        "Y": 31940,
+                                        "Width": 160
+                                    },
+                                    "Option Idx": 0,
+                                    "Sockets": [
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "A",
+                                                "Is Input": true,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
+                                                0
+                                            ]
+                                        },
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "B",
+                                                "Is Input": true,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "",
+                                                -1
+                                            ]
+                                        },
+                                        {
+                                            "Class": "SocketWidget",
+                                            "Properties": {
+                                                "Name": "Res",
+                                                "Is Input": false,
+                                                "Data": 0
+                                            },
+                                            "Link": [
+                                                "",
+                                                -1
+                                            ]
+                                        }
+                                    ],
+                                    "Subgraph": {
+                                        "Nodes": [],
+                                        "Edges": [],
+                                        "Frames": [],
+                                        "Pin Map": {}
+                                    }
+                                }
+                            ],
+                            "Edges": [
+                                {
+                                    "UUID": "{d347085e-e764-417a-ba55-1d0680e5c208}",
+                                    "Start Node UUID": "{0c3b1c13-ad86-4590-85c1-ffd7c7ba3a1a}",
+                                    "Start Socket Idx": 2,
+                                    "End Node UUID": "{3aae2237-e145-43d3-90b1-04f2031cf3f7}",
+                                    "End Socket Idx": 0
+                                }
+                            ],
                             "Frames": [],
                             "Pin Map": {}
                         }
@@ -364,68 +622,113 @@
                 ],
                 "Edges": [
                     {
-                        "UUID": "{c43ed2d1-e62a-42a2-a1cf-bc7119def2d6}",
-                        "Start Node UUID": "{65bd6e8e-8072-4e5e-9efa-43bfc01d1a84}",
+                        "UUID": "{35c584b6-30ce-4625-aa50-a13dfcf90e49}",
+                        "Start Node UUID": "{dd34f1bd-16da-4f1a-8dca-ca1d9eca7590}",
                         "Start Socket Idx": 2,
-                        "End Node UUID": "{d735ab18-35d5-42f8-9cf9-9cd2b896732d}",
+                        "End Node UUID": "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
                         "End Socket Idx": 0
+                    },
+                    {
+                        "UUID": "{0e611609-954d-4e6a-853e-ee0f07d28dfb}",
+                        "Start Node UUID": "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
+                        "Start Socket Idx": 2,
+                        "End Node UUID": "{1ed3a41a-45f5-4314-9591-76f836010af2}",
+                        "End Socket Idx": 0
+                    },
+                    {
+                        "UUID": "{b7670604-036f-4fee-84f0-b303d8df377e}",
+                        "Start Node UUID": "{dd34f1bd-16da-4f1a-8dca-ca1d9eca7590}",
+                        "Start Socket Idx": 2,
+                        "End Node UUID": "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
+                        "End Socket Idx": 1
+                    },
+                    {
+                        "UUID": "{27a5501e-87c5-474a-b10d-a786490a7b55}",
+                        "Start Node UUID": "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
+                        "Start Socket Idx": 2,
+                        "End Node UUID": "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
+                        "End Socket Idx": 0
+                    },
+                    {
+                        "UUID": "{e05676f4-b00a-46c9-8e07-c9a1763ec50c}",
+                        "Start Node UUID": "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
+                        "Start Socket Idx": 1,
+                        "End Node UUID": "{1ed3a41a-45f5-4314-9591-76f836010af2}",
+                        "End Socket Idx": 1
                     }
                 ],
-                "Frames": [],
+                "Frames": [
+                    {
+                        "UUID": "{7a73d617-df15-4d30-9310-a74e1b721b41}",
+                        "Properties": {
+                            "Name": "Operation",
+                            "Color": "green"
+                        },
+                        "Framed Nodes UUID's": [
+                            "{612b1e51-89bb-4bd4-a723-d4f8a7cd34a8}",
+                            "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}"
+                        ]
+                    }
+                ],
                 "Pin Map": {}
             }
         }
     ],
     "Edges": [
         {
-            "UUID": "{13372df0-0232-4d58-b669-24d83a44cda4}",
-            "Start Node UUID": "{b90d9142-abd8-477e-8b24-a8788a0646da}",
+            "UUID": "{7c78681f-48bb-43c5-8c53-f19fadf98fba}",
+            "Start Node UUID": "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
+            "Start Socket Idx": 1,
+            "End Node UUID": "{86a7408b-836d-45f7-a402-a3a957504b09}",
+            "End Socket Idx": 0
+        },
+        {
+            "UUID": "{cf45a4f6-7976-4100-b78f-a0f8dfa49b83}",
+            "Start Node UUID": "{b3c5d542-9de2-4a08-b884-0f784ea4057e}",
             "Start Socket Idx": 2,
-            "End Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
+            "End Node UUID": "{2aba5d6e-f8c5-49d6-bbdb-88c7afc6c243}",
+            "End Socket Idx": 0
+        },
+        {
+            "UUID": "{92e9ba25-2986-468b-ab8b-f69cd344e3c9}",
+            "Start Node UUID": "{b3c5d542-9de2-4a08-b884-0f784ea4057e}",
+            "Start Socket Idx": 2,
+            "End Node UUID": "{2aba5d6e-f8c5-49d6-bbdb-88c7afc6c243}",
             "End Socket Idx": 1
         },
         {
-            "UUID": "{8e7c333b-503f-4569-8a69-bacc7e7132e8}",
-            "Start Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
+            "UUID": "{e839255d-4616-413d-aae8-212fe5337df9}",
+            "Start Node UUID": "{ec3b2566-131e-4a81-8bb7-a9ddb9fc8e40}",
             "Start Socket Idx": 3,
-            "End Node UUID": "{5d2d3ac6-afef-4e33-9f00-57db585e4421}",
+            "End Node UUID": "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
             "End Socket Idx": 0
         },
         {
-            "UUID": "{bc018be2-b77a-4cd8-9ef1-dcb1eab51a27}",
-            "Start Node UUID": "{b90d9142-abd8-477e-8b24-a8788a0646da}",
-            "Start Socket Idx": 2,
-            "End Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-            "End Socket Idx": 2
-        },
-        {
-            "UUID": "{f9d9467a-6d22-4fdd-97ef-8b6b3dd952d2}",
-            "Start Node UUID": "{b90d9142-abd8-477e-8b24-a8788a0646da}",
-            "Start Socket Idx": 2,
-            "End Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-            "End Socket Idx": 0
-        },
-        {
-            "UUID": "{979e2a8f-13ce-405e-8e75-d8820d22c31c}",
-            "Start Node UUID": "{e3a15b4e-1119-4d00-be70-81b2372617bb}",
-            "Start Socket Idx": 2,
-            "End Node UUID": "{5d2d3ac6-afef-4e33-9f00-57db585e4421}",
-            "End Socket Idx": 1
-        },
-        {
-            "UUID": "{7908b07a-d3b4-45e4-aeb6-06d2f847a636}",
-            "Start Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
-            "Start Socket Idx": 4,
-            "End Node UUID": "{e3a15b4e-1119-4d00-be70-81b2372617bb}",
-            "End Socket Idx": 0
-        },
-        {
-            "UUID": "{327eb8cb-f1e5-4dc5-8323-edf7a786183b}",
-            "Start Node UUID": "{1e950988-ce5f-4cd9-a083-ec8c7903e52f}",
+            "UUID": "{847f6484-5a2a-4b74-94e4-e2665794bc6b}",
+            "Start Node UUID": "{ec3b2566-131e-4a81-8bb7-a9ddb9fc8e40}",
             "Start Socket Idx": 3,
-            "End Node UUID": "{e3a15b4e-1119-4d00-be70-81b2372617bb}",
+            "End Node UUID": "{b3c5d542-9de2-4a08-b884-0f784ea4057e}",
+            "End Socket Idx": 0
+        },
+        {
+            "UUID": "{7cbb33d8-400c-4ecb-b121-cad12af7028a}",
+            "Start Node UUID": "{2aba5d6e-f8c5-49d6-bbdb-88c7afc6c243}",
+            "Start Socket Idx": 2,
+            "End Node UUID": "{86a7408b-836d-45f7-a402-a3a957504b09}",
             "End Socket Idx": 1
         }
     ],
-    "Frames": []
+    "Frames": [
+        {
+            "UUID": "{68a34dd6-90f4-476e-b0ea-1f633a44926e}",
+            "Properties": {
+                "Name": "Bypass",
+                "Color": "green"
+            },
+            "Framed Nodes UUID's": [
+                "{b3c5d542-9de2-4a08-b884-0f784ea4057e}",
+                "{2aba5d6e-f8c5-49d6-bbdb-88c7afc6c243}"
+            ]
+        }
+    ]
 }
