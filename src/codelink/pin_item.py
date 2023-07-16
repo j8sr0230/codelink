@@ -95,6 +95,7 @@ class PinItem(QtWidgets.QGraphicsItem):
         super().hoverEnterEvent(event)
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
         print(self._edges)
+        print(self._socket_widget.link)
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverLeaveEvent(event)

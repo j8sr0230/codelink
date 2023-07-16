@@ -111,7 +111,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return node
 
     def add_node_from_nodes(self, nodes: list[NodeItem]) -> NodeItem:
-        # TODO: Adjust parent pin map, if scene is a sub scene
         selected_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
@@ -131,25 +130,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
         sub_nodes_dict: list[dict] = [node.__getstate__() for node in nodes]
-        # for node in nodes:
-        #     sub_nodes_dict.append(node.__getstate__())
-
         sub_edges_dict: list[dict] = [sub_edge.__getstate__() for sub_edge in selected_edges]
-        # for edge in selected_edges:
-        #     edge_dict_mod: dict = edge.__getstate__()
-
-            # Reset subgraph indexing
-            # edge_dict_mod["Start Node Idx"] = nodes.index(edge.start_pin.parentItem())
-            # edge_dict_mod["End Node Idx"] = nodes.index(edge.end_pin.parentItem())
-            #
-            # sub_edges_dict.append(edge_dict_mod)
-
         sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
-        # for sub_frame_dict in sub_frames_dict:
-        #     new_idx_map: list[int] = []
-        #     for node_id in sub_frame_dict["Framed Nodes"]:
-        #         new_idx_map.append(nodes.index(self._nodes[node_id]))
-        #     sub_frame_dict["Framed Nodes"] = new_idx_map
 
         # Add custom node, remove predefined socket widgets and save sub graph
         custom_node: NodeItem = NodeItem()
@@ -160,7 +142,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         custom_node.sub_scene.deserialize_edges(sub_edges_dict)
         custom_node.sub_scene.deserialize_frames(sub_frames_dict)
         custom_node.prop_model.setData(
-            custom_node.prop_model.index(1, 1, QtCore.QModelIndex()), "Custom Node", 1  # QtCore.Qt.EditRole
+            custom_node.prop_model.index(0, 1, QtCore.QModelIndex()), "Custom Node", 2  # QtCore.Qt.EditRole
         )
 
         # Generate input and output widgets for custom node and reconnect edges
@@ -174,15 +156,12 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     new_socket_widget: SocketWidget = socket_widget.__copy__()
                     new_socket_widget.parent_node = custom_node
                     new_socket_widget.pin.setParentItem(custom_node)
-
                     new_socket_widget.link = (node.uuid, socket_idx)
 
-                    # TODO: Not working
                     linked_sub_node: NodeItem = custom_node.sub_scene.dag_item(socket_widget.parent_node.uuid)
                     linked_sub_socket_widget: SocketWidget = linked_sub_node.socket_widgets[socket_idx]
                     linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
 
-                    # custom_node.pin_map[str(len(custom_node.socket_widgets))] = [node_idx, socket_idx]
                     custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
                     while len(socket_widget.pin.edges) > 0:
@@ -242,7 +221,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             for frame in node.sub_scene.frames:
                 self.add_frame(frame)
 
-            sub_nodes: list[NodeItem] = []
             for sub_node in node.sub_scene.nodes:
                 self.add_node(sub_node)
                 node_pos: QtCore.QPointF = QtCore.QPointF(
@@ -250,7 +228,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     sub_node.y() + (node.center.y() - sub_scene_center.y())
                 )
                 sub_node.setPos(node_pos)
-                sub_nodes.append(sub_node)
 
             for edge in node.sub_scene.edges:
                 self.add_edge(edge)
@@ -261,15 +238,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
                     target_node: NodeItem = self.dag_item(socket_widget.link[0])
                     target_socket: SocketWidget = target_node.socket_widgets[socket_widget.link[1]]
-
-                    # if str(socket_idx) in node.pin_map.keys():
-                    #     target_node: NodeItem = sub_nodes[
-                    #         node.pin_map[str(socket_idx)][0]
-                    #     ]
-                    #     target_socket: SocketWidget = target_node.socket_widgets[
-                    #         node.pin_map[str(socket_idx)][1]
-                    #     ]
-
+                    target_socket.link = ("", -1)
                     target_socket.pin.add_edge(edge)
 
                     if target_socket.is_input:
@@ -301,17 +270,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
         edge.uuid = QtCore.QUuid.createUuid().toString()
 
         edge.start_pin = start_pin
-
-        # edge.start_node_uuid = start_pin.parent_node.uuid
-        edge.start_socket_idx = start_pin.parent_node.socket_widgets.index(start_pin.socket_widget)
-
         edge.start_pin.add_edge(edge)
 
         edge.end_pin = end_pin
         if type(end_pin) == PinItem:
-            # edge.end_node_uuid = end_pin.parent_node.uuid
-            edge.end_socket_idx = end_pin.parent_node.socket_widgets.index(end_pin.socket_widget)
-
             edge.end_pin.add_edge(edge)
             end_pin.socket_widget.update_stylesheets()
 
