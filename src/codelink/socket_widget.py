@@ -55,6 +55,7 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Input widget
         self._input_widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
+        self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
         self._input_widget.setMinimumWidth(5)
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         # self._input_widget.setPlaceholderText("Enter value")
@@ -64,10 +65,11 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Listeners
         cast(QtCore.SignalInstance,  self._prop_model.dataChanged).connect(lambda: self.update_all())
-        cast(QtCore.SignalInstance, self._input_widget.textChanged).connect(lambda: self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
-            int(self._input_widget.text()), int(QtCore.Qt.EditRole)
-        ))
+        # cast(QtCore.SignalInstance, self._input_widget.textChanged).connect(lambda: self._prop_model.setData(
+        #     self._prop_model.index(2, 1, QtCore.QModelIndex()),
+        #     int(self._input_widget.text()), int(QtCore.Qt.EditRole)
+        # ))
+        cast(QtCore.SignalInstance, self._input_widget.editingFinished).connect(self.edit_finished)
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -128,6 +130,13 @@ class SocketWidget(QtWidgets.QWidget):
         return result
 
     # --------------- Callbacks for QAbstractTableModel.dataChanged signal ---------------
+
+    def edit_finished(self) -> None:
+        self._prop_model.setData(
+            self._prop_model.index(2, 1, QtCore.QModelIndex()),
+            int(self._input_widget.text()), int(QtCore.Qt.EditRole)
+        )
+        self._input_widget.clearFocus()
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:

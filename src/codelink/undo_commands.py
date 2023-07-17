@@ -126,6 +126,7 @@ class ChangePropertyCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		key: str = list(self._model.properties.keys())[self._index.row()]
+		print("Undoing", key)
 		data_type = type(self._model.properties[key])
 		self._model.properties[key] = data_type(self._old_value)
 		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
@@ -134,6 +135,7 @@ class ChangePropertyCommand(QtWidgets.QUndoCommand):
 		self._old_value: Any = self._model.data(self._index, int(QtCore.Qt.DisplayRole))
 
 		key: str = list(self._model.properties.keys())[self._index.row()]
+		print("Doing", key)
 		data_type = type(self._model.properties[key])
 		self._model.properties[key] = data_type(self._new_value)
 		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
