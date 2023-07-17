@@ -1,4 +1,4 @@
-from typing import Optional, Any
+from typing import Optional, Any, cast
 import json
 import os
 
@@ -11,14 +11,13 @@ import PySide2.QtGui as QtGui
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
-from dag_scene import DAGScene
 from pin_item import PinItem
 from socket_widget import SocketWidget
 from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
-from undo_commands import DeleteSelectedCommand
+from undo_commands import DeleteSelectedCommand, MoveSelectedCommand
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
@@ -100,8 +99,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
             super().mousePressEvent(event)
 
             self._lm_pressed: bool = True
-            if type(self.itemAt(event.pos())) == NodeItem:
-                pass
+            if type(self.itemAt(event.pos())) in (
+                    NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
+            ):
+                # Addresses all NodeItem components
+                self._undo_stack.push(MoveSelectedCommand(self.scene()))
 
             if type(self.itemAt(event.pos())) == PinItem:
                 self._last_pin: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
@@ -151,7 +153,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         width=self._prop_scroller.width(),
                         parent=self._prop_scroller
                     )
-                    prop_widget.focus_changed.connect(self.focus_prop_scoller)
+                    cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
                     self._prop_scroller.setWidget(prop_widget)
                     self._prop_scroller.show()
 
@@ -356,8 +358,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         super().keyPressEvent(event)
 
-    @QtCore.Slot(QtWidgets.QTableView)
-    def focus_prop_scoller(self, focus_target: QtWidgets.QTableView):
+    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
         y: int = focus_target.pos().y()
         self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)

@@ -39,7 +39,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
         self._sub_scene: dag_scene_cls = dag_scene_cls()
-        self._pin_map: dict = {}
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._mode: str = ""
 
@@ -606,7 +605,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         data_dict["Sockets"] = sockets_list
 
         data_dict["Subgraph"] = self.sub_scene.serialize()
-        data_dict["Subgraph"]["Pin Map"] = self._pin_map
 
         return data_dict
 

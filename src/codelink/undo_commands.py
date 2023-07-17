@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
+import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from frame_item import FrameItem
@@ -63,3 +64,49 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 		for state in self._selected_node_states:
 			self._scene.remove_node(self._scene.dag_item(state["UUID"]))
+
+
+class MoveSelectedCommand(QtWidgets.QUndoCommand):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+
+		# Copy uuid's and positions of selected nodes
+		self._old_node_positions: list[tuple[str, float, float]] = [
+			(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
+		]
+		self._new_node_positions: list[tuple[str, float, float]] = self._old_node_positions.copy()
+
+	def undo(self) -> None:
+		for idx, pos in enumerate(self._old_node_positions):
+			node: NodeItem = self._scene.dag_item(pos[0])
+
+			# Store current node position
+			self._new_node_positions[idx] = (pos[0], node.x(), node.y())
+
+			# Undo node movement
+			x_row: int = list(node.prop_model.properties.keys()).index("X")
+			y_row: int = list(node.prop_model.properties.keys()).index("Y")
+
+			node.prop_model.setData(
+				node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[1], 2  # QtCore.Qt.EditRole
+			)
+			node.prop_model.setData(
+				node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[2], 2  # QtCore.Qt.EditRole
+			)
+
+	def redo(self) -> None:
+		if self._old_node_positions != self._new_node_positions:
+			for pos in self._new_node_positions:
+				node: NodeItem = self._scene.dag_item(pos[0])
+
+				x_row: int = list(node.prop_model.properties.keys()).index("X")
+				y_row: int = list(node.prop_model.properties.keys()).index("Y")
+
+				node.prop_model.setData(
+					node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[1], 2  # QtCore.Qt.EditRole
+				)
+				node.prop_model.setData(
+					node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[2], 2  # QtCore.Qt.EditRole
+				)
