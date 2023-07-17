@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
-import importlib
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -16,43 +15,51 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
 		super().__init__(parent)
 
-		dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
-
 		self._scene: DAGScene = scene
-		self._undo_scene_dict: dict = self._scene.serialize()  # Serialize current scene
-		self._undo_scene: Optional[DAGScene] = dag_scene_cls()  # Empty new scene instance
+		self._selected_node_states: list[dict] = []
+		self._selected_edge_states: list[dict] = []
+		self._selected_frame_states: list[dict] = []
+		self._linked_frame_states: list[dict] = []
 
-		self._selected_nodes_idx: list[int] = [
-			scene.nodes.index(item) for item in scene.selectedItems() if type(item) == NodeItem
-		]
-		self._selected_edges_idx: list[int] = [
-			scene.edges.index(item) for item in scene.selectedItems() if type(item) == EdgeItem
-		]
-		self._selected_frames_idx: list[int] = [
-			scene.frames.index(item) for item in scene.selectedItems() if type(item) == FrameItem
-		]
+		# Copy states of selected and linked items
+		selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if type(item) == NodeItem]
+
+		selected_edges: set[EdgeItem] = {item for item in scene.selectedItems() if type(item) == EdgeItem}
+		for node in selected_nodes:
+			for socket_widget in node.socket_widgets:
+				for edge in socket_widget.pin.edges:
+					selected_edges.add(edge)
+
+		selected_frames: set[FrameItem] = {item for item in scene.selectedItems() if type(item) == FrameItem}
+
+		linked_frames: set[FrameItem] = {
+			item.parent_frame for item in scene.selectedItems() if (
+					type(item) == NodeItem and
+					item.parent_frame is not None and
+					item not in selected_frames
+			)
+		}
+
+		self._selected_node_states: list[dict] = [node.__getstate__() for node in selected_nodes]
+		self._selected_edge_states: list[dict] = [edge.__getstate__() for edge in selected_edges]
+		self._selected_frame_states: list[dict] = [frame.__getstate__() for frame in selected_frames]
+		self._linked_frame_states: list[dict] = [frame.__getstate__() for frame in linked_frames]
 
 	def undo(self) -> None:
-		self._scene.clear_scene()
+		self._scene.deserialize_nodes(self._selected_node_states)
+		self._scene.deserialize_edges(self._selected_edge_states)
+		self._scene.deserialize_frames(self._selected_frame_states)
 
-		for node in self._undo_scene.nodes:
-			self._scene.add_node(node)
-
-		for edge in self._undo_scene.edges:
-			self._scene.add_edge(edge)
-
-		for frame in self._undo_scene.frames:
-			self._scene.add_frame(frame)
+		for state in self._linked_frame_states:
+			self._scene.remove_frame(self._scene.dag_item(state["UUID"]))
+			self._scene.deserialize_frames(self._linked_frame_states)
 
 	def redo(self) -> None:
-		for idx in self._selected_nodes_idx:
-			self._scene.remove_node(self._scene.nodes[idx])
+		for state in self._selected_frame_states:
+			self._scene.remove_frame(self._scene.dag_item(state["UUID"]))
 
-		for idx in self._selected_edges_idx:
-			self._scene.remove_edge(self._scene.edges[idx])
+		for state in self._selected_edge_states:
+			self._scene.remove_edge(self._scene.dag_item(state["UUID"]))
 
-		for idx in self._selected_frames_idx:
-			self._scene.remove_frame(self._scene.frames[idx])
-
-		self._scene.update()
-		self._undo_scene.deserialize(self._undo_scene_dict)  # Deserialize undo_scene here for performance reasons
+		for state in self._selected_node_states:
+			self._scene.remove_node(self._scene.dag_item(state["UUID"]))
