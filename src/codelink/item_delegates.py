@@ -15,7 +15,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor.setRange(-64000, 64000)
         editor.setSingleStep(10)
         # editor.valueChanged.connect(self.commit_editor)
-        editor.editingFinished.connect(self.commit_editor)
+        # editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
@@ -42,6 +42,11 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if type(event) == QtGui.QKeyEvent:
             if event.key() == QtCore.Qt.Key_Tab:
+                self.commitData.emit(editor)
+                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+
+            if event.key() == QtCore.Qt.Key_Return:
                 self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
@@ -112,7 +117,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
         editor.setFocusPolicy(QtCore.Qt.StrongFocus)
         # editor.textChanged.connect(self.commit_editor)
-        editor.editingFinished.connect(self.commit_editor)
+        # editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
@@ -139,6 +144,11 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if type(event) == QtGui.QKeyEvent:
             if event.key() == QtCore.Qt.Key_Tab:
+                self.commitData.emit(editor)
+                self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+
+            if event.key() == QtCore.Qt.Key_Return:
                 self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
