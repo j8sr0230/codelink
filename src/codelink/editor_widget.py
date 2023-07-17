@@ -287,7 +287,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             with open(file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
-                self.scene().deserialize(data_dict, self._undo_stack)
+                self.scene().deserialize(data_dict)
 
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
