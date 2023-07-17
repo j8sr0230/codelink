@@ -110,3 +110,22 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 				node.prop_model.setData(
 					node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[2], 2  # QtCore.Qt.EditRole
 				)
+
+
+class ChangePropertyCommand(QtWidgets.QUndoCommand):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+		super().__init__(parent)
+
+		# self._scene: DAGScene = scene
+		#
+		# # Copy uuid's and positions of selected nodes
+		# self._old_node_positions: list[tuple[str, float, float]] = [
+		# 	(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
+		# ]
+		# self._new_node_positions: list[tuple[str, float, float]] = self._old_node_positions.copy()
+
+	def undo(self) -> None:
+		pass
+
+	def redo(self) -> None:
+		pass

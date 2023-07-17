@@ -86,6 +86,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(self._redo_action)
 
+    @property
+    def undo_stack(self) -> QtWidgets.QUndoStack:
+        return self._undo_stack
+
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
 
