@@ -2,8 +2,6 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from property_table import PropertyTable
-
 
 class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent: QtCore.QObject):
@@ -16,7 +14,8 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor.setFrame(True)
         editor.setRange(-64000, 64000)
         editor.setSingleStep(10)
-        editor.valueChanged.connect(self.commit_editor)
+        # editor.valueChanged.connect(self.commit_editor)
+        editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
@@ -43,6 +42,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if type(event) == QtGui.QKeyEvent:
             if event.key() == QtCore.Qt.Key_Tab:
+                self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
             else:
@@ -111,7 +111,8 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
 
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
         editor.setFocusPolicy(QtCore.Qt.StrongFocus)
-        editor.textChanged.connect(self.commit_editor)
+        # editor.textChanged.connect(self.commit_editor)
+        editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
@@ -138,6 +139,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
     def eventFilter(self, editor: QtCore.QObject, event: QtCore.QEvent) -> bool:
         if type(event) == QtGui.QKeyEvent:
             if event.key() == QtCore.Qt.Key_Tab:
+                self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
             else:

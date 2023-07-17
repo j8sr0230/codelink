@@ -1,13 +1,11 @@
 from typing import Any, Optional, cast
-import importlib
 
 import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
 
 
 class PropertyModel(QtCore.QAbstractTableModel):
     def __init__(self, properties: Optional[dict] = None, header_left: str = "Property", header_right: str = "Value",
-                 undo_stack: Optional[QtWidgets.QUndoStack] = None, parent: Optional[QtCore.QObject] = None) -> None:
+                 parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
 
         if properties is None:
@@ -16,10 +14,6 @@ class PropertyModel(QtCore.QAbstractTableModel):
         self._properties = properties
         self._header_left: str = header_left
         self._header_right: str = header_right
-        self._undo_stack: Optional[QtWidgets.QUndoStack] = undo_stack
-
-        # Hack: Prevents cyclic import
-        self._change_prop_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ChangePropertyCommand")
 
     @property
     def properties(self) -> dict:
@@ -84,13 +78,10 @@ class PropertyModel(QtCore.QAbstractTableModel):
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.DisplayRole) -> bool:
         if role == QtCore.Qt.EditRole:
-            if self._undo_stack is not None:
-                self._undo_stack.push(self._change_prop_cmd_cls(self, index, value))
-
-            # key: str = list(self._properties.keys())[index.row()]
-            # data_type = type(self._properties[key])
-            # self._properties[key] = data_type(value)
-            # cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
+            key: str = list(self._properties.keys())[index.row()]
+            data_type = type(self._properties[key])
+            self._properties[key] = data_type(value)
+            cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
             return True
 
         return False

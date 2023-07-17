@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class SocketWidget(QtWidgets.QWidget):
     def __init__(self, label: str = "In", is_input: bool = True, data: object = 0,
-                 undo_stack: Optional[QtWidgets.QUndoStack] = None, parent_node: Optional[NodeItem] = None,
+                 parent_node: Optional[NodeItem] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
@@ -26,8 +26,7 @@ class SocketWidget(QtWidgets.QWidget):
                         "Data": data
                         },
             header_left="Socket Property",
-            header_right="Value",
-            undo_stack=undo_stack
+            header_right="Value"
         )
         self._link: tuple[str, int] = ("", -1)
 
@@ -63,10 +62,6 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Listeners
         cast(QtCore.SignalInstance,  self._prop_model.dataChanged).connect(lambda: self.update_all())
-        # cast(QtCore.SignalInstance, self._input_widget.textChanged).connect(lambda: self._prop_model.setData(
-        #     self._prop_model.index(2, 1, QtCore.QModelIndex()),
-        #     int(self._input_widget.text()), int(QtCore.Qt.EditRole)
-        # ))
         cast(QtCore.SignalInstance, self._input_widget.returnPressed).connect(self.return_pressed)
         cast(QtCore.SignalInstance, self._input_widget.editingFinished).connect(self.editing_finished)
 
@@ -135,7 +130,7 @@ class SocketWidget(QtWidgets.QWidget):
             self._prop_model.index(2, 1, QtCore.QModelIndex()),
             int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
         )
-        self.parent_node.content_widget.clearFocus()  # _input_widget.clearFocus()
+        self.parent_node.content_widget.clearFocus()
 
     def editing_finished(self) -> None:
         self._prop_model.setData(

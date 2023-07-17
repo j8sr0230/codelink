@@ -16,8 +16,7 @@ from edge_item import EdgeItem
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
-    def __init__(self, undo_stack: Optional[QtWidgets.QUndoStack] = None,
-                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
@@ -32,12 +31,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
                         "Width": 160
                         },
             header_left="Base Prop",
-            header_right="Value",
-            undo_stack=undo_stack
+            header_right="Value"
         )
 
         # Non persistent data model
-        self._undo_stack: Optional[QtWidgets.QUndoStack] = undo_stack
         self._socket_widgets: list[QtWidgets.QWidget] = []
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
@@ -129,9 +126,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            SocketWidget(label="A", is_input=True, undo_stack=self._undo_stack, parent_node=self),
-            SocketWidget(label="B", is_input=True, undo_stack=self._undo_stack, parent_node=self),
-            SocketWidget(label="Res", is_input=False, undo_stack=self._undo_stack, parent_node=self)
+            SocketWidget(label="A", is_input=True, parent_node=self),
+            SocketWidget(label="B", is_input=True, parent_node=self),
+            SocketWidget(label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
@@ -204,10 +201,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def sub_scene(self) -> Any:
         return self._sub_scene
-
-    @property
-    def pin_map(self) -> dict:
-        return self._pin_map
 
     @property
     def evals(self) -> list[object]:
