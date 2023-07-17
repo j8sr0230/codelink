@@ -82,8 +82,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(frame)
         return frame
 
-    def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
-        frame: FrameItem = FrameItem(framed_nodes=nodes)
+    def add_frame_from_nodes(self, nodes: list[NodeItem], undo_stack: Optional[QtWidgets.QUndoStack] = None) -> FrameItem:
+        frame: FrameItem = FrameItem(framed_nodes=nodes, undo_stack=undo_stack)
         frame.uuid = QtCore.QUuid.createUuid().toString()
 
         for node in nodes:
@@ -414,11 +414,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return nodes_dict
 
-    def deserialize_nodes(self, nodes_dict: list[dict]) -> None:
+    def deserialize_nodes(self, nodes_dict: list[dict], undo_stack: Optional[QtWidgets.QUndoStack] = None) -> None:
         for node_dict in nodes_dict:
             # Create node from dict
             node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
-            new_node: node_class = node_class()
+            new_node: node_class = node_class(undo_stack=undo_stack)
             self.add_node(new_node)
 
             # Reset node state
@@ -457,11 +457,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return frames_dict
 
-    def deserialize_frames(self, frames_dict: list[dict]) -> None:
+    def deserialize_frames(self, frames_dict: list[dict], undo_stack: Optional[QtWidgets.QUndoStack] = None) -> None:
         for frame_dict in frames_dict:
             framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
             framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
-            new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes)
+            new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes, undo_stack)
 
             # Reset frame state
             new_frame.__setstate__(frame_dict)
@@ -475,7 +475,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         }
         return dag_dict
 
-    def deserialize(self, data_dict: dict) -> None:
-        self.deserialize_nodes(data_dict["Nodes"])
+    def deserialize(self, data_dict: dict, undo_stack: Optional[QtWidgets.QUndoStack] = None) -> None:
+        self.deserialize_nodes(data_dict["Nodes"], undo_stack)
         self.deserialize_edges(data_dict["Edges"])
-        self.deserialize_frames(data_dict["Frames"])
+        self.deserialize_frames(data_dict["Frames"], undo_stack)

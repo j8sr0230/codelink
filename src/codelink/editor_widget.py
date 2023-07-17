@@ -287,7 +287,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             with open(file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
-                self.scene().deserialize(data_dict)
+                self.scene().deserialize(data_dict, self._undo_stack)
 
         if event.matches(QtGui.QKeySequence.AddTab):
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
@@ -327,7 +327,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
-            new_node = NodeItem()
+            new_node = NodeItem(undo_stack=self._undo_stack)
             new_node.setPos(QtCore.QPointF(32000, 32000))
             self.scene().add_node(new_node)
 

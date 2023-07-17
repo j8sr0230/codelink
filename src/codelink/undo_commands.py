@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -113,19 +113,27 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 
 
 class ChangePropertyCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(
+			self, model: QtCore.QAbstractTableModel, index: QtCore.QModelIndex,
+			value: Any, parent: Optional[QtWidgets.QUndoCommand] = None
+	):
 		super().__init__(parent)
 
-		# self._scene: DAGScene = scene
-		#
-		# # Copy uuid's and positions of selected nodes
-		# self._old_node_positions: list[tuple[str, float, float]] = [
-		# 	(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
-		# ]
-		# self._new_node_positions: list[tuple[str, float, float]] = self._old_node_positions.copy()
+		self._model: QtCore.QAbstractTableModel = model
+		self._index: QtCore.QModelIndex = index
+		self._new_value: Any = value
+		self._old_value: Any = None
 
 	def undo(self) -> None:
-		pass
+		key: str = list(self._model.properties.keys())[self._index.row()]
+		data_type = type(self._model.properties[key])
+		self._model.properties[key] = data_type(self._old_value)
+		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
 
 	def redo(self) -> None:
-		pass
+		self._old_value: Any = self._model.data(self._index, int(QtCore.Qt.DisplayRole))
+
+		key: str = list(self._model.properties.keys())[self._index.row()]
+		data_type = type(self._model.properties[key])
+		self._model.properties[key] = data_type(self._new_value)
+		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
