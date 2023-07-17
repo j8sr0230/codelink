@@ -57,6 +57,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.setMinimumWidth(5)
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         self._layout.addWidget(self._input_widget)
+        self.setFocusProxy(self._input_widget)
 
         self.update_stylesheets()
 
@@ -130,13 +131,20 @@ class SocketWidget(QtWidgets.QWidget):
             self._prop_model.index(2, 1, QtCore.QModelIndex()),
             int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
         )
-        self.parent_node.content_widget.clearFocus()
+        self.clearFocus()
 
     def editing_finished(self) -> None:
         self._prop_model.setData(
             self._prop_model.index(2, 1, QtCore.QModelIndex()),
             int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
         )
+        # for node in self._parent_node.scene().nodes:
+        #     if node != self._parent_node:
+        #         for widget in node.socket_widgets:
+        #             widget.setFocusPolicy(QtCore.Qt.NoFocus)
+        #     else:
+        #         for widget in node.socket_widgets:
+        #             widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:
