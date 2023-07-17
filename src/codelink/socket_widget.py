@@ -145,13 +145,16 @@ class SocketWidget(QtWidgets.QWidget):
             if self._pin_item.has_edges():
                 self._label_widget.setStyleSheet("background-color: transparent")
                 self._input_widget.hide()
+                self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
             else:
                 self._label_widget.setStyleSheet("background-color: #545454")
                 self._input_widget.show()
+                self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self._label_widget.setStyleSheet("background-color: transparent")
             self._input_widget.hide()
+            self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
 
     def update_pin_position(self) -> None:
         if not self._parent_node.is_collapsed:

@@ -327,7 +327,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
-            new_node = NodeItem(undo_stack=self._undo_stack)
+            new_node = NodeItem()
             new_node.setPos(QtCore.QPointF(32000, 32000))
             self.scene().add_node(new_node)
 
