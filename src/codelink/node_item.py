@@ -120,6 +120,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Option combo box
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Add", "Sub", "Mul"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
