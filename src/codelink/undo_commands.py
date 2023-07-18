@@ -52,8 +52,9 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 		self._scene.deserialize_frames(self._selected_frame_states)
 
 		for state in self._linked_frame_states:
-			self._scene.remove_frame(self._scene.dag_item(state["UUID"]))
-			self._scene.deserialize_frames(self._linked_frame_states)
+			if self._scene.dag_item(state["UUID"]) is not None:
+				self._scene.remove_frame(self._scene.dag_item(state["UUID"]))
+		self._scene.deserialize_frames(self._linked_frame_states)
 
 	def redo(self) -> None:
 		for state in self._selected_frame_states:

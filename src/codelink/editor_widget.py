@@ -105,11 +105,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             super().mousePressEvent(event)
 
             self._lm_pressed: bool = True
-            if type(self.itemAt(event.pos())) in (
-                    NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
-            ):
-                # Addresses all NodeItem components
-                self._undo_stack.push(MoveSelectedCommand(self.scene()))
 
             if type(self.itemAt(event.pos())) == PinItem:
                 self._last_pin: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
@@ -185,6 +180,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
+
+        if self._lm_pressed and type(self.itemAt(event.pos())) in (
+                NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
+        ):
+            # Addresses all NodeItem components
+            self._undo_stack.push(MoveSelectedCommand(self.scene()))
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
