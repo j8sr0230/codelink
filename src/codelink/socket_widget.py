@@ -55,6 +55,7 @@ class SocketWidget(QtWidgets.QWidget):
         # Input widget
         self._input_widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
         self._input_widget.setMinimumWidth(5)
+        self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         self._layout.addWidget(self._input_widget)
         self.setFocusProxy(self._input_widget)
@@ -63,8 +64,8 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Listeners
         cast(QtCore.SignalInstance,  self._prop_model.dataChanged).connect(lambda: self.update_all())
-        cast(QtCore.SignalInstance, self._input_widget.returnPressed).connect(self.return_pressed)
         cast(QtCore.SignalInstance, self._input_widget.editingFinished).connect(self.editing_finished)
+        cast(QtCore.SignalInstance, self._input_widget.returnPressed).connect(self.return_pressed)
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -124,27 +125,7 @@ class SocketWidget(QtWidgets.QWidget):
 
         return result
 
-    # --------------- Callbacks for QAbstractTableModel.dataChanged signal ---------------
-
-    def return_pressed(self) -> None:
-        self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
-            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
-        )
-        self.clearFocus()
-
-    def editing_finished(self) -> None:
-        self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
-            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
-        )
-        # for node in self._parent_node.scene().nodes:
-        #     if node != self._parent_node:
-        #         for widget in node.socket_widgets:
-        #             widget.setFocusPolicy(QtCore.Qt.NoFocus)
-        #     else:
-        #         for widget in node.socket_widgets:
-        #             widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+    # --------------- Callbacks signals ---------------
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:
@@ -153,16 +134,13 @@ class SocketWidget(QtWidgets.QWidget):
             if self._pin_item.has_edges():
                 self._label_widget.setStyleSheet("background-color: transparent")
                 self._input_widget.hide()
-                self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
             else:
                 self._label_widget.setStyleSheet("background-color: #545454")
                 self._input_widget.show()
-                self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self._label_widget.setStyleSheet("background-color: transparent")
             self._input_widget.hide()
-            self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
 
     def update_pin_position(self) -> None:
         if not self._parent_node.is_collapsed:
@@ -187,6 +165,41 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
         self.update_stylesheets()
         self.update_pin_position()
+
+    def return_pressed(self) -> None:
+        self._prop_model.setData(
+            self._prop_model.index(2, 1, QtCore.QModelIndex()),
+            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
+        )
+        self.clearFocus()
+
+    def editing_finished(self) -> None:
+        self._prop_model.setData(
+            self._prop_model.index(2, 1, QtCore.QModelIndex()),
+            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
+        )
+
+    # --------------- Overwrites ---------------
+
+    def focusNextPrevChild(self, forward: bool) -> bool:
+        input_widget: QtWidgets.QLineEdit = cast(QtWidgets.QLineEdit, self.focusWidget())
+
+        if input_widget == QtWidgets.QApplication.focusWidget():
+            return False
+
+        socket_idx: int = self.parent_node.input_socket_widgets.index(self)
+        if forward:
+            next_idx = socket_idx + 1
+            if next_idx >= len(self.parent_node.input_socket_widgets):
+                next_idx = 0
+        else:
+            next_idx = socket_idx - 1
+            if next_idx < 0:
+                next_idx = len(self.parent_node.input_socket_widgets) - 1
+
+        self.parent_node.input_socket_widgets[next_idx].input_widget.setFocus(QtCore.Qt.TabFocusReason)
+
+        return True
 
     # --------------- Serialization ---------------
 

@@ -200,7 +200,7 @@ NODE_STYLE: str = """
 		min-height: 24px;
 		max-height: 24px;
 		margin-left: 0px;
-		margin-right: 1px;
+		margin-right: 0px;
 		margin-top: 0px;
 		margin-bottom: 0px;
 		padding-left: 10px;
@@ -221,7 +221,7 @@ NODE_STYLE: str = """
 		min-width: 5px;
 		min-height: 24px;
 		max-height: 24px;
-		margin-left: 1px;
+		margin-left: 0px;
 		margin-right: 0px;
 		margin-top: 0px;
 		margin-bottom: 0px;
