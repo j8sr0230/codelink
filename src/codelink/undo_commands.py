@@ -123,12 +123,12 @@ class AddItemCommand(QtWidgets.QUndoCommand):
 		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
 
 	def undo(self) -> None:
-		if type(self._item) == NodeItem:
-			self._scene.remove_node(self._item)
+		if type(self._item) == FrameItem:
+			self._scene.remove_frame(self._item)
 		elif type(self._item) == EdgeItem:
 			self._scene.remove_edge(self._item)
 		else:
-			self._scene.remove_frame(self._item)
+			self._scene.remove_node(self._item)
 
 	def redo(self) -> None:
 		if type(self._item) == NodeItem:
