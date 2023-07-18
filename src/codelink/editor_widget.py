@@ -17,7 +17,9 @@ from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
-from undo_commands import DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand
+from undo_commands import (
+    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand, RemoveItemCommand
+)
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
@@ -229,11 +231,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin.add_edge(self._temp_edge)
                     self._temp_edge.sort_pins()
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
+                    # TODO: Rewiring unsolved
                     self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
                 else:
-                    self.scene().remove_edge(self._temp_edge)
+                    self._temp_edge.end_pin = self._last_pin
+                    if self._temp_edge.end_pin != self._temp_edge.start_pin:
+                        self._temp_edge.color = self._temp_edge.start_pin.color
+                        self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
+                    else:
+                        self.scene().remove_edge(self._temp_edge)
             else:
-                self.scene().remove_edge(self._temp_edge)
+                self._temp_edge.end_pin = self._last_pin
+                if self._temp_edge.end_pin != self._temp_edge.start_pin:
+                    self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
+                else:
+                    self.scene().remove_edge(self._temp_edge)
 
             for node in self.scene().ends():
                 dsk: dict = self.scene().to_dsk(node, {})
