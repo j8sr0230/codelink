@@ -137,3 +137,49 @@ class AddItemCommand(QtWidgets.QUndoCommand):
 			self._scene.add_edge(self._item)
 		else:
 			self._scene.add_frame(self._item)
+
+
+class RemoveItemCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	):
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
+
+	def undo(self) -> None:
+		if type(self._item) == NodeItem:
+			self._scene.add_node(self._item)
+		elif type(self._item) == EdgeItem:
+			self._scene.add_edge(self._item)
+		else:
+			self._scene.add_frame(self._item)
+
+	def redo(self) -> None:
+		if type(self._item) == FrameItem:
+			self._scene.remove_frame(self._item)
+		elif type(self._item) == EdgeItem:
+			self._scene.remove_edge(self._item)
+		else:
+			self._scene.remove_node(self._item)
+
+
+class CustomNodeCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None):
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._nodes_uuids: list[str] = [node.__getstate__()["UUID"] for node in nodes]
+		self._custom_node_uuid: Optional[str] = None
+
+	def undo(self) -> None:
+		custom_node: NodeItem = self._scene.dag_item(self._custom_node_uuid)
+		self._scene.resolve_node(custom_node)
+
+	def redo(self) -> None:
+		nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._nodes_uuids]
+		custom_node = self._scene.add_node_from_nodes(nodes)
+		self._custom_node_uuid = custom_node.uuid

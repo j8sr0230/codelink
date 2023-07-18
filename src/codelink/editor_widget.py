@@ -17,7 +17,7 @@ from node_item import NodeItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
-from undo_commands import DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand
+from undo_commands import DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
@@ -118,11 +118,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
-                    self._temp_edge = EdgeItem()
-                    self._temp_edge.start_pin = self._last_pin
-                    self._temp_edge.end_pin = temp_target
-                    self._temp_edge.color = self._last_pin.color
-                    self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
+                    self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
 
                 if self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
@@ -233,6 +229,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin.add_edge(self._temp_edge)
                     self._temp_edge.sort_pins()
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
+                    self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
                 else:
                     self.scene().remove_edge(self._temp_edge)
             else:
@@ -338,7 +335,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
             # Serialize selected nodes and edges (sub graph)
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            self.scene().add_node_from_nodes(selected_nodes)
+            self._undo_stack.push(CustomNodeCommand(self.scene(), selected_nodes))
 
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
             for selected_item in self.scene().selectedItems():
