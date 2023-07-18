@@ -86,9 +86,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         frame: FrameItem = FrameItem(framed_nodes=nodes)
         frame.uuid = QtCore.QUuid.createUuid().toString()
 
-        for node in nodes:
-            node.parent_frame = frame
-
         self._frames.append(frame)
         self.addItem(frame)
         self.clearSelection()
@@ -256,8 +253,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
             edge.uuid = QtCore.QUuid.createUuid().toString()
 
         edge.start_pin.add_edge(edge)
-        edge.end_pin.add_edge(edge)
-        edge.end_pin.socket_widget.update_stylesheets()
+        if type(edge.end_pin) == PinItem:
+            edge.end_pin.add_edge(edge)
+            edge.end_pin.socket_widget.update_stylesheets()
 
         self._edges.append(edge)
         self.addItem(edge)

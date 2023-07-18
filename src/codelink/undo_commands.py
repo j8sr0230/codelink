@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Union, Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -112,30 +112,28 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 				)
 
 
-class ChangePropertyCommand(QtWidgets.QUndoCommand):
+class AddItemCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, model: QtCore.QAbstractTableModel, index: QtCore.QModelIndex,
-			value: Any, parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
+			parent: Optional[QtWidgets.QUndoCommand] = None
 	):
 		super().__init__(parent)
 
-		self._model: QtCore.QAbstractTableModel = model
-		self._index: QtCore.QModelIndex = index
-		self._new_value: Any = value
-		self._old_value: Any = None
+		self._scene: DAGScene = scene
+		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
 
 	def undo(self) -> None:
-		key: str = list(self._model.properties.keys())[self._index.row()]
-		print("Undoing", key)
-		data_type = type(self._model.properties[key])
-		self._model.properties[key] = data_type(self._old_value)
-		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
+		if type(self._item) == NodeItem:
+			self._scene.remove_node(self._item)
+		elif type(self._item) == EdgeItem:
+			self._scene.remove_edge(self._item)
+		else:
+			self._scene.remove_frame(self._item)
 
 	def redo(self) -> None:
-		self._old_value: Any = self._model.data(self._index, int(QtCore.Qt.DisplayRole))
-
-		key: str = list(self._model.properties.keys())[self._index.row()]
-		print("Doing", key)
-		data_type = type(self._model.properties[key])
-		self._model.properties[key] = data_type(self._new_value)
-		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
+		if type(self._item) == NodeItem:
+			self._scene.add_node(self._item)
+		elif type(self._item) == EdgeItem:
+			self._scene.add_edge(self._item)
+		else:
+			self._scene.add_frame(self._item)
