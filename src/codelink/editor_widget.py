@@ -233,7 +233,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.sort_pins()
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
                     # TODO: Rewiring unsolved
-                    self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
+                    self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge, self._last_pin))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:

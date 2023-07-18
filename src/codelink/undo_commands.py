@@ -10,6 +10,7 @@ from edge_item import EdgeItem
 
 if TYPE_CHECKING:
 	from dag_scene import DAGScene
+	from pin_item import PinItem
 
 
 class DeleteSelectedCommand(QtWidgets.QUndoCommand):
@@ -116,18 +117,22 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 class AddItemCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
-			parent: Optional[QtWidgets.QUndoCommand] = None
+			last_pin: Optional[PinItem] = None, parent: Optional[QtWidgets.QUndoCommand] = None
 	):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
+		self._last_pin: PinItem = last_pin
 
 	def undo(self) -> None:
 		if type(self._item) == FrameItem:
 			self._scene.remove_frame(self._item)
 		elif type(self._item) == EdgeItem:
-			self._scene.remove_edge(self._item)
+			if self._item.end_pin != self._last_pin and self._item.start_pin != self._last_pin:
+				self._item.end_pin = self._last_pin
+			else:
+				self._scene.remove_edge(self._item)
 		else:
 			self._scene.remove_node(self._item)
 
@@ -135,7 +140,10 @@ class AddItemCommand(QtWidgets.QUndoCommand):
 		if type(self._item) == NodeItem:
 			self._scene.add_node(self._item)
 		elif type(self._item) == EdgeItem:
-			self._scene.add_edge(self._item)
+			edge: EdgeItem = self._scene.add_edge(self._item)
+			if self._scene.dag_item(edge.uuid):
+				edge.end_pin = self._last_pin
+				edge.update()
 		else:
 			self._scene.add_frame(self._item)
 
