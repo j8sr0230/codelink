@@ -69,23 +69,23 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 
 class MoveSelectedCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, last_position: QtCore.QPointF, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 
 		# Copy uuid's and positions of selected nodes
-		self._old_node_positions: list[tuple[str, float, float]] = [
-			(item.uuid, last_position.x() - (last_position.x() - item.x()), last_position.y() - (last_position.y() - item.y())) for item in self._scene.selectedItems() if type(item) == NodeItem
+		self._undo_node_positions: list[tuple[str, float, float]] = [
+			(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
 		]
-		self._new_node_positions: list[tuple[str, float, float]] = self._old_node_positions.copy()
+		self._redo_node_positions: list[tuple[str, float, float]] = self._undo_node_positions.copy()
 
 	def undo(self) -> None:
-		for idx, pos in enumerate(self._old_node_positions):
+		for idx, pos in enumerate(self._undo_node_positions):
 			node: NodeItem = self._scene.dag_item(pos[0])
 
 			# Store current node position
-			self._new_node_positions[idx] = (pos[0], node.x(), node.y())
+			self._redo_node_positions[idx] = (pos[0], node.x(), node.y())
 
 			# Undo node movement
 			x_row: int = list(node.prop_model.properties.keys()).index("X")
@@ -99,8 +99,8 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 			)
 
 	def redo(self) -> None:
-		if self._old_node_positions != self._new_node_positions:
-			for pos in self._new_node_positions:
+		if self._undo_node_positions != self._redo_node_positions:
+			for pos in self._redo_node_positions:
 				node: NodeItem = self._scene.dag_item(pos[0])
 
 				x_row: int = list(node.prop_model.properties.keys()).index("X")

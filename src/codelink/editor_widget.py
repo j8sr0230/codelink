@@ -106,6 +106,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._lm_pressed: bool = True
 
+            if type(self.itemAt(event.pos())) in (
+                    NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget):
+                # Addresses all NodeItem components
+                # TODO: Push move wrong here
+                self._last_move: MoveSelectedCommand = MoveSelectedCommand(self.scene())
+                self._undo_stack.push(self._last_move)
+
             if type(self.itemAt(event.pos())) == NodeItem:
                 self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
@@ -222,12 +229,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        if self._lm_pressed and type(self.itemAt(event.pos())) in (
-                NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
-        ) and (self._mode != "EDGE_EDIT" and self._mode != "EDGE_ADD"):
-            # Addresses all NodeItem components
-            self._undo_stack.push(MoveSelectedCommand(self.scene(), self._last_pos))
-
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
                 if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
@@ -237,7 +238,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
 
                     if self._temp_edge.end_pin != self._last_pin and self._temp_edge.start_pin != self._last_pin:
-                        print("Push to stack")
                         self._undo_stack.push(RerouteEdgeCommand(
                             self.scene(),
                             edge=self._temp_edge,
@@ -363,6 +363,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     self.scene().remove_frame(selected_frame)
                     self._prop_scroller.hide()
+
+        if event.key() == QtCore.Qt.Key_S:
+            for i in range(self._undo_stack.count()):
+                print("Stack Item", self._undo_stack.command(i))
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
             new_node = NodeItem()
