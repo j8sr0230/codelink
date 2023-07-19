@@ -195,6 +195,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return custom_node
 
     def remove_node(self, node: NodeItem) -> None:
+        node: NodeItem = self.dag_item(node.uuid)
         node.remove_from_frame()
 
         for socket_widget in node.socket_widgets:
