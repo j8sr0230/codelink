@@ -18,7 +18,7 @@ from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
 from undo_commands import (
-    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand, RemoveItemCommand
+    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand, RemoveItemCommand, RerouteEdgeCommand
 )
 
 
@@ -106,6 +106,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._lm_pressed: bool = True
 
+            if type(self.itemAt(event.pos())) == NodeItem:
+                self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
+
             if type(self.itemAt(event.pos())) == PinItem:
                 self._last_pin: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
 
@@ -121,12 +124,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._mode: str = "EDGE_EDIT"
 
                     self._temp_edge: EdgeItem = self._last_pin.edges[-1]
-                    start_pin: PinItem = self._temp_edge.start_pin
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
 
-                    self.scene().remove_edge(self._temp_edge)
-                    self._temp_edge = self.scene().add_edge_from_pins(start_pin, temp_target)
+                    self._temp_edge.end_pin.remove_edge(self._temp_edge)
+                    self._temp_edge.end_pin.socket_widget.update_stylesheets()
+                    self._temp_edge.end_pin = temp_target
                     self._mode = "EDGE_ADD"
 
         if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
@@ -181,12 +184,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        if self._lm_pressed and type(self.itemAt(event.pos())) in (
-                NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
-        ):
-            # Addresses all NodeItem components
-            self._undo_stack.push(MoveSelectedCommand(self.scene()))
-
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
                 temp_pin: PinItem = self.itemAt(event.pos())
@@ -225,6 +222,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
+        if self._lm_pressed and type(self.itemAt(event.pos())) in (
+                NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget
+        ) and (self._mode != "EDGE_EDIT" and self._mode != "EDGE_ADD"):
+            # Addresses all NodeItem components
+            self._undo_stack.push(MoveSelectedCommand(self.scene(), self._last_pos))
+
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
                 if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
@@ -232,8 +235,28 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin.add_edge(self._temp_edge)
                     self._temp_edge.sort_pins()
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
-                    # TODO: Rewiring unsolved
-                    self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge, self._last_pin))
+
+                    if self._temp_edge.end_pin != self._last_pin and self._temp_edge.start_pin != self._last_pin:
+                        print("Push to stack")
+                        self._undo_stack.push(RerouteEdgeCommand(
+                            self.scene(),
+                            edge=self._temp_edge,
+                            undo_pin=self._last_pin,
+                            redo_pin=self._temp_edge.end_pin
+                        ))
+                    elif self._temp_edge.end_pin == self._last_pin and self._temp_edge.start_pin != self._last_pin:
+                        cmd: RerouteEdgeCommand = RerouteEdgeCommand(
+                            self.scene(),
+                            edge=self._temp_edge,
+                            undo_pin=self._last_pin,
+                            redo_pin=self._temp_edge.end_pin
+                        )
+                        self._undo_stack.push(cmd)
+                        cmd.setObsolete(True)
+                        self._undo_stack.undo()
+
+                    else:
+                        self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
@@ -297,6 +320,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.matches(QtGui.QKeySequence.Open):
             self.scene().clear_scene()
+            self._undo_stack.clear()
             self._prop_scroller.hide()
 
             with open(file_path, "r", encoding="utf8") as json_file:

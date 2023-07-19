@@ -69,14 +69,14 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 
 class MoveSelectedCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(self, scene: DAGScene, last_position: QtCore.QPointF, parent: Optional[QtWidgets.QUndoCommand] = None):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 
 		# Copy uuid's and positions of selected nodes
 		self._old_node_positions: list[tuple[str, float, float]] = [
-			(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
+			(item.uuid, last_position.x() - (last_position.x() - item.x()), last_position.y() - (last_position.y() - item.y())) for item in self._scene.selectedItems() if type(item) == NodeItem
 		]
 		self._new_node_positions: list[tuple[str, float, float]] = self._old_node_positions.copy()
 
@@ -117,35 +117,30 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 class AddItemCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
-			last_pin: Optional[PinItem] = None, parent: Optional[QtWidgets.QUndoCommand] = None
+			parent: Optional[QtWidgets.QUndoCommand] = None
 	):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
-		self._last_pin: PinItem = last_pin
 
 	def undo(self) -> None:
-		if type(self._item) == FrameItem:
-			self._scene.remove_frame(self._item)
-		elif type(self._item) == EdgeItem:
-			if self._item.end_pin != self._last_pin and self._item.start_pin != self._last_pin:
-				self._item.end_pin = self._last_pin
-			else:
+		if self._scene.dag_item(self._item.uuid) is not None:
+			if type(self._item) == FrameItem:
+				self._scene.remove_frame(self._item)
+			elif type(self._item) == EdgeItem:
 				self._scene.remove_edge(self._item)
-		else:
-			self._scene.remove_node(self._item)
+			else:
+				self._scene.remove_node(self._item)
 
 	def redo(self) -> None:
-		if type(self._item) == NodeItem:
-			self._scene.add_node(self._item)
-		elif type(self._item) == EdgeItem:
-			edge: EdgeItem = self._scene.add_edge(self._item)
-			if self._scene.dag_item(edge.uuid):
-				edge.end_pin = self._last_pin
-				edge.update()
-		else:
-			self._scene.add_frame(self._item)
+		if self._scene.dag_item(self._item.uuid) is None:
+			if type(self._item) == NodeItem:
+				self._scene.add_node(self._item)
+			elif type(self._item) == EdgeItem:
+				self._scene.add_edge(self._item)
+			else:
+				self._scene.add_frame(self._item)
 
 
 class RemoveItemCommand(QtWidgets.QUndoCommand):
@@ -192,3 +187,36 @@ class CustomNodeCommand(QtWidgets.QUndoCommand):
 		nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._nodes_uuids]
 		custom_node = self._scene.add_node_from_nodes(nodes)
 		self._custom_node_uuid = custom_node.uuid
+
+
+class RerouteEdgeCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, edge: EdgeItem, undo_pin: PinItem, redo_pin: PinItem,
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	):
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._edge_uuid: str = edge.uuid
+		self._undo_pin_uuid: tuple[str, int] = undo_pin.uuid()
+		self._redo_pin_uuid: tuple[str, int] = redo_pin.uuid()
+
+	def undo(self) -> None:
+		edge: EdgeItem = self._scene.dag_item(self._edge_uuid)
+		edge.end_pin.remove_edge(edge)
+		edge.end_pin.socket_widget.update_stylesheets()
+
+		end_pin: PinItem = self._scene.dag_item(self._undo_pin_uuid[0]).socket_widgets[self._undo_pin_uuid[1]].pin
+		edge.end_pin = end_pin
+		edge.end_pin.add_edge(edge)
+		edge.end_pin.socket_widget.update_stylesheets()
+
+	def redo(self) -> None:
+		edge: EdgeItem = self._scene.dag_item(self._edge_uuid)
+		edge.end_pin.remove_edge(edge)
+		edge.end_pin.socket_widget.update_stylesheets()
+
+		end_pin: PinItem = self._scene.dag_item(self._redo_pin_uuid[0]).socket_widgets[self._redo_pin_uuid[1]].pin
+		edge.end_pin = end_pin
+		edge.end_pin.add_edge(edge)
+		edge.end_pin.socket_widget.update_stylesheets()

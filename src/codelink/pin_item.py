@@ -76,6 +76,9 @@ class PinItem(QtWidgets.QGraphicsItem):
             self.y() + self._size / 2,
         )
 
+    def uuid(self) -> tuple[str, int]:
+        return self.parent_node.uuid, self.parent_node.socket_widgets.index(self._socket_widget)
+
     # --------------- Edge editing ---------------
 
     def add_edge(self, edge: EdgeItem) -> None:

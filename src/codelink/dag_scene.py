@@ -252,10 +252,19 @@ class DAGScene(QtWidgets.QGraphicsScene):
         if edge.uuid == "":
             edge.uuid = QtCore.QUuid.createUuid().toString()
 
-        edge.start_pin.add_edge(edge)
         if type(edge.end_pin) == PinItem:
-            edge.end_pin.add_edge(edge)
-            edge.end_pin.socket_widget.update_stylesheets()
+            start_pin_uuid: tuple[str, int] = edge.start_pin.uuid()
+            start_node: NodeItem = self.dag_item(start_pin_uuid[0])
+            start_pin: PinItem = start_node.socket_widgets[start_pin_uuid[1]].pin
+            edge.start_pin = start_pin
+            start_pin.add_edge(edge)
+
+            end_pin_uuid: tuple[str, int] = edge.end_pin.uuid()
+            end_node: NodeItem = self.dag_item(end_pin_uuid[0])
+            end_pin: PinItem = end_node.socket_widgets[end_pin_uuid[1]].pin
+            edge.end_pin = end_pin
+            end_pin.add_edge(edge)
+            end_pin.socket_widget.update_stylesheets()
 
         self._edges.append(edge)
         self.addItem(edge)
@@ -281,6 +290,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return edge
 
     def remove_edge(self, edge: EdgeItem) -> None:
+        edge: EdgeItem = self.dag_item(edge.uuid)
+
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
             if edge in edge.start_pin.edges:
                 edge.start_pin.remove_edge(edge)
