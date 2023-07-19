@@ -106,13 +106,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) in (
-                    NodeItem, QtWidgets.QGraphicsTextItem, QtWidgets.QGraphicsProxyWidget):
-                # Addresses all NodeItem components
-                # TODO: Push move wrong here
-                self._last_move: MoveSelectedCommand = MoveSelectedCommand(self.scene())
-                self._undo_stack.push(self._last_move)
-
             if type(self.itemAt(event.pos())) == NodeItem:
                 self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
@@ -228,6 +221,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton and (self._mode != "EDGE_ADD" or self._mode != "EDGE_CUT"):
+            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+            selected_nodes_moved: list[bool] = [node.moved for node in selected_nodes]
+
+            if any(selected_nodes_moved):
+                self._undo_stack.push(MoveSelectedCommand(self.scene()))
+                for node in selected_nodes:
+                    node.moved = False
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:

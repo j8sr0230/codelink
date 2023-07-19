@@ -76,7 +76,8 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 
 		# Copy uuid's and positions of selected nodes
 		self._undo_node_positions: list[tuple[str, float, float]] = [
-			(item.uuid, item.x(), item.y()) for item in self._scene.selectedItems() if type(item) == NodeItem
+			(item.uuid, item.last_position.x(), item.last_position.y()) for item in self._scene.selectedItems()
+			if type(item) == NodeItem
 		]
 		self._redo_node_positions: list[tuple[str, float, float]] = self._undo_node_positions.copy()
 

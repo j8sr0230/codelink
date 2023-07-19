@@ -41,6 +41,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene: dag_scene_cls = dag_scene_cls()
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._mode: str = ""
+        self._lm_pressed: bool = False
+        self._moved: bool = False
+        self._last_position: QtCore.QPointF = QtCore.QPointF()
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -209,6 +212,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @evals.setter
     def evals(self, value: list[object]) -> None:
         self._evals: list[object] = value
+
+    @property
+    def last_position(self) -> QtCore.QPointF:
+        return self._last_position
+
+    @property
+    def moved(self) -> bool:
+        return self._moved
+
+    @moved.setter
+    def moved(self, value: bool) -> None:
+        self._moved: bool = value
 
     @property
     def header_height(self) -> int:
@@ -385,6 +400,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            if not self._moved and self._lm_pressed:
+                self._last_position: QtCore.QPointF = value
+                self._moved: bool = True
+
             new_pos: QtCore.QPointF = value
 
             snapping_step: int = 10
@@ -411,6 +430,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setZValue(3)
 
         if event.button() == QtCore.Qt.LeftButton:
+            self._lm_pressed: bool = True
+
             if self.boundingRect().width() - 5 < event.pos().x() < self.boundingRect().width():
                 self._mode: str = "RESIZE"
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
@@ -462,6 +483,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 item.stackBefore(self)
 
         self._mode = ""
+        self._lm_pressed: bool = False
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
