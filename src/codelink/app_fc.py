@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     fc_wnd = FreeCADGui.getMainWindow()
 
-    undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(app)
+    undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     editor_scene: DAGScene = DAGScene(undo_stack)
     editor_widget: EditorWidget = EditorWidget(undo_stack, parent=fc_wnd)
