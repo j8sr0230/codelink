@@ -64,10 +64,6 @@ class FrameItem(QtWidgets.QGraphicsItem):
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
-    @prop_model.setter
-    def prop_model(self, value: PropertyModel) -> None:
-        self._prop_model: PropertyModel = value
-
     @property
     def framed_nodes(self) -> list[NodeItem]:
         return self._framed_nodes
