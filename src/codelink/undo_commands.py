@@ -271,9 +271,11 @@ class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 		parent_node.sub_scene = self._view.scene()  # Replace parents sub scene with the latest scene from here
 		parent_node.sub_scene.parent_node = parent_node  # Link the new sub scene to the newest parent
 		self._view.setScene(self._undo_scene)
+		self._view.fit_in_content()
 
 	def redo(self) -> None:
 		self._view.setScene(self._redo_scene)
+		self._view.fit_in_content()
 
 
 class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
@@ -289,9 +291,11 @@ class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._view.setScene(self._undo_scene)
+		self._view.fit_in_content()
 
 	def redo(self) -> None:
 		self._view.setScene(self._redo_scene)
+		self._view.fit_in_content()
 
 
 class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):

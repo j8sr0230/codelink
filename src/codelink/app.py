@@ -39,4 +39,6 @@ if __name__ == "__main__":
     node_3.setPos(QtCore.QPointF(31900, 32100))
     editor_scene.add_node(node_3)
 
+    editor_widget.fit_in_content()
+
     sys.exit(app.exec_())

@@ -100,6 +100,19 @@ class EditorWidget(QtWidgets.QGraphicsView):
         y: int = focus_target.pos().y()
         self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
 
+    def fit_in_content(self) -> None:
+        top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())
+        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(self.scene().nodes)
+        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
+                                                      scene_bbox.y() + scene_bbox.height() / 2)
+        scale: float = self.transform().m11()
+        dx: float = (top_left.x() - scene_center.x()) + ((1 / scale) * self.width() / 2)
+        dy: float = (top_left.y() - scene_center.y()) + ((1 / scale) * self.height() / 2)
+
+        self.setTransformationAnchor(self.NoAnchor)
+        self.translate(dx, dy)
+        self.setTransformationAnchor(self.AnchorUnderMouse)
+
     # --------------- Overwrites ---------------
 
     def scene(self) -> Any:
@@ -347,6 +360,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 data_dict: dict = json.load(json_file)
                 self.scene().deserialize(data_dict)
 
+            self.fit_in_content()
+
         if event.matches(QtGui.QKeySequence.AddTab):
             # Adds socket to node
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
@@ -423,10 +438,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._undo_stack.push(SwitchSceneDownCommand(
                     self, selected_nodes[0].sub_scene, self.scene(), selected_nodes[0])
                 )
+                self.fit_in_content()
 
         if event.key() == QtCore.Qt.Key_W:
             # Steps out of sub scene
             if self.scene().parent_node:
                 self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
+                self.fit_in_content()
 
         super().keyPressEvent(event)
