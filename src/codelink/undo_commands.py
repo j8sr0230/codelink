@@ -171,7 +171,7 @@ class RemoveItemCommand(QtWidgets.QUndoCommand):
 			self._scene.remove_node(self._item)
 
 
-class CustomNodeCommand(QtWidgets.QUndoCommand):
+class ResolveNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None):
 		super().__init__(parent)
@@ -203,12 +203,19 @@ class ResolveCustomNodeCommand(QtWidgets.QUndoCommand):
 		for idx, node_uuid_list in enumerate(self._sub_nodes_uuids):
 			sub_nodes: list[NodeItem] = [self._scene.dag_item(node_uuid) for node_uuid in node_uuid_list]
 			custom_node: NodeItem = self._scene.add_node_from_nodes(sub_nodes)
+
+			# Reset custom uuid an adjust sub node links appropriately
 			custom_node.uuid = self._custom_node_uuids[idx]
+			for sub_node in custom_node.sub_scene.nodes:
+				for socket_widget in sub_node.socket_widgets:
+					if socket_widget.link[0] != "" and len(sub_node.sub_scene.nodes) == 0:
+						socket_widget.link = (custom_node.uuid, socket_widget.link[1])
 
 	def redo(self) -> None:
 		custom_nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._custom_node_uuids]
 		for custom_node in custom_nodes:
-			self._sub_nodes_uuids.append([node.uuid for node in custom_node.sub_scene.nodes])
+			if len(self._sub_nodes_uuids) == 0:
+				self._sub_nodes_uuids.append([node.uuid for node in custom_node.sub_scene.nodes])
 			self._scene.resolve_node(custom_node)
 
 
