@@ -8,25 +8,27 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from item_delegates import StringDelegate
-from property_widget import PropertyWidget
-from property_table import PropertyTable
-from pin_item import PinItem
-from socket_widget import SocketWidget
-from node_item import NodeItem
-from edge_item import EdgeItem
-from cutter_item import CutterItem
-from frame_item import FrameItem
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, NodeFromNodeCommand, ResolveNodeCommand,
     RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand
 )
+from item_delegates import StringDelegate
+from property_widget import PropertyWidget
+from property_table import PropertyTable
+from frame_item import FrameItem
+from node_item import NodeItem
+from socket_widget import SocketWidget
+from pin_item import PinItem
+from edge_item import EdgeItem
+from cutter_item import CutterItem
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
+        # Non persistent data model
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
@@ -41,6 +43,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
 
+        # Widget layout and setup
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -69,12 +72,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         # Actions
         self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
         self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
-        self._delete_action.triggered.connect(self.delete_selected_node)
+        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
         self.addAction(self._delete_action)
 
         self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
         self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
-        self._copy_action.triggered.connect(lambda e: print(e))
+        cast(QtCore.SignalInstance, self._copy_action.triggered).connect(lambda e: print(e))
         self.addAction(self._copy_action)
 
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
@@ -87,12 +90,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(self._redo_action)
 
-    @property
-    def undo_stack(self) -> QtWidgets.QUndoStack:
-        return self._undo_stack
+    # --------------- Callbacks for signals ---------------
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+
+    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
+        x: int = focus_target.pos().x()
+        y: int = focus_target.pos().y()
+        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
+
+    # --------------- Overwrites ---------------
 
     def scene(self) -> Any:
         return super().scene()
@@ -100,20 +108,18 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
-        if event.button() == QtCore.Qt.LeftButton and self._mode == "":
+        if event.button() == QtCore.Qt.LeftButton:
             super().mousePressEvent(event)
 
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == NodeItem:
-                self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
-
             if type(self.itemAt(event.pos())) == PinItem:
-                self._last_pin: QtWidgets.QGraphicsItem = self.itemAt(event.pos())
+                self._last_pin: PinItem = self.itemAt(event.pos())
 
                 if (not self._last_pin.socket_widget.is_input or
                         (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
                     self._mode: str = "EDGE_ADD"
+                    # Forward or backward edge creation from output socket to input socket or visa verse
 
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
@@ -121,6 +127,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 elif self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
+                    # Edge editing by unplugging an existing edge from an input socket
 
                     self._temp_edge: EdgeItem = self._last_pin.edges[-1]
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
@@ -131,14 +138,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin = temp_target
                     self._mode = "EDGE_ADD"
 
-        if event.button() == QtCore.Qt.MiddleButton and self._mode == "":
+        if event.button() == QtCore.Qt.MiddleButton:
             super().mousePressEvent(event)
 
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
-        if event.button() == QtCore.Qt.RightButton and self._mode == "":
+        if event.button() == QtCore.Qt.RightButton:
             self._rm_pressed: bool = True
             if event.modifiers() == QtCore.Qt.ShiftModifier:
                 self._mode: str = "EDGE_CUT"
@@ -221,7 +228,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        if event.button() == QtCore.Qt.LeftButton and (self._mode != "EDGE_ADD" or self._mode != "EDGE_CUT"):
+        if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             selected_nodes_moved: list[bool] = [node.moved for node in selected_nodes]
 
@@ -239,6 +246,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
 
                     if self._temp_edge.end_pin != self._last_pin and self._temp_edge.start_pin != self._last_pin:
+                        # Edits edge by changing end pin
                         self._undo_stack.push(RerouteEdgeCommand(
                             self.scene(),
                             edge=self._temp_edge,
@@ -247,6 +255,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         ))
                     elif (self._temp_edge.end_pin == self._last_pin and self._temp_edge.start_pin != self._last_pin and
                           self._temp_edge.start_pin.socket_widget.is_input):
+                        # Hack: Changing end pin to the same end pin is performed but ignored by the undone stack
                         cmd: RerouteEdgeCommand = RerouteEdgeCommand(
                             self.scene(),
                             edge=self._temp_edge,
@@ -258,21 +267,26 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         self._undo_stack.undo()
 
                     else:
+                        # Default edge adding
                         self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
+                        # Default invalid edge
                         self._temp_edge.color = self._temp_edge.start_pin.color
                         self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
                     else:
+                        # Invalid edge with same start and end pin
                         self.scene().remove_edge(self._temp_edge)
             else:
+                # If target is not a PinItem (mouse btn release in empty area)
                 self._temp_edge.end_pin = self._last_pin
                 if self._temp_edge.end_pin != self._temp_edge.start_pin:
                     self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
                 else:
                     self.scene().remove_edge(self._temp_edge)
 
+            # Evaluates open dag ends
             for node in self.scene().ends():
                 dsk: dict = self.scene().to_dsk(node, {})
                 print(get(dsk, node.socket_widgets[-1].pin))
@@ -280,6 +294,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)
 
+        # Resets mouse button state, widget mode, and cursor
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
@@ -314,22 +329,26 @@ class EditorWidget(QtWidgets.QGraphicsView):
         # context_menu.exec_(event.globalPos())
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
         if event.matches(QtGui.QKeySequence.Save):
+            # Saves file
+            file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
             with open(file_path, "w", encoding="utf8") as json_file:
                 json.dump(self.scene().serialize(), json_file, indent=4)
 
         if event.matches(QtGui.QKeySequence.Open):
+            # Opens file
             self.scene().clear_scene()
             self._undo_stack.clear()
             self._prop_scroller.hide()
 
+            file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
             with open(file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
                 self.scene().deserialize(data_dict)
 
         if event.matches(QtGui.QKeySequence.AddTab):
+            # Adds socket to node
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
                 if type(self.scene().selectedItems()[0]) is NodeItem:
                     selected_node_item: NodeItem = self.scene().selectedItems()[0]
@@ -350,6 +369,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.matches(QtGui.QKeySequence.Cancel):
+            # Removes socket from node
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
                 if type(self.scene().selectedItems()[0]) is NodeItem:
                     selected_node_item: NodeItem = self.scene().selectedItems()[0]
@@ -367,27 +387,27 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.key() == QtCore.Qt.Key_S:
+            # Prints undo stack
             for i in range(self._undo_stack.count()):
                 print("Stack Item", self._undo_stack.command(i))
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
+            # Adds node to scene
             new_node = NodeItem(self._undo_stack)
             new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
             self._undo_stack.push(AddItemCommand(self.scene(), new_node))
 
         if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
-            # Serialize selected nodes and edges (sub graph)
+            # Creates custom node from nodes
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             self._undo_stack.push(NodeFromNodeCommand(self.scene(), selected_nodes))
 
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
+            # Resolves custom node
             self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
 
-            # for selected_item in self.scene().selectedItems():
-            #     if type(selected_item) is NodeItem:
-            #         self.scene().resolve_node(selected_item)
-
         if event.key() == QtCore.Qt.Key_F:
+            # Frames selected nodes
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
             for node in selected_nodes:
                 node.remove_from_frame()
@@ -396,17 +416,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(AddItemCommand(self.scene(), frame))
 
         if event.key() == QtCore.Qt.Key_Q:
-            selected_node: NodeItem = [item for item in self.scene().selectedItems() if type(item) == NodeItem][0]
-            if len(selected_node.sub_scene.nodes) > 0:
-                self._undo_stack.push(SwitchSceneDownCommand(self, selected_node.sub_scene, self.scene(), selected_node))
+            # Opens sub scene of custom node
+            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+
+            if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
+                self._undo_stack.push(SwitchSceneDownCommand(
+                    self, selected_nodes[0].sub_scene, self.scene(), selected_nodes[0])
+                )
 
         if event.key() == QtCore.Qt.Key_W:
+            # Steps out of sub scene
             if self.scene().parent_node:
                 self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
 
         super().keyPressEvent(event)
-
-    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
-        x: int = focus_target.pos().x()
-        y: int = focus_target.pos().y()
-        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
