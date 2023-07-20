@@ -167,10 +167,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
-    @prop_model.setter
-    def prop_model(self, value: PropertyModel) -> None:
-        self._prop_model: PropertyModel = value
-
     @property
     def is_collapsed(self) -> str:
         return self._prop_model.properties["Collapse State"]
@@ -178,12 +174,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def socket_widgets(self) -> list[SocketWidget]:
         return self._socket_widgets
-
-    @socket_widgets.setter
-    def socket_widgets(self, value: list[SocketWidget]) -> None:
-        self.clear_socket_widgets()
-        for idx, socket_widget in enumerate(value):
-            self.add_socket_widget(socket_widget, idx)
 
     @property
     def input_socket_widgets(self) -> list[SocketWidget]:
@@ -326,9 +316,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 self.scene().remove_frame(self.parent_frame)
 
     # --------------- DAG analytics ---------------
-
-    def dag_index(self) -> int:
-        return self.scene().nodes.index(self)
 
     def has_in_edges(self) -> bool:
         for socket_widget in self.input_socket_widgets:
@@ -485,6 +472,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
+        # Hack to prevent cyclic imports
         resize_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ResizeNodeCommand")
         if self._resized:
             self._undo_stack.push(resize_cmd_cls(self.scene(), self))
@@ -664,7 +652,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Reset sub graph data
         self.sub_scene.deserialize(state["Subgraph"])
 
-        if len(self.sub_scene.nodes) > 0:
+        if self.has_sub_scene():
             # If custom node with sub scene
             for sub_node in self.sub_scene.nodes:
                 sub_node.scene().parent_node = self
