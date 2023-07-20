@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class DeleteSelectedCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -69,7 +69,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 
 class MoveSelectedCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -119,7 +119,7 @@ class AddItemCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
 			parent: Optional[QtWidgets.QUndoCommand] = None
-	):
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -148,7 +148,7 @@ class RemoveItemCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
 			parent: Optional[QtWidgets.QUndoCommand] = None
-	):
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -173,7 +173,7 @@ class RemoveItemCommand(QtWidgets.QUndoCommand):
 
 class ResolveNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None):
+			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -192,7 +192,8 @@ class ResolveNodeCommand(QtWidgets.QUndoCommand):
 
 class ResolveCustomNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, custom_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None):
+			self, scene: DAGScene, custom_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -223,7 +224,7 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, edge: EdgeItem, undo_pin: PinItem, redo_pin: PinItem,
 			parent: Optional[QtWidgets.QUndoCommand] = None
-	):
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -250,3 +251,44 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		edge.end_pin = end_pin
 		edge.end_pin.add_edge(edge)
 		edge.end_pin.socket_widget.update_stylesheets()
+
+
+class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, view: QtWidgets.QGraphicsView, redo_scene: DAGScene, undo_scene: DAGScene,
+			parent_node: Optional[NodeItem] = None, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._parent_node: NodeItem = parent_node
+		self._view: QtWidgets.QGraphicsView = view
+		self._redo_scene: DAGScene = redo_scene
+		self._undo_scene: DAGScene = undo_scene
+
+	def undo(self) -> None:
+		# Note: Parent node, and it's sub scene may be new because of undone delete operation
+		parent_node: NodeItem = self._undo_scene.dag_item(self._parent_node.uuid)  # Get the newest parent node
+		parent_node.sub_scene = self._view.scene()  # Replace parents sub scene with the latest scene from here
+		parent_node.sub_scene.parent_node = parent_node  # Link the new sub scene to the newest parent
+		self._view.setScene(self._undo_scene)
+
+	def redo(self) -> None:
+		self._view.setScene(self._redo_scene)
+
+
+class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, view: QtWidgets.QGraphicsView, redo_scene: DAGScene, undo_scene: DAGScene,
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._view: QtWidgets.QGraphicsView = view
+		self._redo_scene: DAGScene = redo_scene
+		self._undo_scene: DAGScene = undo_scene
+
+	def undo(self) -> None:
+		self._view.setScene(self._undo_scene)
+
+	def redo(self) -> None:
+		self._view.setScene(self._redo_scene)

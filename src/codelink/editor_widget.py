@@ -19,7 +19,7 @@ from cutter_item import CutterItem
 from frame_item import FrameItem
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, ResolveNodeCommand, ResolveCustomNodeCommand,
-    RemoveItemCommand, RerouteEdgeCommand
+    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand
 )
 
 
@@ -31,8 +31,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
         self._mode: str = ""
-
-        self._temp_scenes: list[QtWidgets.QGraphicsScene] = []
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
@@ -397,16 +395,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(AddItemCommand(self.scene(), frame))
 
         if event.key() == QtCore.Qt.Key_Q:
-            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            if len(selected_nodes) > 0:
-                sub_scene: QtWidgets.QGraphicsScene = selected_nodes[0].sub_scene
-                if len(sub_scene.nodes) > 0:
-                    self._temp_scenes.append(self.scene())
-                    self.setScene(sub_scene)
+            selected_node: NodeItem = [item for item in self.scene().selectedItems() if type(item) == NodeItem][0]
+            if len(selected_node.sub_scene.nodes) > 0:
+                self._undo_stack.push(SwitchSceneDownCommand(self, selected_node.sub_scene, self.scene(), selected_node))
 
         if event.key() == QtCore.Qt.Key_W:
             if self.scene().parent_node:
-                self.setScene(self._temp_scenes.pop())
+                self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
 
         super().keyPressEvent(event)
 

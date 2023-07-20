@@ -205,6 +205,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def sub_scene(self) -> Any:
         return self._sub_scene
 
+    @sub_scene.setter
+    def sub_scene(self, value: Any) -> None:
+        self._sub_scene: Any = value
+
     @property
     def evals(self) -> list[object]:
         return self._evals
