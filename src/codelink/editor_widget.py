@@ -1,4 +1,5 @@
 from typing import Optional, Any, cast
+import importlib
 import json
 import os
 
@@ -33,6 +34,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
         self._mode: str = ""
+
+        self._nodes_clipboard: list[dict] = []
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
@@ -77,8 +80,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
         self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
-        cast(QtCore.SignalInstance, self._copy_action.triggered).connect(lambda e: print(e))
+        cast(QtCore.SignalInstance, self._copy_action.triggered).connect(self.copy)
         self.addAction(self._copy_action)
+
+        self._past_action: QtWidgets.QAction = QtWidgets.QAction("Paste", self)
+        self._past_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Paste))
+        cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
+        self.addAction(self._past_action)
 
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
@@ -94,6 +102,24 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+
+    def copy(self) -> None:
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        node_dicts: list[dict] = []
+        for node in selected_nodes:
+            node_dicts.append(node.__getstate__())
+
+        self._nodes_clipboard: list[dict] = node_dicts
+
+    def paste(self) -> None:
+        for node_state in self._nodes_clipboard:
+            node_cls: type = getattr(importlib.import_module("node_item"), node_state["Class"])
+            node: node_cls = node_cls(self._undo_stack)
+            self._undo_stack.push(AddItemCommand(self.scene(), node))
+
+            node.__setstate__(node_state)
+            node.uuid = QtCore.QUuid.createUuid().toString()
+            node.setPos(self.scene().dag_item(node.uuid).x() + 50, self.scene().dag_item(node.uuid).y() - 50)
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
