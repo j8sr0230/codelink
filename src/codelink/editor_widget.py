@@ -119,7 +119,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
                     self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
 
-                if self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
+                elif self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
 
                     self._temp_edge: EdgeItem = self._last_pin.edges[-1]
@@ -245,7 +245,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             undo_pin=self._last_pin,
                             redo_pin=self._temp_edge.end_pin
                         ))
-                    elif self._temp_edge.end_pin == self._last_pin and self._temp_edge.start_pin != self._last_pin:
+                    elif (self._temp_edge.end_pin == self._last_pin and self._temp_edge.start_pin != self._last_pin and
+                          self._temp_edge.start_pin.socket_widget.is_input):
                         cmd: RerouteEdgeCommand = RerouteEdgeCommand(
                             self.scene(),
                             edge=self._temp_edge,
