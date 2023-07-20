@@ -40,7 +40,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
         self._selected_border_pen.setWidthF(1.5)
 
-        # Hack for setting frame_item font to qss font defined in app_style.py -> NODE_STYLE -> QWidget
+        # Hack for setting frame font to qss font defined in app_style.py -> NODE_STYLE -> QWidget
         self.framed_nodes[0].content_widget.style().unpolish(self.framed_nodes[0].content_widget)  # Unload qss
         self.framed_nodes[0].content_widget.style().polish(self.framed_nodes[0].content_widget)  # Reload qss
         self.framed_nodes[0].content_widget.update()

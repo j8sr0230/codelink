@@ -19,14 +19,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
-        self._undo_stack: QtWidgets.QUndoStack = undo_stack
-
-        # Scene items
+        # Persistent data model
         self._frames: list[FrameItem] = []
         self._nodes: list[NodeItem] = []
         self._edges: list[EdgeItem] = []
 
-        # Reference to parent node, if scene is sub scene
+        # Non persistent data model
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
         self._parent_node: Optional[NodeItem] = None
 
         # Background
@@ -46,25 +45,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def frames(self) -> list[FrameItem]:
         return self._frames
 
-    @frames.setter
-    def frames(self, value: list[FrameItem]) -> None:
-        self._frames: list[FrameItem] = value
-
     @property
     def nodes(self) -> list[NodeItem]:
         return self._nodes
 
-    @nodes.setter
-    def nodes(self, value: list[NodeItem]) -> None:
-        self._nodes: list[NodeItem] = value
-
     @property
     def edges(self) -> list[EdgeItem]:
         return self._edges
-
-    @edges.setter
-    def edges(self, value: list[EdgeItem]) -> None:
-        self._edges: list[EdgeItem] = value
 
     @property
     def parent_node(self) -> Optional[NodeItem]:
@@ -94,12 +81,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return frame
 
-    def remove_frame(self, frame_item: FrameItem) -> None:
-        for node in frame_item.framed_nodes:
+    def remove_frame(self, frame: FrameItem) -> None:
+        frame: FrameItem = self.dag_item(frame.uuid)
+
+        for node in frame.framed_nodes:
             node.parent_frame = None
 
-        self.removeItem(frame_item)
-        self._frames.remove(frame_item)
+        self.removeItem(frame)
+        self._frames.remove(frame)
 
     def add_node(self, node: NodeItem) -> NodeItem:
         if node.uuid == "":
