@@ -24,7 +24,7 @@ from undo_commands import (
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
-    def __init__(self, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
         self._lm_pressed: bool = False
@@ -77,7 +77,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._copy_action.triggered.connect(lambda e: print(e))
         self.addAction(self._copy_action)
 
-        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(self)
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
         self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
         self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
@@ -371,7 +371,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 print("Stack Item", self._undo_stack.command(i))
 
         if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
-            new_node = NodeItem()
+            new_node = NodeItem(self._undo_stack)
             new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
             self._undo_stack.push(AddItemCommand(self.scene(), new_node))
 

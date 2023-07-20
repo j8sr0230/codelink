@@ -16,8 +16,10 @@ from edge_item import EdgeItem
 
 
 class DAGScene(QtWidgets.QGraphicsScene):
-    def __init__(self, parent: Optional[QtCore.QObject] = None):
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
+
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
         # Scene items
         self._frames: list[FrameItem] = []
@@ -131,7 +133,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
 
         # Add custom node, remove predefined socket widgets and save sub graph
-        custom_node: NodeItem = NodeItem()
+        custom_node: NodeItem = NodeItem(self._undo_stack)
         custom_node.sub_scene.parent_node = custom_node
         self.add_node(custom_node)
         custom_node.clear_socket_widgets()
@@ -428,7 +430,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for node_dict in nodes_dict:
             # Create node from dict
             node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
-            new_node: node_class = node_class()
+            new_node: node_class = node_class(self._undo_stack)
             self.add_node(new_node)
 
             # Reset node state

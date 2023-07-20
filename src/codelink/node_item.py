@@ -16,7 +16,8 @@ from edge_item import EdgeItem
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
-    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, undo_stack: Optional[QtWidgets.QUndoStack] = None,
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
@@ -35,15 +36,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
 
         # Non persistent data model
+        self._undo_stack: Optional[QtWidgets.QUndoStack] = undo_stack
         self._socket_widgets: list[QtWidgets.QWidget] = []
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
-        self._sub_scene: dag_scene_cls = dag_scene_cls()
+        self._sub_scene: dag_scene_cls = dag_scene_cls(self._undo_stack)
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._mode: str = ""
         self._lm_pressed: bool = False
         self._moved: bool = False
         self._last_position: QtCore.QPointF = QtCore.QPointF()
+        self._last_width: int = 0
+        self._resized: bool = False
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -228,6 +232,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @moved.setter
     def moved(self, value: bool) -> None:
         self._moved: bool = value
+
+    @property
+    def last_width(self) -> int:
+        return self._last_width
 
     @property
     def header_height(self) -> int:
@@ -447,18 +455,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    collapse_state: bool = not self._prop_model.properties["Collapse State"]
-
-                    collapse_mode_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
-
-                    # noinspection PyTypeChecker
-                    self._prop_model.setData(
-                        self._prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
-                        collapse_state, QtCore.Qt.EditRole
-                    )
+                    # Hack to prevent cyclic imports
+                    tgl_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ToggleNodeCollapseCommand")
+                    self._undo_stack.push(tgl_cmd_cls(self.scene(), self))
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
+            if not self._resized and self._lm_pressed:
+                self._last_width: int = self.prop_model.properties["Width"]
+                self._resized: bool = True
+
             old_x_left: float = self.boundingRect().x()
             old_y_top: float = self.boundingRect().y()
 
@@ -478,6 +484,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
+
+        resize_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ResizeNodeCommand")
+        if self._resized:
+            self._undo_stack.push(resize_cmd_cls(self.scene(), self))
 
         self.setZValue(2)
 
