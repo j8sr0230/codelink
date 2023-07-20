@@ -18,7 +18,8 @@ from edge_item import EdgeItem
 from cutter_item import CutterItem
 from frame_item import FrameItem
 from undo_commands import (
-    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand, RemoveItemCommand, RerouteEdgeCommand
+    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, CustomNodeCommand, ResolveCustomNodeCommand,
+    RemoveItemCommand, RerouteEdgeCommand
 )
 
 
@@ -381,9 +382,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(CustomNodeCommand(self.scene(), selected_nodes))
 
         if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
-            for selected_item in self.scene().selectedItems():
-                if type(selected_item) is NodeItem:
-                    self.scene().resolve_node(selected_item)
+            self._undo_stack.push(ResolveCustomNodeCommand(self.scene(), self.scene().selectedItems()))
+
+            # for selected_item in self.scene().selectedItems():
+            #     if type(selected_item) is NodeItem:
+            #         self.scene().resolve_node(selected_item)
 
         if event.key() == QtCore.Qt.Key_F:
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]

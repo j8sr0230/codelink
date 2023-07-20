@@ -190,6 +190,28 @@ class CustomNodeCommand(QtWidgets.QUndoCommand):
 		self._custom_node_uuid = custom_node.uuid
 
 
+class ResolveCustomNodeCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, custom_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None):
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._custom_node_uuids: list[str] = [custom_node.uuid for custom_node in custom_nodes]
+		self._sub_nodes_uuids: list[list[str]] = []
+
+	def undo(self) -> None:
+		for idx, node_uuid_list in enumerate(self._sub_nodes_uuids):
+			sub_nodes: list[NodeItem] = [self._scene.dag_item(node_uuid) for node_uuid in node_uuid_list]
+			custom_node: NodeItem = self._scene.add_node_from_nodes(sub_nodes)
+			custom_node.uuid = self._custom_node_uuids[idx]
+
+	def redo(self) -> None:
+		custom_nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._custom_node_uuids]
+		for custom_node in custom_nodes:
+			self._sub_nodes_uuids.append([node.uuid for node in custom_node.sub_scene.nodes])
+			self._scene.resolve_node(custom_node)
+
+
 class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, edge: EdgeItem, undo_pin: PinItem, redo_pin: PinItem,
