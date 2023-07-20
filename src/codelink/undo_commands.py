@@ -171,7 +171,7 @@ class RemoveItemCommand(QtWidgets.QUndoCommand):
 			self._scene.remove_node(self._item)
 
 
-class ResolveNodeCommand(QtWidgets.QUndoCommand):
+class NodeFromNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
@@ -190,7 +190,7 @@ class ResolveNodeCommand(QtWidgets.QUndoCommand):
 		self._custom_node_uuid = custom_node.uuid
 
 
-class ResolveCustomNodeCommand(QtWidgets.QUndoCommand):
+class ResolveNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, custom_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
