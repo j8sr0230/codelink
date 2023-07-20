@@ -71,10 +71,6 @@ class SocketWidget(QtWidgets.QWidget):
     def prop_model(self) -> QtCore.QAbstractTableModel:
         return self._prop_model
 
-    @prop_model.setter
-    def prop_model(self, value: PropertyModel) -> None:
-        self._prop_model: PropertyModel = value
-
     @property
     def link(self) -> tuple[str, int]:
         return self._link
@@ -102,6 +98,8 @@ class SocketWidget(QtWidgets.QWidget):
     @property
     def input_widget(self) -> QtWidgets.QWidget:
         return self._input_widget
+
+    # --------------- Socket data ---------------
 
     def input_data(self) -> Optional[Union[PinItem, int]]:
         result: Optional[Union[PinItem, int]] = None
