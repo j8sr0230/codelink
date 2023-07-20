@@ -71,14 +71,14 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
     def mode(self, value: str) -> None:
         self._mode: str = value
 
+    # --------------- Pin sorting and edge validation ---------------
+
     def sort_pins(self) -> None:
         old_start_socket: PinItem = cast(PinItem, self._start_pin)
 
         if old_start_socket.socket_widget.is_input:
             self._start_pin: QtWidgets.QGraphicsItem = self._end_pin
             self._end_pin: QtWidgets.QGraphicsItem = old_start_socket
-
-    # --------------- Edge validation ---------------
 
     def is_valid(self, eval_target: QtWidgets.QGraphicsItem) -> bool:
         result: bool = True
