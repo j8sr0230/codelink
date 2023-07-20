@@ -112,6 +112,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._nodes_clipboard: list[dict] = node_dicts
 
     def paste(self) -> None:
+        nodes: list[NodeItem] = []
         for node_state in self._nodes_clipboard:
             node_cls: type = getattr(importlib.import_module("node_item"), node_state["Class"])
             node: node_cls = node_cls(self._undo_stack)
@@ -119,7 +120,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             node.__setstate__(node_state)
             node.uuid = QtCore.QUuid.createUuid().toString()
-            node.setPos(self.scene().dag_item(node.uuid).x() + 50, self.scene().dag_item(node.uuid).y() - 50)
+            nodes.append(node)
+
+        mouse_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
+        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(nodes)
+        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
+                                                      scene_bbox.y() + scene_bbox.height() / 2)
+        dx: float = mouse_pos.x() - scene_center.x()
+        dy: float = mouse_pos.y() - scene_center.y()
+        for node in nodes:
+            node.setPos(dx + self.scene().dag_item(node.uuid).x(), dy + self.scene().dag_item(node.uuid).y())
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
