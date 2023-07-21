@@ -30,7 +30,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         # Non persistent data model
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
         self._parent_node: Optional[NodeItem] = None
-        self._zoom_level: Optional[int] = None
+        self._zoom_level: int = 10
 
         # Background
         self._grid_spacing: int = 50
