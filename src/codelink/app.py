@@ -2,6 +2,7 @@ import os
 import sys
 
 import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from app_style import MAIN_STYLE
@@ -18,11 +19,12 @@ if __name__ == "__main__":
     # app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(app)
+    clipboard: QtGui.QClipboard = QtWidgets.QApplication.clipboard()
 
     # open_gl_wdg: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
 
-    editor_scene: DAGScene = DAGScene(undo_stack)
-    editor_widget: EditorWidget = EditorWidget(undo_stack)
+    editor_scene: DAGScene = DAGScene(undo_stack, clipboard)
+    editor_widget: EditorWidget = EditorWidget(undo_stack, clipboard)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
     # editor_widget.setViewport(open_gl_wdg)
@@ -42,8 +44,8 @@ if __name__ == "__main__":
     # node_3.setPos(QtCore.QPointF(31900, 32100))
     # editor_scene.add_node(node_3)
 
-    for i in range(25):
-        for j in range(20):
+    for i in range(5):
+        for j in range(5):
             node = NodeItem(undo_stack)
             node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
             editor_scene.add_node(node)

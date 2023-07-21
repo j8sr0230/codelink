@@ -27,17 +27,19 @@ from cutter_item import CutterItem
 class EditorWidget(QtWidgets.QGraphicsView):
     zoom_level_changed: QtCore.Signal = QtCore.Signal(int)
 
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None,
-                 parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, clipboard: QtGui.QClipboard,
+                 scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
         # Non persistent data model
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
+        self._clipboard: QtGui.QClipboard = clipboard
+        self._nodes_clipboard: list[dict] = []
+
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
         self._mode: str = ""
-
-        self._nodes_clipboard: list[dict] = []
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
@@ -92,8 +94,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._past_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Paste))
         cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
         self.addAction(self._past_action)
-
-        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
         self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
         self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
