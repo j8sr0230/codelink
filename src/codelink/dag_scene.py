@@ -1,4 +1,5 @@
-from typing import Optional, Any, Union, cast
+from __future__ import annotations
+from typing import TYPE_CHECKING, Optional, Any, Union, cast
 import importlib
 import math
 
@@ -10,9 +11,12 @@ import networkx as nx
 
 from frame_item import FrameItem
 from node_item import NodeItem
-from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
+
+if TYPE_CHECKING:
+    from editor_widget import EditorWidget
+    from socket_widget import SocketWidget
 
 
 class DAGScene(QtWidgets.QGraphicsScene):
@@ -27,6 +31,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         # Non persistent data model
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
         self._parent_node: Optional[NodeItem] = None
+        self._zoom_level: Optional[int] = None
 
         # Background
         self._grid_spacing: int = 50
@@ -370,24 +375,51 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
-
         self.setBackgroundBrush(self._background_color)
 
-        bound_box_left: int = int(math.floor(rect.left()))
-        bound_box_right: int = int(math.ceil(rect.right()))
-        bound_box_top: int = int(math.floor(rect.top()))
-        bound_box_bottom: int = int(math.ceil(rect.bottom()))
+        if self._zoom_level is not None:
+            if self._zoom_level >= 9:
 
-        first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
-        first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
+                bound_box_left: int = int(math.floor(rect.left()))
+                bound_box_right: int = int(math.ceil(rect.right()))
+                bound_box_top: int = int(math.floor(rect.top()))
+                bound_box_bottom: int = int(math.ceil(rect.bottom()))
 
-        points: list[Optional[QtCore.QPoint]] = []
-        for x in range(first_left, bound_box_right, self._grid_spacing):
-            for y in range(first_top, bound_box_bottom, self._grid_spacing):
-                points.append(QtCore.QPoint(x, y))
+                first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
+                first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
 
-        painter.setPen(self._grid_pen)
-        painter.drawPoints(points)
+                points: list[Optional[QtCore.QPoint]] = []
+                for x in range(first_left, bound_box_right, self._grid_spacing):
+                    for y in range(first_top, bound_box_bottom, self._grid_spacing):
+                        points.append(QtCore.QPoint(x, y))
+
+                painter.setPen(self._grid_pen)
+                painter.drawPoints(points)
+
+        else:
+            bound_box_left: int = int(math.floor(rect.left()))
+            bound_box_right: int = int(math.ceil(rect.right()))
+            bound_box_top: int = int(math.floor(rect.top()))
+            bound_box_bottom: int = int(math.ceil(rect.bottom()))
+
+            first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
+            first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
+
+            points: list[Optional[QtCore.QPoint]] = []
+            for x in range(first_left, bound_box_right, self._grid_spacing):
+                for y in range(first_top, bound_box_bottom, self._grid_spacing):
+                    points.append(QtCore.QPoint(x, y))
+
+            painter.setPen(self._grid_pen)
+            painter.drawPoints(points)
+
+    # --------------- Callbacks ---------------
+
+    def set_zoom_level(self, zoom_level: int) -> None:
+        self._zoom_level = zoom_level
+
+    def added_to_view(self, view: EditorWidget):
+        cast(QtCore.SignalInstance, view.zoom_changed).connect(self.set_zoom_level)
 
     # --------------- Serialization ---------------
 

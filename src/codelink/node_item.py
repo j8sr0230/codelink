@@ -48,6 +48,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._last_position: QtCore.QPointF = QtCore.QPointF()
         self._last_width: int = 0
         self._resized: bool = False
+        self._zoom_level: Optional[int] = None
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -226,6 +227,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def last_width(self) -> int:
         return self._last_width
+
+    @property
+    def zoom_level(self) -> int:
+        return self._zoom_level
+
+    @zoom_level.setter
+    def zoom_level(self, value: int) -> None:
+        self._zoom_level: int = value
 
     @property
     def header_height(self) -> int:
@@ -420,6 +429,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
             )
 
             return QtCore.QPointF(x_snap, y_snap)
+
+        elif change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemVisibleChange:
+            # Adds additional listener after node has been added to scene
+            if self.scene().views() and len(self.scene().views()) > 0:
+                cast(QtCore.SignalInstance, self.scene().views()[0].zoom_changed).connect(self.update_detail)
+
         else:
             return super().itemChange(change, value)
 
@@ -575,6 +590,20 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 self.remove_socket_widget(remove_idx)
                 input_widget_count -= 1
+
+    def update_detail(self, zoom_level: int) -> None:
+        self._zoom_level: int = zoom_level
+        if self._zoom_level < 8:
+            self.setEnabled(False)
+            self.content_widget.hide()
+            for socket_widget in self._socket_widgets:
+                socket_widget.pin.hide()
+        else:
+            self.setEnabled(True)
+            if not self.is_collapsed:
+                self.content_widget.show()
+                for socket_widget in self._socket_widgets:
+                    socket_widget.pin.show()
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])

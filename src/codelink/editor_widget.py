@@ -25,6 +25,8 @@ from cutter_item import CutterItem
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
+    zoom_changed: QtCore.Signal = QtCore.Signal(int)
+
     def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
@@ -100,6 +102,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
         self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(self._redo_action)
+
+    @property
+    def zoom_level(self) -> int:
+        return self._zoom_level
 
     # --------------- Callbacks for signals ---------------
 
@@ -367,6 +373,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._zoom_level -= 1
                 self.scale(1 / 1.25, 1 / 1.25)
 
+        cast(QtCore.SignalInstance, self.zoom_changed).emit(self._zoom_level)
+
         # Hack: Fixes the scene drifting while zooming
         drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
         pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
@@ -374,17 +382,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-        for item in self.scene().items():
-            if self._zoom_level < 8:
-                item.setEnabled(False)
-                if type(item) is NodeItem:
-                    item.content_widget.hide()
-                    self.setInteractive(False)
-            else:
-                item.setEnabled(True)
-                if type(item) is NodeItem and not item.is_collapsed:
-                    item.content_widget.show()
-                    self.setInteractive(True)
+        if self._zoom_level < 8:
+            self.setInteractive(False)
+        else:
+            self.setInteractive(True)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         print("Context Menu")
