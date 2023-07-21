@@ -38,8 +38,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._grid_pen.setWidth(5)
 
         # Widget setup
-        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
-        self.setSortCacheEnabled(True)
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.BspTreeIndex)
+        self.setSortCacheEnabled(False)
 
     @property
     def frames(self) -> list[FrameItem]:

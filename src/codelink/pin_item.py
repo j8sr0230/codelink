@@ -24,7 +24,7 @@ class PinItem(QtWidgets.QGraphicsItem):
         self._edges: list[EdgeItem] = []
 
         # Pin geometry
-        self._size: int = 12
+        self._size: int = 10
 
         # Widget setup
         self.setAcceptHoverEvents(True)
@@ -116,4 +116,5 @@ class PinItem(QtWidgets.QGraphicsItem):
         painter.setPen(QtGui.QPen(QtGui.QColor("black")))
         painter.setBrush(QtGui.QBrush(self._color))
         # painter.drawEllipse(self.boundingRect())  # Visualises snapping area
-        painter.drawEllipse(0, 0, self._size, self._size)
+        # painter.drawEllipse(0, 0, self._size, self._size)
+        painter.drawRect(0, 0, self._size, self._size)

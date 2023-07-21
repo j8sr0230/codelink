@@ -14,17 +14,18 @@ if __name__ == "__main__":
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
-    app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+    # app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+    # app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(app)
 
+    # open_gl_wdg: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
+
     editor_scene: DAGScene = DAGScene(undo_stack)
-    # open_gl: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
     editor_widget: EditorWidget = EditorWidget(undo_stack)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
-    # editor_widget.setViewport(open_gl)
+    # editor_widget.setViewport(open_gl_wdg)
     editor_widget.setScene(editor_scene)
     editor_widget.resize(1200, 600)
     editor_widget.show()
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     for i in range(25):
         for j in range(20):
             node = NodeItem(undo_stack)
-            node.setPos(QtCore.QPointF(31000 + i * 200, 31000 + j * 200))
+            node.setPos(QtCore.QPointF(0 + i * 200, 0 + j * 200))
             editor_scene.add_node(node)
 
     editor_widget.fit_in_content()

@@ -191,7 +191,7 @@ NODE_STYLE: str = """
 		font-family: Sans Serif;
 		font-size: 12px;
 		font-weight: Normal;
-		background-color: transparent;
+		background-color: #303030;
 	}
 	
 	QLabel {
@@ -207,8 +207,8 @@ NODE_STYLE: str = """
 		padding-right: 10px;
 		padding-top: 0px;
 		padding-bottom: 0px;
-		border-top-left-radius: 5px;
-		border-bottom-left-radius: 5px;
+		border-top-left-radius: 0px; /*5px;*/
+		border-bottom-left-radius: 0px; /*5px;*/
 		border-top-right-radius: 0px;
 		border-bottom-right-radius: 0px;
 		border: 0px;
@@ -231,15 +231,15 @@ NODE_STYLE: str = """
 		padding-bottom: 0px;
 		border-top-left-radius: 0px;
 		border-bottom-left-radius: 0px;
-		border-top-right-radius: 5px;
-		border-bottom-right-radius: 5px;
+		border-top-right-radius: 0px; /*5px;*/
+		border-bottom-right-radius: 0px; /*5px;*/
 		border: 0px;
 	}
 	
 	QComboBox {
 		color: #E5E5E5;
 		background-color: #282828;
-		border-radius: 5px;
+		border-radius:  0px; /*5px;*/
 		min-width: 5px;
 		min-height: 24px;
 		max-height: 24px;
@@ -256,8 +256,8 @@ NODE_STYLE: str = """
 		subcontrol-origin: border;
 		subcontrol-position: top right;
 		width: 20px;
-		border-top-right-radius: 5px;
-		border-bottom-right-radius: 5px;
+		border-top-right-radius: 0px; /*5px;*/
+		border-bottom-right-radius: 0px; /*5px;*/
 		border-top-left-radius: 0px;
 		border-bottom-left-radius: 0px;
 	}

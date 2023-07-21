@@ -55,6 +55,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setAcceptDrops(True)
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
+        self.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
+                                  QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
         # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
         #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
@@ -376,10 +379,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 item.setEnabled(False)
                 if type(item) is NodeItem:
                     item.content_widget.hide()
+                    self.setInteractive(False)
             else:
                 item.setEnabled(True)
                 if type(item) is NodeItem and not item.is_collapsed:
                     item.content_widget.show()
+                    self.setInteractive(True)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         print("Context Menu")
