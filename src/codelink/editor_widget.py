@@ -25,7 +25,7 @@ from cutter_item import CutterItem
 
 
 class EditorWidget(QtWidgets.QGraphicsView):
-    zoom_changed: QtCore.Signal = QtCore.Signal(int)
+    zoom_level_changed: QtCore.Signal = QtCore.Signal(int)
 
     def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None,
                  parent: Optional[QtWidgets.QWidget] = None) -> None:
@@ -103,6 +103,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(self._redo_action)
 
+        # Listeners
+        cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
+
     @property
     def zoom_level(self) -> int:
         return self._zoom_level
@@ -111,61 +114,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def zoom_level(self, value: int) -> None:
         self._zoom_level: int = value
 
-    # --------------- Callbacks for signals ---------------
-
-    def delete_selected_node(self) -> None:
-        self._undo_stack.push(DeleteSelectedCommand(self.scene()))
-
-    def copy(self) -> None:
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-        node_dicts: list[dict] = []
-        for node in selected_nodes:
-            node_dicts.append(node.__getstate__())
-
-        self._nodes_clipboard: list[dict] = node_dicts
-
-    def paste(self) -> None:
-        nodes: list[NodeItem] = []
-        for node_state in self._nodes_clipboard:
-            node_cls: type = getattr(importlib.import_module("node_item"), node_state["Class"])
-            node: node_cls = node_cls(self._undo_stack)
-            self._undo_stack.push(AddItemCommand(self.scene(), node))
-
-            node.__setstate__(node_state)
-            node.uuid = QtCore.QUuid.createUuid().toString()
-            nodes.append(node)
-
-        mouse_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
-        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(nodes)
-        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
-                                                      scene_bbox.y() + scene_bbox.height() / 2)
-        dx: float = mouse_pos.x() - scene_center.x()
-        dy: float = mouse_pos.y() - scene_center.y()
-        for node in nodes:
-            node.setPos(dx + self.scene().dag_item(node.uuid).x(), dy + self.scene().dag_item(node.uuid).y())
-
-    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
-        x: int = focus_target.pos().x()
-        y: int = focus_target.pos().y()
-        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
-
-    def fit_in_content(self) -> None:
-        top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())
-        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(self.scene().nodes)
-        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
-                                                      scene_bbox.y() + scene_bbox.height() / 2)
-        scale: float = self.transform().m11()
-        dx: float = (top_left.x() - scene_center.x()) + ((1 / scale) * self.width() / 2)
-        dy: float = (top_left.y() - scene_center.y()) + ((1 / scale) * self.height() / 2)
-
-        self.setTransformationAnchor(self.NoAnchor)
-        self.translate(dx, dy)
-        self.setTransformationAnchor(self.AnchorUnderMouse)
-
     # --------------- Overwrites ---------------
 
     def scene(self) -> Any:
         return super().scene()
+
+    def setScene(self, scene: QtWidgets.QGraphicsScene) -> None:
+        super().setScene(scene)
+        self.scene().zoom_level: int = self._zoom_level
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
@@ -377,8 +333,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._zoom_level -= 1
                 self.scale(1 / 1.25, 1 / 1.25)
 
-        cast(QtCore.SignalInstance, self.zoom_changed).emit(self._zoom_level)
-
         # Hack: Fixes the scene drifting while zooming
         drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
         pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
@@ -390,6 +344,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.setInteractive(False)
         else:
             self.setInteractive(True)
+
+        cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         print("Context Menu")
@@ -503,3 +459,57 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.fit_in_content()
 
         super().keyPressEvent(event)
+
+    # --------------- Callbacks ---------------
+
+    def delete_selected_node(self) -> None:
+        self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+
+    def copy(self) -> None:
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        node_dicts: list[dict] = []
+        for node in selected_nodes:
+            node_dicts.append(node.__getstate__())
+
+        self._nodes_clipboard: list[dict] = node_dicts
+
+    def paste(self) -> None:
+        nodes: list[NodeItem] = []
+        for node_state in self._nodes_clipboard:
+            node_cls: type = getattr(importlib.import_module("node_item"), node_state["Class"])
+            node: node_cls = node_cls(self._undo_stack)
+            self._undo_stack.push(AddItemCommand(self.scene(), node))
+
+            node.__setstate__(node_state)
+            node.uuid = QtCore.QUuid.createUuid().toString()
+            nodes.append(node)
+
+        mouse_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
+        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(nodes)
+        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
+                                                      scene_bbox.y() + scene_bbox.height() / 2)
+        dx: float = mouse_pos.x() - scene_center.x()
+        dy: float = mouse_pos.y() - scene_center.y()
+        for node in nodes:
+            node.setPos(dx + self.scene().dag_item(node.uuid).x(), dy + self.scene().dag_item(node.uuid).y())
+
+    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
+        x: int = focus_target.pos().x()
+        y: int = focus_target.pos().y()
+        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
+
+    def on_zoom_change(self, zoom_level: int) -> None:
+        self.scene().update_details(zoom_level)
+
+    def fit_in_content(self) -> None:
+        top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())
+        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(self.scene().nodes)
+        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
+                                                      scene_bbox.y() + scene_bbox.height() / 2)
+        scale: float = self.transform().m11()
+        dx: float = (top_left.x() - scene_center.x()) + ((1 / scale) * self.width() / 2)
+        dy: float = (top_left.y() - scene_center.y()) + ((1 / scale) * self.height() / 2)
+
+        self.setTransformationAnchor(self.NoAnchor)
+        self.translate(dx, dy)
+        self.setTransformationAnchor(self.AnchorUnderMouse)

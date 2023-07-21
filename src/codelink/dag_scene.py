@@ -15,7 +15,6 @@ from pin_item import PinItem
 from edge_item import EdgeItem
 
 if TYPE_CHECKING:
-    from editor_widget import EditorWidget
     from socket_widget import SocketWidget
 
 
@@ -423,11 +422,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- Callbacks ---------------
 
-    def set_zoom_level(self, zoom_level: int) -> None:
-        self._zoom_level = zoom_level
-
-    def added_to_view(self, view: EditorWidget):
-        cast(QtCore.SignalInstance, view.zoom_changed).connect(self.set_zoom_level)
+    def update_details(self, zoom_level: int):
+        self._zoom_level: int = zoom_level
+        for node in self._nodes:
+            node.update_details(self.zoom_level)
 
     # --------------- Serialization ---------------
 

@@ -431,11 +431,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             return QtCore.QPointF(x_snap, y_snap)
 
         elif change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemVisibleChange:
-            # Adds additional listener after node has been added to scene
-            if self.scene().views() and len(self.scene().views()) > 0:
-                cast(QtCore.SignalInstance, self.scene().views()[0].zoom_changed).connect(self.update_detail)
-                self._zoom_level: int = self.scene().zoom_level
-                self.update_detail(self._zoom_level)
+            self.update_details(self.scene().zoom_level)
         else:
             return super().itemChange(change, value)
 
@@ -521,7 +517,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-    # --------------- Callbacks for QAbstractTableModel.dataChanged signal ---------------
+    # --------------- Callbacks ---------------
 
     def update_name(self, value: str) -> None:
         self._name_item.setPlainText(
@@ -592,8 +588,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 self.remove_socket_widget(remove_idx)
                 input_widget_count -= 1
 
-    def update_detail(self, zoom_level: int) -> None:
-        self._zoom_level: int = zoom_level
+    def update_details(self, zoom_level: int) -> None:
+        self._zoom_level = zoom_level
+
         if self._zoom_level < 8:
             self.setEnabled(False)
             self.content_widget.hide()

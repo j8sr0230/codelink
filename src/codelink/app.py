@@ -27,8 +27,6 @@ if __name__ == "__main__":
 
     # editor_widget.setViewport(open_gl_wdg)
     editor_widget.setScene(editor_scene)
-    editor_scene.added_to_view(editor_widget)
-    editor_scene.set_zoom_level(editor_widget.zoom_level)
     editor_widget.resize(1200, 600)
     editor_widget.show()
 
@@ -44,10 +42,10 @@ if __name__ == "__main__":
     # node_3.setPos(QtCore.QPointF(31900, 32100))
     # editor_scene.add_node(node_3)
 
-    for i in range(25):
-        for j in range(20):
+    for i in range(5):
+        for j in range(5):
             node = NodeItem(undo_stack)
-            node.setPos(QtCore.QPointF(0 + i * 200, 0 + j * 200))
+            node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
             editor_scene.add_node(node)
 
     editor_widget.fit_in_content()
