@@ -30,6 +30,8 @@ if __name__ == "__main__":
     # editor_widget.setViewport(open_gl_wdg)
     editor_widget.setScene(editor_scene)
     editor_widget.resize(1200, 600)
+    fc_wnd.node_editor = editor_widget
+    fc_wnd.node_editor.show()
     editor_widget.show()
 
     # node_1 = NodeItem(undo_stack)
