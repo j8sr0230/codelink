@@ -107,6 +107,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def zoom_level(self) -> int:
         return self._zoom_level
 
+    @zoom_level.setter
+    def zoom_level(self, value: int) -> None:
+        self._zoom_level: int = value
+
     # --------------- Callbacks for signals ---------------
 
     def delete_selected_node(self) -> None:

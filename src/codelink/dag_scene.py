@@ -66,6 +66,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def parent_node(self, value: Optional[NodeItem]) -> None:
         self._parent_node: Optional[NodeItem] = value
 
+    @property
+    def zoom_level(self) -> int:
+        return self._zoom_level
+
+    @zoom_level.setter
+    def zoom_level(self, value: int) -> None:
+        self._zoom_level: int = value
+
     # --------------- DAG editing ---------------
 
     def add_frame(self, frame: FrameItem) -> FrameItem:

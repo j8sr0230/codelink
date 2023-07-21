@@ -434,7 +434,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             # Adds additional listener after node has been added to scene
             if self.scene().views() and len(self.scene().views()) > 0:
                 cast(QtCore.SignalInstance, self.scene().views()[0].zoom_changed).connect(self.update_detail)
-
+                self._zoom_level: int = self.scene().zoom_level
+                self.update_detail(self._zoom_level)
         else:
             return super().itemChange(change, value)
 

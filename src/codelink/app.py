@@ -28,6 +28,7 @@ if __name__ == "__main__":
     # editor_widget.setViewport(open_gl_wdg)
     editor_widget.setScene(editor_scene)
     editor_scene.added_to_view(editor_widget)
+    editor_scene.set_zoom_level(editor_widget.zoom_level)
     editor_widget.resize(1200, 600)
     editor_widget.show()
 

@@ -28,12 +28,11 @@ if __name__ == "__main__":
     editor_widget.setStyleSheet(MAIN_STYLE)
 
     # editor_widget.setViewport(open_gl_wdg)
-
     editor_widget.setScene(editor_scene)
     editor_scene.added_to_view(editor_widget)
+    editor_scene.set_zoom_level(editor_widget.zoom_level)
     editor_widget.resize(1200, 600)
-    fc_wnd.node_editor = editor_widget
-    fc_wnd.node_editor.show()
+    editor_widget.show()
 
     # node_1 = NodeItem(undo_stack)
     # node_1.setPos(QtCore.QPointF(31600, 31800))
