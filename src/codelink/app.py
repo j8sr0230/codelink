@@ -20,24 +20,32 @@ if __name__ == "__main__":
     undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(app)
 
     editor_scene: DAGScene = DAGScene(undo_stack)
+    # open_gl: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
     editor_widget: EditorWidget = EditorWidget(undo_stack)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
+    # editor_widget.setViewport(open_gl)
     editor_widget.setScene(editor_scene)
     editor_widget.resize(1200, 600)
     editor_widget.show()
 
-    node_1 = NodeItem(undo_stack)
-    node_1.setPos(QtCore.QPointF(31600, 31800))
-    editor_scene.add_node(node_1)
+    # node_1 = NodeItem(undo_stack)
+    # node_1.setPos(QtCore.QPointF(31600, 31800))
+    # editor_scene.add_node(node_1)
+    #
+    # node_2 = NodeItem(undo_stack)
+    # node_2.setPos(QtCore.QPointF(32200, 32050))
+    # editor_scene.add_node(node_2)
+    #
+    # node_3 = NodeItem(undo_stack)
+    # node_3.setPos(QtCore.QPointF(31900, 32100))
+    # editor_scene.add_node(node_3)
 
-    node_2 = NodeItem(undo_stack)
-    node_2.setPos(QtCore.QPointF(32200, 32050))
-    editor_scene.add_node(node_2)
-
-    node_3 = NodeItem(undo_stack)
-    node_3.setPos(QtCore.QPointF(31900, 32100))
-    editor_scene.add_node(node_3)
+    for i in range(25):
+        for j in range(20):
+            node = NodeItem(undo_stack)
+            node.setPos(QtCore.QPointF(31000 + i * 200, 31000 + j * 200))
+            editor_scene.add_node(node)
 
     editor_widget.fit_in_content()
 

@@ -54,9 +54,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setRubberBandSelectionMode(QtCore.Qt.ContainsItemShape)
         self.setAcceptDrops(True)
 
-        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-        self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
-                            QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
+        #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 
         self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
         self._layout.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
@@ -370,6 +370,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+        for item in self.scene().items():
+            if self._zoom_level < 8:
+                item.setEnabled(False)
+                if type(item) is NodeItem:
+                    item.content_widget.hide()
+            else:
+                item.setEnabled(True)
+                if type(item) is NodeItem and not item.is_collapsed:
+                    item.content_widget.show()
 
     def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
         print("Context Menu")

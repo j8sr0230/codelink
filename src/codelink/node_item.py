@@ -57,7 +57,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._min_height: int = self._header_height
         self._content_padding: int = 8
         self._content_y: int = self._header_height + self._content_padding
-        self._corner_radius: int = 5
+        self._corner_radius: int = 0
 
         # Assets
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
@@ -76,11 +76,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
         self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_up)
 
-        self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
-        self._shadow.setColor(QtGui.QColor("black"))
-        self._shadow.setBlurRadius(20)
-        self._shadow.setOffset(1)
-        self.setGraphicsEffect(self._shadow)
+        # self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        # self._shadow.setColor(QtGui.QColor("black"))
+        # self._shadow.setBlurRadius(20)
+        # self._shadow.setOffset(1)
+        # self.setGraphicsEffect(self._shadow)
 
         # UI
         # Collapse button
