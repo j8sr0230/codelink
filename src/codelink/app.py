@@ -42,8 +42,8 @@ if __name__ == "__main__":
     # node_3.setPos(QtCore.QPointF(31900, 32100))
     # editor_scene.add_node(node_3)
 
-    for i in range(5):
-        for j in range(5):
+    for i in range(25):
+        for j in range(20):
             node = NodeItem(undo_stack)
             node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
             editor_scene.add_node(node)
