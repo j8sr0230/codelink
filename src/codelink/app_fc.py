@@ -13,7 +13,7 @@ from dag_scene import DAGScene
 from editor_widget import EditorWidget
 
 
-if __name__ == "__main__":
+def main() -> None:
     if os.path.abspath(os.path.dirname(__file__)) not in sys.path:
         sys.path.append(os.path.abspath(os.path.dirname(__file__)))
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
@@ -55,3 +55,7 @@ if __name__ == "__main__":
             editor_scene.add_node(node)
 
     editor_widget.fit_in_content()
+
+
+if __name__ == "__main__":
+    main()

@@ -11,7 +11,7 @@ from dag_scene import DAGScene
 from editor_widget import EditorWidget
 
 
-if __name__ == "__main__":
+def main() -> None:
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
@@ -53,3 +53,7 @@ if __name__ == "__main__":
     editor_widget.fit_in_content()
 
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    main()
