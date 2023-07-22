@@ -9,6 +9,7 @@ from node_item import NodeItem
 from edge_item import EdgeItem
 
 if TYPE_CHECKING:
+	from editor_widget import EditorWidget
 	from dag_scene import DAGScene
 	from pin_item import PinItem
 
@@ -255,13 +256,13 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 
 class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, view: QtWidgets.QGraphicsView, redo_scene: DAGScene, undo_scene: DAGScene,
+			self, view: EditorWidget, redo_scene: DAGScene, undo_scene: DAGScene,
 			parent_node: Optional[NodeItem] = None, parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._parent_node: NodeItem = parent_node
-		self._view: QtWidgets.QGraphicsView = view
+		self._view: EditorWidget = view
 		self._redo_scene: DAGScene = redo_scene
 		self._undo_scene: DAGScene = undo_scene
 
@@ -280,12 +281,12 @@ class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 
 class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, view: QtWidgets.QGraphicsView, redo_scene: DAGScene, undo_scene: DAGScene,
+			self, view: EditorWidget, redo_scene: DAGScene, undo_scene: DAGScene,
 			parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
-		self._view: QtWidgets.QGraphicsView = view
+		self._view: EditorWidget = view
 		self._redo_scene: DAGScene = redo_scene
 		self._undo_scene: DAGScene = undo_scene
 
