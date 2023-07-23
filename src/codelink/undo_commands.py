@@ -362,6 +362,7 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 		print("undo paste")
 
 	def redo(self) -> None:
+		# TODO: Generate new uuids for all items an crosslink them
 		nodes: list[NodeItem] = self._scene.deserialize_nodes(self._clipboard_state["Nodes"])
 		self._scene.deserialize_edges(self._clipboard_state["Edges"])
 		self._scene.deserialize_frames(self._clipboard_state["Frames"])
