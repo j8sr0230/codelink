@@ -505,7 +505,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return edges_dict
 
-    def deserialize_edges(self, edges_dict: list[dict]):
+    def deserialize_edges(self, edges_dict: list[dict]) -> list[EdgeItem]:
+        deserialized_edges: list[EdgeItem] = []
+
         for edge_dict in edges_dict:
             start_node: NodeItem = self.dag_item(edge_dict["Start Node UUID"])
             start_socket_widget: SocketWidget = start_node.socket_widgets[edge_dict["Start Socket Idx"]]
@@ -519,7 +521,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             # Reset edge state
             new_edge.__setstate__(edge_dict)
+            deserialized_edges.append(new_edge)
             self.update()
+
+        return deserialized_edges
 
     def serialize_frames(self) -> list[dict]:
         frames_dict: list[dict] = []
@@ -529,7 +534,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return frames_dict
 
-    def deserialize_frames(self, frames_dict: list[dict]) -> None:
+    def deserialize_frames(self, frames_dict: list[dict]) -> list[FrameItem]:
+        deserialized_frames: list[FrameItem] = []
+
         for frame_dict in frames_dict:
             framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
             framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
@@ -537,7 +544,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             # Reset frame state
             new_frame.__setstate__(frame_dict)
+            deserialized_frames.append(new_frame)
             self.update()
+
+        return deserialized_frames
 
     def serialize(self) -> dict:
         dag_dict: dict = {

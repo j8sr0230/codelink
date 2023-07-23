@@ -358,20 +358,79 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 		self._scene: DAGScene = scene
 		self._clipboard_state: dict = json.loads(QtWidgets.QApplication.clipboard().text())
 
+		self._nodes: list[NodeItem] = []
+		self._edges: list[EdgeItem] = []
+		self._frames: list[FrameItem] = []
+
 	def undo(self) -> None:
-		print("undo paste")
+		for frame in self._frames:
+			self._scene.remove_frame(self._scene.dag_item(frame.uuid))
+
+		for edge in self._edges:
+			self._scene.remove_edge(self._scene.dag_item(edge.uuid))
+
+		for node in self._nodes:
+			self._scene.remove_node(self._scene.dag_item(node.uuid))
 
 	def redo(self) -> None:
-		# TODO: Generate new uuids for all items an crosslink them
-		nodes: list[NodeItem] = self._scene.deserialize_nodes(self._clipboard_state["Nodes"])
-		self._scene.deserialize_edges(self._clipboard_state["Edges"])
-		self._scene.deserialize_frames(self._clipboard_state["Frames"])
+
+		# Yields all values corresponding to a key (i.e. "UUID") in a nested dictionary
+		def find_key_values(state: dict, key: str) -> str:
+			if isinstance(state, list):
+				for i in state:
+					for x in find_key_values(i, key):
+						yield x
+
+			elif isinstance(state, dict):
+				if key in state:
+					yield state[key]
+				for j in state.values():
+					for x in find_key_values(j, key):
+						yield x
+
+		# Replaces all occurrences of old_value with new_value for a given key in a nested dictionary
+		def replace_key_values(state: dict, key: str, old_value: str, new_value: str) -> None:
+			if isinstance(state, list):
+				for i in state:
+					replace_key_values(i, key, old_value, new_value)
+
+			elif isinstance(state, dict):
+				if key in state:
+					if type(state[key]) is list and key == "Link":
+						if state[key][0] == old_value:
+							state[key] = (new_value, state[key][1])
+					elif type(state[key]) is list and key == "Framed Nodes UUID's":
+						for idx, item in enumerate(state[key]):
+							if item == old_value:
+								state[key][idx] = new_value
+					else:
+						if state[key] == old_value:
+							state[key] = new_value
+
+				for j in state.values():
+					replace_key_values(j, key, old_value, new_value)
+
+		# Replacement uuid map
+		uuid_map: dict[str] = {
+			uuid: QtCore.QUuid().createUuid().toString() for uuid in find_key_values(self._clipboard_state, "UUID")
+		}
+
+		for k, v in uuid_map.items():
+			replace_key_values(self._clipboard_state, "UUID", k, v)
+			replace_key_values(self._clipboard_state, "Link", k, v)
+			replace_key_values(self._clipboard_state, "Start Node UUID", k, v)
+			replace_key_values(self._clipboard_state, "End Node UUID", k, v)
+			replace_key_values(self._clipboard_state, "Framed Nodes UUID's", k, v)
+
+		self._nodes: list[NodeItem] = self._scene.deserialize_nodes(self._clipboard_state["Nodes"])
+		self._edges: list[EdgeItem] = self._scene.deserialize_edges(self._clipboard_state["Edges"])
+		self._frames: list[FrameItem] = self._scene.deserialize_frames(self._clipboard_state["Frames"])
 
 		mouse_pos: QtCore.QPointF = self._scene.views()[0].mapToScene(
 			self._scene.views()[0].mapFromParent(QtGui.QCursor.pos())
 		)
 
-		scene_bbox: QtCore.QRectF = self._scene.bounding_rect(nodes)
+		scene_bbox: QtCore.QRectF = self._scene.bounding_rect(self._nodes)
 		scene_center: QtCore.QPointF = QtCore.QPointF(
 			scene_bbox.x() + scene_bbox.width() / 2,
 			scene_bbox.y() + scene_bbox.height() / 2
@@ -379,5 +438,5 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 		dx: float = mouse_pos.x() - scene_center.x()
 		dy: float = mouse_pos.y() - scene_center.y()
 
-		for node in nodes:
+		for node in self._nodes:
 			node.setPos(dx + node.x(), dy + node.y())
