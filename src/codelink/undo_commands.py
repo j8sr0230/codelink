@@ -1,8 +1,10 @@
 from __future__ import annotations
+import json
 from typing import TYPE_CHECKING, Union, Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
 
 from frame_item import FrameItem
 from node_item import NodeItem
@@ -347,3 +349,34 @@ class ResizeNodeCommand(QtWidgets.QUndoCommand):
 			node.prop_model.setData(
 				node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2  # QtCore.Qt.EditRole
 			)
+
+
+class PasteClipboardCommand(QtWidgets.QUndoCommand):
+	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._clipboard_state: dict = json.loads(QtWidgets.QApplication.clipboard().text())
+
+	def undo(self) -> None:
+		print("undo paste")
+
+	def redo(self) -> None:
+		nodes: list[NodeItem] = self._scene.deserialize_nodes(self._clipboard_state["Nodes"])
+		self._scene.deserialize_edges(self._clipboard_state["Edges"])
+		self._scene.deserialize_frames(self._clipboard_state["Frames"])
+
+		mouse_pos: QtCore.QPointF = self._scene.views()[0].mapToScene(
+			self._scene.views()[0].mapFromParent(QtGui.QCursor.pos())
+		)
+
+		scene_bbox: QtCore.QRectF = self._scene.bounding_rect(nodes)
+		scene_center: QtCore.QPointF = QtCore.QPointF(
+			scene_bbox.x() + scene_bbox.width() / 2,
+			scene_bbox.y() + scene_bbox.height() / 2
+		)
+		dx: float = mouse_pos.x() - scene_center.x()
+		dy: float = mouse_pos.y() - scene_center.y()
+
+		for node in nodes:
+			node.setPos(dx + node.x(), dy + node.y())

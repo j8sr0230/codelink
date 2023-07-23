@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Any, Union, cast
 import importlib
 import math
+import json
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -29,6 +30,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         # Non persistent data model
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
+        self._clipboard: QtGui.QClipboard = QtWidgets.QApplication.clipboard()
         self._parent_node: Optional[NodeItem] = None
         self._zoom_level: int = 10
 
@@ -309,6 +311,32 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.removeItem(edge)
         self._edges.remove(edge)
 
+    def selection_to_clipboard(self):
+        # Copy states of selected and linked items
+        selected_nodes: list[NodeItem] = [item for item in self.selectedItems() if type(item) == NodeItem]
+        selected_edges: set[EdgeItem] = {item for item in self.selectedItems() if (
+                type(item) == EdgeItem and
+                item.start_pin.parentItem() in selected_nodes and
+                item.end_pin.parentItem() in selected_nodes
+        )}
+        selected_frames: set[FrameItem] = {item for item in self.selectedItems() if type(item) == FrameItem}
+
+        selected_node_states: list[dict] = [node.__getstate__() for node in selected_nodes]
+        selected_edge_states: list[dict] = [edge.__getstate__() for edge in selected_edges]
+        selected_frame_states: list[dict] = [frame.__getstate__() for frame in selected_frames]
+
+        # Create state dict
+        selection_state: dict = {
+            "Nodes": selected_node_states,
+            "Edges": selected_edge_states,
+            "Frames": selected_frame_states
+        }
+
+        # Push mime data to clipboard
+        mime_data: QtCore.QMimeData = QtCore.QMimeData()
+        mime_data.setText(json.dumps(selection_state, indent=4))
+        self._clipboard.setMimeData(mime_data)
+
     # --------------- DAG analytics ---------------
 
     @staticmethod
@@ -453,7 +481,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return nodes_dict
 
-    def deserialize_nodes(self, nodes_dict: list[dict]) -> None:
+    def deserialize_nodes(self, nodes_dict: list[dict]) -> list[NodeItem]:
+        deserialized_nodes: list[NodeItem] = []
+
         for node_dict in nodes_dict:
             # Create node from dict
             node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
@@ -462,7 +492,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             # Reset node state
             new_node.__setstate__(node_dict)
+            deserialized_nodes.append(new_node)
             self.update()
+
+        return deserialized_nodes
 
     def serialize_edges(self) -> list[dict]:
         edges_dict: list[dict] = []

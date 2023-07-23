@@ -1,5 +1,4 @@
 from typing import Optional, Any, cast
-import importlib
 import json
 import os
 
@@ -11,7 +10,7 @@ import PySide2.QtGui as QtGui
 
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, NodeFromNodeCommand, ResolveNodeCommand,
-    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand
+    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
 )
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
@@ -27,14 +26,12 @@ from cutter_item import CutterItem
 class EditorWidget(QtWidgets.QGraphicsView):
     zoom_level_changed: QtCore.Signal = QtCore.Signal(int)
 
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, clipboard: QtGui.QClipboard,
-                 scene: QtWidgets.QGraphicsScene = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, scene: QtWidgets.QGraphicsScene = None,
+                 parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(scene, parent)
 
         # Non persistent data model
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
-        self._clipboard: QtGui.QClipboard = clipboard
-        self._nodes_clipboard: list[dict] = []
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
@@ -466,32 +463,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
 
     def copy(self) -> None:
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-        node_dicts: list[dict] = []
-        for node in selected_nodes:
-            node_dicts.append(node.__getstate__())
-
-        self._nodes_clipboard: list[dict] = node_dicts
+        self.scene().selection_to_clipboard()
 
     def paste(self) -> None:
-        nodes: list[NodeItem] = []
-        for node_state in self._nodes_clipboard:
-            node_cls: type = getattr(importlib.import_module("node_item"), node_state["Class"])
-            node: node_cls = node_cls(self._undo_stack)
-            self._undo_stack.push(AddItemCommand(self.scene(), node))
-
-            node.__setstate__(node_state)
-            node.uuid = QtCore.QUuid.createUuid().toString()
-            nodes.append(node)
-
-        mouse_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
-        scene_bbox: QtCore.QRectF = self.scene().bounding_rect(nodes)
-        scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
-                                                      scene_bbox.y() + scene_bbox.height() / 2)
-        dx: float = mouse_pos.x() - scene_center.x()
-        dy: float = mouse_pos.y() - scene_center.y()
-        for node in nodes:
-            node.setPos(dx + self.scene().dag_item(node.uuid).x(), dy + self.scene().dag_item(node.uuid).y())
+        self._undo_stack.push(PasteClipboardCommand(self.scene()))
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()

@@ -18,13 +18,12 @@ def main() -> None:
     # app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
     # app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
-    undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack(app)
-    clipboard: QtGui.QClipboard = QtWidgets.QApplication.clipboard()
+    undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     # open_gl_wdg: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
 
-    editor_scene: DAGScene = DAGScene(undo_stack, clipboard)
-    editor_widget: EditorWidget = EditorWidget(undo_stack, clipboard)
+    editor_scene: DAGScene = DAGScene(undo_stack)
+    editor_widget: EditorWidget = EditorWidget(undo_stack)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
     # editor_widget.setViewport(open_gl_wdg)

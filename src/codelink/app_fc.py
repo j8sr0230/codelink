@@ -21,12 +21,11 @@ def main() -> None:
     fc_wnd = FreeCADGui.getMainWindow()
 
     undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
-    clipboard: QtGui.QClipboard = QtWidgets.QApplication.clipboard()
 
     # open_gl_wdg: QtWidgets.QOpenGLWidget = QtWidgets.QOpenGLWidget()
 
-    editor_scene: DAGScene = DAGScene(undo_stack, clipboard)
-    editor_widget: EditorWidget = EditorWidget(undo_stack, clipboard, parent=fc_wnd)
+    editor_scene: DAGScene = DAGScene(undo_stack)
+    editor_widget: EditorWidget = EditorWidget(undo_stack, parent=fc_wnd)
     editor_widget.setStyleSheet(MAIN_STYLE)
 
     # editor_widget.setViewport(open_gl_wdg)
