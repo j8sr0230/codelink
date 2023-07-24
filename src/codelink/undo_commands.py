@@ -28,7 +28,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 		self._linked_frame_states: list[dict] = []
 
 		# Copy states of selected and linked items
-		selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if type(item) == NodeItem]
+		selected_nodes: list[NodeItem] = [item for item in scene.selectedItems() if isinstance(item, NodeItem)]
 
 		selected_edges: set[EdgeItem] = {item for item in scene.selectedItems() if type(item) == EdgeItem}
 		for node in selected_nodes:
@@ -140,7 +140,7 @@ class AddItemCommand(QtWidgets.QUndoCommand):
 
 	def redo(self) -> None:
 		if self._scene.dag_item(self._item.uuid) is None:
-			if type(self._item) == NodeItem:
+			if isinstance(self._item, NodeItem):
 				self._scene.add_node(self._item)
 			elif type(self._item) == EdgeItem:
 				self._scene.add_edge(self._item)
@@ -159,7 +159,7 @@ class RemoveItemCommand(QtWidgets.QUndoCommand):
 		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
 
 	def undo(self) -> None:
-		if type(self._item) == NodeItem:
+		if isinstance(self._item, NodeItem):
 			self._scene.add_node(self._item)
 		elif type(self._item) == EdgeItem:
 			self._scene.add_edge(self._item)

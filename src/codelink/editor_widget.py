@@ -8,8 +8,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from nodes.nodes_dict import nodes_dict
-
+from node_reg import nodes_dict
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, NodeFromNodeCommand, ResolveNodeCommand,
     RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
@@ -213,7 +212,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
             else:
                 # Open node properties
-                if type(self.itemAt(event.pos())) == NodeItem:
+                if isinstance(self.itemAt(event.pos()), NodeItem):
                     self.scene().clearSelection()
                     self._last_node: NodeItem = self.itemAt(event.pos())
                     self._last_node.setSelected(True)

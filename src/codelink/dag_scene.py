@@ -313,7 +313,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def selection_to_clipboard(self):
         # Copy states of selected and linked items
-        selected_nodes: list[NodeItem] = [item for item in self.selectedItems() if type(item) == NodeItem]
+        selected_nodes: list[NodeItem] = [item for item in self.selectedItems() if isinstance(item, NodeItem)]
         selected_edges: set[EdgeItem] = {item for item in self.selectedItems() if (
                 type(item) == EdgeItem and
                 item.start_pin.parentItem() in selected_nodes and
@@ -486,7 +486,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         for node_dict in nodes_dict:
             # Create node from dict
-            node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
+            try:
+                node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
+            except AttributeError:
+                node_class = getattr(importlib.import_module("nodes.scalar_math"), node_dict["Class"])
+
             new_node: node_class = node_class(self._undo_stack)
             self.add_node(new_node)
 
