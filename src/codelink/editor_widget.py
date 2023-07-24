@@ -392,46 +392,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
 
-        if event.matches(QtGui.QKeySequence.AddTab):
-            # Adds socket to node
-            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-                if type(self.scene().selectedItems()[0]) is NodeItem:
-                    selected_node_item: NodeItem = self.scene().selectedItems()[0]
-                    new_socket_widget: SocketWidget = SocketWidget(
-                        label="N",
-                        is_input=True,
-                        parent_node=selected_node_item
-                    )
-
-                    if len(selected_node_item.input_socket_widgets) > 0:
-                        insert_idx: int = (
-                                selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1]) + 1
-                        )
-                    else:
-                        insert_idx: int = 0
-
-                    selected_node_item.add_socket_widget(new_socket_widget, insert_idx)
-                    self._prop_scroller.hide()
-
-        if event.matches(QtGui.QKeySequence.Cancel):
-            # Removes socket from node
-            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-                if type(self.scene().selectedItems()[0]) is NodeItem:
-                    selected_node_item: NodeItem = self.scene().selectedItems()[0]
-
-                    if len(selected_node_item.input_socket_widgets) > 0:
-                        selected_node_item.remove_socket_widget(
-                            selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
-                        )
-                        self._prop_scroller.hide()
-
-                if type(self.scene().selectedItems()[0]) is FrameItem:
-                    selected_frame: FrameItem = self.scene().selectedItems()[0]
-
-                    self.scene().remove_frame(selected_frame)
-                    self._prop_scroller.hide()
-
         if event.key() == QtCore.Qt.Key_S:
+            # Prints undo stack for debugging
             for i in range(self._undo_stack.count()):
                 print("Stack Item", self._undo_stack.command(i))
 
@@ -524,3 +486,40 @@ class EditorWidget(QtWidgets.QGraphicsView):
         new_node = NodeItem(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
         self._undo_stack.push(AddItemCommand(self.scene(), new_node))
+
+    def add_socket(self):
+        if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
+            if type(self.scene().selectedItems()[0]) is NodeItem:
+                selected_node_item: NodeItem = self.scene().selectedItems()[0]
+                new_socket_widget: SocketWidget = SocketWidget(
+                    label="N",
+                    is_input=True,
+                    parent_node=selected_node_item
+                )
+
+                if len(selected_node_item.input_socket_widgets) > 0:
+                    insert_idx: int = (
+                            selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1]) + 1
+                    )
+                else:
+                    insert_idx: int = 0
+
+                selected_node_item.add_socket_widget(new_socket_widget, insert_idx)
+                self._prop_scroller.hide()
+
+    def remove_socket(self):
+        if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
+            if type(self.scene().selectedItems()[0]) is NodeItem:
+                selected_node_item: NodeItem = self.scene().selectedItems()[0]
+
+                if len(selected_node_item.input_socket_widgets) > 0:
+                    selected_node_item.remove_socket_widget(
+                        selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
+                    )
+                    self._prop_scroller.hide()
+
+            if type(self.scene().selectedItems()[0]) is FrameItem:
+                selected_frame: FrameItem = self.scene().selectedItems()[0]
+
+                self.scene().remove_frame(selected_frame)
+                self._prop_scroller.hide()
