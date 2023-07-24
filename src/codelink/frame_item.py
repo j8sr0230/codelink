@@ -81,11 +81,14 @@ class FrameItem(QtWidgets.QGraphicsItem):
     # --------------- Shape and painting ---------------
 
     def boundingRect(self) -> QtCore.QRectF:
-        x_min: float = min([node.x() for node in self._framed_nodes]) - self._offset
-        x_max: float = max([node.x() + node.boundingRect().width() for node in self._framed_nodes]) + self._offset
-        y_min: float = min([node.y() for node in self._framed_nodes]) - self._offset
-        y_max: float = max([node.y() + node.boundingRect().height() for node in self._framed_nodes]) + self._offset
-        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+        if len(self._framed_nodes) > 0:
+            x_min: float = min([node.x() for node in self._framed_nodes]) - self._offset
+            x_max: float = max([node.x() + node.boundingRect().width() for node in self._framed_nodes]) + self._offset
+            y_min: float = min([node.y() for node in self._framed_nodes]) - self._offset
+            y_max: float = max([node.y() + node.boundingRect().height() for node in self._framed_nodes]) + self._offset
+            return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+        else:
+            return QtCore.QRectF()
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
