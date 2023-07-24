@@ -426,8 +426,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
         # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
-        with open(file_path, "w", encoding="utf8") as json_file:
-            json.dump(self.scene().serialize(), json_file, indent=4)
+        if file_path != ".":
+            with open(file_path, "w", encoding="utf8") as json_file:
+                json.dump(self.scene().serialize(), json_file, indent=4)
 
     def open_from_file(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
