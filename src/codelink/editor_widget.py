@@ -8,6 +8,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from nodes.nodes_dict import nodes_dict
+
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, NodeFromNodeCommand, ResolveNodeCommand,
     RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
@@ -136,10 +138,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._close_sub_action.triggered).connect(self.close_sub_graph)
         self.addAction(self._close_sub_action)
 
-        self._add_node_action: QtWidgets.QAction = QtWidgets.QAction("Add", self)
-        self._add_node_action.setShortcut(QtGui.QKeySequence("Shift+A"))
-        cast(QtCore.SignalInstance, self._add_node_action.triggered).connect(self.add_node)
-        self.addAction(self._add_node_action)
+        self._add_test_node_action: QtWidgets.QAction = QtWidgets.QAction("Test Node", self)
+        self._add_test_node_action.setShortcut(QtGui.QKeySequence("Shift+A"))
+        cast(QtCore.SignalInstance, self._add_test_node_action.triggered).connect(self.add_test_node)
+        self.addAction(self._add_test_node_action)
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -402,7 +404,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
         # Add menu
         add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
         add_menu.setTitle("Nodes")
-        add_menu.addAction(self._add_node_action)
+
+        add_menu.addAction(self._add_test_node_action)
+
+        for name, cls, in nodes_dict.items():
+            # Adds all nodes from nodes.nodes_dict
+            add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
+            add_node_action.setData(cls)
+            cast(QtCore.SignalInstance, add_node_action.triggered).connect(
+                lambda: self.add_node_from_cls(add_node_action.data())
+            )
+            add_menu.addAction(add_node_action)
 
         # Rest of context menu
         context_menu.addMenu(add_menu)
@@ -497,8 +509,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
             self.fit_in_content()
 
-    def add_node(self):
+    def add_test_node(self):
         new_node = NodeItem(self._undo_stack)
+        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+        self._undo_stack.push(AddItemCommand(self.scene(), new_node))
+
+    def add_node_from_cls(self, cls: type):
+        new_node: cls = cls(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
         self._undo_stack.push(AddItemCommand(self.scene(), new_node))
 

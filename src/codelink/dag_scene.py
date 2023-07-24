@@ -221,6 +221,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_scene_bbox.y() + sub_scene_bbox.height() / 2
             )
 
+            for frame in node.sub_scene.frames:
+                self.add_frame(frame)
+
             for sub_node in node.sub_scene.nodes:
                 self.add_node(sub_node)
                 node_pos: QtCore.QPointF = QtCore.QPointF(
@@ -248,9 +251,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
                     edge.sort_pins()
                     target_socket.update_all()
-
-            for frame in node.sub_scene.frames:
-                self.add_frame(frame)
 
             self.remove_node(node)
 
