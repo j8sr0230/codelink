@@ -1,4 +1,18 @@
 MAIN_STYLE: str = """
+	QMenu {
+	    font-family: Sans Serif;
+		font-size: 12px;
+		font-weight: Normal;
+	    background-color: black;
+	    selection-background-color: #545454;
+	    color: #E5E5E5;
+	}
+	
+	QMenu::separator {
+	    background-color: #282828;
+	    height: 2px;
+	}
+	
 	QGraphicsView {
 		selection-background-color: black;
 	}
