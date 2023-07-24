@@ -381,10 +381,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.translate(pos_delta.x(), pos_delta.y())
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-        if self._zoom_level < 8:
-            self.setInteractive(False)
-        else:
-            self.setInteractive(True)
+        # if self._zoom_level < 8:
+        #     self.setInteractive(False)
+        # else:
+        #     self.setInteractive(True)
 
         cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
 

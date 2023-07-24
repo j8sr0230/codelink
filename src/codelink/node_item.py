@@ -592,12 +592,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._zoom_level = zoom_level
 
         if self._zoom_level < 8:
-            self.setEnabled(False)
+            # self.setEnabled(False)
             self.content_widget.hide()
             for socket_widget in self._socket_widgets:
                 socket_widget.pin.hide()
         else:
-            self.setEnabled(True)
+            # self.setEnabled(True)
             if not self.is_collapsed:
                 self.content_widget.show()
                 for socket_widget in self._socket_widgets:
@@ -607,6 +607,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.update_name(self._prop_model.properties["Name"])
         self.update_width(self._prop_model.properties["Width"])
         self.update_height()
+        if self._zoom_level is not None:
+            self.update_details(self._zoom_level)
 
         # Hack to prevent callback loop while changing the node position
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
