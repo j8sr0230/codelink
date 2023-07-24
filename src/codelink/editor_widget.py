@@ -54,6 +54,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(QtCore.Qt.ContainsItemShape)
         self.setAcceptDrops(True)
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
@@ -142,6 +143,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
+        cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.show_context_menu)
 
     @property
     def zoom_level(self) -> int:
@@ -384,12 +386,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
 
-    def contextMenuEvent(self, event: QtGui.QContextMenuEvent) -> None:
-        print("Context Menu")
-        # context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
-        # context_menu.addAction(self._copy_action)
-        # context_menu.exec_(event.globalPos())
-
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
 
         if event.key() == QtCore.Qt.Key_S:
@@ -400,6 +396,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().keyPressEvent(event)
 
     # --------------- Callbacks ---------------
+    def show_context_menu(self, position: QtCore.QPoint):
+        context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+
+        # Add menu
+        add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+        add_menu.setTitle("Nodes")
+        add_menu.addAction(self._add_node_action)
+
+        # Rest of context menu
+        context_menu.addMenu(add_menu)
+        context_menu.addSeparator()
+        context_menu.addAction(self._open_action)
+        context_menu.addAction(self._save_action)
+
+        context_menu.exec_(self.mapToGlobal(position))
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
