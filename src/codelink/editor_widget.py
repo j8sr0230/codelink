@@ -125,6 +125,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._create_frame_action.triggered).connect(self.create_frame)
         self.addAction(self._create_frame_action)
 
+        self._open_sub_action: QtWidgets.QAction = QtWidgets.QAction("Open Sub Graph", self)
+        self._open_sub_action.setShortcut(QtGui.QKeySequence("Shift+Q"))
+        cast(QtCore.SignalInstance, self._open_sub_action.triggered).connect(self.open_sub_graph)
+        self.addAction(self._open_sub_action)
+
+        self._close_sub_action: QtWidgets.QAction = QtWidgets.QAction("Close Sub Graph", self)
+        self._close_sub_action.setShortcut(QtGui.QKeySequence("Shift+W"))
+        cast(QtCore.SignalInstance, self._close_sub_action.triggered).connect(self.close_sub_graph)
+        self.addAction(self._close_sub_action)
+
+        self._add_node_action: QtWidgets.QAction = QtWidgets.QAction("Add", self)
+        self._add_node_action.setShortcut(QtGui.QKeySequence("Shift+A"))
+        cast(QtCore.SignalInstance, self._add_node_action.triggered).connect(self.add_node)
+        self.addAction(self._add_node_action)
+
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
 
@@ -420,28 +435,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for i in range(self._undo_stack.count()):
                 print("Stack Item", self._undo_stack.command(i))
 
-        if event.key() == QtCore.Qt.Key_A and event.modifiers() == QtCore.Qt.ShiftModifier:
-            # Adds node to scene
-            new_node = NodeItem(self._undo_stack)
-            new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-            self._undo_stack.push(AddItemCommand(self.scene(), new_node))
-
-        if event.key() == QtCore.Qt.Key_Q:
-            # Opens sub scene of custom node
-            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-
-            if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
-                self._undo_stack.push(SwitchSceneDownCommand(
-                    self, selected_nodes[0].sub_scene, self.scene(), selected_nodes[0])
-                )
-                self.fit_in_content()
-
-        if event.key() == QtCore.Qt.Key_W:
-            # Steps out of sub scene
-            if self.scene().parent_node:
-                self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
-                self.fit_in_content()
-
         super().keyPressEvent(event)
 
     # --------------- Callbacks ---------------
@@ -512,3 +505,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         frame: FrameItem = FrameItem(selected_nodes)
         self._undo_stack.push(AddItemCommand(self.scene(), frame))
+
+    def open_sub_graph(self):
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+
+        if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
+            self._undo_stack.push(SwitchSceneDownCommand(
+                self, selected_nodes[0].sub_scene, self.scene(), selected_nodes[0])
+            )
+            self.fit_in_content()
+
+    def close_sub_graph(self):
+        if self.scene().parent_node:
+            self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
+            self.fit_in_content()
+
+    def add_node(self):
+        new_node = NodeItem(self._undo_stack)
+        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+        self._undo_stack.push(AddItemCommand(self.scene(), new_node))
