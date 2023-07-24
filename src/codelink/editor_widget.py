@@ -77,10 +77,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._layout.addWidget(self._prop_scroller)
 
         # Actions
-        self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
-        self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
-        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
-        self.addAction(self._delete_action)
+        self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
+        self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+        self.addAction(self._undo_action)
+
+        self._redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+        self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(self._redo_action)
 
         self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
         self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
@@ -92,13 +95,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
         self.addAction(self._past_action)
 
-        self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
-        self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-        self.addAction(self._undo_action)
+        self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
+        self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
+        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
+        self.addAction(self._delete_action)
 
-        self._redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
-        self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-        self.addAction(self._redo_action)
+        self._create_custom_action: QtWidgets.QAction = QtWidgets.QAction("Create Custom", self)
+        self._create_custom_action.setShortcut(QtGui.QKeySequence("Shift+C"))
+        cast(QtCore.SignalInstance, self._create_custom_action.triggered).connect(self.create_custom_node)
+        self.addAction(self._create_custom_action)
+
+        self._resolve_custom_action: QtWidgets.QAction = QtWidgets.QAction("Resolve Custom", self)
+        self._resolve_custom_action.setShortcut(QtGui.QKeySequence("Shift+D"))
+        cast(QtCore.SignalInstance, self._resolve_custom_action.triggered).connect(self.resolve_custom_node)
+        self.addAction(self._resolve_custom_action)
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -421,15 +431,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
             self._undo_stack.push(AddItemCommand(self.scene(), new_node))
 
-        if event.key() == QtCore.Qt.Key_C and event.modifiers() == QtCore.Qt.ShiftModifier:
-            # Creates custom node from nodes
-            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            self._undo_stack.push(NodeFromNodeCommand(self.scene(), selected_nodes))
-
-        if event.key() == QtCore.Qt.Key_D and event.modifiers() == QtCore.Qt.SHIFT:
-            # Resolves custom node
-            self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
-
         if event.key() == QtCore.Qt.Key_F:
             # Frames selected nodes
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
@@ -459,15 +460,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Callbacks ---------------
 
-    def delete_selected_node(self) -> None:
-        self._undo_stack.push(DeleteSelectedCommand(self.scene()))
-
-    def copy(self) -> None:
-        self.scene().selection_to_clipboard()
-
-    def paste(self) -> None:
-        self._undo_stack.push(PasteClipboardCommand(self.scene()))
-
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
         y: int = focus_target.pos().y()
@@ -488,3 +480,19 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(self.NoAnchor)
         self.translate(dx, dy)
         self.setTransformationAnchor(self.AnchorUnderMouse)
+
+    def copy(self) -> None:
+        self.scene().selection_to_clipboard()
+
+    def paste(self) -> None:
+        self._undo_stack.push(PasteClipboardCommand(self.scene()))
+
+    def delete_selected_node(self) -> None:
+        self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+
+    def create_custom_node(self):
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        self._undo_stack.push(NodeFromNodeCommand(self.scene(), selected_nodes))
+
+    def resolve_custom_node(self):
+        self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
