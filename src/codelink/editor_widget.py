@@ -77,6 +77,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._layout.addWidget(self._prop_scroller)
 
         # Actions
+        self._open_action: QtWidgets.QAction = QtWidgets.QAction("Open", self)
+        self._open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
+        cast(QtCore.SignalInstance, self._open_action.triggered).connect(self.open_from_file)
+        self.addAction(self._open_action)
+
+        self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save", self)
+        self._save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
+        cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save_to_file)
+        self.addAction(self._save_action)
+
         self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
         self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
         self.addAction(self._undo_action)
@@ -362,25 +372,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
 
-        if event.matches(QtGui.QKeySequence.Save):
-            # Saves file
-            file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
-            with open(file_path, "w", encoding="utf8") as json_file:
-                json.dump(self.scene().serialize(), json_file, indent=4)
-
-        if event.matches(QtGui.QKeySequence.Open):
-            # Opens file
-            self.scene().clear_scene()
-            self._undo_stack.clear()
-            self._prop_scroller.hide()
-
-            file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
-            with open(file_path, "r", encoding="utf8") as json_file:
-                data_dict: dict = json.load(json_file)
-                self.scene().deserialize(data_dict)
-
-            self.fit_in_content()
-
         if event.matches(QtGui.QKeySequence.AddTab):
             # Adds socket to node
             if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
@@ -421,7 +412,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._prop_scroller.hide()
 
         if event.key() == QtCore.Qt.Key_S:
-            # Prints undo stack
             for i in range(self._undo_stack.count()):
                 print("Stack Item", self._undo_stack.command(i))
 
@@ -480,6 +470,28 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setTransformationAnchor(self.NoAnchor)
         self.translate(dx, dy)
         self.setTransformationAnchor(self.AnchorUnderMouse)
+
+    def save_to_file(self):
+        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
+        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
+
+        with open(file_path, "w", encoding="utf8") as json_file:
+            json.dump(self.scene().serialize(), json_file, indent=4)
+
+    def open_from_file(self):
+        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
+        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
+
+        if file_path != ".":
+            self.scene().clear_scene()
+            self._undo_stack.clear()
+            self._prop_scroller.hide()
+
+            with open(file_path, "r", encoding="utf8") as json_file:
+                data_dict: dict = json.load(json_file)
+                self.scene().deserialize(data_dict)
+
+            self.fit_in_content()
 
     def copy(self) -> None:
         self.scene().selection_to_clipboard()
