@@ -624,18 +624,21 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._node_background_color)
-        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+        # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+        painter.drawRect(self.boundingRect())
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
         painter.setBrush(QtGui.QColor(self._prop_model.properties["Color"]))
-        painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
+        # painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
+        painter.drawRect(rect)
 
         painter.setBrush(QtCore.Qt.NoBrush)
         if self.isSelected():
             painter.setPen(self._selected_border_pen)
         else:
             painter.setPen(self._default_border_pen)
-        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+        # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
+        painter.drawRect(self.boundingRect())
 
     # --------------- Serialization ---------------
 
