@@ -1,10 +1,16 @@
 MAIN_STYLE: str = """
-	QMenu {
+	QMenu, QMenu::item, QMenu::item:selected, QMenu::item:pressed {
 	    font-family: Sans Serif;
 		font-size: 12px;
 		font-weight: Normal;
 	    background-color: black;
 	    selection-background-color: #545454;
+	    color: #E5E5E5;
+	    padding: 5px;
+	}
+	
+	QMenu::item:selected, QMenu::item:pressed { 
+	    background-color: #545454;
 	    color: #E5E5E5;
 	}
 	

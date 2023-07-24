@@ -457,10 +457,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.fit_in_content()
 
     def copy(self) -> None:
-        self.scene().selection_to_clipboard()
+        if len(self.scene().selectedItems()) > 0:
+            self.scene().selection_to_clipboard()
 
     def paste(self) -> None:
-        self._undo_stack.push(PasteClipboardCommand(self.scene()))
+        clipboard_txt: str = QtWidgets.QApplication.clipboard().text()
+        if len(clipboard_txt) > 0:
+            self._undo_stack.push(PasteClipboardCommand(self.scene()))
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
