@@ -120,6 +120,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._resolve_custom_action.triggered).connect(self.resolve_custom_node)
         self.addAction(self._resolve_custom_action)
 
+        self._create_frame_action: QtWidgets.QAction = QtWidgets.QAction("Create Frame", self)
+        self._create_frame_action.setShortcut(QtGui.QKeySequence("Shift+F"))
+        cast(QtCore.SignalInstance, self._create_frame_action.triggered).connect(self.create_frame)
+        self.addAction(self._create_frame_action)
+
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
 
@@ -421,15 +426,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
             self._undo_stack.push(AddItemCommand(self.scene(), new_node))
 
-        if event.key() == QtCore.Qt.Key_F:
-            # Frames selected nodes
-            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
-            for node in selected_nodes:
-                node.remove_from_frame()
-
-            frame: FrameItem = FrameItem(selected_nodes)
-            self._undo_stack.push(AddItemCommand(self.scene(), frame))
-
         if event.key() == QtCore.Qt.Key_Q:
             # Opens sub scene of custom node
             selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
@@ -508,3 +504,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def resolve_custom_node(self):
         self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
+
+    def create_frame(self):
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        for node in selected_nodes:
+            node.remove_from_frame()
+
+        frame: FrameItem = FrameItem(selected_nodes)
+        self._undo_stack.push(AddItemCommand(self.scene(), frame))
