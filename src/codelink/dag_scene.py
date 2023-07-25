@@ -1,6 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any, Union, cast
-import importlib
+from typing import TYPE_CHECKING, Optional, Union, cast
+import sys
 import math
 import json
 
@@ -10,6 +10,7 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
+from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
 from pin_item import PinItem
@@ -485,12 +486,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
         deserialized_nodes: list[NodeItem] = []
 
         for node_dict in nodes_dict:
-            # Create node from dict
-            try:
-                node_class = getattr(importlib.import_module("node_item"), node_dict["Class"])
-            except AttributeError:
-                node_class = getattr(importlib.import_module("nodes.scalar_math"), node_dict["Class"])
 
+            # Create node from dict
+            node_class: type = getattr(sys.modules[__name__], node_dict["Class"])
             new_node: node_class = node_class(self._undo_stack)
             self.add_node(new_node)
 
