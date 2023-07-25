@@ -287,7 +287,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
-            selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+            selected_nodes: list[NodeItem] = [
+                item for item in self.scene().selectedItems() if isinstance(item, NodeItem)
+            ]
             selected_nodes_moved: list[bool] = [node.moved for node in selected_nodes]
 
             if any(selected_nodes_moved):
@@ -480,14 +482,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
 
     def create_custom_node(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
         self._undo_stack.push(NodeFromNodeCommand(self.scene(), selected_nodes))
 
     def resolve_custom_node(self):
         self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
 
     def create_frame(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
         for node in selected_nodes:
             node.remove_from_frame()
 
@@ -495,7 +497,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._undo_stack.push(AddItemCommand(self.scene(), frame))
 
     def open_sub_graph(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if type(item) == NodeItem]
+        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
 
         if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
             self._undo_stack.push(SwitchSceneDownCommand(
