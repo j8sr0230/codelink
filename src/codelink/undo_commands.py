@@ -40,7 +40,7 @@ class DeleteSelectedCommand(QtWidgets.QUndoCommand):
 
 		linked_frames: set[FrameItem] = {
 			item.parent_frame for item in scene.selectedItems() if (
-					type(item) == NodeItem and
+					isinstance(item, NodeItem) and
 					item.parent_frame is not None and
 					item not in selected_frames
 			)
@@ -81,7 +81,7 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 		# Copy uuid's and positions of selected nodes
 		self._undo_node_positions: list[tuple[str, float, float]] = [
 			(item.uuid, item.last_position.x(), item.last_position.y()) for item in self._scene.selectedItems()
-			if type(item) == NodeItem
+			if isinstance(item, NodeItem)
 		]
 		self._redo_node_positions: list[tuple[str, float, float]] = self._undo_node_positions.copy()
 

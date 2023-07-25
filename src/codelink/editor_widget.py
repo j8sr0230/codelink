@@ -522,7 +522,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def add_socket(self):
         if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-            if type(self.scene().selectedItems()[0]) is NodeItem:
+            if isinstance(self.scene().selectedItems()[0], NodeItem):
                 selected_node_item: NodeItem = self.scene().selectedItems()[0]
                 new_socket_widget: SocketWidget = SocketWidget(
                     label="N",
@@ -542,7 +542,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def remove_socket(self):
         if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-            if type(self.scene().selectedItems()[0]) is NodeItem:
+            if isinstance(self.scene().selectedItems()[0], NodeItem):
                 selected_node_item: NodeItem = self.scene().selectedItems()[0]
 
                 if len(selected_node_item.input_socket_widgets) > 0:
