@@ -354,7 +354,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
                 if linked_highest != socket_widget:
                     for edge in linked_highest.pin.edges:
-                        result.append(edge.start_pin.parent_node)
+                        start_socket: SocketWidget = edge.start_pin.socket_widget
+                        linked_lowest: SocketWidget = start_socket.parent_node.linked_lowest_socket(start_socket)
+                        result.append(linked_lowest.parent_node)
 
         return result
 

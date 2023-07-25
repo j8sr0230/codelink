@@ -6,8 +6,6 @@ from importlib import import_module
 
 from node_reg import register_node
 from node_item import NodeItem
-from base_node_item import BaseNodeItem
-from socket_widget import SocketWidget
 
 
 package_dir: str = str(Path(__file__).resolve().parent)
@@ -20,7 +18,7 @@ for (_, module_name, _) in iter_modules([package_dir]):
         # ... iterate through its attributes
         attribute: Any = getattr(module, attribute_name)
 
-        if isclass(attribute) and attribute not in (NodeItem, BaseNodeItem, SocketWidget):
+        if isclass(attribute) and attribute is not NodeItem:
             # Adds class to the global namespace
             globals()[attribute_name] = attribute
             register_node(attribute.REG_NAME, attribute)
