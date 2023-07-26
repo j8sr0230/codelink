@@ -12,7 +12,7 @@ from node_reg import nodes_dict
 from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand, NodeFromNodeCommand, ResolveNodeCommand,
     RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand,
-    AddNodeCommand, AddEdgeCommand, AddFrameCommand, RemoveFrameCommand
+    AddNodeCommand, AddEdgeCommand, AddFrameCommand
 )
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
@@ -491,11 +491,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def create_frame(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
-        for node in selected_nodes:
-            node.remove_from_frame()
-
-        frame: FrameItem = FrameItem(selected_nodes)
-        self._undo_stack.push(AddFrameCommand(self.scene(), frame))
+        self._undo_stack.push(AddFrameCommand(self.scene(), selected_nodes))
 
     def open_sub_graph(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]

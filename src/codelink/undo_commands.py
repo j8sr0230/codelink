@@ -155,40 +155,35 @@ class AddEdgeCommand(QtWidgets.QUndoCommand):
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, selected_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._frame_state: dict = frame.__getstate__()
-		self._frame_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
+		self._frame_uuid: str = ""
+		self._selected_uuids: list[str] = [node.uuid for node in selected_nodes]
+
+		self._old_parent_frames: dict[str, str] = {}
+		for node in selected_nodes:
+			if node.parent_frame is not None:
+				self._old_parent_frames[node.uuid] = node.parent_frame.uuid
+			else:
+				self._old_parent_frames[node.uuid] = ""
 
 	def undo(self) -> None:
-		self._scene.remove_frame(self._scene.dag_item(self._frame_state["UUID"]))
+		self._scene.remove_frame(self._scene.dag_item(self._frame_uuid))
+		for node_uuid, old_frame_uuid in self._old_parent_frames.items():
+			node: NodeItem = self._scene.dag_item(node_uuid)
+			old_parent_frame: Optional[FrameItem] = self._scene.dag_item(old_frame_uuid)
+			if old_parent_frame is not None:
+				old_parent_frame.framed_nodes.append(node)
+				node.parent_frame = old_parent_frame
 
 	def redo(self) -> None:
-		framed_nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._frame_state["Framed Nodes UUID's"]]
-		for node in framed_nodes:
-			node.parent_frame = None
-
-		self._scene.deserialize_frames([self._frame_state])
-
-
-class RemoveFrameCommand(QtWidgets.QUndoCommand):
-	def __init__(
-			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
-	) -> None:
-		super().__init__(parent)
-
-		self._scene: DAGScene = scene
-		self._frame_state: dict = frame.__getstate__()
-		self._frame_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
-
-	def undo(self) -> None:
-		self._scene.deserialize_frames([self._frame_state])
-
-	def redo(self) -> None:
-		self._scene.remove_frame(self._scene.dag_item(self._frame_state["UUID"]))
+		new_frame: FrameItem = self._scene.add_frame_from_nodes(
+			[self._scene.dag_item(uuid) for uuid in self._selected_uuids]
+		)
+		self._frame_uuid = new_frame.uuid
 
 
 class RemoveItemCommand(QtWidgets.QUndoCommand):

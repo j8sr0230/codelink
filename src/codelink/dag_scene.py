@@ -90,6 +90,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
         frame: FrameItem = FrameItem(framed_nodes=nodes)
         frame.uuid = QtCore.QUuid.createUuid().toString()
 
+        for node in nodes:
+            if node.parent_frame is not None:
+                node.parent_frame.framed_nodes.remove(node)
+            node.parent_frame = frame
+
         self._frames.append(frame)
         self.addItem(frame)
         self.clearSelection()
