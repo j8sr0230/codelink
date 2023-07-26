@@ -119,33 +119,76 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 				)
 
 
-class AddItemCommand(QtWidgets.QUndoCommand):
+class AddNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, item: Union[NodeItem, EdgeItem, FrameItem],
-			parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._item: Union[NodeItem, EdgeItem, FrameItem] = item
+		self._node_state: dict = node.__getstate__()
+		self._node_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
 
 	def undo(self) -> None:
-		if self._scene.dag_item(self._item.uuid) is not None:
-			if type(self._item) == FrameItem:
-				self._scene.remove_frame(self._item)
-			elif type(self._item) == EdgeItem:
-				self._scene.remove_edge(self._item)
-			else:
-				self._scene.remove_node(self._item)
+		self._scene.remove_node(self._scene.dag_item(self._node_state["UUID"]))
 
 	def redo(self) -> None:
-		if self._scene.dag_item(self._item.uuid) is None:
-			if isinstance(self._item, NodeItem):
-				self._scene.add_node(self._item)
-			elif type(self._item) == EdgeItem:
-				self._scene.add_edge(self._item)
-			else:
-				self._scene.add_frame(self._item)
+		self._scene.deserialize_nodes([self._node_state])
+
+
+class AddEdgeCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, edge: EdgeItem, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._edge_state: dict = edge.__getstate__()
+
+	def undo(self) -> None:
+		self._scene.remove_edge(self._scene.dag_item(self._edge_state["UUID"]))
+
+	def redo(self) -> None:
+		if self._scene.dag_item(self._edge_state["UUID"]) is None:
+			self._scene.deserialize_edges([self._edge_state])
+
+
+class AddFrameCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._frame_state: dict = frame.__getstate__()
+		self._frame_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
+
+	def undo(self) -> None:
+		self._scene.remove_frame(self._scene.dag_item(self._frame_state["UUID"]))
+
+	def redo(self) -> None:
+		framed_nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._frame_state["Framed Nodes UUID's"]]
+		for node in framed_nodes:
+			node.parent_frame = None
+
+		self._scene.deserialize_frames([self._frame_state])
+
+
+class RemoveFrameCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._frame_state: dict = frame.__getstate__()
+		self._frame_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
+
+	def undo(self) -> None:
+		self._scene.deserialize_frames([self._frame_state])
+
+	def redo(self) -> None:
+		self._scene.remove_frame(self._scene.dag_item(self._frame_state["UUID"]))
 
 
 class RemoveItemCommand(QtWidgets.QUndoCommand):

@@ -10,8 +10,9 @@ import PySide2.QtGui as QtGui
 
 from node_reg import nodes_dict
 from undo_commands import (
-    DeleteSelectedCommand, MoveSelectedCommand, AddItemCommand, NodeFromNodeCommand, ResolveNodeCommand,
-    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
+    DeleteSelectedCommand, MoveSelectedCommand, NodeFromNodeCommand, ResolveNodeCommand,
+    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand,
+    AddNodeCommand, AddEdgeCommand, AddFrameCommand, RemoveFrameCommand
 )
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
@@ -328,7 +329,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                     else:
                         # Default edge adding
-                        self._undo_stack.push(AddItemCommand(self.scene(), self._temp_edge))
+                        self._undo_stack.push(AddEdgeCommand(self.scene(), self._temp_edge))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
@@ -494,7 +495,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             node.remove_from_frame()
 
         frame: FrameItem = FrameItem(selected_nodes)
-        self._undo_stack.push(AddItemCommand(self.scene(), frame))
+        self._undo_stack.push(AddFrameCommand(self.scene(), frame))
 
     def open_sub_graph(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
@@ -513,12 +514,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def add_test_node(self):
         new_node = NodeItem(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-        self._undo_stack.push(AddItemCommand(self.scene(), new_node))
+        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def add_node_from_cls(self, cls: type):
         new_node: cls = cls(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-        self._undo_stack.push(AddItemCommand(self.scene(), new_node))
+        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def add_socket(self):
         if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
