@@ -167,12 +167,54 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().setScene(scene)
         self.scene().zoom_level: int = self._zoom_level
 
+    def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseDoubleClickEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            # Open node properties
+            if isinstance(self.itemAt(event.pos()), NodeItem):
+                # self.scene().clearSelection()
+                self._last_node: NodeItem = self.itemAt(event.pos())
+                self._last_node.setSelected(True)
+                prop_widget: PropertyWidget = PropertyWidget(
+                    self._last_node,
+                    width=self._prop_scroller.width(),
+                    parent=self._prop_scroller
+                )
+                cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
+                self._prop_scroller.setWidget(prop_widget)
+                self._prop_scroller.show()
+
+            elif type(self.itemAt(event.pos())) == FrameItem:
+                # self.scene().clearSelection()
+                frame_item: FrameItem = self.itemAt(event.pos())
+                table_view: PropertyTable = PropertyTable()
+                table_view.setModel(frame_item.prop_model)
+                table_view.setItemDelegateForRow(0, StringDelegate(table_view))
+                table_view.setItemDelegateForRow(1, StringDelegate(table_view))
+                table_view.setFixedWidth(self._prop_scroller.width())
+                table_view.setFixedHeight(
+                    table_view.model().rowCount() * table_view.rowHeight(0) +
+                    table_view.horizontalHeader().height()
+                )
+                self._prop_scroller.setWidget(table_view)
+                self._prop_scroller.show()
+            else:
+                self.scene().clearSelection()
+                self._prop_scroller.hide()
+
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
-        if event.button() == QtCore.Qt.LeftButton:
-            super().mousePressEvent(event)
+        if event.button() == QtCore.Qt.LeftButton and event.modifiers() == QtCore.Qt.ShiftModifier:
+            self._lm_pressed: bool = True
+            self._mode: str = "EDGE_CUT"
+            self._cutter: CutterItem = CutterItem(start=self._last_pos, end=self._last_pos)
+            self.scene().addItem(self._cutter)
+            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
+        elif event.button() == QtCore.Qt.LeftButton and not event.modifiers() == QtCore.Qt.ShiftModifier:
+            super().mousePressEvent(event)
             self._lm_pressed: bool = True
 
             if type(self.itemAt(event.pos())) == PinItem:
@@ -202,52 +244,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.button() == QtCore.Qt.MiddleButton:
             super().mousePressEvent(event)
-
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
-
-        if event.button() == QtCore.Qt.RightButton:
-            self._rm_pressed: bool = True
-            if event.modifiers() == QtCore.Qt.ShiftModifier:
-                self._mode: str = "EDGE_CUT"
-                self._cutter: CutterItem = CutterItem(start=self._last_pos, end=self._last_pos)
-                self.scene().addItem(self._cutter)
-                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
-            else:
-                # Open node properties
-                if isinstance(self.itemAt(event.pos()), NodeItem):
-                    self.scene().clearSelection()
-                    self._last_node: NodeItem = self.itemAt(event.pos())
-                    self._last_node.setSelected(True)
-                    prop_widget: PropertyWidget = PropertyWidget(
-                        self._last_node,
-                        width=self._prop_scroller.width(),
-                        parent=self._prop_scroller
-                    )
-                    cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
-                    self._prop_scroller.setWidget(prop_widget)
-                    self._prop_scroller.show()
-
-                elif type(self.itemAt(event.pos())) == FrameItem:
-                    self.scene().clearSelection()
-                    frame_item: FrameItem = self.itemAt(event.pos())
-                    table_view: PropertyTable = PropertyTable()
-                    table_view.setModel(frame_item.prop_model)
-                    table_view.setItemDelegateForRow(0, StringDelegate(table_view))
-                    table_view.setItemDelegateForRow(1, StringDelegate(table_view))
-                    table_view.setFixedWidth(self._prop_scroller.width())
-                    table_view.setFixedHeight(
-                        table_view.model().rowCount() * table_view.rowHeight(0) +
-                        table_view.horizontalHeader().height()
-                    )
-                    self._prop_scroller.setWidget(table_view)
-                    self._prop_scroller.show()
-                else:
-                    self.scene().clearSelection()
-                    self._prop_scroller.hide()
-
-                super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -286,7 +285,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for item in selected_items:
                 if type(item) is EdgeItem:
-                    self.scene().remove_edge(item)
+                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), item))
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -405,30 +404,41 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Callbacks ---------------
     def show_context_menu(self, position: QtCore.QPoint):
-        context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+        if self._mode != "EDGE_CUT":
+            context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-        # Add menu
-        add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-        add_menu.setTitle("Nodes")
+            # Add menu
+            add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+            add_menu.setTitle("Add")
 
-        add_menu.addAction(self._add_test_node_action)
+            add_menu.addAction(self._add_test_node_action)
 
-        for name, cls, in nodes_dict.items():
-            # Adds all nodes from nodes.nodes_dict
-            add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
-            add_node_action.setData(cls)
-            cast(QtCore.SignalInstance, add_node_action.triggered).connect(
-                lambda: self.add_node_from_cls(add_node_action.data())
-            )
-            add_menu.addAction(add_node_action)
+            for name, cls, in nodes_dict.items():
+                # Adds all nodes from nodes.nodes_dict
+                add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
+                add_node_action.setData(cls)
+                cast(QtCore.SignalInstance, add_node_action.triggered).connect(
+                    lambda: self.add_node_from_cls(add_node_action.data())
+                )
+                add_menu.addAction(add_node_action)
 
-        # Rest of context menu
-        context_menu.addMenu(add_menu)
-        context_menu.addSeparator()
-        context_menu.addAction(self._open_action)
-        context_menu.addAction(self._save_action)
+            # Rest of context menu
+            context_menu.addMenu(add_menu)
+            context_menu.addSeparator()
+            context_menu.addAction(self._open_action)
+            context_menu.addAction(self._save_action)
+            context_menu.addAction(self._undo_action)
+            context_menu.addAction(self._redo_action)
 
-        context_menu.exec_(self.mapToGlobal(position))
+            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
+                if (isinstance(self.scene().selectedItems()[0], NodeItem) or
+                        type(self.scene().selectedItems()[0]) is FrameItem):
+                    self._delete_action.setEnabled(True)
+            else:
+                self._delete_action.setEnabled(False)
+            context_menu.addAction(self._delete_action)
+
+            context_menu.exec_(self.mapToGlobal(position))
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()

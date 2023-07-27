@@ -14,6 +14,10 @@ MAIN_STYLE: str = """
 	    color: #E5E5E5;
 	}
 	
+	QMenu::item:disabled { 
+	    color: grey;
+	}
+	
 	QMenu::separator {
 	    background-color: #282828;
 	    height: 2px;
