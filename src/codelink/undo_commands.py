@@ -53,7 +53,11 @@ class NodeFromNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.clearSelection()
 		nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._nodes_uuids]
 		custom_node = self._scene.add_node_from_nodes(nodes)
-		self._custom_node_uuid = custom_node.uuid
+		if self._custom_node_uuid is None:
+			self._custom_node_uuid = custom_node.uuid
+		else:
+			custom_node.uuid = self._custom_node_uuid
+
 		custom_node.setSelected(True)
 
 
