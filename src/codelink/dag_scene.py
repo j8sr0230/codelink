@@ -76,6 +76,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def zoom_level(self, value: int) -> None:
         self._zoom_level: int = value
 
+    @property
+    def background_color(self) -> QtGui.QColor:
+        return self._background_color
+
+    @background_color.setter
+    def background_color(self, value: QtGui.QColor) -> None:
+        self._background_color: QtGui.QColor = value
+
     # --------------- DAG editing ---------------
 
     def add_frame(self, frame: FrameItem) -> FrameItem:

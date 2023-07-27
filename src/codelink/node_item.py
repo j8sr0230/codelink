@@ -41,6 +41,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
         self._sub_scene: dag_scene_cls = dag_scene_cls(self._undo_stack)
+        self._sub_scene.background_color = QtGui.QColor("#383838")
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
         self._mode: str = ""
         self._lm_pressed: bool = False
