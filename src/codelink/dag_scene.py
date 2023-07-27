@@ -78,6 +78,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- DAG editing ---------------
 
+    def add_frame(self, frame: FrameItem) -> FrameItem:
+        if frame.uuid == "":
+            frame.uuid = QtCore.QUuid.createUuid().toString()
+
+        self._frames.append(frame)
+        self.addItem(frame)
+        return frame
+
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame: FrameItem = FrameItem(framed_nodes=nodes)
         frame.uuid = QtCore.QUuid.createUuid().toString()
