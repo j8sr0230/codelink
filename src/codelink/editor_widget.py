@@ -501,7 +501,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._delete_action.setEnabled(True)
             self._create_frame_action.setEnabled(True)
-            self._create_custom_action.setEnabled(False)
+            self._create_custom_action.setEnabled(True)
             self._resolve_custom_action.setEnabled(True)
             self._open_sub_action.setEnabled(True)
             self._close_sub_action.setEnabled(True)
