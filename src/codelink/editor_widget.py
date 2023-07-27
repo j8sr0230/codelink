@@ -260,8 +260,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 new_selection: FrameItem = self.itemAt(event.pos())
 
             # Previously selected scene items
-            selected_items: list[NodeItem] = [item for item in self.scene().selectedItems() if
-                                              (isinstance(item, NodeItem) or type(item) == FrameItem)]
+            selected_items: list[Any] = [item for item in self.scene().selectedItems() if
+                                         (isinstance(item, NodeItem) or type(item) == FrameItem)]
 
             if new_selection is not None:
                 if new_selection not in selected_items:
@@ -434,7 +434,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Add menu
             add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-            add_menu.setTitle("Add")
+            add_menu.setTitle("&Add")
 
             add_menu.addAction(self._add_test_node_action)
 
@@ -455,24 +455,32 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.addAction(self._undo_action)
             context_menu.addAction(self._redo_action)
 
-            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-                if (isinstance(self.scene().selectedItems()[0], NodeItem) or
-                        type(self.scene().selectedItems()[0]) is FrameItem):
-                    self._delete_action.setEnabled(True)
-                else:
-                    self._delete_action.setEnabled(False)
+            selected_items: list[Any] = self.scene().selectedItems()
+            nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
+            frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
+
+            if nodes_selected or frames_selected:
+                self._delete_action.setEnabled(True)
             else:
                 self._delete_action.setEnabled(False)
             context_menu.addAction(self._delete_action)
 
-            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-                if (isinstance(self.scene().selectedItems()[0], NodeItem) and
-                        self.scene().selectedItems()[0].has_sub_scene()):
-                    self._open_sub_action.setEnabled(True)
-                else:
-                    self._open_sub_action.setEnabled(False)
+            if nodes_selected:
+                self._create_frame_action.setEnabled(True)
+                self._create_custom_action.setEnabled(True)
+            else:
+                self._create_frame_action.setEnabled(False)
+                self._create_custom_action.setEnabled(False)
+            context_menu.addAction(self._create_frame_action)
+            context_menu.addAction(self._create_custom_action)
+
+            if nodes_selected and [item for item in selected_items if isinstance(item, NodeItem)][0].has_sub_scene():
+                self._open_sub_action.setEnabled(True)
+                self._resolve_custom_action.setEnabled(True)
             else:
                 self._open_sub_action.setEnabled(False)
+                self._resolve_custom_action.setEnabled(False)
+            context_menu.addAction(self._resolve_custom_action)
             context_menu.addAction(self._open_sub_action)
 
             if self.scene().parent_node is not None:
@@ -484,6 +492,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.exec_(self.mapToGlobal(position))
 
             self._delete_action.setEnabled(True)
+            self._create_frame_action.setEnabled(True)
+            self._create_custom_action.setEnabled(False)
+            self._resolve_custom_action.setEnabled(True)
             self._open_sub_action.setEnabled(True)
             self._close_sub_action.setEnabled(True)
 

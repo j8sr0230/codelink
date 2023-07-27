@@ -48,7 +48,8 @@ class FrameItem(QtWidgets.QGraphicsItem):
         # Widget setup
         self.setZValue(0)
         self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     @property
     def uuid(self) -> str:

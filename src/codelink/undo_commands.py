@@ -31,7 +31,9 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.remove_node(self._scene.dag_item(self._node_state["UUID"]))
 
 	def redo(self) -> None:
-		self._scene.deserialize_nodes([self._node_state])
+		new_node: NodeItem = self._scene.deserialize_nodes([self._node_state])[0]
+		self._scene.clearSelection()
+		new_node.setSelected(True)
 
 
 class NodeFromNodeCommand(QtWidgets.QUndoCommand):
@@ -48,9 +50,11 @@ class NodeFromNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.resolve_node(custom_node)
 
 	def redo(self) -> None:
+		self._scene.clearSelection()
 		nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._nodes_uuids]
 		custom_node = self._scene.add_node_from_nodes(nodes)
 		self._custom_node_uuid = custom_node.uuid
+		custom_node.setSelected(True)
 
 
 class ResolveNodeCommand(QtWidgets.QUndoCommand):
@@ -231,6 +235,9 @@ class AddFrameCommand(QtWidgets.QUndoCommand):
 			self._frame_uuid = new_frame.uuid
 		else:
 			self._scene.dag_item(new_frame.uuid).uuid = self._frame_uuid
+
+		self._scene.clearSelection()
+		new_frame.setSelected(True)
 
 
 class DeleteSelectedCommand(QtWidgets.QUndoCommand):
@@ -430,3 +437,7 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 
 		for node in self._nodes:
 			node.setPos(dx + node.x(), dy + node.y())
+
+		self._scene.clearSelection()
+		for item in self._nodes + self._frames:
+			item.setSelected(True)
