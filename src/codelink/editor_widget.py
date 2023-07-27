@@ -101,6 +101,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(self._redo_action)
 
+        self._fit_action: QtWidgets.QAction = QtWidgets.QAction("Fit Content", self)
+        self._fit_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Find))
+        cast(QtCore.SignalInstance, self._fit_action.triggered).connect(self.fit_min)
+        self.addAction(self._fit_action)
+
         self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
         self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
         cast(QtCore.SignalInstance, self._copy_action.triggered).connect(self.copy)
@@ -116,6 +121,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
         self.addAction(self._delete_action)
 
+        self._create_frame_action: QtWidgets.QAction = QtWidgets.QAction("Create Frame", self)
+        self._create_frame_action.setShortcut(QtGui.QKeySequence("Shift+F"))
+        cast(QtCore.SignalInstance, self._create_frame_action.triggered).connect(self.create_frame)
+        self.addAction(self._create_frame_action)
+
         self._create_custom_action: QtWidgets.QAction = QtWidgets.QAction("Create Custom", self)
         self._create_custom_action.setShortcut(QtGui.QKeySequence("Shift+C"))
         cast(QtCore.SignalInstance, self._create_custom_action.triggered).connect(self.create_custom_node)
@@ -125,11 +135,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._resolve_custom_action.setShortcut(QtGui.QKeySequence("Shift+D"))
         cast(QtCore.SignalInstance, self._resolve_custom_action.triggered).connect(self.resolve_custom_node)
         self.addAction(self._resolve_custom_action)
-
-        self._create_frame_action: QtWidgets.QAction = QtWidgets.QAction("Create Frame", self)
-        self._create_frame_action.setShortcut(QtGui.QKeySequence("Shift+F"))
-        cast(QtCore.SignalInstance, self._create_frame_action.triggered).connect(self.create_frame)
-        self.addAction(self._create_frame_action)
 
         self._open_sub_action: QtWidgets.QAction = QtWidgets.QAction("Open Sub Graph", self)
         self._open_sub_action.setShortcut(QtGui.QKeySequence("Shift+Q"))
@@ -455,6 +460,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.addAction(self._save_action)
             context_menu.addAction(self._undo_action)
             context_menu.addAction(self._redo_action)
+            context_menu.addAction(self._fit_action)
             context_menu.addSeparator()
 
             selected_items: list[Any] = self.scene().selectedItems()
@@ -550,6 +556,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().deserialize(data_dict)
 
             self.fit_in_content()
+
+    def fit_min(self) -> None:
+        self.zoom_min()
+        self.fit_in_content()
 
     def copy(self) -> None:
         if len(self.scene().selectedItems()) > 0:
