@@ -99,7 +99,8 @@ class FrameItem(QtWidgets.QGraphicsItem):
         background_color: QtGui.QColor = QtGui.QColor(self._prop_model.properties["Color"])
         background_color.setAlpha(50)
         painter.setBrush(background_color)
-        painter.drawRoundedRect(self.boundingRect(), 5, 5)
+        # painter.drawRoundedRect(self.boundingRect(), 5, 5)
+        painter.drawRect(self.boundingRect())
 
         painter.setPen(self._font_color)
         painter.setFont(self._font)
