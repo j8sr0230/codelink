@@ -1,4 +1,4 @@
-from typing import Optional, Any, cast
+from typing import Union, Optional, Any, cast
 import json
 import os
 
@@ -248,6 +248,31 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
+        if event.button() == QtCore.Qt.RightButton:
+            new_selection: Optional[Union[NodeItem, FrameItem]] = None  # Right click selected NodeItem od FrameItem
+            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
+                new_selection: NodeItem = self.itemAt(event.pos()).parentItem()
+            elif isinstance(self.itemAt(event.pos()), NodeItem):
+                new_selection: NodeItem = self.itemAt(event.pos())
+            elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+                new_selection: NodeItem = self.itemAt(event.pos()).parentItem()
+            elif type(self.itemAt(event.pos())) == FrameItem:
+                new_selection: FrameItem = self.itemAt(event.pos())
+
+            # Previously selected scene items
+            selected_items: list[NodeItem] = [item for item in self.scene().selectedItems() if
+                                              (isinstance(item, NodeItem) or type(item) == FrameItem)]
+
+            if new_selection is not None:
+                if new_selection not in selected_items:
+                    # If new_selection is new
+                    self.scene().clearSelection()
+                    new_selection.setSelected(True)
+            else:
+                self.scene().clearSelection()
+
+            super().mousePressEvent(event)
+
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
@@ -434,11 +459,33 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if (isinstance(self.scene().selectedItems()[0], NodeItem) or
                         type(self.scene().selectedItems()[0]) is FrameItem):
                     self._delete_action.setEnabled(True)
+                else:
+                    self._delete_action.setEnabled(False)
             else:
                 self._delete_action.setEnabled(False)
             context_menu.addAction(self._delete_action)
 
+            if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
+                if (isinstance(self.scene().selectedItems()[0], NodeItem) and
+                        self.scene().selectedItems()[0].has_sub_scene()):
+                    self._open_sub_action.setEnabled(True)
+                else:
+                    self._open_sub_action.setEnabled(False)
+            else:
+                self._open_sub_action.setEnabled(False)
+            context_menu.addAction(self._open_sub_action)
+
+            if self.scene().parent_node is not None:
+                self._close_sub_action.setEnabled(True)
+            else:
+                self._close_sub_action.setEnabled(False)
+            context_menu.addAction(self._close_sub_action)
+
             context_menu.exec_(self.mapToGlobal(position))
+
+            self._delete_action.setEnabled(True)
+            self._open_sub_action.setEnabled(True)
+            self._close_sub_action.setEnabled(True)
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
