@@ -140,6 +140,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
             if framed_nodes_set.issubset(selected_nodes_set):
                 inner_sub_frames.append(sub_frame)
 
+        # outer_frames: set[FrameItem] = sub_frames.difference(inner_sub_frames)
+        # for outer_frame in outer_frames:
+        #     print(outer_frame.framed_nodes)
+
         # Calculate selection center
         selection_rect: QtCore.QRectF = self.bounding_rect(nodes)
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
@@ -211,6 +215,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
             node: NodeItem = nodes.pop()
             self.remove_node(node)
 
+        # for outer_frame in outer_frames:
+        #     print(outer_frame.framed_nodes)
+
         return custom_node
 
     def remove_node(self, node: NodeItem) -> None:
@@ -236,6 +243,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
             )
 
             for sub_node in node.sub_scene.nodes:
+                # print(sub_node.parent_frame)
                 self.add_node(sub_node)
                 node_pos: QtCore.QPointF = QtCore.QPointF(
                     sub_node.x() + (node.center.x() - sub_scene_center.x()),
