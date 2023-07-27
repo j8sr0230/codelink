@@ -18,6 +18,14 @@ MAIN_STYLE: str = """
 	    color: grey;
 	}
 	
+	QMenu::right-arrow, QMenu::right-arrow:selected {
+        width: 10px;
+        height: 10px;
+        margin: 2px;
+        padding: 0px;
+        image:url(icon:images_dark-light/right_arrow_light.svg);
+    }
+	
 	QMenu::separator {
 	    background-color: #282828;
 	    height: 2px;

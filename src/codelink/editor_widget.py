@@ -88,7 +88,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._open_action.triggered).connect(self.open_from_file)
         self.addAction(self._open_action)
 
-        self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save", self)
+        self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save As", self)
         self._save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
         cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save_to_file)
         self.addAction(self._save_action)
