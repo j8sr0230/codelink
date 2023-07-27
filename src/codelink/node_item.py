@@ -318,8 +318,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             linked_socket.link = (self.uuid, idx)
 
     def remove_from_frame(self):
+        self._parent_frame: Optional[FrameItem] = self.scene().dag_item(self.parent_frame.uuid)
         if self.parent_frame is not None:
-            self.parent_frame.framed_nodes.remove(self)
+            self.parent_frame.framed_nodes.remove(self.scene().dag_item(self.uuid))
             self.parent_frame.update()
             if len(self.parent_frame.framed_nodes) == 0:
                 self.scene().remove_frame(self.parent_frame)

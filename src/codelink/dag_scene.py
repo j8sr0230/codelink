@@ -78,14 +78,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- DAG editing ---------------
 
-    def add_frame(self, frame: FrameItem) -> FrameItem:
-        if frame.uuid == "":
-            frame.uuid = QtCore.QUuid.createUuid().toString()
-
-        self._frames.append(frame)
-        self.addItem(frame)
-        return frame
-
     def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
         frame: FrameItem = FrameItem(framed_nodes=nodes)
         frame.uuid = QtCore.QUuid.createUuid().toString()
@@ -316,6 +308,18 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self.removeItem(edge)
         self._edges.remove(edge)
+
+    def remove_item(self, uuid: str) -> Union[NodeItem, EdgeItem, FrameItem, None]:
+        item: Union[NodeItem, EdgeItem, FrameItem] = self.dag_item(uuid)
+
+        if isinstance(item, NodeItem):
+            self.remove_node(item)
+        elif type(item) == EdgeItem:
+            self.remove_edge(item)
+        else:
+            self.remove_frame(item)
+
+        return item
 
     def selection_to_clipboard(self):
         # Copy states of selected and linked items

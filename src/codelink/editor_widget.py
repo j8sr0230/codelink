@@ -8,12 +8,14 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from node_reg import nodes_dict
 from undo_commands import (
-    DeleteSelectedCommand, MoveSelectedCommand, NodeFromNodeCommand, ResolveNodeCommand,
-    RemoveItemCommand, RerouteEdgeCommand, SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand,
-    AddNodeCommand, AddEdgeCommand, AddFrameCommand
+    AddNodeCommand, NodeFromNodeCommand, ResolveNodeCommand,  # Node commands
+    AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
+    AddFrameCommand,  # Frame commands
+    DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
+    SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation commands
 )
+from node_reg import nodes_dict
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
@@ -335,7 +337,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
                         # Default invalid edge
                         self._temp_edge.color = self._temp_edge.start_pin.color
-                        self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
+                        self._undo_stack.push(RemoveEdgeCommand(self.scene(), self._temp_edge))
                     else:
                         # Invalid edge with same start and end pin
                         self.scene().remove_edge(self._temp_edge)
@@ -343,7 +345,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 # If target is not a PinItem (mouse btn release in empty area)
                 self._temp_edge.end_pin = self._last_pin
                 if self._temp_edge.end_pin != self._temp_edge.start_pin:
-                    self._undo_stack.push(RemoveItemCommand(self.scene(), self._temp_edge))
+                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), self._temp_edge))
                 else:
                     self.scene().remove_edge(self._temp_edge)
 
@@ -475,9 +477,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.scene().selection_to_clipboard()
 
     def paste(self) -> None:
-        clipboard_txt: str = QtWidgets.QApplication.clipboard().text()
-        if len(clipboard_txt) > 0:
+        try:
             self._undo_stack.push(PasteClipboardCommand(self.scene()))
+        except json.JSONDecodeError:
+            print("Pasting failed!")
 
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
