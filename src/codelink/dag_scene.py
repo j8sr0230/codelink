@@ -126,7 +126,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
         return node
 
-    def add_node_from_nodes(self, nodes: list[NodeItem]) -> NodeItem:
+    def add_node_from_nodes(self, nodes: list[NodeItem], uuid: Optional[str] = None) -> NodeItem:
         selected_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
@@ -180,7 +180,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
                     linked_sub_node: NodeItem = custom_node.sub_scene.dag_item(socket_widget.parent_node.uuid)
                     linked_sub_socket_widget: SocketWidget = linked_sub_node.socket_widgets[socket_idx]
-                    linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
+                    if uuid is None:
+                        linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
+                    else:
+                        linked_sub_socket_widget.link = (uuid, len(custom_node.socket_widgets))
 
                     custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
