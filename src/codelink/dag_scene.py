@@ -126,7 +126,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
         return node
 
-    def add_node_from_nodes(self, nodes: list[NodeItem], uuid: Optional[str] = None) -> NodeItem:
+    def add_node_from_nodes(self, nodes: list[NodeItem], custom_uuid: str = "") -> NodeItem:
         selected_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
@@ -140,10 +140,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             if framed_nodes_set.issubset(selected_nodes_set):
                 inner_sub_frames.append(sub_frame)
 
-        # outer_frames: set[FrameItem] = sub_frames.difference(inner_sub_frames)
-        # for outer_frame in outer_frames:
-        #     print(outer_frame.framed_nodes)
-
         # Calculate selection center
         selection_rect: QtCore.QRectF = self.bounding_rect(nodes)
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
@@ -156,6 +152,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         # Add custom node, remove predefined socket widgets and save sub graph
         custom_node: NodeItem = NodeItem(self._undo_stack)
         custom_node.sub_scene.parent_node = custom_node
+        custom_node.uuid = custom_uuid
         self.add_node(custom_node)
         custom_node.clear_socket_widgets()
         custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
@@ -180,10 +177,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
                     linked_sub_node: NodeItem = custom_node.sub_scene.dag_item(socket_widget.parent_node.uuid)
                     linked_sub_socket_widget: SocketWidget = linked_sub_node.socket_widgets[socket_idx]
-                    if uuid is None:
-                        linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
-                    else:
-                        linked_sub_socket_widget.link = (uuid, len(custom_node.socket_widgets))
+                    linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
 
                     custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
 
@@ -218,9 +212,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             node: NodeItem = nodes.pop()
             self.remove_node(node)
 
-        # for outer_frame in outer_frames:
-        #     print(outer_frame.framed_nodes)
-
         return custom_node
 
     def remove_node(self, node: NodeItem) -> None:
@@ -238,6 +229,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._nodes.remove(node)
 
     def resolve_node(self, node: NodeItem):
+        node: NodeItem = self.dag_item(node.uuid)
         if node.has_sub_scene():
             sub_scene_bbox: QtCore.QRectF = node.sub_scene.itemsBoundingRect()
             sub_scene_center: QtCore.QPointF = QtCore.QPointF(
