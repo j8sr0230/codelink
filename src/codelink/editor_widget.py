@@ -435,6 +435,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         y: int = focus_target.pos().y()
         self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
 
+    def zoom_min(self):
+        while self._zoom_level > self._zoom_level_range[0]:
+            self._zoom_level -= 1
+            self.scale(1 / 1.25, 1 / 1.25)
+        cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
+
     def on_zoom_change(self, zoom_level: int) -> None:
         self.scene().update_details(zoom_level)
 
@@ -467,6 +473,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.scene().clear_scene()
             self._undo_stack.clear()
             self._prop_scroller.hide()
+            self.zoom_min()
 
             with open(file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
