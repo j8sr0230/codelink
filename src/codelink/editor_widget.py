@@ -433,10 +433,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
             # Add menu
-            add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-            add_menu.setTitle("&Add")
+            math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+            math_nodes.setTitle("&Math")
 
-            add_menu.addAction(self._add_test_node_action)
+            math_nodes.addAction(self._add_test_node_action)
 
             for name, cls, in nodes_dict.items():
                 # Adds all nodes from nodes.nodes_dict
@@ -445,15 +445,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 cast(QtCore.SignalInstance, add_node_action.triggered).connect(
                     lambda: self.add_node_from_cls(add_node_action.data())
                 )
-                add_menu.addAction(add_node_action)
+                math_nodes.addAction(add_node_action)
 
             # Rest of context menu
-            context_menu.addMenu(add_menu)
+            context_menu.addMenu(math_nodes)
             context_menu.addSeparator()
+
             context_menu.addAction(self._open_action)
             context_menu.addAction(self._save_action)
             context_menu.addAction(self._undo_action)
             context_menu.addAction(self._redo_action)
+            context_menu.addSeparator()
 
             selected_items: list[Any] = self.scene().selectedItems()
             nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
