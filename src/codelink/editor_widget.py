@@ -50,6 +50,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._zoom_level: int = 10
         self._zoom_level_range: list = [5, 10]
+        self._scroll_border: int = 50
 
         # Widget layout and setup
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -268,6 +269,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             else:
                 self._temp_edge.color = self._temp_edge.start_pin.color
                 self._temp_edge.end_pin.setPos(self.mapToScene(event.pos()))
+                self.ensureVisible(self._temp_edge.end_pin, self._scroll_border, self._scroll_border)
 
         if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
