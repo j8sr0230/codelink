@@ -100,7 +100,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         for node in nodes:
             if node.parent_frame is not None:
-                node.parent_frame.framed_nodes.remove(node)
+                node.remove_from_frame()
             node.parent_frame = frame
 
         self._frames.append(frame)
