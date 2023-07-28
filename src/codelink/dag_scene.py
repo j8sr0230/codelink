@@ -52,13 +52,25 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def frames(self) -> list[FrameItem]:
         return self._frames
 
+    @frames.setter
+    def frames(self, value: list[FrameItem]) -> None:
+        self._frames: list[FrameItem] = value
+
     @property
     def nodes(self) -> list[NodeItem]:
         return self._nodes
 
+    @nodes.setter
+    def nodes(self, value: list[NodeItem]) -> None:
+        self._nodes: list[NodeItem] = value
+
     @property
     def edges(self) -> list[EdgeItem]:
         return self._edges
+
+    @edges.setter
+    def edges(self, value: list[EdgeItem]) -> None:
+        self._edges: list[EdgeItem] = value
 
     @property
     def parent_node(self) -> Optional[NodeItem]:
@@ -124,7 +136,52 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self._nodes.append(node)
         self.addItem(node)
+        node.setSelected(True)
+
         return node
+
+    def add_grp_node(self, grp_node: NodeItem, sub_nodes: list[NodeItem]) -> NodeItem:
+        sub_edges: list[EdgeItem] = []
+        for edge in self._edges:
+            if edge.start_pin.parentItem() in sub_nodes and edge.end_pin.parentItem() in sub_nodes:
+                sub_edges.append(edge)
+
+        frames: set[FrameItem] = {node.parent_frame for node in sub_nodes if node.parent_frame is not None}
+        sub_frames: list[FrameItem] = []
+        for sub_frame in frames:
+            framed_nodes_set: set[NodeItem] = set(sub_frame.framed_nodes)
+            sub_nodes_set: set[NodeItem] = set(sub_nodes)
+            if framed_nodes_set.issubset(sub_nodes_set):
+                sub_frames.append(sub_frame)
+
+        for sub_node in sub_nodes:
+            grp_node.sub_scene.add_node(sub_node)
+        for sub_edge in sub_edges:
+            grp_node.sub_scene.add_edge(sub_edge)
+        for sub_frame in sub_frames:
+            grp_node.sub_scene.add_frame(sub_frame)
+
+        self._nodes: list[NodeItem] = []
+        self._edges: list[EdgeItem] = []
+        self._frames: list[FrameItem] = []
+
+        self.add_node(grp_node)
+
+        return grp_node
+
+    def resolve_grp_node(self, grp_node: NodeItem):
+        for sub_node in grp_node.sub_scene.nodes:
+            self.add_node(sub_node)
+        for sub_edge in grp_node.sub_scene.edges:
+            self.add_edge(sub_edge)
+        for sub_frame in grp_node.sub_scene.frames:
+            self.add_frame(sub_frame)
+
+        grp_node.sub_scene.frames = []
+        grp_node.sub_scene.edges = []
+        grp_node.sub_scene.nodes = []
+
+        self.remove_node(grp_node)
 
     def add_node_from_nodes(self, nodes: list[NodeItem], custom_uuid: str = "") -> NodeItem:
         selected_edges: list[EdgeItem] = []
@@ -275,19 +332,19 @@ class DAGScene(QtWidgets.QGraphicsScene):
         if edge.uuid == "":
             edge.uuid = QtCore.QUuid.createUuid().toString()
 
-        if type(edge.end_pin) == PinItem:
-            start_pin_uuid: tuple[str, int] = edge.start_pin.uuid()
-            start_node: NodeItem = self.dag_item(start_pin_uuid[0])
-            start_pin: PinItem = start_node.socket_widgets[start_pin_uuid[1]].pin
-            edge.start_pin = start_pin
-            start_pin.add_edge(edge)
-
-            end_pin_uuid: tuple[str, int] = edge.end_pin.uuid()
-            end_node: NodeItem = self.dag_item(end_pin_uuid[0])
-            end_pin: PinItem = end_node.socket_widgets[end_pin_uuid[1]].pin
-            edge.end_pin = end_pin
-            end_pin.add_edge(edge)
-            end_pin.socket_widget.update_stylesheets()
+        # if type(edge.end_pin) == PinItem:
+        #     start_pin_uuid: tuple[str, int] = edge.start_pin.uuid()
+        #     start_node: NodeItem = self.dag_item(start_pin_uuid[0])
+        #     start_pin: PinItem = start_node.socket_widgets[start_pin_uuid[1]].pin
+        #     edge.start_pin = start_pin
+        #     start_pin.add_edge(edge)
+        #
+        #     end_pin_uuid: tuple[str, int] = edge.end_pin.uuid()
+        #     end_node: NodeItem = self.dag_item(end_pin_uuid[0])
+        #     end_pin: PinItem = end_node.socket_widgets[end_pin_uuid[1]].pin
+        #     edge.end_pin = end_pin
+        #     end_pin.add_edge(edge)
+        #     end_pin.socket_widget.update_stylesheets()
 
         self._edges.append(edge)
         self.addItem(edge)
@@ -434,6 +491,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
         except nx.exception.NetworkXNoCycle:
             result: bool = False
         return result
+
+    def is_sub_scene(self) -> bool:
+        return self._parent_node is not None
 
     # --------------- Background ---------------
 

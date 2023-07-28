@@ -9,7 +9,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, NodeFromNodeCommand, ResolveNodeCommand,  # Node commands
+    AddNodeCommand, GrpNodeCommand, NodeFromNodeCommand, ResolveNodeCommand,  # Node commands
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
     AddFrameCommand,  # Frame commands
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
@@ -430,6 +430,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for i in range(self._undo_stack.count()):
                 print("Stack Item", self._undo_stack.command(i))
 
+            # Test area
+            grp_node: NodeItem = NodeItem(self._undo_stack)
+            grp_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+            sub_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
+
+            self._undo_stack.push(GrpNodeCommand(self.scene(), grp_node, sub_nodes))
+
         super().keyPressEvent(event)
 
     # --------------- Callbacks ---------------
@@ -598,7 +605,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.fit_in_content()
 
     def add_test_node(self):
-        new_node = NodeItem(self._undo_stack)
+        new_node: NodeItem = NodeItem(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
         self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 

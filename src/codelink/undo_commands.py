@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class AddNodeCommand(QtWidgets.QUndoCommand):
-	def __init__( self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
@@ -31,6 +31,26 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.clearSelection()
 		self._scene.add_node(self._node)
 		self._node.setSelected(True)
+
+
+class GrpNodeCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, grp_node: NodeItem, sub_nodes: list[NodeItem],
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._grp_node: NodeItem = grp_node
+		self._sub_nodes: list[NodeItem] = sub_nodes
+
+	def undo(self) -> None:
+		self._scene.clearSelection()
+		self._scene.resolve_grp_node(self._grp_node)
+
+	def redo(self) -> None:
+		self._scene.clearSelection()
+		self._scene.add_grp_node(self._grp_node, self._sub_nodes)
 
 
 class NodeFromNodeCommand(QtWidgets.QUndoCommand):
@@ -434,6 +454,7 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 			node.setPos(dx + node.x(), dy + node.y())
 
 		self._scene.clearSelection()
-		to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], self._nodes) + cast(list[QtWidgets.QGraphicsItem], self._frames)
+		to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], self._nodes) + cast(
+			list[QtWidgets.QGraphicsItem], self._frames)
 		for item in to_be_selected:
 			item.setSelected(True)
