@@ -315,7 +315,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for item in selected_items:
                 if type(item) is EdgeItem:
-                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), item))
+                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), cast(EdgeItem, item)))
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -589,9 +589,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
 
         if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
-            self._undo_stack.push(SwitchSceneDownCommand(
-                self, selected_nodes[0].sub_scene, self.scene(), selected_nodes[0])
-            )
+            self._undo_stack.push(SwitchSceneDownCommand(self, self.scene(), selected_nodes[0].uuid))
             self.fit_in_content()
 
     def close_sub_graph(self):

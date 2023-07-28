@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -18,22 +18,19 @@ if TYPE_CHECKING:
 
 
 class AddNodeCommand(QtWidgets.QUndoCommand):
-	def __init__(
-			self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None
-	) -> None:
+	def __init__( self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._node_state: dict = node.__getstate__()
-		self._node_state["UUID"]: str = QtCore.QUuid.createUuid().toString()
+		self._node: NodeItem = node
 
 	def undo(self) -> None:
-		self._scene.remove_node(self._scene.dag_item(self._node_state["UUID"]))
+		self._scene.remove_node(self._node)
 
 	def redo(self) -> None:
-		new_node: NodeItem = self._scene.deserialize_nodes([self._node_state])[0]
 		self._scene.clearSelection()
-		new_node.setSelected(True)
+		self._scene.add_node(self._node)
+		self._node.setSelected(True)
 
 
 class NodeFromNodeCommand(QtWidgets.QUndoCommand):
@@ -228,6 +225,8 @@ class AddFrameCommand(QtWidgets.QUndoCommand):
 				node.parent_frame = old_parent_frame
 
 	def redo(self) -> None:
+		print("scene", self._scene)
+
 		new_frame: FrameItem = self._scene.add_frame_from_nodes(
 			[self._scene.dag_item(uuid) for uuid in self._selected_uuids]
 		)
@@ -344,26 +343,22 @@ class MoveSelectedCommand(QtWidgets.QUndoCommand):
 
 class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, view: EditorWidget, redo_scene: DAGScene, undo_scene: DAGScene,
-			parent_node: Optional[NodeItem] = None, parent: Optional[QtWidgets.QUndoCommand] = None
+			self, view: EditorWidget, scene: DAGScene, parent_node_uuid: str,
+			parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
-		self._parent_node: NodeItem = parent_node
 		self._view: EditorWidget = view
-		self._redo_scene: DAGScene = redo_scene
-		self._undo_scene: DAGScene = undo_scene
+		self._scene: DAGScene = scene
+		self._parent_node_uuid: str = parent_node_uuid
 
 	def undo(self) -> None:
-		# Note: Parent node, and it's sub scene may be new because of undone delete operation
-		parent_node: NodeItem = self._undo_scene.dag_item(self._parent_node.uuid)  # Get the newest parent node
-		parent_node.sub_scene = self._view.scene()  # Replace parents sub scene with the latest scene from here
-		parent_node.sub_scene.parent_node = parent_node  # Link the new sub scene to the newest parent
-		self._view.setScene(self._undo_scene)
+		self._view.setScene(self._scene)
 		self._view.fit_in_content()
 
 	def redo(self) -> None:
-		self._view.setScene(self._redo_scene)
+		print("sub", self._scene.dag_item(self._parent_node_uuid).sub_scene)
+		self._view.setScene(self._scene.dag_item(self._parent_node_uuid).sub_scene)
 		self._view.fit_in_content()
 
 
@@ -439,5 +434,6 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 			node.setPos(dx + node.x(), dy + node.y())
 
 		self._scene.clearSelection()
-		for item in self._nodes + self._frames:
+		to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], self._nodes) + cast(list[QtWidgets.QGraphicsItem], self._frames)
+		for item in to_be_selected:
 			item.setSelected(True)
