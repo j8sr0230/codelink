@@ -432,8 +432,18 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Test area
             grp_node: NodeItem = NodeItem(self._undo_stack)
-            grp_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+            grp_node.prop_model.properties["Name"] = "Custom Node"
+
             sub_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
+
+            selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
+            selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
+            selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
+
+            grp_node.setPos(
+                selection_center_x - grp_node.boundingRect().width() / 2,
+                selection_center_y - grp_node.boundingRect().height() / 2
+            )
 
             self._undo_stack.push(GrpNodeCommand(self.scene(), grp_node, sub_nodes))
 

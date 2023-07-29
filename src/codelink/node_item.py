@@ -135,9 +135,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            SocketWidget(label="A", is_input=True, parent_node=self),
-            SocketWidget(label="B", is_input=True, parent_node=self),
-            SocketWidget(label="Res", is_input=False, parent_node=self)
+            # SocketWidget(label="A", is_input=True, parent_node=self),
+            # SocketWidget(label="B", is_input=True, parent_node=self),
+            # SocketWidget(label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_layout.addWidget(widget)
@@ -176,6 +176,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def socket_widgets(self) -> list[SocketWidget]:
         return self._socket_widgets
+
+    @socket_widgets.setter
+    def socket_widgets(self, value: list[SocketWidget]) -> None:
+        self._socket_widgets: list[SocketWidget] = value
 
     @property
     def input_socket_widgets(self) -> list[SocketWidget]:
