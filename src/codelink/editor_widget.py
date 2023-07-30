@@ -146,11 +146,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._close_sub_action.triggered).connect(self.close_sub_graph)
         self.addAction(self._close_sub_action)
 
-        self._add_test_node_action: QtWidgets.QAction = QtWidgets.QAction("Test Node", self)
-        self._add_test_node_action.setShortcut(QtGui.QKeySequence("Shift+A"))
-        cast(QtCore.SignalInstance, self._add_test_node_action.triggered).connect(self.add_test_node)
-        self.addAction(self._add_test_node_action)
-
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
         cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.show_context_menu)
@@ -458,8 +453,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
             math_nodes.setTitle("&Math")
 
-            math_nodes.addAction(self._add_test_node_action)
-
             for name, cls, in nodes_dict.items():
                 # Adds all nodes from nodes.nodes_dict
                 add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
@@ -613,11 +606,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self.scene().parent_node:
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
             self.fit_in_content()
-
-    def add_test_node(self):
-        new_node: NodeItem = NodeItem(self._undo_stack)
-        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def add_node_from_cls(self, cls: type):
         new_node: cls = cls(self._undo_stack)

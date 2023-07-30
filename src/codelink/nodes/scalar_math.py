@@ -1,11 +1,12 @@
 from __future__ import annotations
-from typing import Optional, cast
+from typing import Union, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from socket_widget import SocketWidget
+from pin_item import PinItem
 
 
 class ScalarMath(NodeItem):
@@ -21,7 +22,7 @@ class ScalarMath(NodeItem):
         self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Sqrt"])
+        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Sqrt"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()
@@ -41,6 +42,9 @@ class ScalarMath(NodeItem):
 
         self.update_all()
 
+        # Socket-wise node methods
+        self._evals: list[object] = [self.eval_socket_1]
+
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
@@ -49,27 +53,36 @@ class ScalarMath(NodeItem):
         input_widget_count: int = len(self.input_socket_widgets)
 
         if option_name == "Sqrt":
-            while input_widget_count < 1:
-                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
-                insert_idx: int = len(self.input_socket_widgets) + 1
-                self.add_socket_widget(new_socket_widget, insert_idx)
-                input_widget_count += 1
-
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 self.remove_socket_widget(remove_idx)
                 input_widget_count -= 1
         else:
             while input_widget_count < 2:
-                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
+                new_socket_widget: SocketWidget = SocketWidget(label="B", is_input=True, parent_node=self)
                 insert_idx: int = len(self.input_socket_widgets) + 1
                 self.add_socket_widget(new_socket_widget, insert_idx)
                 input_widget_count += 1
 
-            while input_widget_count > 2:
-                remove_idx: int = len(self.input_socket_widgets) - 1
-                self.remove_socket_widget(remove_idx)
-                input_widget_count -= 1
+    # --------------- Node eval methods ---------------
+
+    def eval_socket_1(self, *args) -> Union[PinItem, int]:
+        if self._option_box.currentText() == "Add" and len(args) == 2:
+            return args[0] + args[1]
+        elif self._option_box.currentText() == "Sub" and len(args) == 2:
+            return args[0] - args[1]
+        elif self._option_box.currentText() == "Mul" and len(args) == 2:
+            return args[0] * args[1]
+        elif self._option_box.currentText() == "Div" and len(args) == 2:
+            try:
+                return args[0] / args[1]
+            except ZeroDivisionError:
+                print("Division by zero")
+                return 0
+        elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
+            return args[0] ** 0.5
+        else:
+            return 0
 
 # --------------- Serialization ---------------
 

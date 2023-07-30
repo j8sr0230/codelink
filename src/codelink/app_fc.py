@@ -9,7 +9,7 @@ import FreeCADGui
 from app_style import MAIN_STYLE
 from editor_widget import EditorWidget
 from dag_scene import DAGScene
-from node_item import NodeItem
+from nodes.scalar_math import ScalarMath
 
 
 def main() -> None:
@@ -34,7 +34,7 @@ def main() -> None:
 
     for i in range(5):
         for j in range(5):
-            node = NodeItem(undo_stack)
+            node = ScalarMath(undo_stack)
             node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
             editor_scene.add_node(node)
 

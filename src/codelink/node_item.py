@@ -618,7 +618,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             "Class": self.__class__.__name__,
             "UUID": self._uuid,
             "Properties": self.prop_model.__getstate__()  # ,
-            # "Option Idx": self._option_box.currentIndex()
         }
 
         sockets_list: list[dict] = []
@@ -633,7 +632,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def __setstate__(self, state: dict):
         self._uuid = state["UUID"]
         self.prop_model.__setstate__(state["Properties"])
-        # self._option_box.setCurrentIndex(state["Option Idx"])
 
         # Add socket widgets from state
         self.clear_socket_widgets()
@@ -646,7 +644,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 data=socket_widget_dict["Properties"]["Data"],
                 parent_node=self
             )
-            # new_socket_widget.prop_model.__setstate__(socket_widget_props)
             new_socket_widget.link = socket_widget_dict["Link"]
             self.add_socket_widget(new_socket_widget, i)
 

@@ -208,14 +208,3 @@ class SocketWidget(QtWidgets.QWidget):
             "Link": self._link
         }
         return data_dict
-
-    def __copy__(self) -> SocketWidget:
-        copy: SocketWidget = type(self)(
-            label=self._prop_model.properties["Name"],
-            is_input=self._prop_model.properties["Is Input"],
-            data=self._prop_model.properties["Data"],
-            parent_node=self._parent_node,
-            parent_widget=self.parentWidget()
-        )
-        copy._link = self._link
-        return copy
