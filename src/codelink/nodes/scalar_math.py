@@ -1,14 +1,84 @@
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, cast
 
+import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
+from socket_widget import SocketWidget
 
 
 class ScalarMath(NodeItem):
     REG_NAME: str = "Scalar Math"
 
-    def __init__(self, undo_stack: Optional[QtWidgets.QUndoStack] = None,
-                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(undo_stack, parent)
+
+        # Node name
+        self._prop_model.properties["Name"] = "Scalar Math"
+
+        # Option combo box
+        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
+        self._option_box.setMinimumWidth(5)
+        self._option_box.addItems(["Add", "Sub", "Mul", "Sqrt"])
+        item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
+        item_list_view.setSpacing(2)
+        self._content_widget.hide()
+        self._content_layout.addWidget(self._option_box)
+        self._content_widget.show()
+
+        # Socket widgets
+        self._socket_widgets: list[SocketWidget] = [
+            SocketWidget(label="A", is_input=True, parent_node=self),
+            SocketWidget(label="B", is_input=True, parent_node=self),
+            SocketWidget(label="Res", is_input=False, parent_node=self)
+        ]
+        for widget in self._socket_widgets:
+            self._content_widget.hide()
+            self._content_layout.addWidget(widget)
+            self._content_widget.show()
+
+        self.update_all()
+
+        # Listeners
+        cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
+
+    def update_socket_widgets(self):
+        option_name: str = self._option_box.currentText()
+        input_widget_count: int = len(self.input_socket_widgets)
+
+        if option_name == "Sqrt":
+            while input_widget_count < 1:
+                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
+                insert_idx: int = len(self.input_socket_widgets) + 1
+                self.add_socket_widget(new_socket_widget, insert_idx)
+                input_widget_count += 1
+
+            while input_widget_count > 1:
+                remove_idx: int = len(self.input_socket_widgets) - 1
+                self.remove_socket_widget(remove_idx)
+                input_widget_count -= 1
+        else:
+            while input_widget_count < 2:
+                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
+                insert_idx: int = len(self.input_socket_widgets) + 1
+                self.add_socket_widget(new_socket_widget, insert_idx)
+                input_widget_count += 1
+
+            while input_widget_count > 2:
+                remove_idx: int = len(self.input_socket_widgets) - 1
+                self.remove_socket_widget(remove_idx)
+                input_widget_count -= 1
+
+# --------------- Serialization ---------------
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = super().__getstate__()
+        data_dict["Option Idx"] = self._option_box.currentIndex()
+        return data_dict
+
+    def __setstate__(self, state: dict):
+        super().__setstate__(state)
+        self._option_box.setCurrentIndex(state["Option Idx"])
+        self.update()

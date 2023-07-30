@@ -16,15 +16,14 @@ from edge_item import EdgeItem
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
-    def __init__(self, undo_stack: Optional[QtWidgets.QUndoStack] = None,
-                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
-        self._uuid: str = ""
+        self._uuid: str = QtCore.QUuid.createUuid().toString()
         self._prop_model: PropertyModel = PropertyModel(
             properties={
-                        "Name": "Scalar Math",
+                        "Name": "Node Item",
                         "Color": "#1D1D1D",
                         "Collapse State": False,
                         "X": 100,
@@ -36,19 +35,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
 
         # Non persistent data model
-        self._undo_stack: Optional[QtWidgets.QUndoStack] = undo_stack
-        self._socket_widgets: list[QtWidgets.QWidget] = []
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
+
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
         self._sub_scene: dag_scene_cls = dag_scene_cls(self._undo_stack)
         self._sub_scene.background_color = QtGui.QColor("#383838")
+
+        self._socket_widgets: list[SocketWidget] = []
         self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
+
         self._mode: str = ""
         self._lm_pressed: bool = False
         self._moved: bool = False
+        self._resized: bool = False
         self._last_position: QtCore.QPointF = QtCore.QPointF()
         self._last_width: int = 0
-        self._resized: bool = False
         self._zoom_level: Optional[int] = None
 
         # Node geometry
@@ -59,7 +61,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._min_height: int = self._header_height
         self._content_padding: int = 8
         self._content_y: int = self._header_height + self._content_padding
-        self._corner_radius: int = 0
+        # self._corner_radius: int = 0
 
         # Assets
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
@@ -77,12 +79,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._collapse_pixmap_down: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_down)
         self._collapse_img_up: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
         self._collapse_pixmap_up: QtGui.QPixmap = QtGui.QPixmap(self._collapse_img_up)
-
-        # self._shadow: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
-        # self._shadow.setColor(QtGui.QColor("black"))
-        # self._shadow.setBlurRadius(20)
-        # self._shadow.setOffset(1)
-        # self.setGraphicsEffect(self._shadow)
 
         # UI
         # Collapse button
@@ -124,24 +120,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                                (self._header_height - self._name_item.boundingRect().height()) / 2
                                )
 
-        # Option combo box
-        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
-        self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
-        self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul"])
-        item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
-        item_list_view.setSpacing(2)
-        self._content_layout.addWidget(self._option_box)
-
-        # Socket widgets
-        self._socket_widgets: list[SocketWidget] = [
-            # SocketWidget(label="A", is_input=True, parent_node=self),
-            # SocketWidget(label="B", is_input=True, parent_node=self),
-            # SocketWidget(label="Res", is_input=False, parent_node=self)
-        ]
-        for widget in self._socket_widgets:
-            self._content_layout.addWidget(widget)
-
         self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
         self._content_proxy.setWidget(self._content_widget)
 
@@ -154,7 +132,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
         # Listeners
-        cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
@@ -172,6 +149,30 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @property
     def is_collapsed(self) -> str:
         return self._prop_model.properties["Collapse State"]
+
+    @property
+    def parent_frame(self) -> FrameItem:
+        return self._parent_frame
+
+    @parent_frame.setter
+    def parent_frame(self, value: FrameItem) -> None:
+        self._parent_frame: FrameItem = value
+
+    @property
+    def sub_scene(self) -> Any:
+        return self._sub_scene
+
+    @sub_scene.setter
+    def sub_scene(self, value: Any) -> None:
+        self._sub_scene: Any = value
+
+    @property
+    def content_widget(self) -> QtWidgets.QWidget:
+        return self._content_widget
+
+    @property
+    def content_layout(self) -> QtWidgets.QLayout:
+        return self._content_layout
 
     @property
     def socket_widgets(self) -> list[SocketWidget]:
@@ -194,28 +195,27 @@ class NodeItem(QtWidgets.QGraphicsItem):
         ]
 
     @property
-    def parent_frame(self) -> FrameItem:
-        return self._parent_frame
-
-    @parent_frame.setter
-    def parent_frame(self, value: FrameItem) -> None:
-        self._parent_frame: FrameItem = value
-
-    @property
-    def sub_scene(self) -> Any:
-        return self._sub_scene
-
-    @sub_scene.setter
-    def sub_scene(self, value: Any) -> None:
-        self._sub_scene: Any = value
-
-    @property
     def evals(self) -> list[object]:
         return self._evals
 
     @evals.setter
     def evals(self, value: list[object]) -> None:
         self._evals: list[object] = value
+
+    @property
+    def header_height(self) -> int:
+        return self._header_height
+
+    @property
+    def content_y(self) -> float:
+        return self._content_y
+
+    @property
+    def center(self) -> QtCore.QPointF:
+        return QtCore.QPointF(
+            self.x() + self.boundingRect().width() / 2,
+            self.y() + self.boundingRect().height() / 2
+        )
 
     @property
     def last_position(self) -> QtCore.QPointF:
@@ -241,25 +241,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def zoom_level(self, value: int) -> None:
         self._zoom_level: int = value
 
-    @property
-    def header_height(self) -> int:
-        return self._header_height
-
-    @property
-    def content_y(self) -> float:
-        return self._content_y
-
-    @property
-    def center(self) -> QtCore.QPointF:
-        return QtCore.QPointF(
-            self.x() + self.boundingRect().width() / 2,
-            self.y() + self.boundingRect().height() / 2
-        )
-
-    @property
-    def content_widget(self) -> QtWidgets.QWidget:
-        return self._content_widget
-
     # --------------- Socket widget editing ---------------
 
     def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0):
@@ -267,14 +248,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         self._content_widget.hide()
         self._socket_widgets.insert(insert_idx, socket_widget)
-        self._content_layout.insertWidget(insert_idx + 1, socket_widget)
+        self._content_layout.insertWidget(insert_idx, socket_widget)
         self._content_widget.show()
-        self._content_widget.update()
-
-        socket_widget.update_all()
-        socket_widget.update()
         self.update_all()
-        self.update()
 
     def remove_socket_widget(self, remove_idx: int = 0):
         if 0 <= remove_idx < len(self._socket_widgets):
@@ -294,9 +270,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self._socket_widgets.remove(remove_widget)
 
             self._content_widget.show()
-            self._content_widget.update()
             self.update_all()
-            self.update()
 
     def clear_socket_widgets(self):
         while len(self.socket_widgets) > 0:
@@ -306,8 +280,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Sorts widgets in layout
         for socket_widget in self._socket_widgets:
             if not socket_widget.is_input:
+                self._content_widget.hide()
                 self._content_layout.removeWidget(socket_widget)
                 self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
+                self._content_widget.show()
+                self.update_all()
 
         # Sorts socket widget list
         self._socket_widgets = [
@@ -323,14 +300,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
             linked_socket.link = (self.uuid, idx)
 
     def remove_from_frame(self):
-        if hasattr(self._parent_frame, "uuid"):
-            self._parent_frame: Optional[FrameItem] = self.scene().dag_item(self.parent_frame.uuid)
-            if self.parent_frame is not None:
-                self.parent_frame.framed_nodes.remove(self.scene().dag_item(self.uuid))
-                self.parent_frame.update()
-                if len(self.parent_frame.framed_nodes) == 0:
-                    self.scene().remove_frame(self.parent_frame)
-                self._parent_frame: Optional[FrameItem] = None
+        if self.parent_frame is not None:
+            self.parent_frame.framed_nodes.remove(self)
+            self.parent_frame.update()
+            if len(self.parent_frame.framed_nodes) == 0:
+                self.scene().remove_frame(self.parent_frame)
+            self._parent_frame: Optional[FrameItem] = None
 
     # --------------- DAG analytics ---------------
 
@@ -582,22 +557,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         for widget in self._socket_widgets:
             widget.update_pin_position()
 
-    def update_socket_widgets(self):
-        option_name: str = self._option_box.currentText()
-        input_widget_count: int = len(self.input_socket_widgets)
-
-        if option_name == "Add":
-            while input_widget_count < 2:
-                new_socket_widget: SocketWidget = SocketWidget(label="N", is_input=True, parent_node=self)
-                insert_idx: int = len(self.input_socket_widgets)
-                self.add_socket_widget(new_socket_widget, insert_idx)
-                input_widget_count += 1
-
-            while input_widget_count > 2:
-                remove_idx: int = len(self.input_socket_widgets) - 1
-                self.remove_socket_widget(remove_idx)
-                input_widget_count -= 1
-
     def update_details(self, zoom_level: int) -> None:
         self._zoom_level = zoom_level
 
@@ -658,8 +617,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         data_dict: dict = {
             "Class": self.__class__.__name__,
             "UUID": self._uuid,
-            "Properties": self.prop_model.__getstate__(),
-            "Option Idx": self._option_box.currentIndex()
+            "Properties": self.prop_model.__getstate__()  # ,
+            # "Option Idx": self._option_box.currentIndex()
         }
 
         sockets_list: list[dict] = []
@@ -674,7 +633,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def __setstate__(self, state: dict):
         self._uuid = state["UUID"]
         self.prop_model.__setstate__(state["Properties"])
-        self._option_box.setCurrentIndex(state["Option Idx"])
+        # self._option_box.setCurrentIndex(state["Option Idx"])
 
         # Add socket widgets from state
         self.clear_socket_widgets()

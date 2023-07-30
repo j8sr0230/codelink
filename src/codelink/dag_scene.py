@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 import sys
 import math
 import json
@@ -10,7 +10,7 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
-from nodes import *
+# from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
 from pin_item import PinItem
@@ -167,6 +167,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self.add_node(grp_node)
 
+        #self.transfer_connected_sockets(grp_node)
+        #grp_node.update_layout()
+
         return grp_node
 
     def resolve_grp_node(self, grp_node: NodeItem):
@@ -183,26 +186,26 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self.remove_node(grp_node)
 
-    def transfer_connected_sockets(self, grp_node: NodeItem, sub_nodes: list[NodeItem]):
-        sub_edges: list[EdgeItem] = []
-        for edge in self._edges:
-            if edge.start_pin.parentItem() in sub_nodes and edge.end_pin.parentItem() in sub_nodes:
-                sub_edges.append(edge)
+    def transfer_connected_sockets(self, grp_node: NodeItem):
+        # grp_node.clear_socket_widgets()
 
-        for node_idx, node in enumerate(sub_nodes):
+        for node_idx, node in enumerate(grp_node.sub_scene.nodes):
             for socket_idx, socket_widget in enumerate(node.socket_widgets):
                 connected_edges: list[EdgeItem] = socket_widget.pin.edges
                 outer_socket_edges: list[EdgeItem] = [
-                    edge for edge in connected_edges if edge not in sub_edges
+                    edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
                 ]
                 # if len(outer_socket_edges) > 0:
-                #     new_socket_widget: SocketWidget = socket_widget.__copy__()
-                #     new_socket_widget.parent_node = grp_node
-                #     new_socket_widget.pin.setParentItem(grp_node)
-                #     new_socket_widget.link = (node.uuid, socket_idx)
-                #
-                #     socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))                    #
-                    #grp_node.add_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+                    # new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+                    #     label=socket_widget.prop_model.properties["Name"],
+                    #     is_input=socket_widget.prop_model.properties["Is Input"],
+                    #     data=socket_widget.prop_model.properties["Data"],
+                    #     parent_node=grp_node,
+                    #     parent_widget=grp_node.content_widget
+                    # )
+                    # new_socket_widget.link = (node.uuid, socket_idx)
+                    # socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+                    # grp_node.add_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
                     #
                     # while len(socket_widget.pin.edges) > 0:
                     #     edge: EdgeItem = socket_widget.pin.edges.pop()
@@ -211,16 +214,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     #         new_socket_widget.pin.add_edge(edge)
                     #
                     #         if socket_widget.is_input:
-                    #             edge.end_pin = grp_node.socket_widgets[grp_node.socket_widgets.index(
-                    #                 new_socket_widget)].pin
+                    #             edge.end_pin = new_socket_widget.pin
                     #         else:
-                    #             edge.start_pin = grp_node.socket_widgets[grp_node.socket_widgets.index(
-                    #                 new_socket_widget)].pin
+                    #             edge.start_pin = new_socket_widget.pin
                     #
                     #         edge.sort_pins()
-                    #
-                    # new_socket_widget.update_all()
-                    # new_socket_widget.update()
 
         #grp_node.sort_socket_widgets()
         #grp_node.update_all()

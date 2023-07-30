@@ -14,8 +14,6 @@ def main() -> None:
     QtCore.QDir.addSearchPath("icon", os.path.abspath(os.path.dirname(__file__)))
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
-    # app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
-    # app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
     undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
     undo_stack.clear()
