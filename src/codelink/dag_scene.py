@@ -10,7 +10,7 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
-# from nodes import *
+from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
 from pin_item import PinItem

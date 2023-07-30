@@ -15,7 +15,6 @@ from undo_commands import (
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation commands
 )
-from nodes import *
 from node_reg import nodes_dict
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
