@@ -6,7 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from socket_widget import SocketWidget
-from sockets import NumberLine
+from sockets import *
 from pin_item import PinItem
 
 
