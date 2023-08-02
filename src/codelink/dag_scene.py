@@ -140,7 +140,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return node
 
-    def add_grp_node(self, grp_node: NodeItem, sub_nodes: list[NodeItem]) -> NodeItem:
+    def add_node_grp(self, grp_node: NodeItem, sub_nodes: list[NodeItem]) -> NodeItem:
         sub_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in sub_nodes and edge.end_pin.parentItem() in sub_nodes:
@@ -155,21 +155,50 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_frames.append(sub_frame)
 
         for sub_node in sub_nodes:
+            self._nodes.remove(sub_node)
             grp_node.sub_scene.add_node(sub_node)
         for sub_edge in sub_edges:
+            self._edges.remove(sub_edge)
             grp_node.sub_scene.add_edge(sub_edge)
         for sub_frame in sub_frames:
+            self._frames.remove(sub_frame)
             grp_node.sub_scene.add_frame(sub_frame)
-
-        self._nodes: list[NodeItem] = []
-        self._edges: list[EdgeItem] = []
-        self._frames: list[FrameItem] = []
 
         self.add_node(grp_node)
 
-        # self.transfer_connected_sockets(grp_node)
-        # grp_node.update_layout()
+        for node_idx, node in enumerate(grp_node.sub_scene.nodes):
+            for socket_idx, socket_widget in enumerate(node.socket_widgets):
+                connected_edges: list[EdgeItem] = socket_widget.pin.edges
+                outer_socket_edges: list[EdgeItem] = [
+                    edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
+                ]
 
+                if len(outer_socket_edges) > 0:
+                    new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+                        label=socket_widget.prop_model.properties["Name"],
+                        is_input=socket_widget.prop_model.properties["Is Input"],
+                        data=socket_widget.prop_model.properties["Data"],
+                        parent_node=grp_node
+                    )
+                    new_socket_widget.link = (node.uuid, socket_idx)
+                    socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+                    grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+
+                    while len(socket_widget.pin.edges) > 0:
+                        edge: EdgeItem = socket_widget.pin.edges.pop()
+
+                        if edge in outer_socket_edges:
+                            new_socket_widget.pin.add_edge(edge)
+
+                            if socket_widget.is_input:
+                                edge.end_pin = new_socket_widget.pin
+                            else:
+                                edge.start_pin = new_socket_widget.pin
+
+                            new_socket_widget.update_all()
+                            edge.sort_pins()
+
+        grp_node.sort_socket_widgets()
         return grp_node
 
     def resolve_grp_node(self, grp_node: NodeItem):
@@ -180,136 +209,26 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for sub_frame in grp_node.sub_scene.frames:
             self.add_frame(sub_frame)
 
+        for socket_widget in grp_node.socket_widgets:
+            socket_link: tuple[str, int] = socket_widget.link
+            target_node: NodeItem = self.dag_item(socket_link[0])
+            target_pin: PinItem = target_node.socket_widgets[socket_link[1]].pin
+
+            while len(socket_widget.pin.edges) > 0:
+                edge: EdgeItem = socket_widget.pin.edges.pop()
+                target_pin.add_edge(edge)
+
+                if socket_widget.is_input:
+                    edge.end_pin = target_pin
+                else:
+                    edge.start_pin = target_pin
+
         grp_node.sub_scene.frames = []
         grp_node.sub_scene.edges = []
         grp_node.sub_scene.nodes = []
+        grp_node.clear_socket_widgets()
 
         self.remove_node(grp_node)
-
-    def transfer_connected_sockets(self, grp_node: NodeItem):
-        # grp_node.clear_socket_widgets()
-
-        for node_idx, node in enumerate(grp_node.sub_scene.nodes):
-            for socket_idx, socket_widget in enumerate(node.socket_widgets):
-                connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                outer_socket_edges: list[EdgeItem] = [
-                    edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
-                ]
-                # if len(outer_socket_edges) > 0:
-                    # new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
-                    #     label=socket_widget.prop_model.properties["Name"],
-                    #     is_input=socket_widget.prop_model.properties["Is Input"],
-                    #     data=socket_widget.prop_model.properties["Data"],
-                    #     parent_node=grp_node,
-                    #     parent_widget=grp_node.content_widget
-                    # )
-                    # new_socket_widget.link = (node.uuid, socket_idx)
-                    # socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
-                    # grp_node.add_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
-                    #
-                    # while len(socket_widget.pin.edges) > 0:
-                    #     edge: EdgeItem = socket_widget.pin.edges.pop()
-                    #
-                    #     if edge in outer_socket_edges:
-                    #         new_socket_widget.pin.add_edge(edge)
-                    #
-                    #         if socket_widget.is_input:
-                    #             edge.end_pin = new_socket_widget.pin
-                    #         else:
-                    #             edge.start_pin = new_socket_widget.pin
-                    #
-                    #         edge.sort_pins()
-
-        #grp_node.sort_socket_widgets()
-        #grp_node.update_all()
-
-    def add_node_from_nodes(self, nodes: list[NodeItem], custom_uuid: str = "") -> NodeItem:
-        selected_edges: list[EdgeItem] = []
-        for edge in self._edges:
-            if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
-                selected_edges.append(edge)
-
-        sub_frames: set[FrameItem] = {node.parent_frame for node in nodes if node.parent_frame is not None}
-        inner_sub_frames: list[FrameItem] = []
-        for sub_frame in sub_frames:
-            framed_nodes_set: set[NodeItem] = set(sub_frame.framed_nodes)
-            selected_nodes_set: set[NodeItem] = set(nodes)
-            if framed_nodes_set.issubset(selected_nodes_set):
-                inner_sub_frames.append(sub_frame)
-
-        # Calculate selection center
-        selection_rect: QtCore.QRectF = self.bounding_rect(nodes)
-        selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
-        selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
-
-        sub_nodes_dict: list[dict] = [node.__getstate__() for node in nodes]
-        sub_edges_dict: list[dict] = [sub_edge.__getstate__() for sub_edge in selected_edges]
-        sub_frames_dict: list[dict] = [sub_frame.__getstate__() for sub_frame in inner_sub_frames]
-
-        # Add custom node, remove predefined socket widgets and save sub graph
-        custom_node: NodeItem = NodeItem(self._undo_stack)
-        custom_node.sub_scene.parent_node = custom_node
-        custom_node.uuid = custom_uuid
-        self.add_node(custom_node)
-        custom_node.clear_socket_widgets()
-        custom_node.sub_scene.deserialize_nodes(sub_nodes_dict)
-        custom_node.sub_scene.deserialize_edges(sub_edges_dict)
-        custom_node.sub_scene.deserialize_frames(sub_frames_dict)
-        custom_node.prop_model.setData(
-            custom_node.prop_model.index(0, 1, QtCore.QModelIndex()), "Custom Node", 2  # QtCore.Qt.EditRole
-        )
-
-        # Generate input and output widgets for custom node and reconnect edges
-        for node_idx, node in enumerate(nodes):
-            for socket_idx, socket_widget in enumerate(node.socket_widgets):
-                connected_edges: list[EdgeItem] = socket_widget.pin.edges
-                outer_socket_edges: list[EdgeItem] = [
-                    edge for edge in connected_edges if edge not in selected_edges
-                ]
-                if len(outer_socket_edges) > 0:
-                    new_socket_widget: SocketWidget = socket_widget.__copy__()
-                    new_socket_widget.parent_node = custom_node
-                    new_socket_widget.pin.setParentItem(custom_node)
-                    new_socket_widget.link = (node.uuid, socket_idx)
-
-                    linked_sub_node: NodeItem = custom_node.sub_scene.dag_item(socket_widget.parent_node.uuid)
-                    linked_sub_socket_widget: SocketWidget = linked_sub_node.socket_widgets[socket_idx]
-                    linked_sub_socket_widget.link = (custom_node.uuid, len(custom_node.socket_widgets))
-
-                    custom_node.add_socket_widget(new_socket_widget, len(custom_node.socket_widgets))
-
-                    while len(socket_widget.pin.edges) > 0:
-                        edge: EdgeItem = socket_widget.pin.edges.pop()
-
-                        if edge in outer_socket_edges:
-                            new_socket_widget.pin.add_edge(edge)
-
-                            if socket_widget.is_input:
-                                edge.end_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
-                                    new_socket_widget)].pin
-                            else:
-                                edge.start_pin = custom_node.socket_widgets[custom_node.socket_widgets.index(
-                                    new_socket_widget)].pin
-
-                            edge.sort_pins()
-
-                    new_socket_widget.update_all()
-                    new_socket_widget.update()
-
-        custom_node.setPos(
-            selection_center_x - custom_node.boundingRect().width() / 2,
-            selection_center_y - custom_node.boundingRect().height() / 2
-        )
-
-        custom_node.sort_socket_widgets()
-        custom_node.update_all()
-
-        # Remove selected nodes with inner edges
-        while len(nodes) > 0:
-            node: NodeItem = nodes.pop()
-            self.remove_node(node)
-
-        return custom_node
 
     def remove_node(self, node: NodeItem) -> None:
         node: NodeItem = self.dag_item(node.uuid)

@@ -33,7 +33,7 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 		self._node.setSelected(True)
 
 
-class GrpNodeCommand(QtWidgets.QUndoCommand):
+class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, grp_node: NodeItem, sub_nodes: list[NodeItem],
 			parent: Optional[QtWidgets.QUndoCommand] = None
@@ -50,7 +50,7 @@ class GrpNodeCommand(QtWidgets.QUndoCommand):
 
 	def redo(self) -> None:
 		self._scene.clearSelection()
-		self._scene.add_grp_node(self._grp_node, self._sub_nodes)
+		self._scene.add_node_grp(self._grp_node, self._sub_nodes)
 
 
 class NodeFromNodeCommand(QtWidgets.QUndoCommand):

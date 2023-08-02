@@ -63,8 +63,8 @@ class ScalarMath(NodeItem):
         else:
             while input_widget_count < 2:
                 new_socket_widget: SocketWidget = SocketWidget(label="B", is_input=True, parent_node=self)
-                insert_idx: int = len(self.input_socket_widgets) + 1
-                self.add_socket_widget(new_socket_widget, insert_idx)
+                insert_idx: int = len(self.input_socket_widgets)
+                self.insert_socket_widget(new_socket_widget, insert_idx)
                 input_widget_count += 1
 
     # --------------- Node eval methods ---------------

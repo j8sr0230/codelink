@@ -47,7 +47,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene.background_color = QtGui.QColor("#383838")
 
         self._socket_widgets: list[SocketWidget] = []
-        self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
+        # self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2]
 
         self._mode: str = ""
         self._lm_pressed: bool = False
@@ -247,7 +247,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Socket widget editing ---------------
 
-    def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0) -> None:
+    def insert_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0) -> None:
         socket_widget.pin.setParentItem(self)
 
         self._content_widget.hide()
@@ -651,7 +651,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 parent_node=self
             )
             new_socket_widget.link = socket_widget_dict["Link"]
-            self.add_socket_widget(new_socket_widget, i)
+            self.insert_socket_widget(new_socket_widget, i)
 
         # Reset sub graph data
         self.sub_scene.deserialize(state["Subgraph"])

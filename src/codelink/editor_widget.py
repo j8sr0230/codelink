@@ -9,7 +9,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, GrpNodeCommand, NodeFromNodeCommand, ResolveNodeCommand,  # Node commands
+    AddNodeCommand, AddGrpNodeCommand, ResolveNodeCommand,  # Node commands
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
     AddFrameCommand,  # Frame commands
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
@@ -128,7 +128,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._create_custom_action: QtWidgets.QAction = QtWidgets.QAction("Create Custom", self)
         self._create_custom_action.setShortcut(QtGui.QKeySequence("Shift+C"))
-        cast(QtCore.SignalInstance, self._create_custom_action.triggered).connect(self.create_custom_node)
+        cast(QtCore.SignalInstance, self._create_custom_action.triggered).connect(self.add_node_grp)
         self.addAction(self._create_custom_action)
 
         self._resolve_custom_action: QtWidgets.QAction = QtWidgets.QAction("Resolve Custom", self)
@@ -426,21 +426,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 print("Stack Item", self._undo_stack.command(i))
 
             # Test area
-            grp_node: NodeItem = NodeItem(self._undo_stack)
-            grp_node.prop_model.properties["Name"] = "Custom Node"
-
-            sub_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
-
-            selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
-            selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
-            selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
-
-            grp_node.setPos(
-                selection_center_x - grp_node.boundingRect().width() / 2,
-                selection_center_y - grp_node.boundingRect().height() / 2
-            )
-
-            self._undo_stack.push(GrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
         super().keyPressEvent(event)
 
@@ -584,9 +569,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
 
-    def create_custom_node(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
-        self._undo_stack.push(NodeFromNodeCommand(self.scene(), selected_nodes))
+    def add_node_grp(self):
+        grp_node: NodeItem = NodeItem(self._undo_stack)
+        grp_node.prop_model.properties["Name"] = "Custom Node"
+
+        sub_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
+
+        selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
+        selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
+        selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
+
+        grp_node.setPos(
+            selection_center_x - grp_node.boundingRect().width() / 2,
+            selection_center_y - grp_node.boundingRect().height() / 2
+        )
+
+        self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
     def resolve_custom_node(self):
         self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
@@ -629,7 +627,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 else:
                     insert_idx: int = 0
 
-                selected_node_item.add_socket_widget(new_socket_widget, insert_idx)
+                selected_node_item.insert_socket_widget(new_socket_widget, insert_idx)
                 self._prop_scroller.hide()
 
     def remove_socket(self):
