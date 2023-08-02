@@ -10,7 +10,6 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
-from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
 from pin_item import PinItem
@@ -167,8 +166,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self.add_node(grp_node)
 
-        #self.transfer_connected_sockets(grp_node)
-        #grp_node.update_layout()
+        # self.transfer_connected_sockets(grp_node)
+        # grp_node.update_layout()
 
         return grp_node
 

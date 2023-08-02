@@ -1,13 +1,15 @@
 from __future__ import annotations
-from typing import Union, Optional, cast
+from typing import TYPE_CHECKING, Union, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
+from number_line import NumberLine
 from socket_widget import SocketWidget
-from sockets import *
-from pin_item import PinItem
+
+if TYPE_CHECKING:
+    from pin_item import PinItem
 
 
 class ScalarMath(NodeItem):

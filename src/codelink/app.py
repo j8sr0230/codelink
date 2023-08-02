@@ -1,9 +1,7 @@
-import os
-import sys
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from path_loader import *
 from app_style import MAIN_STYLE
 from editor_widget import EditorWidget
 from dag_scene import DAGScene
