@@ -6,6 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from socket_widget import SocketWidget
+from sockets import NumberLine
 from pin_item import PinItem
 
 
@@ -31,7 +32,7 @@ class ScalarMath(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            SocketWidget(label="A", is_input=True, parent_node=self),
+            NumberLine(label="A", is_input=True, parent_node=self),
             SocketWidget(label="B", is_input=True, parent_node=self),
             SocketWidget(label="Res", is_input=False, parent_node=self)
         ]

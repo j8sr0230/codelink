@@ -16,6 +16,8 @@ from edge_item import EdgeItem
 
 
 class NodeItem(QtWidgets.QGraphicsItem):
+    REG_NAME: str = "Node Item"
+
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
