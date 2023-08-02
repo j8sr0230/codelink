@@ -11,6 +11,7 @@ from app_style import NODE_STYLE
 from utils import crop_text
 from property_model import PropertyModel
 from frame_item import FrameItem
+from sockets import *
 from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
@@ -642,7 +643,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.clear_socket_widgets()
         for i in range(len(state["Sockets"])):
             socket_widget_dict: dict = state["Sockets"][i]
-            socket_widget_cls: type = getattr(sys.modules["sockets"], socket_widget_dict["Class"])
+            socket_widget_cls: type = getattr(sys.modules[__name__], socket_widget_dict["Class"])
             new_socket_widget: socket_widget_cls = socket_widget_cls(
                 label=socket_widget_dict["Properties"]["Name"],
                 is_input=socket_widget_dict["Properties"]["Is Input"],
