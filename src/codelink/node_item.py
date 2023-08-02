@@ -243,12 +243,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Socket widget editing ---------------
 
-    def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0):
+    def add_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0) -> None:
         socket_widget.pin.setParentItem(self)
 
         self._content_widget.hide()
         self._socket_widgets.insert(insert_idx, socket_widget)
-        self._content_layout.insertWidget(insert_idx, socket_widget)
+        layout_offset: int = len([child for child in self._content_widget.children()
+                                  if not isinstance(child, SocketWidget)]) - 1
+        self._content_layout.insertWidget(insert_idx + layout_offset, socket_widget)
         self._content_widget.show()
         self.update_all()
 
@@ -645,8 +647,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 parent_node=self
             )
             new_socket_widget.link = socket_widget_dict["Link"]
-            # TODO: Calculate 1
-            self.add_socket_widget(new_socket_widget, i + 1)
+            self.add_socket_widget(new_socket_widget, i)
 
         # Reset sub graph data
         self.sub_scene.deserialize(state["Subgraph"])
