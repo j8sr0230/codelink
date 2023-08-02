@@ -53,25 +53,19 @@ class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.add_node_grp(self._grp_node, self._sub_nodes)
 
 
-class NodeFromNodeCommand(QtWidgets.QUndoCommand):
-	def __init__(
-			self, scene: DAGScene, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+class RemoveFromFrameCommand(QtWidgets.QUndoCommand):
+	def __init__(self, node: NodeItem, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
-		self._scene: DAGScene = scene
-		self._nodes_uuids: list[str] = [node.__getstate__()["UUID"] for node in nodes]
-		self._custom_node_uuid: str = ""
+		self._node: NodeItem = node
+		self._frame: FrameItem = frame
 
 	def undo(self) -> None:
-		custom_node: NodeItem = self._scene.dag_item(self._custom_node_uuid)
-		self._scene.resolve_node(custom_node)
+		self._node.parent_frame = self._frame
+		self._frame.framed_nodes.append(self._node)
 
 	def redo(self) -> None:
-		self._scene.clearSelection()
-		nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._nodes_uuids]
-		custom_node = self._scene.add_node_from_nodes(nodes, self._custom_node_uuid)
-		self._custom_node_uuid = custom_node.uuid
-		custom_node.setSelected(True)
+		self._node.remove_from_frame()
 
 
 class ResolveNodeCommand(QtWidgets.QUndoCommand):

@@ -24,8 +24,8 @@ def main() -> None:
     editor_widget.resize(1200, 600)
     editor_widget.show()
 
-    for i in range(5):
-        for j in range(5):
+    for i in range(4):
+        for j in range(1):
             node = ScalarMath(undo_stack)
             node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
             editor_scene.add_node(node)

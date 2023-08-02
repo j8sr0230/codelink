@@ -10,6 +10,7 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
+from undo_commands import RemoveFromFrameCommand
 from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
@@ -122,8 +123,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return frame
 
     def remove_frame(self, frame: FrameItem) -> None:
-        frame: FrameItem = self.dag_item(frame.uuid)
-
         for node in frame.framed_nodes:
             node.parent_frame = None
 
@@ -155,11 +154,16 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_frames.append(sub_frame)
 
         for sub_node in sub_nodes:
+            if sub_node.parent_frame in frames.difference(set(sub_frames)):
+                self._undo_stack.push(RemoveFromFrameCommand(sub_node, sub_node.parent_frame))
+
             self._nodes.remove(sub_node)
             grp_node.sub_scene.add_node(sub_node)
+
         for sub_edge in sub_edges:
             self._edges.remove(sub_edge)
             grp_node.sub_scene.add_edge(sub_edge)
+
         for sub_frame in sub_frames:
             self._frames.remove(sub_frame)
             grp_node.sub_scene.add_frame(sub_frame)

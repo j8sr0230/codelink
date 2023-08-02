@@ -121,15 +121,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
         self.addAction(self._delete_action)
 
-        self._create_frame_action: QtWidgets.QAction = QtWidgets.QAction("Create Frame", self)
-        self._create_frame_action.setShortcut(QtGui.QKeySequence("Shift+F"))
-        cast(QtCore.SignalInstance, self._create_frame_action.triggered).connect(self.create_frame)
-        self.addAction(self._create_frame_action)
+        self._add_frame_action: QtWidgets.QAction = QtWidgets.QAction("Add Frame", self)
+        self._add_frame_action.setShortcut(QtGui.QKeySequence("Shift+F"))
+        cast(QtCore.SignalInstance, self._add_frame_action.triggered).connect(self.add_frame)
+        self.addAction(self._add_frame_action)
 
-        self._create_custom_action: QtWidgets.QAction = QtWidgets.QAction("Create Custom", self)
-        self._create_custom_action.setShortcut(QtGui.QKeySequence("Shift+C"))
-        cast(QtCore.SignalInstance, self._create_custom_action.triggered).connect(self.add_node_grp)
-        self.addAction(self._create_custom_action)
+        self._add_node_grp_action: QtWidgets.QAction = QtWidgets.QAction("Add Node Grp", self)
+        self._add_node_grp_action.setShortcut(QtGui.QKeySequence("Shift+C"))
+        cast(QtCore.SignalInstance, self._add_node_grp_action.triggered).connect(self.add_node_grp)
+        self.addAction(self._add_node_grp_action)
 
         self._resolve_custom_action: QtWidgets.QAction = QtWidgets.QAction("Resolve Custom", self)
         self._resolve_custom_action.setShortcut(QtGui.QKeySequence("Shift+D"))
@@ -469,13 +469,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.addAction(self._delete_action)
 
             if nodes_selected:
-                self._create_frame_action.setEnabled(True)
-                self._create_custom_action.setEnabled(True)
+                self._add_frame_action.setEnabled(True)
+                self._add_node_grp_action.setEnabled(True)
             else:
-                self._create_frame_action.setEnabled(False)
-                self._create_custom_action.setEnabled(False)
-            context_menu.addAction(self._create_frame_action)
-            context_menu.addAction(self._create_custom_action)
+                self._add_frame_action.setEnabled(False)
+                self._add_node_grp_action.setEnabled(False)
+            context_menu.addAction(self._add_frame_action)
+            context_menu.addAction(self._add_node_grp_action)
 
             if nodes_selected and [item for item in selected_items if isinstance(item, NodeItem)][0].has_sub_scene():
                 self._open_sub_action.setEnabled(True)
@@ -495,8 +495,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.exec_(self.mapToGlobal(position))
 
             self._delete_action.setEnabled(True)
-            self._create_frame_action.setEnabled(True)
-            self._create_custom_action.setEnabled(True)
+            self._add_frame_action.setEnabled(True)
+            self._add_node_grp_action.setEnabled(True)
             self._resolve_custom_action.setEnabled(True)
             self._open_sub_action.setEnabled(True)
             self._close_sub_action.setEnabled(True)
@@ -528,6 +528,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.translate(dx, dy)
         self.setTransformationAnchor(self.AnchorUnderMouse)
 
+    def fit_min(self) -> None:
+        self.zoom_min()
+        self.fit_in_content()
+
     def save_to_file(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
         # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
@@ -551,10 +555,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().deserialize(data_dict)
 
             self.fit_in_content()
-
-    def fit_min(self) -> None:
-        self.zoom_min()
-        self.fit_in_content()
 
     def copy(self) -> None:
         if len(self.scene().selectedItems()) > 0:
@@ -589,7 +589,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def resolve_custom_node(self):
         self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
 
-    def create_frame(self):
+    def add_frame(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
         self._undo_stack.push(AddFrameCommand(self.scene(), selected_nodes))
 
