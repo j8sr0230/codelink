@@ -18,3 +18,4 @@ class NumberLine(SocketWidget):
 		super().__init__(label, is_input, data, parent_node, parent_widget)
 
 		self._pin_item.color = QtGui.QColor("yellow")
+		self._pin_item.pin_type = float

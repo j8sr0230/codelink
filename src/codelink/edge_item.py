@@ -107,15 +107,15 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
                 elif self.scene().is_cyclic():
                     # Cyclic graph
                     result: bool = False
-
-                # In any case, reset target to QtWidgets.QGraphicsEllipseItem
-                self._end_pin.remove_edge(self)
-                temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                temp_target.setPos(self._end_pin.parent_node.mapToScene(self._end_pin.center()))
-                self._end_pin = temp_target
-
             else:
                 result: bool = False
+
+            # In any case, reset target to QtWidgets.QGraphicsEllipseItem
+            self._end_pin.remove_edge(self)
+            temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+            temp_target.setPos(self._end_pin.parent_node.mapToScene(self._end_pin.center()))
+            self._end_pin = temp_target
+
         else:
             result: bool = False
 

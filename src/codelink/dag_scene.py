@@ -10,6 +10,10 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
+# noinspection PyUnresolvedReferences
+from sockets import *
+from nodes import *
+
 from frame_item import FrameItem
 from node_item import NodeItem
 from pin_item import PinItem

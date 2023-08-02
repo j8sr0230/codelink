@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional, Union, Any, cast
+import sys
 import importlib
 
 import PySide2.QtCore as QtCore
@@ -641,7 +642,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.clear_socket_widgets()
         for i in range(len(state["Sockets"])):
             socket_widget_dict: dict = state["Sockets"][i]
-            socket_widget_cls: type = getattr(importlib.import_module("socket_widget"), socket_widget_dict["Class"])
+            socket_widget_cls: type = getattr(sys.modules["sockets"], socket_widget_dict["Class"])
             new_socket_widget: socket_widget_cls = socket_widget_cls(
                 label=socket_widget_dict["Properties"]["Name"],
                 is_input=socket_widget_dict["Properties"]["Is Input"],
