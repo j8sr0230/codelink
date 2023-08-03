@@ -337,3 +337,5 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 		for frame in self._frames:
 			if frame not in self._scene.frames:
 				self._scene.add_frame(frame)
+				for node in frame.framed_nodes:
+					node.parent_frame = frame
