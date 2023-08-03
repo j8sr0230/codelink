@@ -227,6 +227,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.remove_node(grp_node)
 
     def remove_node(self, node: NodeItem) -> None:
+        # noinspection PyTypeChecker
         node.content_widget.setParent(None)
         self.removeItem(node)
         self._nodes.remove(node)
@@ -343,12 +344,15 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return [item for item in self.selectedItems() if isinstance(item, FrameItem)]
 
     @staticmethod
-    def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:
-        x_min: float = min([node.x() for node in nodes]) - offset
-        x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
-        y_min: float = min([node.y() for node in nodes]) - offset
-        y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
-        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+    def bounding_rect(nodes: list[NodeItem], offset: int = 10) -> QtCore.QRectF:
+        if len(nodes) > 0:
+            x_min: float = min([node.x() for node in nodes]) - offset
+            x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
+            y_min: float = min([node.y() for node in nodes]) - offset
+            y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
+            return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+        else:
+            return QtCore.QRectF(0, 0, offset, offset)
 
     @staticmethod
     def outside_frames(nodes: list[NodeItem]) -> list[FrameItem]:

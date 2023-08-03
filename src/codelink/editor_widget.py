@@ -603,6 +603,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             dy: float = paste_pos.y() - scene_center.y()
 
             for node in nodes:
+                node.last_position = QtCore.QPointF(dx + node.x(), dy + node.y())
                 node.setPos(dx + node.x(), dy + node.y())
 
             self.scene().clearSelection()
@@ -620,6 +621,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         edges: list[EdgeItem] = self.scene().selected_edges()
         frames: list[FrameItem] = self.scene().selected_frames()
 
+        for frame in frames:
+            self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
+
+        for edge in edges:
+            self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
+
         for node in nodes:
             if node.parent_frame is not None:
                 old_frame_uuid: str = node.parent_frame.uuid
@@ -627,18 +634,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
                     self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
             for socket_widget in node.socket_widgets:
-                while len(socket_widget.pin.edges) > 0:
-                    edge: EdgeItem = socket_widget.pin.edges.pop()
+                for edge in socket_widget.pin.edges:
                     self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
-
-        for edge in edges:
-            if edge in self.scene().edges:
-                self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
-
-        for frame in frames:
-            if frame in self.scene().frames:
-                self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
 
     def add_grp_node(self):
         grp_node: NodeItem = NodeItem(self._undo_stack)

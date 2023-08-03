@@ -226,6 +226,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def last_position(self) -> QtCore.QPointF:
         return self._last_position
 
+    @last_position.setter
+    def last_position(self, value: QtCore.QPointF) -> None:
+        self._last_position: QtCore.QPointF = value
+
     @property
     def moved(self) -> bool:
         return self._moved
