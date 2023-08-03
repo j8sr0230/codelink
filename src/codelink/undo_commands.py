@@ -90,20 +90,19 @@ class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._node_uuid: str = node.uuid
+		self._node = node
 
 	def undo(self) -> None:
 		self.redo()
 
 	def redo(self) -> None:
-		node: NodeItem = self._scene.dag_item(self._node_uuid)
-		collapse_state: bool = not node.prop_model.properties["Collapse State"]
-		collapse_mode_row: int = list(node.prop_model.properties.keys()).index("Collapse State")
+		new_collapse_state: bool = not self._node.prop_model.properties["Collapse State"]
+		collapse_mode_row: int = list(self._node.prop_model.properties.keys()).index("Collapse State")
 
 		# noinspection PyTypeChecker
-		node.prop_model.setData(
-			node.prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
-			collapse_state, QtCore.Qt.EditRole
+		self._node.prop_model.setData(
+			self._node.prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
+			new_collapse_state, QtCore.Qt.EditRole
 		)
 
 
@@ -112,26 +111,22 @@ class ResizeNodeCommand(QtWidgets.QUndoCommand):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._node_uuid: str = node.uuid
+		self._node: NodeItem = node
 		self._undo_width: int = node.last_width
 		self._redo_width: int = node.boundingRect().width()
 
 	def undo(self) -> None:
-		node: NodeItem = self._scene.dag_item(self._node_uuid)
-
-		width_row: int = list(node.prop_model.properties.keys()).index("Width")
-		node.prop_model.setData(
-			node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._undo_width, 2  # QtCore.Qt.EditRole
+		width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
+		self._node.prop_model.setData(
+			self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._undo_width, 2
 		)
 
 	def redo(self) -> None:
-		node: NodeItem = self._scene.dag_item(self._node_uuid)
-
 		if self._undo_width != self._redo_width:
-			width_row: int = list(node.prop_model.properties.keys()).index("Width")
+			width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
 
-			node.prop_model.setData(
-				node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2  # QtCore.Qt.EditRole
+			self._node.prop_model.setData(
+				self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2
 			)
 
 
