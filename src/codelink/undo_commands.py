@@ -130,6 +130,33 @@ class ResizeNodeCommand(QtWidgets.QUndoCommand):
 			)
 
 
+class MoveNodesCommand(QtWidgets.QUndoCommand):
+	def __init__(self, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+		super().__init__(parent)
+
+		self._nodes: list[NodeItem] = nodes
+		self._undo_positions: dict[NodeItem, tuple[float, float]] = dict()
+		for node in self._nodes:
+			self._undo_positions[node] = (node.last_position.x(), node.last_position.y())
+
+		self._redo_positions: dict[NodeItem, tuple[float, float]] = dict()
+
+	def undo(self) -> None:
+		for node, pos in self._undo_positions.items():
+			self._redo_positions[node] = (node.x(), node.y())
+			x_row: int = list(node.prop_model.properties.keys()).index("X")
+			y_row: int = list(node.prop_model.properties.keys()).index("Y")
+			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
+			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
+
+	def redo(self) -> None:
+		for node, pos in self._redo_positions.items():
+			x_row: int = list(node.prop_model.properties.keys()).index("X")
+			y_row: int = list(node.prop_model.properties.keys()).index("Y")
+			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
+			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
+
+
 class RemoveNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
@@ -241,33 +268,6 @@ class RemoveFrameCommand(QtWidgets.QUndoCommand):
 
 	def redo(self) -> None:
 		self._scene.remove_frame(self._frame)
-
-
-class MoveNodesCommand(QtWidgets.QUndoCommand):
-	def __init__(self, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-		super().__init__(parent)
-
-		self._nodes: list[NodeItem] = nodes
-		self._undo_positions: dict[NodeItem, tuple[float, float]] = dict()
-		for node in self._nodes:
-			self._undo_positions[node] = (node.last_position.x(), node.last_position.y())
-
-		self._redo_positions: dict[NodeItem, tuple[float, float]] = dict()
-
-	def undo(self) -> None:
-		for node, pos in self._undo_positions.items():
-			self._redo_positions[node] = (node.x(), node.y())
-			x_row: int = list(node.prop_model.properties.keys()).index("X")
-			y_row: int = list(node.prop_model.properties.keys()).index("Y")
-			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
-			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
-
-	def redo(self) -> None:
-		for node, pos in self._redo_positions.items():
-			x_row: int = list(node.prop_model.properties.keys()).index("X")
-			y_row: int = list(node.prop_model.properties.keys()).index("Y")
-			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
-			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
 
 
 class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
