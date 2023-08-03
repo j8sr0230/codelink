@@ -119,7 +119,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self._nodes.append(node)
         self.addItem(node)
-        node.setSelected(True)
 
         return node
 

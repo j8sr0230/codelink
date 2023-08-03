@@ -27,7 +27,6 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 	def redo(self) -> None:
 		self._scene.clearSelection()
 		self._scene.add_node(self._node)
-		self._node.setSelected(True)
 
 
 class AddGrpNodeCommand(QtWidgets.QUndoCommand):
@@ -42,11 +41,9 @@ class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._sub_nodes: list[NodeItem] = sub_nodes
 
 	def undo(self) -> None:
-		self._scene.clearSelection()
 		self._scene.resolve_grp_node(self._grp_node)
 
 	def redo(self) -> None:
-		self._scene.clearSelection()
 		self._scene.add_node_grp(self._grp_node, self._sub_nodes)
 
 
@@ -245,7 +242,6 @@ class AddFrameCommand(QtWidgets.QUndoCommand):
 			self._scene.add_frame(self._frame)
 			for node in self._frame.framed_nodes:
 				node.parent_frame = self._frame
-			self._frame.setSelected(True)
 
 
 class RemoveFrameCommand(QtWidgets.QUndoCommand):

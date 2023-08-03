@@ -606,10 +606,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 node.setPos(dx + node.x(), dy + node.y())
 
             self.scene().clearSelection()
-            to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], nodes) + cast(
-                list[QtWidgets.QGraphicsItem], frames)
-            for item in to_be_selected:
-                item.setSelected(True)
+            # to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], nodes) + cast(
+            #     list[QtWidgets.QGraphicsItem], frames)
+            # for item in to_be_selected:
+            #     item.setSelected(True)
 
             self._undo_stack.push(PasteClipboardCommand(self.scene(), nodes, edges, frames))
         except json.JSONDecodeError:
