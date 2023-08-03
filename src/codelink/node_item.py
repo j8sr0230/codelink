@@ -310,9 +310,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
         if self.parent_frame is not None:
             self.parent_frame.framed_nodes.remove(self)
             self.parent_frame.update()
-            if len(self.parent_frame.framed_nodes) == 0:
-                #TODO: push remove frame to undo stack
-                self.scene().remove_frame(self.parent_frame)
             self._parent_frame: Optional[FrameItem] = None
 
     # --------------- DAG analytics ---------------

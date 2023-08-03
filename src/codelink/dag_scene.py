@@ -286,8 +286,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return edge
 
     def remove_edge(self, edge: EdgeItem) -> None:
-        edge: EdgeItem = self.dag_item(edge.uuid)
-
         if type(edge.start_pin) == PinItem and len(edge.start_pin.edges) > 0:
             if edge in edge.start_pin.edges:
                 edge.start_pin.remove_edge(edge)

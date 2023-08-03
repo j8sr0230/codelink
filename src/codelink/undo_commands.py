@@ -53,7 +53,7 @@ class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.add_node_grp(self._grp_node, self._sub_nodes)
 
 
-class RemoveFromFrameCommand(QtWidgets.QUndoCommand):
+class RemoveNodeFromFrameCommand(QtWidgets.QUndoCommand):
 	def __init__(self, node: NodeItem, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
@@ -137,14 +137,14 @@ class AddEdgeCommand(QtWidgets.QUndoCommand):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._edge_state: dict = edge.__getstate__()
+		self._edge: EdgeItem = edge
 
 	def undo(self) -> None:
-		self._scene.remove_edge(self._scene.dag_item(self._edge_state["UUID"]))
+		self._scene.remove_edge(self._edge)
 
 	def redo(self) -> None:
-		if self._scene.dag_item(self._edge_state["UUID"]) is None:
-			self._scene.deserialize_edges([self._edge_state])
+		if self._edge not in self._scene.edges:
+			self._scene.add_edge(self._edge)
 
 
 class RerouteEdgeCommand(QtWidgets.QUndoCommand):
@@ -155,29 +155,25 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._edge_uuid: str = edge.uuid
-		self._undo_pin_uuid: tuple[str, int] = undo_pin.uuid()
-		self._redo_pin_uuid: tuple[str, int] = redo_pin.uuid()
+		self._edge: EdgeItem = edge
+		self._undo_pin: PinItem = undo_pin
+		self._redo_pin: PinItem = redo_pin
 
 	def undo(self) -> None:
-		edge: EdgeItem = self._scene.dag_item(self._edge_uuid)
-		edge.end_pin.remove_edge(edge)
-		edge.end_pin.socket_widget.update_stylesheets()
+		self._edge.end_pin.remove_edge(self._edge)
+		self._edge.end_pin.socket_widget.update_stylesheets()
 
-		end_pin: PinItem = self._scene.dag_item(self._undo_pin_uuid[0]).socket_widgets[self._undo_pin_uuid[1]].pin
-		edge.end_pin = end_pin
-		edge.end_pin.add_edge(edge)
-		edge.end_pin.socket_widget.update_stylesheets()
+		self._edge.end_pin = self._undo_pin
+		self._edge.end_pin.add_edge(self._edge)
+		self._edge.end_pin.socket_widget.update_stylesheets()
 
 	def redo(self) -> None:
-		edge: EdgeItem = self._scene.dag_item(self._edge_uuid)
-		edge.end_pin.remove_edge(edge)
-		edge.end_pin.socket_widget.update_stylesheets()
+		self._edge.end_pin.remove_edge(self._edge)
+		self._edge.end_pin.socket_widget.update_stylesheets()
 
-		end_pin: PinItem = self._scene.dag_item(self._redo_pin_uuid[0]).socket_widgets[self._redo_pin_uuid[1]].pin
-		edge.end_pin = end_pin
-		edge.end_pin.add_edge(edge)
-		edge.end_pin.socket_widget.update_stylesheets()
+		self._edge.end_pin = self._redo_pin
+		self._edge.end_pin.add_edge(self._edge)
+		self._edge.end_pin.socket_widget.update_stylesheets()
 
 
 class RemoveEdgeCommand(QtWidgets.QUndoCommand):
@@ -185,54 +181,52 @@ class RemoveEdgeCommand(QtWidgets.QUndoCommand):
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._edge_state: dict = edge.__getstate__()
+		self._edge: EdgeItem = edge
 
 	def undo(self) -> None:
-		self._scene.deserialize_edges([self._edge_state])
+		self._scene.add_edge(self._edge)
 
 	def redo(self) -> None:
-		self._scene.remove_edge(self._scene.dag_item(self._edge_state["UUID"]))
+		self._scene.remove_edge(self._edge)
 
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, selected_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._frame_uuid: str = ""
-		self._selected_uuids: list[str] = [node.uuid for node in selected_nodes]
-
-		self._old_parent_frames: dict[str, str] = {}
-		for node in selected_nodes:
-			if node.parent_frame is not None:
-				self._old_parent_frames[node.uuid] = node.parent_frame.uuid
-			else:
-				self._old_parent_frames[node.uuid] = ""
+		self._frame: FrameItem = frame
 
 	def undo(self) -> None:
-		self._scene.remove_frame(self._scene.dag_item(self._frame_uuid))
-		for node_uuid, old_frame_uuid in self._old_parent_frames.items():
-			node: NodeItem = self._scene.dag_item(node_uuid)
-			old_parent_frame: Optional[FrameItem] = self._scene.dag_item(old_frame_uuid)
-			if old_parent_frame is not None:
-				old_parent_frame.framed_nodes.append(node)
-				node.parent_frame = old_parent_frame
+		self._scene.remove_frame(self._frame)
 
 	def redo(self) -> None:
-		print("scene", self._scene)
+		if self._frame not in self._scene.frames:
+			self._scene.add_frame(self._frame)
+			for node in self._frame.framed_nodes:
+				node.parent_frame = self._frame
+			self._frame.setSelected(True)
 
-		new_frame: FrameItem = self._scene.add_frame_from_nodes(
-			[self._scene.dag_item(uuid) for uuid in self._selected_uuids]
-		)
-		if self._frame_uuid == "":
-			self._frame_uuid = new_frame.uuid
-		else:
-			self._scene.dag_item(new_frame.uuid).uuid = self._frame_uuid
 
-		self._scene.clearSelection()
-		new_frame.setSelected(True)
+class RemoveFrameCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, frame: FrameItem, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._frame: FrameItem = frame
+
+	def undo(self) -> None:
+		self._scene.add_frame(self._frame)
+		for node in self._frame.framed_nodes:
+			node.parent_frame = self._frame
+		self._frame.setSelected(True)
+
+	def redo(self) -> None:
+		self._scene.remove_frame(self._frame)
 
 
 class DeleteSelectedCommand(QtWidgets.QUndoCommand):

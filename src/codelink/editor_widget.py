@@ -9,9 +9,9 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, RemoveFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand,  # Node commands
+    AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand,  # Node commands
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
-    AddFrameCommand,  # Frame commands
+    AddFrameCommand, RemoveFrameCommand, # Frame commands
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation commands
 )
@@ -596,7 +596,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             linked_to_outside_frame: set[NodeItem] = linked_to_outside_frame.union(in_both_sets)
 
         for node in linked_to_outside_frame:
-            self._undo_stack.push(RemoveFromFrameCommand(node, node.parent_frame))
+            self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
 
         self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
@@ -606,8 +606,18 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(ResolveGrpNodeCommand(self.scene(), grp_node))
 
     def add_frame(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
-        self._undo_stack.push(AddFrameCommand(self.scene(), selected_nodes))
+        selected_nodes: list[NodeItem] = self.scene().selected_nodes()
+        for node in selected_nodes:
+            if node.parent_frame is not None:
+                old_frame_uuid: str = node.parent_frame.uuid
+                self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
+                if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
+                    self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
+
+        frame: FrameItem = FrameItem(selected_nodes)
+        for node in selected_nodes:
+            node.parent_frame = frame
+        self._undo_stack.push(AddFrameCommand(self.scene(), frame))
 
     def open_sub_graph(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
