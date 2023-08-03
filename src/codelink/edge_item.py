@@ -147,17 +147,18 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
         else:
             end_point: QtCore.QPointF = self._end_pin.pos()
 
-        ctr_pt_offset: float = abs(end_point.x() - start_point.x()) / 2.5
+        # ctr_pt_offset: float = abs(end_point.x() - start_point.x()) / 2.5
 
-        if not start_pin.socket_widget.is_input:
-            ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + ctr_pt_offset, start_point.y())
-            ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - ctr_pt_offset, end_point.y())
-        else:
-            ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() - ctr_pt_offset, start_point.y())
-            ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() + ctr_pt_offset, end_point.y())
+        # if not start_pin.socket_widget.is_input:
+        #     ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() + ctr_pt_offset, start_point.y())
+        #     ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() - ctr_pt_offset, end_point.y())
+        # else:
+        #     ctr_pt_1: QtCore.QPointF = QtCore.QPointF(start_point.x() - ctr_pt_offset, start_point.y())
+        #     ctr_pt_2: QtCore.QPointF = QtCore.QPointF(end_point.x() + ctr_pt_offset, end_point.y())
 
         path: QtGui.QPainterPath = QtGui.QPainterPath(start_point)
-        path.cubicTo(ctr_pt_1, ctr_pt_2, end_point)
+        # path.cubicTo(ctr_pt_1, ctr_pt_2, end_point)
+        path.lineTo(end_point)
 
         return path
 
