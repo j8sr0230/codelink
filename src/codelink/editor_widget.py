@@ -603,7 +603,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             dy: float = paste_pos.y() - scene_center.y()
 
             for node in nodes:
-                node.last_position = QtCore.QPointF(dx + node.x(), dy + node.y())
                 node.setPos(dx + node.x(), dy + node.y())
 
             self.scene().clearSelection()
