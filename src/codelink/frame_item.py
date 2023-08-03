@@ -26,6 +26,8 @@ class FrameItem(QtWidgets.QGraphicsItem):
 
         # Reference to framed nodes
         self._framed_nodes: list[NodeItem] = framed_nodes
+        for node in self._framed_nodes:
+            node.parent_frame = self
 
         # Geometry
         self._offset: int = 10

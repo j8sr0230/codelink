@@ -106,21 +106,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(frame)
         return frame
 
-    def add_frame_from_nodes(self, nodes: list[NodeItem]) -> FrameItem:
-        frame: FrameItem = FrameItem(framed_nodes=nodes)
-        frame.uuid = QtCore.QUuid.createUuid().toString()
-
-        for node in nodes:
-            if node.parent_frame is not None:
-                node.remove_from_frame()
-            node.parent_frame = frame
-
-        self._frames.append(frame)
-        self.addItem(frame)
-        self.clearSelection()
-
-        return frame
-
     def remove_frame(self, frame: FrameItem) -> None:
         for node in frame.framed_nodes:
             node.parent_frame = None
@@ -552,7 +537,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for frame_dict in frames_dict:
             framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
             framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
-            new_frame: FrameItem = self.add_frame_from_nodes(framed_nodes)
+            new_frame: FrameItem = FrameItem(framed_nodes)
+            self.add_frame(new_frame)
 
             # Reset frame state
             new_frame.__setstate__(frame_dict)
