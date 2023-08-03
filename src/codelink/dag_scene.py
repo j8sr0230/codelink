@@ -10,7 +10,6 @@ import PySide2.QtGui as QtGui
 
 import networkx as nx
 
-from undo_commands import RemoveFromFrameCommand
 from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
@@ -154,9 +153,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_frames.append(sub_frame)
 
         for sub_node in sub_nodes:
-            if sub_node.parent_frame in frames.difference(set(sub_frames)):
-                self._undo_stack.push(RemoveFromFrameCommand(sub_node, sub_node.parent_frame))
-
             self._nodes.remove(sub_node)
             grp_node.sub_scene.add_node(sub_node)
 
@@ -247,49 +243,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         node.content_widget.setParent(None)
         self.removeItem(node)
         self._nodes.remove(node)
-
-    def resolve_node(self, node: NodeItem):
-        node: NodeItem = self.dag_item(node.uuid)
-        if node.has_sub_scene():
-            sub_scene_bbox: QtCore.QRectF = node.sub_scene.itemsBoundingRect()
-            sub_scene_center: QtCore.QPointF = QtCore.QPointF(
-                sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
-                sub_scene_bbox.y() + sub_scene_bbox.height() / 2
-            )
-
-            for sub_node in node.sub_scene.nodes:
-                # print(sub_node.parent_frame)
-                self.add_node(sub_node)
-                node_pos: QtCore.QPointF = QtCore.QPointF(
-                    sub_node.x() + (node.center.x() - sub_scene_center.x()),
-                    sub_node.y() + (node.center.y() - sub_scene_center.y())
-                )
-                sub_node.setPos(node_pos)
-
-            for edge in node.sub_scene.edges:
-                self.add_edge(edge)
-
-            for socket_idx, socket_widget in enumerate(node.socket_widgets):
-                while socket_widget.pin.has_edges():
-                    edge: EdgeItem = socket_widget.pin.edges.pop()
-
-                    target_node: NodeItem = self.dag_item(socket_widget.link[0])
-                    target_socket: SocketWidget = target_node.socket_widgets[socket_widget.link[1]]
-                    target_socket.link = ("", -1)
-                    target_socket.pin.add_edge(edge)
-
-                    if target_socket.is_input:
-                        edge.end_pin = target_socket.pin
-                    else:
-                        edge.start_pin = target_socket.pin
-
-                    edge.sort_pins()
-                    target_socket.update_all()
-
-            for frame in node.sub_scene.frames:
-                self.add_frame(frame)
-
-            self.remove_node(node)
 
     def add_edge(self, edge: EdgeItem) -> EdgeItem:
         if edge.uuid == "":
@@ -388,14 +341,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     # --------------- DAG analytics ---------------
 
-    @staticmethod
-    def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:
-        x_min: float = min([node.x() for node in nodes]) - offset
-        x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
-        y_min: float = min([node.y() for node in nodes]) - offset
-        y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
-        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
-
     def dag_item(self, uuid: str = "") -> Any:
         all_items: list = (
                 cast(list[QtWidgets.QGraphicsItem], self._frames) +
@@ -408,6 +353,28 @@ class DAGScene(QtWidgets.QGraphicsScene):
             return result[0]
         else:
             return None
+
+    def selected_nodes(self) -> list[NodeItem]:
+        return [item for item in self.selectedItems() if isinstance(item, NodeItem)]
+
+    @staticmethod
+    def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:
+        x_min: float = min([node.x() for node in nodes]) - offset
+        x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
+        y_min: float = min([node.y() for node in nodes]) - offset
+        y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
+        return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+
+    @staticmethod
+    def outside_frames(nodes: list[NodeItem]) -> list[FrameItem]:
+        inside_frames: set[FrameItem] = set()
+        all_frames: set[FrameItem] = {node.parent_frame for node in nodes if node.parent_frame is not None}
+
+        for frame in all_frames:
+            if set(frame.framed_nodes).issubset(nodes):
+                inside_frames.add(frame)
+
+        return list(all_frames.difference(inside_frames))
 
     def ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []

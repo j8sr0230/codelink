@@ -68,34 +68,21 @@ class RemoveFromFrameCommand(QtWidgets.QUndoCommand):
 		self._node.remove_from_frame()
 
 
-class ResolveNodeCommand(QtWidgets.QUndoCommand):
+class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, custom_nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, grp_node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-		self._custom_node_uuids: list[str] = [custom_node.uuid for custom_node in custom_nodes]
-		self._sub_nodes_uuids: list[list[str]] = []
+		self._grp_node: NodeItem = grp_node
+		self._sub_nodes: list[NodeItem] = grp_node.sub_scene.nodes
 
 	def undo(self) -> None:
-		for idx, node_uuid_list in enumerate(self._sub_nodes_uuids):
-			sub_nodes: list[NodeItem] = [self._scene.dag_item(node_uuid) for node_uuid in node_uuid_list]
-			custom_node: NodeItem = self._scene.add_node_from_nodes(sub_nodes)
-
-			# Reset custom uuid an adjust sub node links appropriately
-			custom_node.uuid = self._custom_node_uuids[idx]
-			for sub_node in custom_node.sub_scene.nodes:
-				for socket_widget in sub_node.socket_widgets:
-					if socket_widget.link[0] != "" and len(sub_node.sub_scene.nodes) == 0:
-						socket_widget.link = (custom_node.uuid, socket_widget.link[1])
+		self._scene.add_node_grp(self._grp_node, self._sub_nodes)
 
 	def redo(self) -> None:
-		custom_nodes: list[NodeItem] = [self._scene.dag_item(uuid) for uuid in self._custom_node_uuids]
-		for custom_node in custom_nodes:
-			if len(self._sub_nodes_uuids) == 0:
-				self._sub_nodes_uuids.append([node.uuid for node in custom_node.sub_scene.nodes])
-			self._scene.resolve_node(custom_node)
+		self._scene.resolve_grp_node(self._grp_node)
 
 
 class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):

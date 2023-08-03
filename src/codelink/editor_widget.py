@@ -9,7 +9,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, AddGrpNodeCommand, ResolveNodeCommand,  # Node commands
+    AddNodeCommand, RemoveFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand,  # Node commands
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
     AddFrameCommand,  # Frame commands
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
@@ -126,15 +126,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._add_frame_action.triggered).connect(self.add_frame)
         self.addAction(self._add_frame_action)
 
-        self._add_node_grp_action: QtWidgets.QAction = QtWidgets.QAction("Add Node Grp", self)
-        self._add_node_grp_action.setShortcut(QtGui.QKeySequence("Shift+C"))
-        cast(QtCore.SignalInstance, self._add_node_grp_action.triggered).connect(self.add_node_grp)
-        self.addAction(self._add_node_grp_action)
+        self._add_grp_node_action: QtWidgets.QAction = QtWidgets.QAction("Add Grp Node", self)
+        self._add_grp_node_action.setShortcut(QtGui.QKeySequence("Shift+C"))
+        cast(QtCore.SignalInstance, self._add_grp_node_action.triggered).connect(self.add_grp_node)
+        self.addAction(self._add_grp_node_action)
 
-        self._resolve_custom_action: QtWidgets.QAction = QtWidgets.QAction("Resolve Custom", self)
-        self._resolve_custom_action.setShortcut(QtGui.QKeySequence("Shift+D"))
-        cast(QtCore.SignalInstance, self._resolve_custom_action.triggered).connect(self.resolve_custom_node)
-        self.addAction(self._resolve_custom_action)
+        self._resolve_grp_node_action: QtWidgets.QAction = QtWidgets.QAction("Resolve Grp Node", self)
+        self._resolve_grp_node_action.setShortcut(QtGui.QKeySequence("Shift+D"))
+        cast(QtCore.SignalInstance, self._resolve_grp_node_action.triggered).connect(self.resolve_grp_node)
+        self.addAction(self._resolve_grp_node_action)
 
         self._open_sub_action: QtWidgets.QAction = QtWidgets.QAction("Open Sub Graph", self)
         self._open_sub_action.setShortcut(QtGui.QKeySequence("Shift+Q"))
@@ -148,7 +148,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
-        cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.show_context_menu)
+        cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.context_menu)
 
     @property
     def zoom_level(self) -> int:
@@ -426,11 +426,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 print("Stack Item", self._undo_stack.command(i))
 
             # Test area
+            # selection: list[NodeItem] = self.scene().selected_nodes()
 
         super().keyPressEvent(event)
 
-    # --------------- Callbacks ---------------
-    def show_context_menu(self, position: QtCore.QPoint):
+    # --------------- Menus ---------------
+    def context_menu(self, position: QtCore.QPoint):
         if self._mode != "EDGE_CUT":
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
@@ -470,20 +471,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             if nodes_selected:
                 self._add_frame_action.setEnabled(True)
-                self._add_node_grp_action.setEnabled(True)
+                self._add_grp_node_action.setEnabled(True)
             else:
                 self._add_frame_action.setEnabled(False)
-                self._add_node_grp_action.setEnabled(False)
+                self._add_grp_node_action.setEnabled(False)
             context_menu.addAction(self._add_frame_action)
-            context_menu.addAction(self._add_node_grp_action)
+            context_menu.addAction(self._add_grp_node_action)
 
             if nodes_selected and [item for item in selected_items if isinstance(item, NodeItem)][0].has_sub_scene():
                 self._open_sub_action.setEnabled(True)
-                self._resolve_custom_action.setEnabled(True)
+                self._resolve_grp_node_action.setEnabled(True)
             else:
                 self._open_sub_action.setEnabled(False)
-                self._resolve_custom_action.setEnabled(False)
-            context_menu.addAction(self._resolve_custom_action)
+                self._resolve_grp_node_action.setEnabled(False)
+            context_menu.addAction(self._resolve_grp_node_action)
             context_menu.addAction(self._open_sub_action)
 
             if self.scene().parent_node is not None:
@@ -496,24 +497,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._delete_action.setEnabled(True)
             self._add_frame_action.setEnabled(True)
-            self._add_node_grp_action.setEnabled(True)
-            self._resolve_custom_action.setEnabled(True)
+            self._add_grp_node_action.setEnabled(True)
+            self._resolve_grp_node_action.setEnabled(True)
             self._open_sub_action.setEnabled(True)
             self._close_sub_action.setEnabled(True)
+
+    # --------------- Viewport, focus and zoom ---------------
 
     def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
         y: int = focus_target.pos().y()
         self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
-
-    def zoom_min(self):
-        while self._zoom_level > self._zoom_level_range[0]:
-            self._zoom_level -= 1
-            self.scale(1 / 1.25, 1 / 1.25)
-        cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
-
-    def on_zoom_change(self, zoom_level: int) -> None:
-        self.scene().update_details(zoom_level)
 
     def fit_in_content(self) -> None:
         top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())
@@ -531,6 +525,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def fit_min(self) -> None:
         self.zoom_min()
         self.fit_in_content()
+
+    def zoom_min(self):
+        while self._zoom_level > self._zoom_level_range[0]:
+            self._zoom_level -= 1
+            self.scale(1 / 1.25, 1 / 1.25)
+        cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
+
+    def on_zoom_change(self, zoom_level: int) -> None:
+        self.scene().update_details(zoom_level)
+
+    # --------------- Action callbacks ---------------
 
     def save_to_file(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
@@ -569,11 +574,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def delete_selected_node(self) -> None:
         self._undo_stack.push(DeleteSelectedCommand(self.scene()))
 
-    def add_node_grp(self):
+    def add_grp_node(self):
         grp_node: NodeItem = NodeItem(self._undo_stack)
         grp_node.prop_model.properties["Name"] = "Custom Node"
 
-        sub_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
+        sub_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
         selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
@@ -584,10 +589,21 @@ class EditorWidget(QtWidgets.QGraphicsView):
             selection_center_y - grp_node.boundingRect().height() / 2
         )
 
+        outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
+        linked_to_outside_frame: set[NodeItem] = set()
+        for outside_frame in outside_frames:
+            in_both_sets: set[NodeItem] = set(outside_frame.framed_nodes).intersection(sub_nodes)
+            linked_to_outside_frame: set[NodeItem] = linked_to_outside_frame.union(in_both_sets)
+
+        for node in linked_to_outside_frame:
+            self._undo_stack.push(RemoveFromFrameCommand(node, node.parent_frame))
+
         self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
-    def resolve_custom_node(self):
-        self._undo_stack.push(ResolveNodeCommand(self.scene(), self.scene().selectedItems()))
+    def resolve_grp_node(self):
+        if len(self.scene().selected_nodes()) > 0 and self.scene().selected_nodes()[0].has_sub_scene():
+            grp_node: NodeItem = self.scene().selected_nodes()[0]
+            self._undo_stack.push(ResolveGrpNodeCommand(self.scene(), grp_node))
 
     def add_frame(self):
         selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
