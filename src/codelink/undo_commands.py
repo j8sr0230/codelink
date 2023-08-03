@@ -146,9 +146,6 @@ class AddEdgeCommand(QtWidgets.QUndoCommand):
 		if self._edge not in self._scene.edges:
 			self._scene.add_edge(self._edge)
 
-			self._edge.end_pin.add_edge(self._edge)
-			self._edge.end_pin.add_edge(self._edge)
-
 
 class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 	def __init__(

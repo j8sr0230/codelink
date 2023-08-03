@@ -11,7 +11,7 @@ import PySide2.QtGui as QtGui
 from undo_commands import (
     AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand,  # Node commands
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
-    AddFrameCommand, RemoveFrameCommand, # Frame commands
+    AddFrameCommand, RemoveFrameCommand,  # Frame commands
     DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation commands
 )
@@ -603,6 +603,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def resolve_grp_node(self):
         if len(self.scene().selected_nodes()) > 0 and self.scene().selected_nodes()[0].has_sub_scene():
             grp_node: NodeItem = self.scene().selected_nodes()[0]
+            if grp_node.parent_frame is not None:
+                old_frame_uuid: str = grp_node.parent_frame.uuid
+                self._undo_stack.push(RemoveNodeFromFrameCommand(grp_node, grp_node.parent_frame))
+                if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
+                    self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
+
             self._undo_stack.push(ResolveGrpNodeCommand(self.scene(), grp_node))
 
     def add_frame(self):

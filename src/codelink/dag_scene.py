@@ -248,19 +248,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
         if edge.uuid == "":
             edge.uuid = QtCore.QUuid.createUuid().toString()
 
-        # if type(edge.end_pin) == PinItem:
-        #     start_pin_uuid: tuple[str, int] = edge.start_pin.uuid()
-        #     start_node: NodeItem = self.dag_item(start_pin_uuid[0])
-        #     start_pin: PinItem = start_node.socket_widgets[start_pin_uuid[1]].pin
-        #     edge.start_pin = start_pin
-        #     start_pin.add_edge(edge)
-        #
-        #     end_pin_uuid: tuple[str, int] = edge.end_pin.uuid()
-        #     end_node: NodeItem = self.dag_item(end_pin_uuid[0])
-        #     end_pin: PinItem = end_node.socket_widgets[end_pin_uuid[1]].pin
-        #     edge.end_pin = end_pin
-        #     end_pin.add_edge(edge)
-        #     end_pin.socket_widget.update_stylesheets()
+        if type(edge.start_pin) == PinItem:
+            edge.start_pin.add_edge(edge)
+            edge.start_pin.socket_widget.update_stylesheets()
+
+        if type(edge.end_pin) == PinItem:
+            edge.end_pin.add_edge(edge)
+            edge.end_pin.socket_widget.update_stylesheets()
 
         self._edges.append(edge)
         self.addItem(edge)
