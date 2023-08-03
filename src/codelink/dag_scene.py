@@ -166,6 +166,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     )
                     new_socket_widget.link = (node.uuid, socket_idx)
                     socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+                    socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties["Name"] + " ^"
+                    socket_widget.update_all()
                     grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
 
                     while len(socket_widget.pin.edges) > 0:
@@ -199,6 +201,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_node.y() + (grp_node.center.y() - sub_scene_center.y())
             )
             sub_node.setPos(sub_node_pos)
+            for socket in sub_node.socket_widgets:
+                if socket.prop_model.properties["Name"].endswith(" ^"):
+                    socket.prop_model.properties["Name"] = socket.prop_model.properties["Name"][0:-2]
+                    socket.update_all()
         for sub_edge in grp_node.sub_scene.edges:
             self.add_edge(sub_edge)
         for sub_frame in grp_node.sub_scene.frames:
