@@ -621,21 +621,28 @@ class EditorWidget(QtWidgets.QGraphicsView):
         edges: list[EdgeItem] = self.scene().selected_edges()
         frames: list[FrameItem] = self.scene().selected_frames()
 
-        for frame in frames:
-            self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
-
-        for edge in edges:
-            self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
-
+        linked_frames: set[FrameItem] = set()
+        linked_edges: set[EdgeItem] = set()
         for node in nodes:
             if node.parent_frame is not None:
-                old_frame_uuid: str = node.parent_frame.uuid
-                self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
-                if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
-                    self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
+                linked_frames.add(node.parent_frame)
             for socket_widget in node.socket_widgets:
                 for edge in socket_widget.pin.edges:
-                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
+                    linked_edges.add(edge)
+
+        for frame in linked_frames:
+            for node in nodes:
+                if node in frame.framed_nodes:
+                    self._undo_stack.push(RemoveNodeFromFrameCommand(node, frame))
+                    if len(frame.framed_nodes) == 0:
+                        self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
+
+        for frame in frames:
+            if frame in self.scene().frames:
+                self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
+        for edge in linked_edges.union(set(edges)):
+            self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
+        for node in nodes:
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
 
     def add_grp_node(self):
