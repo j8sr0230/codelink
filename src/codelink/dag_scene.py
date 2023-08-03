@@ -216,15 +216,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.remove_node(grp_node)
 
     def remove_node(self, node: NodeItem) -> None:
-        node: NodeItem = self.dag_item(node.uuid)
-        node.remove_from_frame()
-
-        for socket_widget in node.socket_widgets:
-            while len(socket_widget.pin.edges) > 0:
-                edge: EdgeItem = socket_widget.pin.edges.pop()
-                self.remove_edge(edge)
-
-        # noinspection PyTypeChecker
         node.content_widget.setParent(None)
         self.removeItem(node)
         self._nodes.remove(node)
@@ -333,6 +324,12 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def selected_nodes(self) -> list[NodeItem]:
         return [item for item in self.selectedItems() if isinstance(item, NodeItem)]
+
+    def selected_edges(self) -> list[EdgeItem]:
+        return [item for item in self.selectedItems() if isinstance(item, EdgeItem)]
+
+    def selected_frames(self) -> list[FrameItem]:
+        return [item for item in self.selectedItems() if isinstance(item, FrameItem)]
 
     @staticmethod
     def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:

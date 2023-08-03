@@ -9,11 +9,11 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand,  # Node commands
-    AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge commands
-    AddFrameCommand, RemoveFrameCommand,  # Frame commands
-    DeleteSelectedCommand, MoveSelectedCommand,  # General item commands
-    SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation commands
+    AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand, RemoveNodeCommand,  # Node Cmd
+    AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge Cmd
+    AddFrameCommand, RemoveFrameCommand,  # Frame Cmd
+    MoveSelectedCommand,  # General Cmd
+    SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation Cmd
 )
 from node_reg import nodes_dict
 from item_delegates import StringDelegate
@@ -118,7 +118,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
         self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
-        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_node)
+        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_item)
         self.addAction(self._delete_action)
 
         self._add_frame_action: QtWidgets.QAction = QtWidgets.QAction("Add Frame", self)
@@ -571,8 +571,30 @@ class EditorWidget(QtWidgets.QGraphicsView):
         except json.JSONDecodeError:
             print("Pasting failed!")
 
-    def delete_selected_node(self) -> None:
-        self._undo_stack.push(DeleteSelectedCommand(self.scene()))
+    def delete_selected_item(self) -> None:
+        nodes: list[NodeItem] = self.scene().selected_nodes()
+        edges: list[EdgeItem] = self.scene().selected_edges()
+        frames: list[FrameItem] = self.scene().selected_frames()
+
+        for node in nodes:
+            if node.parent_frame is not None:
+                old_frame_uuid: str = node.parent_frame.uuid
+                self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
+                if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
+                    self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
+            for socket_widget in node.socket_widgets:
+                while len(socket_widget.pin.edges) > 0:
+                    edge: EdgeItem = socket_widget.pin.edges.pop()
+                    self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
+            self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
+
+        for edge in edges:
+            if edge in self.scene().edges:
+                self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
+
+        for frame in frames:
+            if frame in self.scene().frames:
+                self._undo_stack.push(RemoveFrameCommand(self.scene(), frame))
 
     def add_grp_node(self):
         grp_node: NodeItem = NodeItem(self._undo_stack)
