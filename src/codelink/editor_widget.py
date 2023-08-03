@@ -646,10 +646,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._undo_stack.push(AddFrameCommand(self.scene(), frame))
 
     def open_sub_graph(self):
-        selected_nodes: list[NodeItem] = [item for item in self.scene().selectedItems() if isinstance(item, NodeItem)]
+        selected_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
-            self._undo_stack.push(SwitchSceneDownCommand(self, self.scene(), selected_nodes[0].uuid))
+            self._undo_stack.push(SwitchSceneDownCommand(self, self.scene(), selected_nodes[0]))
             self.fit_in_content()
 
     def close_sub_graph(self):

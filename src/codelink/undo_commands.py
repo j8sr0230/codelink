@@ -272,22 +272,21 @@ class MoveNodesCommand(QtWidgets.QUndoCommand):
 
 class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, view: EditorWidget, scene: DAGScene, parent_node_uuid: str,
+			self, view: EditorWidget, scene: DAGScene, parent_node: NodeItem,
 			parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._view: EditorWidget = view
 		self._scene: DAGScene = scene
-		self._parent_node_uuid: str = parent_node_uuid
+		self._parent: NodeItem = parent_node
 
 	def undo(self) -> None:
 		self._view.setScene(self._scene)
 		self._view.fit_in_content()
 
 	def redo(self) -> None:
-		print("sub", self._scene.dag_item(self._parent_node_uuid).sub_scene)
-		self._view.setScene(self._scene.dag_item(self._parent_node_uuid).sub_scene)
+		self._view.setScene(self._parent.sub_scene)
 		self._view.fit_in_content()
 
 
