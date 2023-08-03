@@ -477,7 +477,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.addAction(self._add_frame_action)
             context_menu.addAction(self._add_grp_node_action)
 
-            if nodes_selected and [item for item in selected_items if isinstance(item, NodeItem)][0].has_sub_scene():
+            if nodes_selected and self.scene().selected_nodes()[0].has_sub_scene():
                 self._open_sub_action.setEnabled(True)
                 self._resolve_grp_node_action.setEnabled(True)
             else:
