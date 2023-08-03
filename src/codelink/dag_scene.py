@@ -187,8 +187,19 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return grp_node
 
     def resolve_grp_node(self, grp_node: NodeItem):
+        sub_scene_bbox: QtCore.QRectF = grp_node.sub_scene.itemsBoundingRect()
+        sub_scene_center: QtCore.QPointF = QtCore.QPointF(
+            sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
+            sub_scene_bbox.y() + sub_scene_bbox.height() / 2
+        )
+
         for sub_node in grp_node.sub_scene.nodes:
             self.add_node(sub_node)
+            sub_node_pos: QtCore.QPointF = QtCore.QPointF(
+                sub_node.x() + (grp_node.center.x() - sub_scene_center.x()),
+                sub_node.y() + (grp_node.center.y() - sub_scene_center.y())
+            )
+            sub_node.setPos(sub_node_pos)
         for sub_edge in grp_node.sub_scene.edges:
             self.add_edge(sub_edge)
         for sub_frame in grp_node.sub_scene.frames:
@@ -283,13 +294,13 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def selection_to_clipboard(self):
         # Copy states of selected and linked items
-        selected_nodes: list[NodeItem] = [item for item in self.selectedItems() if isinstance(item, NodeItem)]
-        selected_edges: set[EdgeItem] = {item for item in self.selectedItems() if (
+        selected_nodes: list[NodeItem] = self.selected_nodes()
+        selected_edges: list[EdgeItem] = [item for item in self.selectedItems() if (
                 type(item) == EdgeItem and
                 item.start_pin.parentItem() in selected_nodes and
                 item.end_pin.parentItem() in selected_nodes
-        )}
-        selected_frames: set[FrameItem] = {item for item in self.selectedItems() if type(item) == FrameItem}
+        )]
+        selected_frames: list[FrameItem] = self.selected_frames()
 
         selected_node_states: list[dict] = [node.__getstate__() for node in selected_nodes]
         selected_edge_states: list[dict] = [edge.__getstate__() for edge in selected_edges]
