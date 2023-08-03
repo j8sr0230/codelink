@@ -9,11 +9,9 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from undo_commands import (
-    AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand, RemoveNodeCommand,  # Node Cmd
-    AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge Cmd
-    AddFrameCommand, RemoveFrameCommand,  # Frame Cmd
-    MoveNodesCommand,  # General Cmd
-    SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation Cmd
+    AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand, MoveNodesCommand,
+    RemoveNodeCommand, AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  AddFrameCommand, RemoveFrameCommand,
+    SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
 )
 from node_reg import nodes_dict
 from item_delegates import StringDelegate
@@ -85,12 +83,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         # Actions
         self._open_action: QtWidgets.QAction = QtWidgets.QAction("Open", self)
         self._open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
-        cast(QtCore.SignalInstance, self._open_action.triggered).connect(self.open_from_file)
+        cast(QtCore.SignalInstance, self._open_action.triggered).connect(self.open)
         self.addAction(self._open_action)
 
         self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save As", self)
         self._save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
-        cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save_to_file)
+        cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save_as)
         self.addAction(self._save_action)
 
         self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
@@ -105,16 +103,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._fit_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Find))
         cast(QtCore.SignalInstance, self._fit_action.triggered).connect(self.fit_min)
         self.addAction(self._fit_action)
-
-        self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
-        self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
-        cast(QtCore.SignalInstance, self._copy_action.triggered).connect(self.copy)
-        self.addAction(self._copy_action)
-
-        self._past_action: QtWidgets.QAction = QtWidgets.QAction("Paste", self)
-        self._past_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Paste))
-        cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
-        self.addAction(self._past_action)
 
         self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
         self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
@@ -145,6 +133,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._close_sub_action.setShortcut(QtGui.QKeySequence("Shift+W"))
         cast(QtCore.SignalInstance, self._close_sub_action.triggered).connect(self.close_sub_graph)
         self.addAction(self._close_sub_action)
+
+        self._copy_action: QtWidgets.QAction = QtWidgets.QAction("Copy", self)
+        self._copy_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Copy))
+        cast(QtCore.SignalInstance, self._copy_action.triggered).connect(self.copy)
+        self.addAction(self._copy_action)
+
+        self._past_action: QtWidgets.QAction = QtWidgets.QAction("Paste", self)
+        self._past_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Paste))
+        cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
+        self.addAction(self._past_action)
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -452,10 +450,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             context_menu.addAction(self._open_action)
             context_menu.addAction(self._save_action)
+            context_menu.addSeparator()
+
             context_menu.addAction(self._undo_action)
             context_menu.addAction(self._redo_action)
             context_menu.addAction(self._fit_action)
-            context_menu.addSeparator()
 
             selected_items: list[Any] = self.scene().selectedItems()
             nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
@@ -466,6 +465,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             else:
                 self._delete_action.setEnabled(False)
             context_menu.addAction(self._delete_action)
+
+            context_menu.addSeparator()
 
             if nodes_selected:
                 self._add_frame_action.setEnabled(True)
@@ -535,15 +536,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Action callbacks ---------------
 
-    def save_to_file(self):
-        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
-        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
+    def add_node_from_cls(self, cls: type):
+        new_node: cls = cls(self._undo_stack)
+        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
-        if file_path != ".":
-            with open(file_path, "w", encoding="utf8") as json_file:
-                json.dump(self.scene().serialize(), json_file, indent=4)
-
-    def open_from_file(self):
+    def open(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
         # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
@@ -558,6 +556,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().deserialize(data_dict)
 
             self.fit_in_content()
+
+    def save_as(self):
+        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
+        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
+
+        if file_path != ".":
+            with open(file_path, "w", encoding="utf8") as json_file:
+                json.dump(self.scene().serialize(), json_file, indent=4)
 
     def copy(self) -> None:
         if len(self.scene().selectedItems()) > 0:
@@ -656,11 +662,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self.scene().parent_node:
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
             self.fit_in_content()
-
-    def add_node_from_cls(self, cls: type):
-        new_node: cls = cls(self._undo_stack)
-        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def add_socket(self):
         if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
