@@ -12,7 +12,7 @@ from undo_commands import (
     AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand, RemoveNodeCommand,  # Node Cmd
     AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  # Edge Cmd
     AddFrameCommand, RemoveFrameCommand,  # Frame Cmd
-    MoveSelectedCommand,  # General Cmd
+    MoveNodesCommand,  # General Cmd
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand  # UI navigation Cmd
 )
 from node_reg import nodes_dict
@@ -118,7 +118,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._delete_action: QtWidgets.QAction = QtWidgets.QAction("Delete", self)
         self._delete_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
-        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected_item)
+        cast(QtCore.SignalInstance, self._delete_action.triggered).connect(self.delete_selected)
         self.addAction(self._delete_action)
 
         self._add_frame_action: QtWidgets.QAction = QtWidgets.QAction("Add Frame", self)
@@ -316,13 +316,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
-            selected_nodes: list[NodeItem] = [
-                item for item in self.scene().selectedItems() if isinstance(item, NodeItem)
-            ]
-            selected_nodes_moved: list[bool] = [node.moved for node in selected_nodes]
+            selected_nodes: list[NodeItem] = self.scene().selected_nodes()
+            selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
 
             if any(selected_nodes_moved):
-                self._undo_stack.push(MoveSelectedCommand(self.scene()))
+                self._undo_stack.push(MoveNodesCommand(selected_nodes))
                 for node in selected_nodes:
                     node.moved = False
 
@@ -571,7 +569,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         except json.JSONDecodeError:
             print("Pasting failed!")
 
-    def delete_selected_item(self) -> None:
+    def delete_selected(self) -> None:
         nodes: list[NodeItem] = self.scene().selected_nodes()
         edges: list[EdgeItem] = self.scene().selected_edges()
         frames: list[FrameItem] = self.scene().selected_frames()

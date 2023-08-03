@@ -243,51 +243,31 @@ class RemoveFrameCommand(QtWidgets.QUndoCommand):
 		self._scene.remove_frame(self._frame)
 
 
-class MoveSelectedCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+class MoveNodesCommand(QtWidgets.QUndoCommand):
+	def __init__(self, nodes: list[NodeItem], parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
 		super().__init__(parent)
 
-		self._scene: DAGScene = scene
+		self._nodes: list[NodeItem] = nodes
+		self._undo_positions: dict[NodeItem, tuple[float, float]] = dict()
+		for node in self._nodes:
+			self._undo_positions[node] = (node.last_position.x(), node.last_position.y())
 
-		# Copy uuid's and positions of selected nodes
-		self._undo_node_positions: list[tuple[str, float, float]] = [
-			(item.uuid, item.last_position.x(), item.last_position.y()) for item in self._scene.selectedItems()
-			if isinstance(item, NodeItem)
-		]
-		self._redo_node_positions: list[tuple[str, float, float]] = self._undo_node_positions.copy()
+		self._redo_positions: dict[NodeItem, tuple[float, float]] = dict()
 
 	def undo(self) -> None:
-		for idx, pos in enumerate(self._undo_node_positions):
-			node: NodeItem = self._scene.dag_item(pos[0])
-
-			# Store current node position
-			self._redo_node_positions[idx] = (pos[0], node.x(), node.y())
-
-			# Undo node movement
+		for node, pos in self._undo_positions.items():
+			self._redo_positions[node] = (node.x(), node.y())
 			x_row: int = list(node.prop_model.properties.keys()).index("X")
 			y_row: int = list(node.prop_model.properties.keys()).index("Y")
-
-			node.prop_model.setData(
-				node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[1], 2  # QtCore.Qt.EditRole
-			)
-			node.prop_model.setData(
-				node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[2], 2  # QtCore.Qt.EditRole
-			)
+			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
+			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
 
 	def redo(self) -> None:
-		if self._undo_node_positions != self._redo_node_positions:
-			for pos in self._redo_node_positions:
-				node: NodeItem = self._scene.dag_item(pos[0])
-
-				x_row: int = list(node.prop_model.properties.keys()).index("X")
-				y_row: int = list(node.prop_model.properties.keys()).index("Y")
-
-				node.prop_model.setData(
-					node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[1], 2  # QtCore.Qt.EditRole
-				)
-				node.prop_model.setData(
-					node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[2], 2  # QtCore.Qt.EditRole
-				)
+		for node, pos in self._redo_positions.items():
+			x_row: int = list(node.prop_model.properties.keys()).index("X")
+			y_row: int = list(node.prop_model.properties.keys()).index("Y")
+			node.prop_model.setData(node.prop_model.index(x_row, 1, QtCore.QModelIndex()), pos[0], 2)
+			node.prop_model.setData(node.prop_model.index(y_row, 1, QtCore.QModelIndex()), pos[1], 2)
 
 
 class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
