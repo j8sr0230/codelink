@@ -1,12 +1,9 @@
 from __future__ import annotations
-import json
-from typing import TYPE_CHECKING, Optional, Any, cast
+from typing import TYPE_CHECKING, Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-import PySide2.QtGui as QtGui
 
-from utils import find_key_values, replace_key_values
 from frame_item import FrameItem
 from node_item import NodeItem
 from edge_item import EdgeItem
@@ -311,58 +308,32 @@ class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
 
 
 class PasteClipboardCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+	def __init__(
+			self, scene: DAGScene, nodes: list[NodeItem], edges: list[EdgeItem], frames: list[FrameItem],
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
-
-		self._clipboard_state: dict = json.loads(QtWidgets.QApplication.clipboard().text())
-		self._past_pos: QtCore.QPointF = self._scene.views()[0].mapToScene(
-			self._scene.views()[0].mapFromParent(QtGui.QCursor.pos())
-		)
-		self._nodes: list[NodeItem] = []
-		self._edges: list[EdgeItem] = []
-		self._frames: list[FrameItem] = []
-
-		# Replacement uuid map
-		uuid_map: dict[str] = {
-			uuid: QtCore.QUuid().createUuid().toString() for uuid in find_key_values(self._clipboard_state, "UUID")
-		}
-
-		# Replaces old uuids with new ones in clipboard state
-		for k, v in uuid_map.items():
-			replace_key_values(self._clipboard_state, "UUID", k, v)
-			replace_key_values(self._clipboard_state, "Link", k, v)
-			replace_key_values(self._clipboard_state, "Start Node UUID", k, v)
-			replace_key_values(self._clipboard_state, "End Node UUID", k, v)
-			replace_key_values(self._clipboard_state, "Framed Nodes UUID's", k, v)
+		self._nodes: list[NodeItem] = nodes
+		self._edges: list[EdgeItem] = edges
+		self._frames: list[FrameItem] = frames
 
 	def undo(self) -> None:
 		for frame in self._frames:
-			self._scene.remove_frame(self._scene.dag_item(frame.uuid))
+			self._scene.remove_frame(frame)
 		for edge in self._edges:
-			self._scene.remove_edge(self._scene.dag_item(edge.uuid))
+			self._scene.remove_edge(edge)
 		for node in self._nodes:
-			self._scene.remove_node(self._scene.dag_item(node.uuid))
+			self._scene.remove_node(node)
 
 	def redo(self) -> None:
-		self._nodes: list[NodeItem] = self._scene.deserialize_nodes(self._clipboard_state["Nodes"])
-		self._edges: list[EdgeItem] = self._scene.deserialize_edges(self._clipboard_state["Edges"])
-		self._frames: list[FrameItem] = self._scene.deserialize_frames(self._clipboard_state["Frames"])
-
-		scene_bbox: QtCore.QRectF = self._scene.bounding_rect(self._nodes)
-		scene_center: QtCore.QPointF = QtCore.QPointF(
-			scene_bbox.x() + scene_bbox.width() / 2,
-			scene_bbox.y() + scene_bbox.height() / 2
-		)
-		dx: float = self._past_pos.x() - scene_center.x()
-		dy: float = self._past_pos.y() - scene_center.y()
-
 		for node in self._nodes:
-			node.setPos(dx + node.x(), dy + node.y())
-
-		self._scene.clearSelection()
-		to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], self._nodes) + cast(
-			list[QtWidgets.QGraphicsItem], self._frames)
-		for item in to_be_selected:
-			item.setSelected(True)
+			if node not in self._scene.nodes:
+				self._scene.add_node(node)
+		for edge in self._edges:
+			if edge not in self._scene.edges:
+				self._scene.add_edge(edge)
+		for frame in self._frames:
+			if frame not in self._scene.frames:
+				self._scene.add_frame(frame)

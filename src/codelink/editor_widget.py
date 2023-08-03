@@ -8,6 +8,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from utils import find_key_values, replace_key_values
 from undo_commands import (
     AddNodeCommand, RemoveNodeFromFrameCommand, AddGrpNodeCommand, ResolveGrpNodeCommand, MoveNodesCommand,
     RemoveNodeCommand, AddEdgeCommand, RerouteEdgeCommand, RemoveEdgeCommand,  AddFrameCommand, RemoveFrameCommand,
@@ -571,7 +572,46 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def paste(self) -> None:
         try:
-            self._undo_stack.push(PasteClipboardCommand(self.scene()))
+            clipboard_state: dict = json.loads(QtWidgets.QApplication.clipboard().text())
+            paste_pos: QtCore.QPointF = self.scene().views()[0].mapToScene(
+                self.scene().views()[0].mapFromParent(QtGui.QCursor.pos())
+            )
+
+            # Replacement uuid map
+            uuid_map: dict[str] = {
+                uuid: QtCore.QUuid().createUuid().toString() for uuid in find_key_values(clipboard_state, "UUID")
+            }
+
+            # Replaces old uuids with new ones in clipboard state
+            for k, v in uuid_map.items():
+                replace_key_values(clipboard_state, "UUID", k, v)
+                replace_key_values(clipboard_state, "Link", k, v)
+                replace_key_values(clipboard_state, "Start Node UUID", k, v)
+                replace_key_values(clipboard_state, "End Node UUID", k, v)
+                replace_key_values(clipboard_state, "Framed Nodes UUID's", k, v)
+
+            nodes: list[NodeItem] = self.scene().deserialize_nodes(clipboard_state["Nodes"])
+            edges: list[EdgeItem] = self.scene().deserialize_edges(clipboard_state["Edges"])
+            frames: list[FrameItem] = self.scene().deserialize_frames(clipboard_state["Frames"])
+
+            scene_bbox: QtCore.QRectF = self.scene().bounding_rect(nodes)
+            scene_center: QtCore.QPointF = QtCore.QPointF(
+                scene_bbox.x() + scene_bbox.width() / 2,
+                scene_bbox.y() + scene_bbox.height() / 2
+            )
+            dx: float = paste_pos.x() - scene_center.x()
+            dy: float = paste_pos.y() - scene_center.y()
+
+            for node in nodes:
+                node.setPos(dx + node.x(), dy + node.y())
+
+            self.scene().clearSelection()
+            to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], nodes) + cast(
+                list[QtWidgets.QGraphicsItem], frames)
+            for item in to_be_selected:
+                item.setSelected(True)
+
+            self._undo_stack.push(PasteClipboardCommand(self.scene(), nodes, edges, frames))
         except json.JSONDecodeError:
             print("Pasting failed!")
 
