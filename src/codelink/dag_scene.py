@@ -158,17 +158,20 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 ]
 
                 if len(outer_socket_edges) > 0:
-                    new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
-                        label=socket_widget.prop_model.properties["Name"],
-                        is_input=socket_widget.prop_model.properties["Is Input"],
-                        data=socket_widget.prop_model.properties["Data"],
-                        parent_node=grp_node
-                    )
-                    new_socket_widget.link = (node.uuid, socket_idx)
-                    socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
-                    socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties["Name"] + " ^"
-                    socket_widget.update_all()
-                    grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+                    if not grp_node.grp_prepared:
+                        new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+                            label=socket_widget.prop_model.properties["Name"],
+                            is_input=socket_widget.prop_model.properties["Is Input"],
+                            data=socket_widget.prop_model.properties["Data"],
+                            parent_node=grp_node
+                        )
+                        new_socket_widget.link = (node.uuid, socket_idx)
+                        socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+                        socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties["Name"] + " ^"
+                        socket_widget.update_all()
+                        grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+                    else:
+                        new_socket_widget: SocketWidget = grp_node.socket_widgets[socket_widget.link[1]]
 
                     while len(socket_widget.pin.edges) > 0:
                         edge: EdgeItem = socket_widget.pin.edges.pop()
@@ -185,6 +188,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
                             edge.sort_pins()
 
         grp_node.sort_socket_widgets()
+        grp_node.grp_prepared = True
+
         return grp_node
 
     def resolve_grp_node(self, grp_node: NodeItem):
@@ -230,7 +235,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         grp_node.sub_scene.frames = []
         grp_node.sub_scene.edges = []
         grp_node.sub_scene.nodes = []
-        grp_node.clear_socket_widgets()
+        # grp_node.clear_socket_widgets()
 
         self.remove_node(grp_node)
 

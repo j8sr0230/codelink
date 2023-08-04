@@ -57,6 +57,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._last_position: QtCore.QPointF = QtCore.QPointF()
         self._last_width: int = 0
         self._zoom_level: Optional[int] = None
+        self._grp_prepared: bool = False
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -249,6 +250,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @zoom_level.setter
     def zoom_level(self, value: int) -> None:
         self._zoom_level: int = value
+
+    @property
+    def grp_prepared(self) -> bool:
+        return self._grp_prepared
+
+    @grp_prepared.setter
+    def grp_prepared(self, value: bool) -> None:
+        self._grp_prepared: bool = value
 
     # --------------- Socket widget editing ---------------
 
