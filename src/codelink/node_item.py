@@ -672,7 +672,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 data=socket_widget_dict["Properties"]["Data"],
                 parent_node=self
             )
-            new_socket_widget.link = socket_widget_dict["Link"]
+            new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
         # Reset sub graph data
