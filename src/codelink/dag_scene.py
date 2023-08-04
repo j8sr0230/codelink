@@ -122,7 +122,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return node
 
-    def add_node_grp(self, grp_node: NodeItem, sub_nodes: list[NodeItem]) -> NodeItem:
+    def add_grp_node(self, grp_node: NodeItem, sub_nodes: list[NodeItem]) -> NodeItem:
         sub_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in sub_nodes and edge.end_pin.parentItem() in sub_nodes:
@@ -201,6 +201,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 sub_node.y() + (grp_node.center.y() - sub_scene_center.y())
             )
             sub_node.setPos(sub_node_pos)
+            sub_node.last_position = sub_node_pos
+
             for socket in sub_node.socket_widgets:
                 if socket.prop_model.properties["Name"].endswith(" ^"):
                     socket.prop_model.properties["Name"] = socket.prop_model.properties["Name"][0:-2]

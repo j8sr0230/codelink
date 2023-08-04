@@ -540,6 +540,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def add_node_from_cls(self, cls: type):
         new_node: cls = cls(self._undo_stack)
         new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
+        new_node.last_position = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
         self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def open(self):
@@ -604,6 +605,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             for node in nodes:
                 node.setPos(dx + node.x(), dy + node.y())
+                node.last_position = QtCore.QPointF(dx + node.x(), dy + node.y())
 
             self.scene().clearSelection()
             to_be_selected: list[Any] = cast(list[QtWidgets.QGraphicsItem], nodes) + cast(
@@ -659,6 +661,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
                 grp_node.setPos(
+                    selection_center_x - grp_node.boundingRect().width() / 2,
+                    selection_center_y - grp_node.boundingRect().height() / 2
+                )
+                grp_node.last_position = QtCore.QPointF(
                     selection_center_x - grp_node.boundingRect().width() / 2,
                     selection_center_y - grp_node.boundingRect().height() / 2
                 )
