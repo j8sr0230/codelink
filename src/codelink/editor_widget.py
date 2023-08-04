@@ -683,17 +683,18 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def add_frame(self):
         selected_nodes: list[NodeItem] = self.scene().selected_nodes()
-        for node in selected_nodes:
-            if node.parent_frame is not None:
-                old_frame_uuid: str = node.parent_frame.uuid
-                self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
-                if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
-                    self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
+        if len(selected_nodes) > 0:
+            for node in selected_nodes:
+                if node.parent_frame is not None:
+                    old_frame_uuid: str = node.parent_frame.uuid
+                    self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
+                    if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
+                        self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
 
-        frame: FrameItem = FrameItem(selected_nodes)
-        for node in selected_nodes:
-            node.parent_frame = frame
-        self._undo_stack.push(AddFrameCommand(self.scene(), frame))
+            frame: FrameItem = FrameItem(selected_nodes)
+            for node in selected_nodes:
+                node.parent_frame = frame
+            self._undo_stack.push(AddFrameCommand(self.scene(), frame))
 
     def open_sub_graph(self):
         selected_nodes: list[NodeItem] = self.scene().selected_nodes()
