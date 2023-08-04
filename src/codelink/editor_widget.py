@@ -647,28 +647,32 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def add_grp_node(self):
         grp_node: NodeItem = NodeItem(self._undo_stack)
         grp_node.prop_model.properties["Name"] = "Custom Node"
-
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
 
-        selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
-        selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
-        selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
+        if len(sub_nodes) > 0:
+            new_interface_nodes: set[NodeItem] = self.scene().new_grp_interfaces(sub_nodes)
+            is_valid: bool = not any([node.is_grp_interface() for node in new_interface_nodes])
 
-        grp_node.setPos(
-            selection_center_x - grp_node.boundingRect().width() / 2,
-            selection_center_y - grp_node.boundingRect().height() / 2
-        )
+            if is_valid:
+                selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
+                selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
+                selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
-        outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
-        linked_to_outside_frame: set[NodeItem] = set()
-        for outside_frame in outside_frames:
-            in_both_sets: set[NodeItem] = set(outside_frame.framed_nodes).intersection(sub_nodes)
-            linked_to_outside_frame: set[NodeItem] = linked_to_outside_frame.union(in_both_sets)
+                grp_node.setPos(
+                    selection_center_x - grp_node.boundingRect().width() / 2,
+                    selection_center_y - grp_node.boundingRect().height() / 2
+                )
 
-        for node in linked_to_outside_frame:
-            self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
+                outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
+                linked_to_outside_frame: set[NodeItem] = set()
+                for outside_frame in outside_frames:
+                    in_both_sets: set[NodeItem] = set(outside_frame.framed_nodes).intersection(sub_nodes)
+                    linked_to_outside_frame: set[NodeItem] = linked_to_outside_frame.union(in_both_sets)
 
-        self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
+                for node in linked_to_outside_frame:
+                    self._undo_stack.push(RemoveNodeFromFrameCommand(node, node.parent_frame))
+
+                self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
     def resolve_grp_node(self):
         if len(self.scene().selected_nodes()) > 0 and self.scene().selected_nodes()[0].has_sub_scene():

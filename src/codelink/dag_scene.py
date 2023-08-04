@@ -370,6 +370,16 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return list(all_frames.difference(inside_frames))
 
+    def new_grp_interfaces(self, nodes: list[NodeItem]) -> set[NodeItem]:
+        result: set[NodeItem] = set()
+        for node in nodes:
+            if node.has_in_edges() and set(node.predecessors()).issubset(set(self._nodes).difference(set(nodes))):
+                result.add(node)
+            if node.has_out_edges() and set(node.successors()).issubset(set(self._nodes).difference(set(nodes))):
+                result.add(node)
+
+        return result
+
     def ends(self) -> list[NodeItem]:
         result: list[NodeItem] = []
         for node in self._nodes:

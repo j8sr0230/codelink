@@ -330,6 +330,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 return True
         return False
 
+    def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+        if len(self._sub_scene.nodes) > 0:
+            linked_node: NodeItem = self.sub_scene.dag_item(socket.link[0])
+            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+            return linked_node.linked_lowest_socket(linked_socket)
+        else:
+            return socket
+
+    def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+        if self.scene().parent_node is not None and socket.link[0] == self.scene().parent_node.uuid:
+            linked_node: NodeItem = self.scene().parent_node
+            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+            return self.scene().parent_node.linked_highest_socket(linked_socket)
+        else:
+            return socket
+
     def predecessors(self) -> list[NodeItem]:
         result: list[NodeItem] = []
         for socket_widget in self.input_socket_widgets:
@@ -354,10 +370,23 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def successors(self) -> list[NodeItem]:
         result: list[NodeItem] = []
-        for socket_widget in self._socket_widgets:
-            if not socket_widget.is_input:
+        for socket_widget in self.output_socket_widgets:
+            if len(socket_widget.pin.edges) > 0:
                 for edge in socket_widget.pin.edges:
-                    result.append(edge.end_pin.parent_node)
+                    suc_node: NodeItem = edge.end_pin.parent_node
+                    if len(suc_node.sub_scene.nodes) > 0:
+                        linked_lowest: SocketWidget = suc_node.linked_lowest_socket(edge.end_pin.socket_widget)
+                        result.append(linked_lowest.parent_node)
+                    else:
+                        result.append(edge.end_pin.parent_node)
+            else:
+                linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
+                if linked_highest != socket_widget:
+                    for edge in linked_highest.pin.edges:
+                        end_socket: SocketWidget = edge.end_pin.socket_widget
+                        linked_lowest: SocketWidget = end_socket.parent_node.linked_lowest_socket(end_socket)
+                        result.append(linked_lowest.parent_node)
+
         return result
 
     def has_sub_scene(self) -> bool:
@@ -365,25 +394,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def is_grp_interface(self) -> bool:
         for socket in self.socket_widgets:
-            if socket.link != ("", -1):
+            if socket.link != ("", -1) and not self.has_sub_scene():
                 return True
         return False
-
-    def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
-        if len(self._sub_scene.nodes) > 0:
-            linked_node: NodeItem = self.sub_scene.dag_item(socket.link[0])
-            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
-            return linked_node.linked_lowest_socket(linked_socket)
-        else:
-            return socket
-
-    def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
-        if self.scene().parent_node is not None and socket.link[0] == self.scene().parent_node.uuid:
-            linked_node: NodeItem = self.scene().parent_node
-            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
-            return self.scene().parent_node.linked_highest_socket(linked_socket)
-        else:
-            return socket
 
     # --------------- Node eval methods ---------------
 
