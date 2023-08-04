@@ -363,6 +363,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def has_sub_scene(self) -> bool:
         return len(self._sub_scene.nodes) > 0
 
+    def is_grp_interface(self) -> bool:
+        for socket in self.socket_widgets:
+            if socket.link != ("", -1):
+                return True
+        return False
+
     def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if len(self._sub_scene.nodes) > 0:
             linked_node: NodeItem = self.sub_scene.dag_item(socket.link[0])

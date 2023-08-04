@@ -616,7 +616,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             print("Pasting failed!")
 
     def delete_selected(self) -> None:
-        nodes: list[NodeItem] = self.scene().selected_nodes()
+        nodes: list[NodeItem] = [node for node in self.scene().selected_nodes() if not node.is_grp_interface()]
         edges: list[EdgeItem] = self.scene().selected_edges()
         frames: list[FrameItem] = self.scene().selected_frames()
 
