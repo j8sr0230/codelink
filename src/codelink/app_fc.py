@@ -34,6 +34,7 @@ def main() -> None:
         for j in range(2):
             node = ScalarMath(undo_stack)
             node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
+            node.last_position = QtCore.QPointF(32000 + i * 200, 32000 + j * 200)
             editor_scene.add_node(node)
 
     editor_widget.fit_in_content()
