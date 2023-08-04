@@ -15,7 +15,7 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
         editor.setRange(-64000, 64000)
         editor.setSingleStep(10)
         # editor.valueChanged.connect(self.commit_editor)
-        # editor.editingFinished.connect(self.commit_editor)
+        editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
@@ -117,7 +117,7 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
         editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
         editor.setFocusPolicy(QtCore.Qt.StrongFocus)
         # editor.textChanged.connect(self.commit_editor)
-        # editor.editingFinished.connect(self.commit_editor)
+        editor.editingFinished.connect(self.commit_editor)
 
         if index.isValid():
             return editor
