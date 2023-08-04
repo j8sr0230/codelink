@@ -6,6 +6,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from property_model import PropertyModel
+from input_widgets import NumberInputWidget
 from pin_item import PinItem
 
 if TYPE_CHECKING:
@@ -13,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, label: str = "In", is_input: bool = True, data: object = 0,
+    def __init__(self, label: str = "In", is_input: bool = True, data: float = 0.0,
                  parent_node: Optional[NodeItem] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
@@ -34,7 +35,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._parent_node: Optional[NodeItem] = parent_node
 
         self._pin_item: PinItem = PinItem(
-            pin_type=int,
+            pin_type=float,
             color=QtGui.QColor("#00D6A3"),
             socket_widget=self,
             parent_node=parent_node
@@ -53,7 +54,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._layout.addWidget(self._label_widget)
 
         # Input widget
-        self._input_widget: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
+        self._input_widget: NumberInputWidget = NumberInputWidget(self)
         self._input_widget.setMinimumWidth(5)
         self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self._input_widget.setText(str(self._prop_model.properties["Data"]))
@@ -117,13 +118,13 @@ class SocketWidget(QtWidgets.QWidget):
 
         if result is None:
             if self._input_widget.text() != "":
-                result: int = int(self._input_widget.text())
+                result: float = float(self._input_widget.text())
             else:
-                result: int = 0
+                result: float = 0
 
         return result
 
-    # --------------- Callbacks signals ---------------
+    # --------------- Callbacks ---------------
 
     def update_stylesheets(self):
         if self._prop_model.properties["Is Input"]:
@@ -164,18 +165,26 @@ class SocketWidget(QtWidgets.QWidget):
         self.update_stylesheets()
         self.update_pin_position()
 
+    def evaluate_input(self):
+        last_value: float = self.prop_model.properties["Data"]
+        input_txt: str = self._input_widget.text()
+
+        try:
+            input_number: float = float(input_txt)
+            self._prop_model.setData(
+                self._prop_model.index(2, 1, QtCore.QModelIndex()),
+                input_number, 2  # QtCore.Qt.EditRole
+            )
+        except ValueError:
+            self._input_widget.setText(str(last_value))
+            print("Wrong input format")
+
     def return_pressed(self) -> None:
-        self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
-            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
-        )
+        self.evaluate_input()
         self.clearFocus()
 
     def editing_finished(self) -> None:
-        self._prop_model.setData(
-            self._prop_model.index(2, 1, QtCore.QModelIndex()),
-            int(self._input_widget.text()), 2  # QtCore.Qt.EditRole
-        )
+        self.evaluate_input()
 
     # --------------- Overwrites ---------------
 
