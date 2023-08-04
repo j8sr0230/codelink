@@ -205,6 +205,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 if socket.prop_model.properties["Name"].endswith(" ^"):
                     socket.prop_model.properties["Name"] = socket.prop_model.properties["Name"][0:-2]
                     socket.update_all()
+                    socket.link = ("", -1)
         for sub_edge in grp_node.sub_scene.edges:
             self.add_edge(sub_edge)
         for sub_frame in grp_node.sub_scene.frames:
