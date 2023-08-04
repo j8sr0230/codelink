@@ -651,7 +651,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if len(sub_nodes) > 0:
             new_interface_nodes: set[NodeItem] = self.scene().new_grp_interfaces(sub_nodes)
-            is_valid: bool = not any([node.is_grp_interface() for node in new_interface_nodes])
+            is_valid: bool = not any([node.has_sub_scene() for node in new_interface_nodes])
 
             if is_valid:
                 selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)

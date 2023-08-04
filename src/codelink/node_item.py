@@ -393,9 +393,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return len(self._sub_scene.nodes) > 0
 
     def is_grp_interface(self) -> bool:
-        for socket in self.socket_widgets:
-            if socket.link != ("", -1) and not self.has_sub_scene():
-                return True
+        has_links: bool = any([True for socket in self._socket_widgets if socket.link != ("", -1)])
+        if not self.has_sub_scene() and has_links:
+            return True
         return False
 
     # --------------- Node eval methods ---------------
