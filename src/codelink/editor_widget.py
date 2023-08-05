@@ -647,6 +647,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
 
     def add_grp_node(self):
+        # Creates gro node
         grp_node: NodeItem = NodeItem(self._undo_stack)
         grp_node.prop_model.properties["Name"] = "Custom Node"
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
@@ -668,6 +669,35 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     selection_center_x - grp_node.boundingRect().width() / 2,
                     selection_center_y - grp_node.boundingRect().height() / 2
                 )
+
+                self.scene().add_node(grp_node)
+
+                # Adds socket widgets
+                sub_edges: list[EdgeItem] = []
+                for edge in self.scene().edges:
+                    if edge.start_pin.parentItem() in sub_nodes and edge.end_pin.parentItem() in sub_nodes:
+                        sub_edges.append(edge)
+
+                for node_idx, node in enumerate(sub_nodes):
+                    for socket_idx, socket_widget in enumerate(node.socket_widgets):
+                        connected_edges: list[EdgeItem] = socket_widget.pin.edges
+                        outer_socket_edges: list[EdgeItem] = [
+                            edge for edge in connected_edges if edge not in sub_edges
+                        ]
+
+                        if len(outer_socket_edges) > 0:
+                            new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+                                label=socket_widget.prop_model.properties["Name"],
+                                is_input=socket_widget.prop_model.properties["Is Input"],
+                                data=socket_widget.prop_model.properties["Data"],
+                                parent_node=grp_node
+                            )
+                            new_socket_widget.link = (node.uuid, socket_idx)
+                            socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+                            socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties[
+                                                                              "Name"] + " ^"
+                            socket_widget.update_all()
+                            grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
 
                 outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
                 linked_to_outside_frame: set[NodeItem] = set()

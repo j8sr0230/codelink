@@ -148,44 +148,66 @@ class DAGScene(QtWidgets.QGraphicsScene):
             self._frames.remove(sub_frame)
             grp_node.sub_scene.add_frame(sub_frame)
 
-        self.add_node(grp_node)
-
-        for node_idx, node in enumerate(grp_node.sub_scene.nodes):
-            for socket_idx, socket_widget in enumerate(node.socket_widgets):
+        for sub_node in grp_node.sub_scene.nodes:
+            for socket_idx, socket_widget in enumerate(sub_node.socket_widgets):
                 connected_edges: list[EdgeItem] = socket_widget.pin.edges
                 outer_socket_edges: list[EdgeItem] = [
                     edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
                 ]
+                target_socket: SocketWidget = grp_node.socket_widgets[socket_widget.link[1]]
+                target_socket.link = (sub_node.uuid, socket_idx)
 
-                if len(outer_socket_edges) > 0:
-                    if not grp_node.grp_prepared:
-                        new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
-                            label=socket_widget.prop_model.properties["Name"],
-                            is_input=socket_widget.prop_model.properties["Is Input"],
-                            data=socket_widget.prop_model.properties["Data"],
-                            parent_node=grp_node
-                        )
-                        new_socket_widget.link = (node.uuid, socket_idx)
-                        socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
-                        socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties["Name"] + " ^"
-                        socket_widget.update_all()
-                        grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+                while len(outer_socket_edges) > 0:
+                    edge: EdgeItem = outer_socket_edges.pop()
+
+                    socket_widget.pin.remove_edge(edge)
+                    target_socket.pin.add_edge(edge)
+
+                    if socket_widget.is_input:
+                        edge.end_pin = target_socket.pin
                     else:
-                        new_socket_widget: SocketWidget = grp_node.socket_widgets[socket_widget.link[1]]
+                        edge.start_pin = target_socket.pin
 
-                    while len(socket_widget.pin.edges) > 0:
-                        edge: EdgeItem = socket_widget.pin.edges.pop()
+                    target_socket.update_all()
+                    edge.sort_pins()
 
-                        if edge in outer_socket_edges:
-                            new_socket_widget.pin.add_edge(edge)
+        # self.add_node(grp_node)
 
-                            if socket_widget.is_input:
-                                edge.end_pin = new_socket_widget.pin
-                            else:
-                                edge.start_pin = new_socket_widget.pin
-
-                            new_socket_widget.update_all()
-                            edge.sort_pins()
+        # for node_idx, node in enumerate(grp_node.sub_scene.nodes):
+        #     for socket_idx, socket_widget in enumerate(node.socket_widgets):
+        #         connected_edges: list[EdgeItem] = socket_widget.pin.edges
+        #         outer_socket_edges: list[EdgeItem] = [
+        #             edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
+        #         ]
+        #
+        #         if len(outer_socket_edges) > 0:
+        #             new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+        #                 label=socket_widget.prop_model.properties["Name"],
+        #                 is_input=socket_widget.prop_model.properties["Is Input"],
+        #                 data=socket_widget.prop_model.properties["Data"],
+        #                 parent_node=grp_node
+        #             )
+        #
+        #             new_socket_widget.link = (node.uuid, socket_idx)
+        #             socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
+        #             socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties["Name"] + " ^"
+        #             socket_widget.update_all()
+        #             grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+        #
+        #
+        #             while len(socket_widget.pin.edges) > 0:
+        #                 edge: EdgeItem = socket_widget.pin.edges.pop()
+        #
+        #                 if edge in outer_socket_edges:
+        #                     new_socket_widget.pin.add_edge(edge)
+        #
+        #                     if socket_widget.is_input:
+        #                         edge.end_pin = new_socket_widget.pin
+        #                     else:
+        #                         edge.start_pin = new_socket_widget.pin
+        #
+        #                     new_socket_widget.update_all()
+        #                     edge.sort_pins()
 
         grp_node.sort_socket_widgets()
         grp_node.grp_prepared = True
