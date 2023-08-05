@@ -647,7 +647,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
 
     def add_grp_node(self):
-        # Creates gro node
+        # Creates grp node
         grp_node: NodeItem = NodeItem(self._undo_stack)
         grp_node.prop_model.properties["Name"] = "Custom Node"
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
