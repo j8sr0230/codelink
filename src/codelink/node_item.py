@@ -299,9 +299,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         # Sorts socket widget list
         self._socket_widgets = [
-            child for child in self._content_widget.children() if type(child) == SocketWidget and child.is_input
+            child for child in self._content_widget.children() if isinstance(child, SocketWidget) and child.is_input
         ] + [
-            child for child in self._content_widget.children() if type(child) == SocketWidget and not child.is_input
+            child for child in self._content_widget.children() if isinstance(child, SocketWidget) and not child.is_input
         ]
 
         # Sort socket widget links

@@ -76,6 +76,7 @@ class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._sub_nodes: list[NodeItem] = grp_node.sub_scene.nodes
 
 	def undo(self) -> None:
+		self._scene.add_node(self._grp_node)
 		self._scene.populate_grp_node(self._grp_node, self._sub_nodes)
 
 	def redo(self) -> None:
