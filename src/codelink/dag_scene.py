@@ -156,28 +156,28 @@ class DAGScene(QtWidgets.QGraphicsScene):
             sub_socket: SocketWidget = sub_node.socket_widgets[link[1][1]]
             sub_socket.link = (grp_node.uuid, link[0])
             sub_socket.prop_model.properties["Name"] = sub_socket.prop_model.properties["Name"] + " ^"
-            sub_socket.update_all()
 
         for sub_node in grp_node.sub_scene.nodes:
-            for socket_idx, socket_widget in enumerate(sub_node.socket_widgets):
-                connected_edges: list[EdgeItem] = socket_widget.pin.edges
+            for socket_idx, sub_socket_widget in enumerate(sub_node.socket_widgets):
+                connected_edges: list[EdgeItem] = sub_socket_widget.pin.edges
                 outer_socket_edges: list[EdgeItem] = [
                     edge for edge in connected_edges if edge not in grp_node.sub_scene.edges
                 ]
                 if len(outer_socket_edges) > 0:
-                    target_socket: SocketWidget = grp_node.socket_widgets[socket_widget.link[1]]
+                    grp_socket_widget: SocketWidget = grp_node.socket_widgets[sub_socket_widget.link[1]]
                     while len(outer_socket_edges) > 0:
                         edge: EdgeItem = outer_socket_edges.pop()
 
-                        socket_widget.pin.remove_edge(edge)
-                        target_socket.pin.add_edge(edge)
+                        sub_socket_widget.pin.remove_edge(edge)
+                        grp_socket_widget.pin.add_edge(edge)
 
-                        if socket_widget.is_input:
-                            edge.end_pin = target_socket.pin
+                        if sub_socket_widget.is_input:
+                            edge.end_pin = grp_socket_widget.pin
                         else:
-                            edge.start_pin = target_socket.pin
+                            edge.start_pin = grp_socket_widget.pin
 
-                        target_socket.update_all()
+                        sub_socket_widget.update_all()
+                        grp_socket_widget.update_all()
                         edge.sort_pins()
 
         grp_node.sort_socket_widgets()
@@ -202,7 +202,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             for socket in sub_node.socket_widgets:
                 if socket.prop_model.properties["Name"].endswith(" ^"):
                     socket.prop_model.properties["Name"] = socket.prop_model.properties["Name"][0:-2]
-                    socket.update_all()
                     socket.link = ("", -1)
 
         for sub_edge in grp_node.sub_scene.edges:
@@ -224,6 +223,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
                     edge.end_pin = sub_pin
                 else:
                     edge.start_pin = sub_pin
+                sub_pin.socket_widget.update_all()
 
         grp_node.sub_scene.frames = []
         grp_node.sub_scene.edges = []
