@@ -647,9 +647,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
 
     def add_grp_node(self):
-        # Creates grp node
-        grp_node: NodeItem = NodeItem(self._undo_stack)
-        grp_node.prop_model.properties["Name"] = "Custom Node"
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         if len(sub_nodes) > 0:
@@ -660,6 +657,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 selection_rect: QtCore.QRectF = self.scene().bounding_rect(sub_nodes)
                 selection_center_x: float = selection_rect.x() + selection_rect.width() / 2
                 selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
+
+                # Creates grp node
+                grp_node: NodeItem = NodeItem(self._undo_stack)
+                grp_node.prop_model.properties["Name"] = "Group Node"
 
                 grp_node.setPos(
                     selection_center_x - grp_node.boundingRect().width() / 2,
@@ -693,10 +694,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                                 parent_node=grp_node
                             )
                             new_socket_widget.link = (node.uuid, socket_idx)
-                            socket_widget.link = (grp_node.uuid, len(grp_node.socket_widgets))
-                            socket_widget.prop_model.properties["Name"] = socket_widget.prop_model.properties[
-                                                                              "Name"] + " ^"
-                            socket_widget.update_all()
                             grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
 
                 outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
