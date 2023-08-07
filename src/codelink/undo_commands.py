@@ -363,7 +363,7 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 		self._data_type = type(self._model.properties[self._key])
 		self._old_data: object = old_data
 		self._new_data: object = new_data
-		print("New Edit Command:" ,self._old_data, self._new_data)
+		print("New Edit Command:", self._old_data, self._new_data)
 
 	def undo(self) -> None:
 		self._model.properties[self._key] = self._old_data
