@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from frame_item import FrameItem
-from node_item import NodeItem
-from edge_item import EdgeItem
-
 if TYPE_CHECKING:
+	from property_model import PropertyModel
 	from editor_widget import EditorWidget
 	from dag_scene import DAGScene
+	from frame_item import FrameItem
+	from node_item import NodeItem
 	from pin_item import PinItem
+	from edge_item import EdgeItem
 
 
 class AddNodeCommand(QtWidgets.QUndoCommand):
@@ -347,3 +347,37 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 				self._scene.add_frame(frame)
 				for node in frame.framed_nodes:
 					node.parent_frame = frame
+
+
+class EditModelDataCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, model: PropertyModel, model_index: QtCore.QModelIndex, old_data: object, new_data: object,
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._model: PropertyModel = model
+		self._index: QtCore.QModelIndex = model_index
+
+		self._key: str = list(self._model.properties.keys())[self._index.row()]
+		self._data_type = type(self._model.properties[self._key])
+		self._old_data: object = old_data
+		self._new_data: object = new_data
+
+	def undo(self) -> None:
+		data_row: int = list(self._model.properties.keys()).index(self._key)
+
+		# noinspection PyTypeChecker
+		self._model.setData(
+			self._model.index(data_row, 1, QtCore.QModelIndex()),
+			self._old_data, QtCore.Qt.EditRole
+		)
+
+	def redo(self) -> None:
+		data_row: int = list(self._model.properties.keys()).index(self._key)
+
+		# noinspection PyTypeChecker
+		self._model.setData(
+			self._model.index(data_row, 1, QtCore.QModelIndex()),
+			self._new_data, QtCore.Qt.EditRole
+		)
