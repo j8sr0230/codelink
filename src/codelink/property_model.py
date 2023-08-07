@@ -3,6 +3,8 @@ from typing import Any, Optional, cast
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from undo_commands import EditModelDataCommand
+
 
 class PropertyModel(QtCore.QAbstractTableModel):
     def __init__(self, properties: Optional[dict] = None, header_left: str = "Property", header_right: str = "Value",
@@ -82,8 +84,11 @@ class PropertyModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.EditRole:
             key: str = list(self._properties.keys())[index.row()]
             data_type = type(self._properties[key])
-            self._properties[key] = data_type(value)
-            cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
+
+            old_value: object = self._properties[key]
+            self._undo_stack.push(EditModelDataCommand(self, index, old_value, data_type(value)))
+            # self._properties[key] = data_type(value)
+            # cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
             return True
 
         return False

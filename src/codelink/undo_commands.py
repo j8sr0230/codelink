@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -363,21 +363,12 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 		self._data_type = type(self._model.properties[self._key])
 		self._old_data: object = old_data
 		self._new_data: object = new_data
+		print("New Edit Command:" ,self._old_data, self._new_data)
 
 	def undo(self) -> None:
-		data_row: int = list(self._model.properties.keys()).index(self._key)
-
-		# noinspection PyTypeChecker
-		self._model.setData(
-			self._model.index(data_row, 1, QtCore.QModelIndex()),
-			self._old_data, QtCore.Qt.EditRole
-		)
+		self._model.properties[self._key] = self._old_data
+		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
 
 	def redo(self) -> None:
-		data_row: int = list(self._model.properties.keys()).index(self._key)
-
-		# noinspection PyTypeChecker
-		self._model.setData(
-			self._model.index(data_row, 1, QtCore.QModelIndex()),
-			self._new_data, QtCore.Qt.EditRole
-		)
+		self._model.properties[self._key] = self._new_data
+		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
