@@ -427,9 +427,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             new_pos: QtCore.QPointF = value
 
-            snapping_step: int = 10
-            x_snap = new_pos.x() // snapping_step * snapping_step
-            y_snap = new_pos.y() // snapping_step * snapping_step
+            # snapping_step: int = 10
+            x_snap = new_pos.x()  # // snapping_step * snapping_step
+            y_snap = new_pos.y()  # // snapping_step * snapping_step
 
             x_mode_row: int = list(self._prop_model.properties.keys()).index("X")
             y_mode_row: int = list(self._prop_model.properties.keys()).index("Y")

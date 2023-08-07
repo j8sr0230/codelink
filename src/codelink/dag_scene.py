@@ -348,7 +348,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return [item for item in self.selectedItems() if isinstance(item, FrameItem)]
 
     @staticmethod
-    def bounding_rect(nodes: list[NodeItem], offset: int = 10) -> QtCore.QRectF:
+    def bounding_rect(nodes: list[NodeItem], offset: int = 0) -> QtCore.QRectF:
         if len(nodes) > 0:
             x_min: float = min([node.x() for node in nodes]) - offset
             x_max: float = max([node.x() + node.boundingRect().width() for node in nodes]) + offset
@@ -356,7 +356,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
             y_max: float = max([node.y() + node.boundingRect().height() for node in nodes]) + offset
             return QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
         else:
-            return QtCore.QRectF(0, 0, offset, offset)
+            return QtCore.QRectF(-offset, -offset, offset, offset)
 
     @staticmethod
     def outside_frames(nodes: list[NodeItem]) -> list[FrameItem]:

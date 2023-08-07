@@ -651,15 +651,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 grp_node: NodeItem = NodeItem(self._undo_stack)
                 grp_node.prop_model.properties["Name"] = "Group Node"
 
-                grp_node.setPos(
-                    selection_center_x - grp_node.boundingRect().width() / 2,
-                    selection_center_y - grp_node.boundingRect().height() / 2
-                )
-                grp_node.last_position = QtCore.QPointF(
-                    selection_center_x - grp_node.boundingRect().width() / 2,
-                    selection_center_y - grp_node.boundingRect().height() / 2
-                )
-
                 self.scene().add_node(grp_node)
 
                 # Adds socket widgets
@@ -684,6 +675,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             )
                             new_socket_widget.link = (node.uuid, socket_idx)
                             grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
+
+                grp_node.setPos(
+                    selection_center_x - grp_node.boundingRect().width() / 2,
+                    selection_center_y - grp_node.boundingRect().height() / 2
+                )
+                grp_node.last_position = QtCore.QPointF(
+                    selection_center_x - grp_node.boundingRect().width() / 2,
+                    selection_center_y - grp_node.boundingRect().height() / 2
+                )
 
                 outside_frames: list[FrameItem] = self.scene().outside_frames(sub_nodes)
                 linked_to_outside_frame: set[NodeItem] = set()
