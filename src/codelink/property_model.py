@@ -86,6 +86,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
             data_type = type(self._properties[key])
 
             old_value: object = self._properties[key]
+            print("setData is called")
             self._undo_stack.push(EditModelDataCommand(self, index, old_value, data_type(value)))
             # self._properties[key] = data_type(value)
             # cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
