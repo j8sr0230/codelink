@@ -328,33 +328,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if self._temp_edge.is_valid(eval_target=self.itemAt(event.pos())):
                     self._temp_edge.end_pin = self.itemAt(event.pos())
                     self._temp_edge.end_pin.add_edge(self._temp_edge)
-                    self._temp_edge.sort_pins()
                     self._temp_edge.end_pin.socket_widget.update_stylesheets()
 
-                    if self._temp_edge.end_pin != self._last_pin and self._temp_edge.start_pin != self._last_pin:
-                        # Edits edge by changing end pin
-                        self._undo_stack.push(RerouteEdgeCommand(
-                            self.scene(),
-                            edge=self._temp_edge,
-                            undo_pin=self._last_pin,
-                            redo_pin=self._temp_edge.end_pin
-                        ))
-                    elif (self._temp_edge.end_pin == self._last_pin and self._temp_edge.start_pin != self._last_pin and
-                          self._temp_edge.start_pin.socket_widget.is_input):
-                        # Hack: Changing end pin to the same end pin is performed but ignored by the undone stack
-                        cmd: RerouteEdgeCommand = RerouteEdgeCommand(
-                            self.scene(),
-                            edge=self._temp_edge,
-                            undo_pin=self._last_pin,
-                            redo_pin=self._temp_edge.end_pin
-                        )
-                        self._undo_stack.push(cmd)
-                        cmd.setObsolete(True)
-                        self._undo_stack.undo()
+                    if self._temp_edge.end_pin != self._last_pin:
+                        last_pin_is_in: bool = self._last_pin.socket_widget.is_input
+                        end_pin_is_in: bool = self._temp_edge.end_pin.socket_widget.is_input
+                        self._temp_edge.sort_pins()
 
-                    else:
-                        # Default edge adding
-                        self._undo_stack.push(AddEdgeCommand(self.scene(), self._temp_edge))
+                        if (not last_pin_is_in and end_pin_is_in) or (last_pin_is_in and not end_pin_is_in):
+                            self._undo_stack.push(AddEdgeCommand(self.scene(), self._temp_edge))
+                        else:
+                            self._undo_stack.push(RerouteEdgeCommand(
+                                    self.scene(),
+                                    edge=self._temp_edge,
+                                    undo_pin=self._last_pin,
+                                    redo_pin=self._temp_edge.end_pin
+                                ))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
