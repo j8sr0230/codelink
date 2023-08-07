@@ -35,7 +35,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                         "Width": 160
                         },
             header_left="Base Prop",
-            header_right="Value"
+            header_right="Value",
+            undo_stack=undo_stack
         )
 
         # Non persistent data model

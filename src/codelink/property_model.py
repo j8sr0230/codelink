@@ -1,11 +1,12 @@
 from typing import Any, Optional, cast
 
 import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
 
 
 class PropertyModel(QtCore.QAbstractTableModel):
     def __init__(self, properties: Optional[dict] = None, header_left: str = "Property", header_right: str = "Value",
-                 parent: Optional[QtCore.QObject] = None) -> None:
+                 undo_stack: Optional[QtWidgets.QUndoStack] = None, parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
 
         if properties is None:
@@ -14,6 +15,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
         self._properties = properties
         self._header_left: str = header_left
         self._header_right: str = header_right
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
     @property
     def properties(self) -> dict:
