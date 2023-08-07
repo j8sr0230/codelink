@@ -139,6 +139,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for sub_node in nodes:
             self._nodes.remove(sub_node)
             grp_node.sub_scene.add_node(sub_node)
+            sub_node.setEnabled(False)
 
         for sub_edge in sub_edges:
             self._edges.remove(sub_edge)
@@ -192,6 +193,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         for sub_node in grp_node.sub_scene.nodes:
             self.add_node(sub_node)
+            sub_node.setEnabled(True)
             sub_node_pos: QtCore.QPointF = QtCore.QPointF(
                 sub_node.x() + (grp_node.center.x() - sub_scene_center.x()),
                 sub_node.y() + (grp_node.center.y() - sub_scene_center.y())

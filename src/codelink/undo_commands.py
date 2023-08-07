@@ -279,11 +279,15 @@ class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 		self._parent: NodeItem = parent_node
 
 	def undo(self) -> None:
+		for node in self._view.scene().nodes:
+			node.setEnabled(False)
 		self._view.setScene(self._scene)
 		self._view.fit_in_content()
 
 	def redo(self) -> None:
 		self._view.setScene(self._parent.sub_scene)
+		for node in self._view.scene().nodes:
+			node.setEnabled(True)
 		self._view.fit_in_content()
 
 
@@ -300,9 +304,13 @@ class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._view.setScene(self._undo_scene)
+		for node in self._view.scene().nodes:
+			node.setEnabled(True)
 		self._view.fit_in_content()
 
 	def redo(self) -> None:
+		for node in self._view.scene().nodes:
+			node.setEnabled(False)
 		self._view.setScene(self._redo_scene)
 		self._view.fit_in_content()
 
