@@ -41,13 +41,13 @@ class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._sub_nodes: list[NodeItem] = sub_nodes
 
 	def undo(self) -> None:
-		self._scene.resolve_grp_node(self._grp_node)
+		self._scene.resolve_sub_scene(self._grp_node)
 
 	def redo(self) -> None:
 		if self._grp_node not in self._scene.nodes:
 			self._scene.add_node(self._grp_node)
 
-		self._scene.populate_grp_node(self._grp_node, self._sub_nodes)
+		self._scene.populate_sub_scene(self._grp_node, self._sub_nodes)
 
 
 class RemoveNodeFromFrameCommand(QtWidgets.QUndoCommand):
@@ -77,10 +77,10 @@ class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.add_node(self._grp_node)
-		self._scene.populate_grp_node(self._grp_node, self._sub_nodes)
+		self._scene.populate_sub_scene(self._grp_node, self._sub_nodes)
 
 	def redo(self) -> None:
-		self._scene.resolve_grp_node(self._grp_node)
+		self._scene.resolve_sub_scene(self._grp_node)
 
 
 class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):

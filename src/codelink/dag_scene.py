@@ -122,7 +122,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return node
 
-    def populate_grp_node(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
+    def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
         sub_edges: list[EdgeItem] = []
         for edge in self._edges:
             if edge.start_pin.parentItem() in nodes and edge.end_pin.parentItem() in nodes:
@@ -183,7 +183,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         grp_node.sort_socket_widgets()
         return grp_node
 
-    def resolve_grp_node(self, grp_node: NodeItem):
+    def resolve_sub_scene(self, grp_node: NodeItem):
         sub_scene_bbox: QtCore.QRectF = grp_node.sub_scene.itemsBoundingRect()
         sub_scene_center: QtCore.QPointF = QtCore.QPointF(
             sub_scene_bbox.x() + sub_scene_bbox.width() / 2,
