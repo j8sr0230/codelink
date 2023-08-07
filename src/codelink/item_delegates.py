@@ -68,6 +68,7 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
         editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
         editor.addItems(self._items)
         editor.currentIndexChanged.connect(self.commit_editor)
+        # editor.currentTextChanged.connect(self.commit_editor)
 
         item_list_view: QtWidgets.QAbstractItemView = editor.view()
         item_list_view.setSpacing(2)
@@ -83,12 +84,13 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
         # noinspection PyTypeChecker
         value: str = str(index.data(QtCore.Qt.DisplayRole)).lower()
         num: int = self._items.index(value)
+        editor.blockSignals(True)
         editor.setCurrentIndex(num)
+        editor.blockSignals(False)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
         value: bool = eval(editor.currentText().capitalize())
-
         # noinspection PyTypeChecker
         model.setData(index, value, QtCore.Qt.EditRole)
 
