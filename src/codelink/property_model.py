@@ -86,7 +86,7 @@ class PropertyModel(QtCore.QAbstractTableModel):
             data_type = type(self._properties[key])
             old_value: object = self._properties[key]
 
-            if key not in ("X", "Y", "Width"):
+            if key not in ("X", "Y"):
                 self._undo_stack.push(EditModelDataCommand(self, index, old_value, data_type(value)))
             else:
                 self._properties[key] = data_type(value)

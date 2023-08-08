@@ -471,8 +471,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
                     # Hack to prevent cyclic imports
-                    tgl_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ToggleNodeCollapseCommand")
-                    self._undo_stack.push(tgl_cmd_cls(self.scene(), self))
+                    # tgl_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ToggleNodeCollapseCommand")
+                    # self._undo_stack.push(tgl_cmd_cls(self.scene(), self))
+
+                    collapse_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
+                    self._prop_model.setData(
+                        self._prop_model.index(collapse_row, 1, QtCore.QModelIndex()), not self.is_collapsed, 2
+                    )
 
     def mouseMoveEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         if self._mode == "RESIZE":
@@ -490,10 +495,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_width: float = current_x - old_top_left_global.x()
 
             width_row: int = list(self._prop_model.properties.keys()).index("Width")
+            self._prop_model.setData(self._prop_model.index(width_row, 1, QtCore.QModelIndex()), new_width, 2)
 
-            self._prop_model.setData(
-                self._prop_model.index(width_row, 1, QtCore.QModelIndex()), new_width, 2  # QtCore.Qt.EditRole
-            )
         else:
             super().mouseMoveEvent(event)
 
@@ -501,9 +504,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         super().mouseReleaseEvent(event)
 
         # Hack to prevent cyclic imports
-        resize_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ResizeNodeCommand")
-        if self._resized:
-            self._undo_stack.push(resize_cmd_cls(self.scene(), self))
+        # resize_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ResizeNodeCommand")
+        # if self._resized:
+        #     self._undo_stack.push(resize_cmd_cls(self.scene(), self))
 
         self.setZValue(2)
 

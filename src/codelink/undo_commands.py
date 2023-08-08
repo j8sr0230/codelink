@@ -83,49 +83,49 @@ class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._scene.resolve_sub_scene(self._grp_node)
 
 
-class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-		super().__init__(parent)
-
-		self._scene: DAGScene = scene
-		self._node = node
-
-	def undo(self) -> None:
-		self.redo()
-
-	def redo(self) -> None:
-		new_collapse_state: bool = not self._node.prop_model.properties["Collapse State"]
-		collapse_mode_row: int = list(self._node.prop_model.properties.keys()).index("Collapse State")
-
-		# noinspection PyTypeChecker
-		self._node.prop_model.setData(
-			self._node.prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
-			new_collapse_state, QtCore.Qt.EditRole
-		)
-
-
-class ResizeNodeCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-		super().__init__(parent)
-
-		self._scene: DAGScene = scene
-		self._node: NodeItem = node
-		self._undo_width: int = node.last_width
-		self._redo_width: int = node.boundingRect().width()
-
-	def undo(self) -> None:
-		width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
-		self._node.prop_model.setData(
-			self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._undo_width, 2
-		)
-
-	def redo(self) -> None:
-		if self._undo_width != self._redo_width:
-			width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
-
-			self._node.prop_model.setData(
-				self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2
-			)
+# class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):
+# 	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+# 		super().__init__(parent)
+#
+# 		self._scene: DAGScene = scene
+# 		self._node = node
+#
+# 	def undo(self) -> None:
+# 		self.redo()
+#
+# 	def redo(self) -> None:
+# 		new_collapse_state: bool = not self._node.prop_model.properties["Collapse State"]
+# 		collapse_mode_row: int = list(self._node.prop_model.properties.keys()).index("Collapse State")
+#
+# 		# noinspection PyTypeChecker
+# 		self._node.prop_model.setData(
+# 			self._node.prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
+# 			new_collapse_state, QtCore.Qt.EditRole
+# 		)
+#
+#
+# class ResizeNodeCommand(QtWidgets.QUndoCommand):
+# 	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+# 		super().__init__(parent)
+#
+# 		self._scene: DAGScene = scene
+# 		self._node: NodeItem = node
+# 		self._undo_width: int = node.last_width
+# 		self._redo_width: int = node.boundingRect().width()
+#
+# 	def undo(self) -> None:
+# 		width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
+# 		self._node.prop_model.setData(
+# 			self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._undo_width, 2
+# 		)
+#
+# 	def redo(self) -> None:
+# 		if self._undo_width != self._redo_width:
+# 			width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
+#
+# 			self._node.prop_model.setData(
+# 				self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2
+# 			)
 
 
 class MoveNodesCommand(QtWidgets.QUndoCommand):
