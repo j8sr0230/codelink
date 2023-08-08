@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 
 class FrameItem(QtWidgets.QGraphicsItem):
-    def __init__(self, framed_nodes: list[NodeItem], parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, framed_nodes: list[NodeItem], undo_stack: QtWidgets.QUndoStack,
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
@@ -21,7 +22,8 @@ class FrameItem(QtWidgets.QGraphicsItem):
             properties={
                         "Name": "Frame Label",
                         "Color": "green"
-                        }
+                        },
+            undo_stack=undo_stack
         )
 
         # Reference to framed nodes

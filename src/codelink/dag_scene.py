@@ -566,7 +566,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for frame_dict in frames_dict:
             framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
             framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
-            new_frame: FrameItem = FrameItem(framed_nodes)
+            new_frame: FrameItem = FrameItem(framed_nodes, self._undo_stack)
             self.add_frame(new_frame)
 
             # Reset frame state

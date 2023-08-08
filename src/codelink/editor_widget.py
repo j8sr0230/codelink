@@ -717,7 +717,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     if len(self.scene().dag_item(old_frame_uuid).framed_nodes) == 0:
                         self._undo_stack.push(RemoveFrameCommand(self.scene(), self.scene().dag_item(old_frame_uuid)))
 
-            frame: FrameItem = FrameItem(selected_nodes)
+            frame: FrameItem = FrameItem(selected_nodes, self._undo_stack)
             for node in selected_nodes:
                 node.parent_frame = frame
             self._undo_stack.push(AddFrameCommand(self.scene(), frame))
