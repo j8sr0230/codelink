@@ -64,12 +64,14 @@ class ScalarMath(NodeItem):
         last_option_index: int = self._option_box.last_index
         current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
-        self._undo_stack.push(
-            set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
-        )
-
         input_widget_count: int = len(self.input_socket_widgets)
+
         if current_option_name == "Sqrt":
+            self._undo_stack.beginMacro("Changes option box")
+            self._undo_stack.push(
+                set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
+            )
+
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -81,7 +83,15 @@ class ScalarMath(NodeItem):
                 )
                 # self.remove_socket_widget(remove_idx)
                 input_widget_count -= 1
+
+            self._undo_stack.endMacro()
+
         else:
+            self._undo_stack.beginMacro("Changes option box")
+            self._undo_stack.push(
+                set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
+            )
+
             while input_widget_count < 2:
                 new_socket_widget: SocketWidget = SocketWidget(undo_stack=self._undo_stack, label="B", is_input=True,
                                                                parent_node=self)
@@ -91,6 +101,8 @@ class ScalarMath(NodeItem):
                 )
                 # self.insert_socket_widget(new_socket_widget, insert_idx)
                 input_widget_count += 1
+
+            self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
 

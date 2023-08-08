@@ -629,6 +629,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 for edge in socket_widget.pin.edges:
                     linked_edges.add(edge)
 
+        self._undo_stack.beginMacro("Delete selected items")
         for frame in linked_frames:
             for node in nodes:
                 if node in frame.framed_nodes:
@@ -643,6 +644,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(RemoveEdgeCommand(self.scene(), edge))
         for node in nodes:
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
+        self._undo_stack.endMacro()
 
     def add_grp_node(self):
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
