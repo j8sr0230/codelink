@@ -56,8 +56,8 @@ class ScalarMath(NodeItem):
     def update_socket_widgets(self):
         # Hack to prevent cyclic imports
         add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
-        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
+        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
 
         option_name: str = self._option_box.currentText()
         input_widget_count: int = len(self.input_socket_widgets)
