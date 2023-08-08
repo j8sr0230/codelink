@@ -20,7 +20,6 @@ from property_widget import PropertyWidget
 from property_table import PropertyTable
 from frame_item import FrameItem
 from node_item import NodeItem
-from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
@@ -43,7 +42,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
-        self._last_node: Optional[NodeItem] = None
         self._temp_edge: Optional[EdgeItem] = None
         self._cutter: Optional[CutterItem] = None
 
@@ -170,41 +168,37 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().mouseDoubleClickEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton:
-            # Open node properties
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
-                self._last_node: Optional[NodeItem] = self.itemAt(event.pos()).parentItem()
-            elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-                self._last_node: Optional[NodeItem] = self.itemAt(event.pos()).parentItem()
-            elif isinstance(self.itemAt(event.pos()), NodeItem):
-                self._last_node: Optional[NodeItem] = self.itemAt(event.pos())
-            else:
-                self._last_node: Optional[NodeItem] = None
+            selected_item: Optional[Union[NodeItem, FrameItem]] = None
+            if (type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem or
+                    type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget):
+                selected_item: Optional[Union[NodeItem, FrameItem]] = self.itemAt(event.pos()).parentItem()
+            elif isinstance(self.itemAt(event.pos()), NodeItem) or isinstance(self.itemAt(event.pos()), FrameItem):
+                selected_item: Optional[Union[NodeItem, FrameItem]] = self.itemAt(event.pos())
 
-            if self._last_node is not None:
-                self._last_node.setSelected(True)
-                prop_widget: PropertyWidget = PropertyWidget(
-                    self._last_node,
-                    width=self._prop_scroller.width(),
-                    parent=self._prop_scroller
-                )
-                cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
-                self._prop_scroller.setWidget(prop_widget)
-                self._prop_scroller.show()
+            if selected_item is not None:
+                if isinstance(selected_item, NodeItem):
+                    selected_item.setSelected(True)
+                    prop_widget: PropertyWidget = PropertyWidget(
+                        selected_item,
+                        width=self._prop_scroller.width(),
+                        parent=self._prop_scroller
+                    )
+                    cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
+                    self._prop_scroller.setWidget(prop_widget)
+                    self._prop_scroller.show()
 
-            elif type(self.itemAt(event.pos())) == FrameItem:
-                # self.scene().clearSelection()
-                frame_item: FrameItem = self.itemAt(event.pos())
-                table_view: PropertyTable = PropertyTable()
-                table_view.setModel(frame_item.prop_model)
-                table_view.setItemDelegateForRow(0, StringDelegate(table_view))
-                table_view.setItemDelegateForRow(1, StringDelegate(table_view))
-                table_view.setFixedWidth(self._prop_scroller.width())
-                table_view.setFixedHeight(
-                    table_view.model().rowCount() * table_view.rowHeight(0) +
-                    table_view.horizontalHeader().height()
-                )
-                self._prop_scroller.setWidget(table_view)
-                self._prop_scroller.show()
+                elif isinstance(selected_item, FrameItem):
+                    table_view: PropertyTable = PropertyTable()
+                    table_view.setModel(selected_item.prop_model)
+                    table_view.setItemDelegateForRow(0, StringDelegate(table_view))
+                    table_view.setItemDelegateForRow(1, StringDelegate(table_view))
+                    table_view.setFixedWidth(self._prop_scroller.width())
+                    table_view.setFixedHeight(
+                        table_view.model().rowCount() * table_view.rowHeight(0) +
+                        table_view.horizontalHeader().height()
+                    )
+                    self._prop_scroller.setWidget(table_view)
+                    self._prop_scroller.show()
             else:
                 self.scene().clearSelection()
                 self._prop_scroller.hide()
@@ -428,78 +422,77 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Menus ---------------
     def context_menu(self, position: QtCore.QPoint):
-        if self._mode != "EDGE_CUT":
-            context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+        context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-            # Add menu
-            math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-            math_nodes.setTitle("&Math")
+        # Add menu
+        math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+        math_nodes.setTitle("&Math")
 
-            for name, cls, in nodes_dict.items():
-                # Adds all nodes from nodes.nodes_dict
-                add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
-                add_node_action.setData(cls)
-                cast(QtCore.SignalInstance, add_node_action.triggered).connect(
-                    lambda: self.add_node_from_cls(add_node_action.data())
-                )
-                math_nodes.addAction(add_node_action)
+        for name, cls, in nodes_dict.items():
+            # Adds all nodes from nodes.nodes_dict
+            add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
+            add_node_action.setData(cls)
+            cast(QtCore.SignalInstance, add_node_action.triggered).connect(
+                lambda: self.add_node_from_cls(add_node_action.data())
+            )
+            math_nodes.addAction(add_node_action)
 
-            # Rest of context menu
-            context_menu.addMenu(math_nodes)
-            context_menu.addSeparator()
+        # Rest of context menu
+        context_menu.addMenu(math_nodes)
+        context_menu.addSeparator()
 
-            context_menu.addAction(self._open_action)
-            context_menu.addAction(self._save_action)
-            context_menu.addSeparator()
+        context_menu.addAction(self._open_action)
+        context_menu.addAction(self._save_action)
+        context_menu.addSeparator()
 
-            context_menu.addAction(self._undo_action)
-            context_menu.addAction(self._redo_action)
-            context_menu.addAction(self._fit_action)
+        context_menu.addAction(self._undo_action)
+        context_menu.addAction(self._redo_action)
+        context_menu.addAction(self._fit_action)
 
-            selected_items: list[Any] = self.scene().selectedItems()
-            nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
-            frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
+        selected_items: list[Any] = self.scene().selectedItems()
+        nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
+        frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
 
-            if nodes_selected or frames_selected:
-                self._delete_action.setEnabled(True)
-            else:
-                self._delete_action.setEnabled(False)
-            context_menu.addAction(self._delete_action)
-
-            context_menu.addSeparator()
-
-            if nodes_selected:
-                self._add_frame_action.setEnabled(True)
-                self._add_grp_node_action.setEnabled(True)
-            else:
-                self._add_frame_action.setEnabled(False)
-                self._add_grp_node_action.setEnabled(False)
-            context_menu.addAction(self._add_frame_action)
-            context_menu.addAction(self._add_grp_node_action)
-
-            if nodes_selected and self.scene().selected_nodes()[0].has_sub_scene():
-                self._open_sub_action.setEnabled(True)
-                self._resolve_grp_node_action.setEnabled(True)
-            else:
-                self._open_sub_action.setEnabled(False)
-                self._resolve_grp_node_action.setEnabled(False)
-            context_menu.addAction(self._resolve_grp_node_action)
-            context_menu.addAction(self._open_sub_action)
-
-            if self.scene().parent_node is not None:
-                self._close_sub_action.setEnabled(True)
-            else:
-                self._close_sub_action.setEnabled(False)
-            context_menu.addAction(self._close_sub_action)
-
-            context_menu.exec_(self.mapToGlobal(position))
-
+        if nodes_selected or frames_selected:
             self._delete_action.setEnabled(True)
+        else:
+            self._delete_action.setEnabled(False)
+        context_menu.addAction(self._delete_action)
+
+        context_menu.addSeparator()
+
+        if nodes_selected:
             self._add_frame_action.setEnabled(True)
             self._add_grp_node_action.setEnabled(True)
-            self._resolve_grp_node_action.setEnabled(True)
+        else:
+            self._add_frame_action.setEnabled(False)
+            self._add_grp_node_action.setEnabled(False)
+        context_menu.addAction(self._add_frame_action)
+        context_menu.addAction(self._add_grp_node_action)
+
+        if nodes_selected and self.scene().selected_nodes()[0].has_sub_scene():
             self._open_sub_action.setEnabled(True)
+            self._resolve_grp_node_action.setEnabled(True)
+        else:
+            self._open_sub_action.setEnabled(False)
+            self._resolve_grp_node_action.setEnabled(False)
+        context_menu.addAction(self._resolve_grp_node_action)
+        context_menu.addAction(self._open_sub_action)
+
+        if self.scene().parent_node is not None:
             self._close_sub_action.setEnabled(True)
+        else:
+            self._close_sub_action.setEnabled(False)
+        context_menu.addAction(self._close_sub_action)
+
+        context_menu.exec_(self.mapToGlobal(position))
+
+        self._delete_action.setEnabled(True)
+        self._add_frame_action.setEnabled(True)
+        self._add_grp_node_action.setEnabled(True)
+        self._resolve_grp_node_action.setEnabled(True)
+        self._open_sub_action.setEnabled(True)
+        self._close_sub_action.setEnabled(True)
 
     # --------------- Viewport, focus and zoom ---------------
 
@@ -745,41 +738,3 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self.scene().parent_node:
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
             self.fit_in_content()
-
-    def add_socket(self):
-        if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-            if isinstance(self.scene().selectedItems()[0], NodeItem):
-                selected_node_item: NodeItem = self.scene().selectedItems()[0]
-                new_socket_widget: SocketWidget = SocketWidget(
-                    undo_stack=self._undo_stack,
-                    label="N",
-                    is_input=True,
-                    parent_node=selected_node_item
-                )
-
-                if len(selected_node_item.input_socket_widgets) > 0:
-                    insert_idx: int = (
-                            selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1]) + 1
-                    )
-                else:
-                    insert_idx: int = 0
-
-                selected_node_item.insert_socket_widget(new_socket_widget, insert_idx)
-                self._prop_scroller.hide()
-
-    def remove_socket(self):
-        if self.scene().selectedItems() and len(self.scene().selectedItems()) > 0:
-            if isinstance(self.scene().selectedItems()[0], NodeItem):
-                selected_node_item: NodeItem = self.scene().selectedItems()[0]
-
-                if len(selected_node_item.input_socket_widgets) > 0:
-                    selected_node_item.remove_socket_widget(
-                        selected_node_item.socket_widgets.index(selected_node_item.input_socket_widgets[-1])
-                    )
-                    self._prop_scroller.hide()
-
-            if type(self.scene().selectedItems()[0]) is FrameItem:
-                selected_frame: FrameItem = self.scene().selectedItems()[0]
-
-                self.scene().remove_frame(selected_frame)
-                self._prop_scroller.hide()
