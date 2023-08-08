@@ -15,7 +15,8 @@ if TYPE_CHECKING:
 class ScalarMath(NodeItem):
     REG_NAME: str = "Scalar Math"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack,
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, parent)
 
         # Node name
@@ -34,9 +35,9 @@ class ScalarMath(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            NumberLine(label="A", is_input=True, parent_node=self),
-            SocketWidget(label="B", is_input=True, parent_node=self),
-            SocketWidget(label="Res", is_input=False, parent_node=self)
+            NumberLine(undo_stack=self._undo_stack, label="A", is_input=True, parent_node=self),
+            SocketWidget(undo_stack=self._undo_stack, label="B", is_input=True, parent_node=self),
+            SocketWidget(undo_stack=self._undo_stack, label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -62,7 +63,8 @@ class ScalarMath(NodeItem):
                 input_widget_count -= 1
         else:
             while input_widget_count < 2:
-                new_socket_widget: SocketWidget = SocketWidget(label="B", is_input=True, parent_node=self)
+                new_socket_widget: SocketWidget = SocketWidget(undo_stack=self._undo_stack, label="B", is_input=True,
+                                                               parent_node=self)
                 insert_idx: int = len(self.input_socket_widgets)
                 self.insert_socket_widget(new_socket_widget, insert_idx)
                 input_widget_count += 1

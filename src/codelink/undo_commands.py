@@ -393,6 +393,8 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 		model: PropertyModel = cast(EditModelDataCommand, other).model
 		key: str = cast(EditModelDataCommand, other).key
 
+		if model != self._model:
+			return False
 		if key != self._key:
 			return False
 

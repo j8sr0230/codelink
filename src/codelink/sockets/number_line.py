@@ -12,10 +12,10 @@ if TYPE_CHECKING:
 
 class NumberLine(SocketWidget):
 	def __init__(
-			self, label: str = "A", is_input: bool = True, data: float = 0., parent_node: Optional[NodeItem] = None,
-			parent_widget: Optional[QtWidgets.QWidget] = None
+			self, undo_stack: QtWidgets.QUndoStack, label: str = "A", is_input: bool = True, data: float = 0.,
+			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
 	) -> None:
-		super().__init__(label, is_input, data, parent_node, parent_widget)
+		super().__init__(undo_stack, label, is_input, data, parent_node, parent_widget)
 
 		self._pin_item.color = QtGui.QColor("yellow")
 		self._pin_item.pin_type = float
