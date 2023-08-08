@@ -667,6 +667,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                         if len(outer_socket_edges) > 0:
                             new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
+                                undo_stack=self._undo_stack,
                                 label=socket_widget.prop_model.properties["Name"],
                                 is_input=socket_widget.prop_model.properties["Is Input"],
                                 data=socket_widget.prop_model.properties["Data"],
@@ -738,6 +739,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             if isinstance(self.scene().selectedItems()[0], NodeItem):
                 selected_node_item: NodeItem = self.scene().selectedItems()[0]
                 new_socket_widget: SocketWidget = SocketWidget(
+                    undo_stack=self._undo_stack,
                     label="N",
                     is_input=True,
                     parent_node=selected_node_item

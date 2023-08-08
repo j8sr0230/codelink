@@ -673,6 +673,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             socket_widget_dict: dict = state["Sockets"][i]
             socket_widget_cls: type = getattr(sys.modules[__name__], socket_widget_dict["Class"])
             new_socket_widget: socket_widget_cls = socket_widget_cls(
+                undo_stack=self._undo_stack,
                 label=socket_widget_dict["Properties"]["Name"],
                 is_input=socket_widget_dict["Properties"]["Is Input"],
                 data=socket_widget_dict["Properties"]["Data"],
