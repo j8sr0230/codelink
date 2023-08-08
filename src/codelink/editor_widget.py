@@ -223,16 +223,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if (not self._last_pin.socket_widget.is_input or
                         (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
                     self._mode: str = "EDGE_ADD"
-                    # Forward or backward edge creation from output socket to input socket or visa verse
-
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
                     self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
 
                 elif self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
                     self._mode: str = "EDGE_EDIT"
-                    # Edge editing by unplugging an existing edge from an input socket
-
                     self._temp_edge: EdgeItem = self._last_pin.edges[-1]
                     temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
                     temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
@@ -247,34 +243,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
-
-        elif event.button() == QtCore.Qt.RightButton:
-            new_selection: Optional[Union[NodeItem, FrameItem]] = None  # Right click selected NodeItem or FrameItem
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
-                new_selection: NodeItem = self.itemAt(event.pos()).parentItem()
-            elif isinstance(self.itemAt(event.pos()), NodeItem):
-                new_selection: NodeItem = self.itemAt(event.pos())
-            elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-                new_selection: NodeItem = self.itemAt(event.pos()).parentItem()
-            elif type(self.itemAt(event.pos())) == FrameItem:
-                new_selection: FrameItem = self.itemAt(event.pos())
-
-            # Previously selected scene items
-            selected_items: list[Any] = [item for item in self.scene().selectedItems() if
-                                         (isinstance(item, NodeItem) or type(item) == FrameItem)]
-
-            if new_selection is not None:
-                if new_selection not in selected_items:
-                    # If new_selection is new
-                    self.scene().clearSelection()
-                    new_selection.setSelected(True)
-            else:
-                self.scene().clearSelection()
-
-            super().mousePressEvent(event)
-
-        elif self.itemAt(event.pos()) is None:
-            self.clearFocus()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
@@ -342,16 +310,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         if (not last_pin_is_in and end_pin_is_in) or (last_pin_is_in and not end_pin_is_in):
                             self._undo_stack.push(AddEdgeCommand(self.scene(), self._temp_edge))
                         else:
-                            self._undo_stack.push(RerouteEdgeCommand(
-                                    self.scene(),
-                                    edge=self._temp_edge,
-                                    undo_pin=self._last_pin,
-                                    redo_pin=self._temp_edge.end_pin
-                                ))
+                            self._undo_stack.push(RerouteEdgeCommand(self.scene(), edge=self._temp_edge,
+                                                                     undo_pin=self._last_pin,
+                                                                     redo_pin=self._temp_edge.end_pin))
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
-                        # Default invalid edge
+                        # Invalid edge because of rerouting
                         self._temp_edge.color = self._temp_edge.start_pin.color
                         self._undo_stack.push(RemoveEdgeCommand(self.scene(), self._temp_edge))
                     else:
