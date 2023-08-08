@@ -373,3 +373,7 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 		self._model.properties[self._key] = self._new_data
 		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
 		print("Current:", self._old_data, "New:", self._new_data)
+
+	def mergeWith(self, other: QtWidgets.QUndoCommand) -> bool:
+		print("mergeWidth")
+		return True  # super().mergeWith(other)
