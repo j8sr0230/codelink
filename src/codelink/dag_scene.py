@@ -512,7 +512,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
             # Create node from dict
             node_class: type = getattr(sys.modules[__name__], node_dict["Class"])
-            new_node: node_class = node_class(self._undo_stack)
+            node_pos: tuple = (node_dict["Properties"]["X"], node_dict["Properties"]["Y"])
+            new_node: node_class = node_class(node_pos, self._undo_stack)
             self.add_node(new_node)
 
             # Reset node state

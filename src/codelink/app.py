@@ -26,12 +26,7 @@ def main() -> None:
 
     for i in range(2):
         for j in range(2):
-            node = ScalarMath(undo_stack)
-            node.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
-            node.setPos(QtCore.QPointF(32000 + i * 200, 32000 + j * 200))
-            node.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
-                          QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-            node.last_position = QtCore.QPointF(32000 + i * 200, 32000 + j * 200)
+            node = ScalarMath((32000 + i * 200, 32000 + j * 200), undo_stack)
             editor_scene.add_node(node)
 
     editor_widget.fit_in_content()

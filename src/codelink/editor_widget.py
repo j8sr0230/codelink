@@ -314,14 +314,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
-            selected_nodes: list[NodeItem] = self.scene().selected_nodes()
-            selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
-
-            if any(selected_nodes_moved):
-                self._undo_stack.push(MoveNodesCommand(selected_nodes))
-                for node in selected_nodes:
-                    node.moved = False
+        # if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
+        #     selected_nodes: list[NodeItem] = self.scene().selected_nodes()
+        #     selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
+        #
+        #     if any(selected_nodes_moved):
+        #         self._undo_stack.push(MoveNodesCommand(selected_nodes))
+        #         for node in selected_nodes:
+        #             node.moved = False
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
@@ -527,9 +527,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
     # --------------- Action callbacks ---------------
 
     def add_node_from_cls(self, cls: type):
-        new_node: cls = cls(self._undo_stack)
-        new_node.setPos(self.mapToScene(self.mapFromParent(QtGui.QCursor.pos())))
-        new_node.last_position = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
+        new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
+        new_node: cls = cls((new_pos.x(), new_pos.y()), self._undo_stack)
         self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def open(self):
@@ -648,7 +647,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 selection_center_y: float = selection_rect.y() + selection_rect.height() / 2
 
                 # Creates grp node
-                grp_node: NodeItem = NodeItem(self._undo_stack)
+                grp_node: NodeItem = NodeItem((0, 0), self._undo_stack)
                 grp_node.prop_model.properties["Name"] = "Group Node"
 
                 self.scene().add_node(grp_node)

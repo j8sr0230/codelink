@@ -20,7 +20,8 @@ from edge_item import EdgeItem
 class NodeItem(QtWidgets.QGraphicsItem):
     REG_NAME: str = "Node Item"
 
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack,
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
@@ -30,8 +31,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                         "Name": "Node Item",
                         "Color": "#1D1D1D",
                         "Collapse State": False,
-                        "X": 100,
-                        "Y": 100,
+                        "X": pos[0],
+                        "Y": pos[1],
                         "Width": 160
                         },
             header_left="Base Prop",
@@ -55,7 +56,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._lm_pressed: bool = False
         self._moved: bool = False
         self._resized: bool = False
-        self._last_position: QtCore.QPointF = QtCore.QPointF()
+        self._last_position: QtCore.QPointF = QtCore.QPointF(pos[0], pos[1])
         self._last_width: int = 0
         self._zoom_level: Optional[int] = None
 
@@ -132,6 +133,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.update_all()
 
         # Widget setup
+        self.setPos(QtCore.QPointF(pos[0], pos[1]))
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |

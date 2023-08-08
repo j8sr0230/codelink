@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 class ScalarMath(NodeItem):
     REG_NAME: str = "Scalar Math"
 
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(undo_stack, parent)
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+        super().__init__(pos, undo_stack, parent)
 
         # Node name
         self._prop_model.properties["Name"] = "Scalar Math"
