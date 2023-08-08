@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 	from dag_scene import DAGScene
 	from frame_item import FrameItem
 	from node_item import NodeItem
+	from socket_widget import SocketWidget
 	from pin_item import PinItem
 	from edge_item import EdgeItem
 
@@ -81,6 +82,45 @@ class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 
 	def redo(self) -> None:
 		self._scene.resolve_sub_scene(self._grp_node)
+
+
+class AddSocketCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, node: NodeItem, socket: SocketWidget, insert_idx: int,
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._node = node
+		self._socket = socket
+		self._insert_idx: int = insert_idx
+
+	def undo(self) -> None:
+		self._node.remove_socket_widget(self._insert_idx)
+		self._node.scene().clearFocus()
+
+	def redo(self) -> None:
+		self._node.insert_socket_widget(self._socket, self._insert_idx)
+		self._node.scene().clearFocus()
+
+
+class RemoveSocketCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, node: NodeItem, remove_idx: int, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._node = node
+		self._remove_idx: int = remove_idx
+		self._socket = node.socket_widgets[remove_idx]
+
+	def undo(self) -> None:
+		self._node.insert_socket_widget(self._socket, self._remove_idx)
+		self._node.scene().clearFocus()
+
+	def redo(self) -> None:
+		self._node.remove_socket_widget(self._remove_idx)
+		self._node.scene().clearFocus()
 
 
 # class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):

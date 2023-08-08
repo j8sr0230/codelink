@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Optional, cast
+import importlib
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -53,20 +54,35 @@ class ScalarMath(NodeItem):
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
     def update_socket_widgets(self):
+        # Hack to prevent cyclic imports
+        add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
+        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
+        remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
+
         option_name: str = self._option_box.currentText()
         input_widget_count: int = len(self.input_socket_widgets)
 
         if option_name == "Sqrt":
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
-                self.remove_socket_widget(remove_idx)
+                remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+
+                self._undo_stack.push(
+                    remove_socket_cmd_cls(self, remove_idx)
+                )
+                # self.remove_socket_widget(remove_idx)
                 input_widget_count -= 1
         else:
             while input_widget_count < 2:
                 new_socket_widget: SocketWidget = SocketWidget(undo_stack=self._undo_stack, label="B", is_input=True,
                                                                parent_node=self)
                 insert_idx: int = len(self.input_socket_widgets)
-                self.insert_socket_widget(new_socket_widget, insert_idx)
+                self._undo_stack.push(
+                    add_socket_cmd_cls(self, new_socket_widget, insert_idx)
+                )
+                # self.insert_socket_widget(new_socket_widget, insert_idx)
                 input_widget_count += 1
 
     # --------------- Node eval methods ---------------

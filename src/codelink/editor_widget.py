@@ -171,9 +171,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.button() == QtCore.Qt.LeftButton:
             # Open node properties
-            if isinstance(self.itemAt(event.pos()), NodeItem):
-                # self.scene().clearSelection()
-                self._last_node: NodeItem = self.itemAt(event.pos())
+            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
+                self._last_node: Optional[NodeItem] = self.itemAt(event.pos()).parentItem()
+            elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+                self._last_node: Optional[NodeItem] = self.itemAt(event.pos()).parentItem()
+            elif isinstance(self.itemAt(event.pos()), NodeItem):
+                self._last_node: Optional[NodeItem] = self.itemAt(event.pos())
+            else:
+                self._last_node: Optional[NodeItem] = None
+
+            if self._last_node is not None:
                 self._last_node.setSelected(True)
                 prop_widget: PropertyWidget = PropertyWidget(
                     self._last_node,
@@ -241,14 +248,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._temp_edge.end_pin = temp_target
                     self._mode = "EDGE_ADD"
 
-        if event.button() == QtCore.Qt.MiddleButton:
+        elif event.button() == QtCore.Qt.MiddleButton:
             super().mousePressEvent(event)
             self._mode: str = "SCENE_DRAG"
             self._mm_pressed: bool = True
             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeAllCursor)
 
-        if event.button() == QtCore.Qt.RightButton:
-            new_selection: Optional[Union[NodeItem, FrameItem]] = None  # Right click selected NodeItem od FrameItem
+        elif event.button() == QtCore.Qt.RightButton:
+            new_selection: Optional[Union[NodeItem, FrameItem]] = None  # Right click selected NodeItem or FrameItem
             if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
                 new_selection: NodeItem = self.itemAt(event.pos()).parentItem()
             elif isinstance(self.itemAt(event.pos()), NodeItem):
@@ -271,6 +278,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self.scene().clearSelection()
 
             super().mousePressEvent(event)
+
+        elif self.itemAt(event.pos()) is None:
+            self.clearFocus()
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
