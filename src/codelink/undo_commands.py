@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 	from dag_scene import DAGScene
 	from frame_item import FrameItem
 	from node_item import NodeItem
+	from input_widgets import OptionBoxWidget
 	from socket_widget import SocketWidget
 	from pin_item import PinItem
 	from edge_item import EdgeItem
@@ -91,7 +92,7 @@ class AddSocketCommand(QtWidgets.QUndoCommand):
 	) -> None:
 		super().__init__(parent)
 
-		self._node = node
+		self._node: NodeItem = node
 		self._socket = socket
 		self._insert_idx: int = insert_idx
 
@@ -110,7 +111,7 @@ class RemoveSocketCommand(QtWidgets.QUndoCommand):
 	) -> None:
 		super().__init__(parent)
 
-		self._node = node
+		self._node: NodeItem = node
 		self._remove_idx: int = remove_idx
 		self._socket = node.socket_widgets[remove_idx]
 
@@ -121,6 +122,30 @@ class RemoveSocketCommand(QtWidgets.QUndoCommand):
 	def redo(self) -> None:
 		self._node.remove_socket_widget(self._remove_idx)
 		self._node.scene().clearFocus()
+
+
+class SetOptionIndexCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, option_box: OptionBoxWidget, undo_idx: int, redo_idx, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._option_box: OptionBoxWidget = option_box
+		self._undo_idx: int = undo_idx
+		self._redo_idx: int = redo_idx
+
+	def undo(self) -> None:
+		self._option_box.blockSignals(True)
+		self._option_box.setCurrentIndex(self._undo_idx)
+		self._option_box.update()
+		self._option_box.blockSignals(False)
+
+	def redo(self) -> None:
+		if self._option_box.currentIndex() != self._redo_idx:
+			self._option_box.blockSignals(True)
+			self._option_box.setCurrentIndex(self._redo_idx)
+			self._option_box.update()
+			self._option_box.blockSignals(False)
 
 
 # class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):

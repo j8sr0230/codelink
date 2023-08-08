@@ -6,6 +6,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
+from input_widgets import OptionBoxWidget
 from number_line import NumberLine
 from socket_widget import SocketWidget
 
@@ -24,7 +25,7 @@ class ScalarMath(NodeItem):
         self._prop_model.properties["Name"] = "Scalar Math"
 
         # Option combo box
-        self._option_box: QtWidgets.QComboBox = QtWidgets.QComboBox()
+        self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Sqrt"])
@@ -58,11 +59,17 @@ class ScalarMath(NodeItem):
         add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
         remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
         remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
+        set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
 
-        option_name: str = self._option_box.currentText()
+        last_option_index: int = self._option_box.last_index
+        current_option_name: str = self._option_box.currentText()
+        current_option_index: int = self._option_box.currentIndex()
+        self._undo_stack.push(
+            set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
+        )
+
         input_widget_count: int = len(self.input_socket_widgets)
-
-        if option_name == "Sqrt":
+        if current_option_name == "Sqrt":
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
