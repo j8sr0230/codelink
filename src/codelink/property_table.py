@@ -43,5 +43,8 @@ class PropertyTable(QtWidgets.QTableView):
                 new_index = self.model().index(new_row, 1)
                 self.setCurrentIndex(new_index)
 
+        elif event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
+            event.ignore()
+
         else:
             super().keyPressEvent(event)

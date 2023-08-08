@@ -367,7 +367,9 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 	def undo(self) -> None:
 		self._model.properties[self._key] = self._old_data
 		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
+		print("Current:", self._new_data, "New:", self._old_data)
 
 	def redo(self) -> None:
 		self._model.properties[self._key] = self._new_data
 		cast(QtCore.SignalInstance, self._model.dataChanged).emit(self._index, self._index)
+		print("Current:", self._old_data, "New:", self._new_data)

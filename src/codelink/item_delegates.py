@@ -50,6 +50,9 @@ class IntegerDelegate(QtWidgets.QStyledItemDelegate):
                 self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
+            elif event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
+                event.ignore()
+                return True
             else:
                 return False
         else:
@@ -103,6 +106,9 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
             if event.key() == QtCore.Qt.Key_Tab:
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
                 return True
+            elif event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
+                event.ignore()
+                return True
             else:
                 return False
         else:
@@ -153,6 +159,9 @@ class StringDelegate(QtWidgets.QStyledItemDelegate):
             if event.key() == QtCore.Qt.Key_Return:
                 self.commitData.emit(editor)
                 self.closeEditor.emit(editor, QtWidgets.QAbstractItemDelegate.NoHint)
+                return True
+            elif event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
+                event.ignore()
                 return True
             else:
                 return False
