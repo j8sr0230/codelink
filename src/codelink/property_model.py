@@ -84,11 +84,13 @@ class PropertyModel(QtCore.QAbstractTableModel):
         if role == QtCore.Qt.EditRole:
             key: str = list(self._properties.keys())[index.row()]
             data_type = type(self._properties[key])
-
             old_value: object = self._properties[key]
-            self._undo_stack.push(EditModelDataCommand(self, index, old_value, data_type(value)))
-            # self._properties[key] = data_type(value)
-            # cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
+
+            if key not in ("X", "Y", "Width"):
+                self._undo_stack.push(EditModelDataCommand(self, index, old_value, data_type(value)))
+            else:
+                self._properties[key] = data_type(value)
+                cast(QtCore.SignalInstance, self.dataChanged).emit(index, index)
             return True
 
         return False

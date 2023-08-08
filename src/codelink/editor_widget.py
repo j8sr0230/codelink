@@ -314,14 +314,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        # if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
-        #     selected_nodes: list[NodeItem] = self.scene().selected_nodes()
-        #     selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
-        #
-        #     if any(selected_nodes_moved):
-        #         self._undo_stack.push(MoveNodesCommand(selected_nodes))
-        #         for node in selected_nodes:
-        #             node.moved = False
+        if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
+            selected_nodes: list[NodeItem] = self.scene().selected_nodes()
+            selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
+
+            if any(selected_nodes_moved):
+                self._undo_stack.push(MoveNodesCommand(selected_nodes))
+                for node in selected_nodes:
+                    node.moved = False
 
         if self._mode == "EDGE_ADD":
             if type(self.itemAt(event.pos())) == PinItem:
@@ -409,7 +409,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if event.key() == QtCore.Qt.Key_S:
             # Prints undo stack for debugging
             for i in range(self._undo_stack.count()):
-                print("Stack Item", self._undo_stack.command(i))
+                print("Stack Item", self._undo_stack.command(i), self._undo_stack.command(i).id())
 
             # Test area
             # selection: list[NodeItem] = self.scene().selected_nodes()
