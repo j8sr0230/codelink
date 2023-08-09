@@ -379,22 +379,26 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def successors(self) -> list[NodeItem]:
         result: list[NodeItem] = []
-        for socket_widget in self.output_socket_widgets:
-            if len(socket_widget.pin.edges) > 0:
-                for edge in socket_widget.pin.edges:
-                    suc_node: NodeItem = edge.end_pin.parent_node
-                    if len(suc_node.sub_scene.nodes) > 0:
-                        linked_lowest: SocketWidget = suc_node.linked_lowest_socket(edge.end_pin.socket_widget)
-                        result.append(linked_lowest.parent_node)
-                    else:
-                        result.append(edge.end_pin.parent_node)
-            else:
-                linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
-                if linked_highest != socket_widget:
-                    for edge in linked_highest.pin.edges:
-                        end_socket: SocketWidget = edge.end_pin.socket_widget
-                        linked_lowest: SocketWidget = end_socket.parent_node.linked_lowest_socket(end_socket)
-                        result.append(linked_lowest.parent_node)
+        if not self.has_sub_scene():
+            for socket_widget in self.output_socket_widgets:
+                if len(socket_widget.pin.edges) > 0:
+                    for edge in socket_widget.pin.edges:
+                        suc_node: NodeItem = edge.end_pin.parent_node
+                        if len(suc_node.sub_scene.nodes) > 0:
+                            linked_lowest: SocketWidget = suc_node.linked_lowest_socket(edge.end_pin.socket_widget)
+                            result.append(linked_lowest.parent_node)
+                        else:
+                            result.append(edge.end_pin.parent_node)
+                else:
+                    linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
+                    if linked_highest != socket_widget:
+                        for edge in linked_highest.pin.edges:
+                            end_socket: SocketWidget = edge.end_pin.socket_widget
+                            linked_lowest: SocketWidget = end_socket.parent_node.linked_lowest_socket(end_socket)
+                            result.append(linked_lowest.parent_node)
+        else:
+            for socket_widget in self.input_socket_widgets:
+                result.append(self.linked_lowest_socket(socket_widget).parent_node)
 
         return result
 
@@ -410,18 +414,24 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def eval_socket_1(*args) -> Union[PinItem, ak.Array]:
-        if len(args) > 1:
-            return ak.Array(args[0]) + ak.Array(args[1])
-        else:
-            return ak.Array([0])
+    def eval_socket_1(*args) -> ak.Array:
+        try:
+            if len(args) > 1:
+                return ak.Array(args[0]) + ak.Array(args[1])
+            else:
+                return ak.Array([0])
+        except ValueError as e:
+            print(e)
 
     @staticmethod
-    def eval_socket_2(*args) -> Union[PinItem, ak.Array]:
-        if len(args) > 1:
-            return ak.Array(args[0]) - ak.Array(args[1])
-        else:
-            return ak.Array([0])
+    def eval_socket_2(*args) -> ak.Array:
+        try:
+            if len(args) > 1:
+                return ak.Array(args[0]) - ak.Array(args[1])
+            else:
+                return ak.Array([0])
+        except ValueError as e:
+            print(e)
 
     # --------------- Overwrites ---------------
 
