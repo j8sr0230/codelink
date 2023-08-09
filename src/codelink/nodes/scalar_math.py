@@ -38,7 +38,8 @@ class ScalarMath(NodeItem):
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
             NumberLine(undo_stack=self._undo_stack, label="A", is_input=True, parent_node=self),
-            SocketWidget(undo_stack=self._undo_stack, label="B", is_input=True, parent_node=self),
+            NumberLine(undo_stack=self._undo_stack, label="B", is_input=True, parent_node=self),
+            SocketWidget(undo_stack=self._undo_stack, label="C", is_input=True, parent_node=self),
             SocketWidget(undo_stack=self._undo_stack, label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
