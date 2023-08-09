@@ -351,23 +351,27 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def predecessors(self) -> list[NodeItem]:
         result: list[NodeItem] = []
-        for socket_widget in self.input_socket_widgets:
-            if len(socket_widget.pin.edges) > 0:
-                for edge in socket_widget.pin.edges:
-                    pre_node: NodeItem = edge.start_pin.parent_node
-                    if len(pre_node.sub_scene.nodes) > 0:
-                        linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
-                        result.append(linked_lowest.parent_node)
-                    else:
-                        result.append(edge.start_pin.parent_node)
+        if not self.has_sub_scene():
+            for socket_widget in self.input_socket_widgets:
+                if len(socket_widget.pin.edges) > 0:
+                    for edge in socket_widget.pin.edges:
+                        pre_node: NodeItem = edge.start_pin.parent_node
+                        if len(pre_node.sub_scene.nodes) > 0:
+                            linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
+                            result.append(linked_lowest.parent_node)
+                        else:
+                            result.append(edge.start_pin.parent_node)
 
-            else:
-                linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
-                if linked_highest != socket_widget:
-                    for edge in linked_highest.pin.edges:
-                        start_socket: SocketWidget = edge.start_pin.socket_widget
-                        linked_lowest: SocketWidget = start_socket.parent_node.linked_lowest_socket(start_socket)
-                        result.append(linked_lowest.parent_node)
+                else:
+                    linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
+                    if linked_highest != socket_widget:
+                        for edge in linked_highest.pin.edges:
+                            start_socket: SocketWidget = edge.start_pin.socket_widget
+                            linked_lowest: SocketWidget = start_socket.parent_node.linked_lowest_socket(start_socket)
+                            result.append(linked_lowest.parent_node)
+        else:
+            for socket_widget in self.output_socket_widgets:
+                result.append(self.linked_lowest_socket(socket_widget).parent_node)
 
         return result
 

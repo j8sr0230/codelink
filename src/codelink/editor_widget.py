@@ -333,7 +333,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             # Evaluates open dag ends
             for node in self.scene().ends():
                 dsk: dict = self.scene().to_dsk(node, {})
-                print(get(dsk, node.socket_widgets[-1].pin))
+                print(get(dsk, node.linked_lowest_socket(node.socket_widgets[-1]).pin))
 
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)
