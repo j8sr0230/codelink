@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union
 
-import awkward as ak
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -98,22 +96,22 @@ class SocketWidget(QtWidgets.QWidget):
 
     # --------------- Socket data ---------------
 
-    def input_data(self) -> Optional[Union[PinItem, ak.Array]]:
-        result: Optional[Union[PinItem, int]] = None
+    def input_data(self) -> list[Union[PinItem, float]]:
+        result: list[Union[PinItem, float]] = []
         if self._pin_item.has_edges():
-            pre_node: NodeItem = self._pin_item.edges[0].start_pin.parent_node
-            if len(pre_node.sub_scene.nodes) > 0:
-                result: PinItem = pre_node.linked_lowest_socket(self._pin_item.edges[0].start_pin.socket_widget).pin
-            else:
-                result: PinItem = self._pin_item.edges[0].start_pin
-
+            for edge in self._pin_item.edges:
+                pre_node: NodeItem = edge.start_pin.parent_node
+                if len(pre_node.sub_scene.nodes) > 0:
+                    result.append(pre_node.linked_lowest_socket(edge.start_pin.socket_widget).pin)
+                else:
+                    result.append(edge.start_pin)
         else:
             linked_highest: SocketWidget = self.parent_node.linked_highest_socket(self)
             if linked_highest != self:
-                result = linked_highest.input_data()
+                result.extend(linked_highest.input_data())
 
-        if result is None:
-            result: ak.Array = ak.Array([0.])
+        if len(result) == 0:
+            result.append(0.)
 
         return result
 

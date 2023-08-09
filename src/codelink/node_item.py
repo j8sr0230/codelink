@@ -412,14 +412,14 @@ class NodeItem(QtWidgets.QGraphicsItem):
     @staticmethod
     def eval_socket_1(*args) -> Union[PinItem, ak.Array]:
         if len(args) > 1:
-            return args[0] + args[1]
+            return ak.Array(args[0]) + ak.Array(args[1])
         else:
             return ak.Array([0])
 
     @staticmethod
     def eval_socket_2(*args) -> Union[PinItem, ak.Array]:
         if len(args) > 1:
-            return args[0] - args[1]
+            return ak.Array(args[0]) - ak.Array(args[1])
         else:
             return ak.Array([0])
 
