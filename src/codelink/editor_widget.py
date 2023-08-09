@@ -608,7 +608,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         if len(sub_nodes) > 0:
-            new_interface_nodes: set[NodeItem] = self.scene().new_grp_interfaces(sub_nodes)
+            new_interface_nodes: set[NodeItem] = self.scene().grp_interfaces(sub_nodes)
             is_valid: bool = not any([node.has_sub_scene() for node in new_interface_nodes])
 
             if is_valid:

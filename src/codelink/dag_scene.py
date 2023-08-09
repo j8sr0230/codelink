@@ -371,13 +371,26 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         return list(all_frames.difference(inside_frames))
 
-    def new_grp_interfaces(self, nodes: list[NodeItem]) -> set[NodeItem]:
+    def grp_interfaces(self, nodes: list[NodeItem]) -> set[NodeItem]:
         result: set[NodeItem] = set()
         for node in nodes:
-            if node.has_in_edges() and set(node.predecessors()).issubset(set(self._nodes).difference(set(nodes))):
-                result.add(node)
-            if node.has_out_edges() and set(node.successors()).issubset(set(self._nodes).difference(set(nodes))):
-                result.add(node)
+            if node.has_sub_scene():
+                if node.has_in_edges():
+                    pre_pres: list[list[NodeItem]] = [pre.predecessors() for pre in node.successors()]
+                    flat_pre_pres: list[NodeItem] = [node for sub_list in pre_pres for node in sub_list]
+                    if set(flat_pre_pres).issubset(set(self._nodes).difference(set(nodes))):
+                        result.add(node)
+
+                if node.has_out_edges():
+                    suc_succs: list[list[NodeItem]] = [suc.successors() for suc in node.predecessors()]
+                    flat_suc_succs: list[NodeItem] = [node for sub_list in suc_succs for node in sub_list]
+                    if set(flat_suc_succs).issubset(set(self._nodes).difference(set(nodes))):
+                        result.add(node)
+            else:
+                if node.has_in_edges() and set(node.predecessors()).issubset(set(self._nodes).difference(set(nodes))):
+                    result.add(node)
+                if node.has_out_edges() and set(node.successors()).issubset(set(self._nodes).difference(set(nodes))):
+                    result.add(node)
 
         return result
 
