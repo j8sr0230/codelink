@@ -2,6 +2,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Union, Optional, cast
 import importlib
 
+import awkward as ak
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
@@ -106,7 +108,7 @@ class ScalarMath(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_1(self, *args) -> Union[PinItem, int]:
+    def eval_socket_1(self, *args) -> Union[PinItem, ak.Array]:
         if self._option_box.currentText() == "Add" and len(args) == 2:
             return args[0] + args[1]
         elif self._option_box.currentText() == "Sub" and len(args) == 2:
@@ -118,11 +120,11 @@ class ScalarMath(NodeItem):
                 return args[0] / args[1]
             except ZeroDivisionError:
                 print("Division by zero")
-                return 0
+                return ak.Array([0])
         elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
             return args[0] ** 0.5
         else:
-            return 0
+            return ak.Array([0])
 
 # --------------- Serialization ---------------
 

@@ -3,6 +3,8 @@ from typing import Optional, Union, cast
 import sys
 import importlib
 
+import awkward as ak
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -408,18 +410,18 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def eval_socket_1(*args) -> Union[PinItem, int]:
+    def eval_socket_1(*args) -> Union[PinItem, ak.Array]:
         if len(args) > 1:
             return args[0] + args[1]
         else:
-            return 0
+            return ak.Array([0])
 
     @staticmethod
-    def eval_socket_2(*args) -> Union[PinItem, int]:
+    def eval_socket_2(*args) -> Union[PinItem, ak.Array]:
         if len(args) > 1:
             return args[0] - args[1]
         else:
-            return 0
+            return ak.Array([0])
 
     # --------------- Overwrites ---------------
 

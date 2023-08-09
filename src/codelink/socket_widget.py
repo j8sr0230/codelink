@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union
 
+import awkward as ak
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -96,7 +98,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     # --------------- Socket data ---------------
 
-    def input_data(self) -> Optional[Union[PinItem, int]]:
+    def input_data(self) -> Optional[Union[PinItem, ak.Array]]:
         result: Optional[Union[PinItem, int]] = None
         if self._pin_item.has_edges():
             pre_node: NodeItem = self._pin_item.edges[0].start_pin.parent_node
@@ -111,7 +113,7 @@ class SocketWidget(QtWidgets.QWidget):
                 result = linked_highest.input_data()
 
         if result is None:
-            result: float = 0
+            result: ak.Array = ak.Array([0.])
 
         return result
 

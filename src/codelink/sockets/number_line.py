@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union, cast
 
+import awkward as ak
+
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
@@ -46,7 +48,7 @@ class NumberLine(SocketWidget):
 
 	# --------------- Socket data ---------------
 
-	def input_data(self) -> Optional[Union[PinItem, int]]:
+	def input_data(self) -> Optional[Union[PinItem, ak.Array]]:
 		result: Optional[Union[PinItem, int]] = None
 		if self._pin_item.has_edges():
 			pre_node: NodeItem = self._pin_item.edges[0].start_pin.parent_node
@@ -62,9 +64,9 @@ class NumberLine(SocketWidget):
 
 		if result is None:
 			if self._input_widget.text() != "":
-				result: float = float(self._input_widget.text())
+				result: ak.Array = ak.Array([float(self._input_widget.text())])
 			else:
-				result: float = 0
+				result: ak.Array = ak.Array([0.])
 
 		return result
 
