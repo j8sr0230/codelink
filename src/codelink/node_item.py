@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional, Union, cast
+from typing import Optional, cast
 import sys
 import importlib
 
@@ -15,7 +15,6 @@ from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
 from socket_widget import SocketWidget
-from pin_item import PinItem
 from edge_item import EdgeItem
 
 

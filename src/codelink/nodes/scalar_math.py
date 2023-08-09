@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Union, Optional, cast
+from typing import Optional, cast
 import importlib
 
 import awkward as ak
@@ -11,9 +11,6 @@ from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
 from socket_widget import SocketWidget
-
-if TYPE_CHECKING:
-    from pin_item import PinItem
 
 
 class ScalarMath(NodeItem):
