@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class Shape(SocketWidget):
 	def __init__(
 			self, undo_stack: QtWidgets.QUndoStack, label: str = "Shape", is_input: bool = True,
-			data: Part.Shape = Part.Shape(), parent_node: Optional[NodeItem] = None,
+			data: str = str(Part.Shape()), parent_node: Optional[NodeItem] = None,
 			parent_widget: Optional[QtWidgets.QWidget] = None
 	) -> None:
 		super().__init__(undo_stack, label, is_input, data, parent_node, parent_widget)
