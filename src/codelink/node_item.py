@@ -51,8 +51,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene.parent_node = self
 
         self._socket_widgets: list[SocketWidget] = []
-        # Todo: Adjust length of self._evals list to number of sockets for group node, i.e self._evals * sockets
-        self._evals: list[object] = [self.eval_socket_1, self.eval_socket_2, self.eval_socket_1, self.eval_socket_1]
+        self._evals: list[object] = [self.eval_socket_1]
 
         self._mode: str = ""
         self._lm_pressed: bool = False
