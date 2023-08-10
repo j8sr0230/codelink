@@ -108,21 +108,26 @@ class ScalarMath(NodeItem):
     def eval_socket_1(self, *args) -> ak.Array:
         try:
             if self._option_box.currentText() == "Add" and len(args) == 2:
-                return ak.Array(args[0]) + ak.Array(args[1])
+                result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
             elif self._option_box.currentText() == "Sub" and len(args) == 2:
-                return ak.Array(args[0]) - ak.Array(args[1])
+                result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
             elif self._option_box.currentText() == "Mul" and len(args) == 2:
-                return ak.Array(args[0]) * ak.Array(args[1])
+                result: ak.Array = ak.Array(args[0]) * ak.Array(args[1])
             elif self._option_box.currentText() == "Div" and len(args) == 2:
                 try:
-                    return ak.Array(args[0]) / ak.Array(args[1])
+                    result: ak.Array = ak.Array(args[0]) / ak.Array(args[1])
                 except ZeroDivisionError:
                     print("Division by zero")
-                    return ak.Array([0])
+                    result: ak.Array = ak.Array([0])
             elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                return ak.Array(args[0]) ** 0.5
+                result: ak.Array = ak.Array(args[0]) ** 0.5
             else:
-                return ak.Array([0])
+                result: ak.Array = ak.Array([0])
+
+            if result.ndim > 1:
+                result: ak.Array = ak.flatten(result, axis=1)
+
+            return result
         except ValueError as e:
             print(e)
 
