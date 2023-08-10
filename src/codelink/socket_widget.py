@@ -150,6 +150,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._label_widget.setText(self._prop_model.properties["Name"])
         self.update_pin_position()
         self.update_stylesheets()
+        self.parent_node.update_details(self._parent_node.zoom_level)
 
     # --------------- Overwrites ---------------
 
