@@ -19,4 +19,4 @@ for (_, module_name, _) in iter_modules([package_dir]):
         if isclass(attribute) and issubclass(attribute, SocketWidget) and attribute is not SocketWidget:
             # Adds class to the global namespace
             globals()[attribute_name] = attribute
-            print("Registered sockets:", attribute)
+            # print("Registered sockets:", attribute)

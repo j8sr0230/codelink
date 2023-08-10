@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class SocketWidget(QtWidgets.QWidget):
     def __init__(self, undo_stack: QtWidgets.QUndoStack,
-                 label: str = "In", is_input: bool = True, data: float = 0.0, parent_node: Optional[NodeItem] = None,
+                 label: str = "In", is_input: bool = True, data: Any = 0.0, parent_node: Optional[NodeItem] = None,
                  parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 

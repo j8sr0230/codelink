@@ -40,7 +40,7 @@ class NumberLine(SocketWidget):
 		self.update_stylesheets()
 
 		# Listeners
-		cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
+		# cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 		cast(QtCore.SignalInstance, self._input_widget.editingFinished).connect(self.editing_finished)
 		# cast(QtCore.SignalInstance, self._input_widget.returnPressed).connect(self.return_pressed)
 
