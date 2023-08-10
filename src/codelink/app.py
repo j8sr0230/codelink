@@ -6,6 +6,7 @@ from app_style import MAIN_STYLE
 from editor_widget import EditorWidget
 from dag_scene import DAGScene
 from nodes.scalar_math import ScalarMath
+from nodes.broadcast_array import BroadCastArray
 
 
 def main() -> None:
@@ -28,6 +29,8 @@ def main() -> None:
         for j in range(2):
             node = ScalarMath((32000 + i * 200, 32000 + j * 200), undo_stack)
             editor_scene.add_node(node)
+
+    editor_scene.add_node(BroadCastArray((32400, 32000), undo_stack))
 
     editor_widget.fit_in_content()
 
