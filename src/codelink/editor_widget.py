@@ -675,6 +675,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
 
                 grp_node.evals = grp_node.evals * len(grp_node.output_socket_widgets)
+                grp_node.zoom_level = sub_nodes[0].zoom_level
 
                 grp_node.setPos(
                     selection_center_x - grp_node.boundingRect().width() / 2,
