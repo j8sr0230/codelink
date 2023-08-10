@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, Union, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -61,6 +61,9 @@ class SocketWidget(QtWidgets.QWidget):
         self._input_widget.hide()
 
         self.update_stylesheets()
+
+        # Listeners
+        cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
