@@ -35,7 +35,7 @@ class StructureArray(NodeItem):
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
             SocketWidget(undo_stack=self._undo_stack, label="A", is_input=True, parent_node=self),
-            SocketWidget(undo_stack=self._undo_stack, label="Res", is_input=False, parent_node=self)
+            SocketWidget(undo_stack=self._undo_stack, label="A'", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
