@@ -21,4 +21,4 @@ for (_, module_name, _) in iter_modules([package_dir]):
             # Adds class to the global namespace
             globals()[attribute_name] = attribute
             register_node(attribute.REG_NAME, attribute)
-            print("Registered nodes:", attribute)
+            # print("Registered nodes:", attribute)

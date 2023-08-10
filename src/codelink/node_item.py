@@ -546,7 +546,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
-        print("Node UUID:", self._uuid)
+        # print("Node UUID:", self._uuid)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)

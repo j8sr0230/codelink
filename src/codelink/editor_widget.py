@@ -342,7 +342,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             # Evaluates open dag ends
             for node in self.scene().ends():
                 dsk: dict = self.scene().to_dsk(node, {})
-                print(get(dsk, node.linked_lowest_socket(node.socket_widgets[-1]).pin))
+                for socket in node.output_socket_widgets:
+                    print(get(dsk, node.linked_lowest_socket(socket).pin))
 
                 # Pretty prints dask graph
                 string_dsk: dict = dict()
@@ -366,7 +367,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         string_dsk_key: str = string_dsk_key + str(random.randint(0, 1000))
                     string_dsk[string_dsk_key] = str(pretty_args)
 
-                print(json.dumps(string_dsk, indent=4))
+                # print(json.dumps(string_dsk, indent=4))
 
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)
