@@ -1,8 +1,9 @@
 from __future__ import annotations
 from typing import Optional
 
-import Part
 import awkward as ak
+import FreeCAD
+import Part
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -24,9 +25,9 @@ class Box(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            NumberLine(undo_stack=self._undo_stack, label="L", is_input=True, parent_node=self),
-            NumberLine(undo_stack=self._undo_stack, label="W", is_input=True, parent_node=self),
-            NumberLine(undo_stack=self._undo_stack, label="H", is_input=True, parent_node=self),
+            NumberLine(undo_stack=self._undo_stack, label="L", is_input=True, data=10., parent_node=self),
+            NumberLine(undo_stack=self._undo_stack, label="W", is_input=True, data=10., parent_node=self),
+            NumberLine(undo_stack=self._undo_stack, label="H", is_input=True, data=10., parent_node=self),
             Shape(undo_stack=self._undo_stack, label="Res", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
@@ -41,31 +42,14 @@ class Box(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_1(*args) -> ak.Array:
-        return [Part.makeBox(10, 10, 10)]
+    def eval_socket_1(self, *args) -> list[Part.Shape]:
+        print("args", args)
+        try:
+            result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
 
-    # def eval_socket_1(self, *args) -> ak.Array:
-    #     try:
-    #         if self._option_box.currentText() == "Add" and len(args) == 2:
-    #             result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
-    #         elif self._option_box.currentText() == "Sub" and len(args) == 2:
-    #             result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
-    #         elif self._option_box.currentText() == "Mul" and len(args) == 2:
-    #             result: ak.Array = ak.Array(args[0]) * ak.Array(args[1])
-    #         elif self._option_box.currentText() == "Div" and len(args) == 2:
-    #             try:
-    #                 result: ak.Array = ak.Array(args[0]) / ak.Array(args[1])
-    #             except ZeroDivisionError:
-    #                 print("Division by zero")
-    #                 result: ak.Array = ak.Array([0])
-    #         elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-    #             result: ak.Array = ak.Array(args[0]) ** 0.5
-    #         else:
-    #             result: ak.Array = ak.Array([0])
-    #
-    #         if result.ndim > 1:
-    #             result: ak.Array = ak.flatten(result, axis=1)
-    #
-    #         return result
-    #     except ValueError as e:
-    #         print(e)
+            if result.ndim > 1:
+                result: ak.Array = ak.flatten(result, axis=1)
+
+            return result.to_list()
+        except ValueError as e:
+            print(e)
