@@ -34,7 +34,7 @@ def main() -> None:
     editor_scene.add_node(BroadCastArray((32400, 32000), undo_stack))
     editor_scene.add_node(StructureArray((32400, 32200), undo_stack))
 
-    editor_widget.fit_in_content()
+    editor_widget.fit_content()
 
     sys.exit(app.exec_())
 

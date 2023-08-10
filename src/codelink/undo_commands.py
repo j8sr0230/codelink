@@ -347,13 +347,13 @@ class SwitchSceneDownCommand(QtWidgets.QUndoCommand):
 		for node in self._view.scene().nodes:
 			node.setEnabled(False)
 		self._view.setScene(self._scene)
-		self._view.fit_in_content()
+		self._view.fit_content()
 
 	def redo(self) -> None:
 		self._view.setScene(self._parent.sub_scene)
 		for node in self._view.scene().nodes:
 			node.setEnabled(True)
-		self._view.fit_in_content()
+		self._view.fit_content()
 
 
 class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
@@ -371,13 +371,13 @@ class SwitchSceneUpCommand(QtWidgets.QUndoCommand):
 		self._view.setScene(self._undo_scene)
 		for node in self._view.scene().nodes:
 			node.setEnabled(True)
-		self._view.fit_in_content()
+		self._view.fit_content()
 
 	def redo(self) -> None:
 		for node in self._view.scene().nodes:
 			node.setEnabled(False)
 		self._view.setScene(self._redo_scene)
-		self._view.fit_in_content()
+		self._view.fit_content()
 
 
 class PasteClipboardCommand(QtWidgets.QUndoCommand):

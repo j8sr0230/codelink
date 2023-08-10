@@ -178,8 +178,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if event.button() == QtCore.Qt.LeftButton:
             selected_item: Optional[Union[NodeItem, FrameItem]] = None
-            if (type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem or
-                    type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget):
+            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsTextItem:
                 selected_item: Optional[Union[NodeItem, FrameItem]] = self.itemAt(event.pos()).parentItem()
             elif isinstance(self.itemAt(event.pos()), NodeItem) or isinstance(self.itemAt(event.pos()), FrameItem):
                 selected_item: Optional[Union[NodeItem, FrameItem]] = self.itemAt(event.pos())
@@ -192,7 +191,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         width=self._prop_scroller.width(),
                         parent=self._prop_scroller
                     )
-                    cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.focus_prop_scroller)
+                    cast(QtCore.SignalInstance, prop_widget.focus_changed).connect(self.on_prop_scroller_focus_changed)
                     self._prop_scroller.setWidget(prop_widget)
                     self._prop_scroller.show()
 
@@ -488,12 +487,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Viewport, focus and zoom ---------------
 
-    def focus_prop_scroller(self, focus_target: QtWidgets.QTableView):
+    def on_prop_scroller_focus_changed(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
         y: int = focus_target.pos().y()
         self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
 
-    def fit_in_content(self) -> None:
+    def fit_content(self) -> None:
         top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())
         scene_bbox: QtCore.QRectF = self.scene().bounding_rect(self.scene().nodes)
         scene_center: QtCore.QPointF = QtCore.QPointF(scene_bbox.x() + scene_bbox.width() / 2,
@@ -508,7 +507,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def fit_min(self) -> None:
         self.zoom_min()
-        self.fit_in_content()
+        self.fit_content()
 
     def zoom_min(self):
         while self._zoom_level > self._zoom_level_range[0]:
@@ -541,7 +540,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 data_dict: dict = json.load(json_file)
                 self.scene().deserialize(data_dict)
 
-            self.fit_in_content()
+            self.fit_content()
 
     def save_as(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
@@ -727,9 +726,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
             self._undo_stack.push(SwitchSceneDownCommand(self, self.scene(), selected_nodes[0]))
-            self.fit_in_content()
+            self.fit_content()
 
     def close_sub_graph(self):
         if self.scene().parent_node:
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
-            self.fit_in_content()
+            self.fit_content()
