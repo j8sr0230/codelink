@@ -470,9 +470,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             )
 
             return QtCore.QPointF(x_snap, y_snap)
-
-        elif change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemVisibleChange:
-            self.update_details(self.scene().zoom_level)
         else:
             return super().itemChange(change, value)
 

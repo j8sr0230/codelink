@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class DAGScene(QtWidgets.QGraphicsScene):
+    node_added: QtCore.Signal = QtCore.Signal(NodeItem)
+
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
 
@@ -47,6 +49,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
         # Widget setup
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
         self.setSortCacheEnabled(False)
+
+        # Listeners
+        cast(QtCore.SignalInstance, self.node_added).connect(lambda node: node.update_details(self._zoom_level))
 
     @property
     def frames(self) -> list[FrameItem]:
@@ -81,14 +86,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._parent_node: Optional[NodeItem] = value
 
     @property
-    def zoom_level(self) -> int:
-        return self._zoom_level
-
-    @zoom_level.setter
-    def zoom_level(self, value: int) -> None:
-        self._zoom_level: int = value
-
-    @property
     def background_color(self) -> QtGui.QColor:
         return self._background_color
 
@@ -119,7 +116,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self._nodes.append(node)
         self.addItem(node)
-
+        cast(QtCore.SignalInstance, self.node_added).emit(node)
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
@@ -490,7 +487,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def update_details(self, zoom_level: int):
         self._zoom_level: int = zoom_level
         for node in self._nodes:
-            node.update_details(self.zoom_level)
+            node.update_details(self._zoom_level)
 
     # --------------- Serialization ---------------
 
