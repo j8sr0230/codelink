@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -10,7 +10,6 @@ from input_widgets import NumberInputWidget
 
 if TYPE_CHECKING:
 	from node_item import NodeItem
-	from pin_item import PinItem
 
 
 class NumberLine(SocketWidget):
@@ -46,8 +45,8 @@ class NumberLine(SocketWidget):
 
 	# --------------- Socket data ---------------
 
-	def input_data(self) -> list[Union[PinItem, float]]:
-		result: list[Union[PinItem, float]] = []
+	def input_data(self) -> list:
+		result: list = []
 		if self._pin_item.has_edges():
 			for edge in self._pin_item.edges:
 				pre_node: NodeItem = edge.start_pin.parent_node

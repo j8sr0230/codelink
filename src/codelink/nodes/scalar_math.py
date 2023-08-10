@@ -105,7 +105,7 @@ class ScalarMath(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_1(self, *args) -> list[float]:
+    def eval_socket_1(self, *args) -> list:
         try:
             if self._option_box.currentText() == "Add" and len(args) == 2:
                 result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])

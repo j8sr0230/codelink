@@ -1,12 +1,12 @@
 from __future__ import annotations
 from typing import Optional
 
-import awkward as ak
 import FreeCAD
 import Part
 
 import PySide2.QtWidgets as QtWidgets
 
+from utils import broadcast_data_tree, map_objects
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from number_line import NumberLine
@@ -42,14 +42,23 @@ class Box(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_1(self, *args) -> list[Part.Shape]:
-        print("args", args)
+    @staticmethod
+    def make_box(parameter_zip: tuple) -> Part.Shape:
+        width: float = parameter_zip[0]
+        length: float = parameter_zip[1]
+        height: float = parameter_zip[2]
+        return Part.makeBox(width, length, height)
+
+    def eval_socket_1(self, *args) -> list:
         try:
-            result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
+            # Collect input data
+            length: list[float] = args[0]
+            width: list[float] = args[1]
+            height: list[float] = args[2]
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=1)
-
-            return result.to_list()
+            #  Broadcast and calculate result
+            data_tree: list = list(broadcast_data_tree(length, width, height))
+            boxes: list = list(map_objects(data_tree, tuple, self.make_box))
+            return boxes
         except ValueError as e:
             print(e)

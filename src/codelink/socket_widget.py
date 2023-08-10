@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -99,8 +99,8 @@ class SocketWidget(QtWidgets.QWidget):
 
     # --------------- Socket data ---------------
 
-    def input_data(self) -> list[Union[PinItem, float]]:
-        result: list[Union[PinItem, float]] = []
+    def input_data(self) -> list:
+        result: list = []
         if self._pin_item.has_edges():
             for edge in self._pin_item.edges:
                 pre_node: NodeItem = edge.start_pin.parent_node

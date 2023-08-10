@@ -413,7 +413,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def eval_socket_1(*args) -> list[float]:
+    def eval_socket_1(*args) -> list:
         try:
             if len(args) > 1:
                 result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
@@ -428,7 +428,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             print(e)
 
     @staticmethod
-    def eval_socket_2(*args) -> list[float]:
+    def eval_socket_2(*args) -> list:
         try:
             if len(args) > 1:
                 result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
