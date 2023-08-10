@@ -144,6 +144,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
         self.addAction(self._past_action)
 
+        self._add_node_actions: list[QtWidgets.QAction] = []
+        for node_name, node_cls, in nodes_dict.items():
+            add_node_action: QtWidgets.QAction = QtWidgets.QAction(node_name, self)
+            add_node_action.setData(node_cls)
+            self._add_node_actions.append(add_node_action)
+        for action in self._add_node_actions:
+            action.triggered.connect(self.add_node_from_action)
+
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
         cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.context_menu)
@@ -417,15 +425,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         # Add menu
         math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
         math_nodes.setTitle("&Math")
-
-        for name, cls, in nodes_dict.items():
-            # Adds all nodes from nodes.nodes_dict
-            add_node_action: QtWidgets.QAction = QtWidgets.QAction(name, self)
-            add_node_action.setData(cls)
-            cast(QtCore.SignalInstance, add_node_action.triggered).connect(
-                lambda: self.add_node_from_cls(add_node_action.data())
-            )
-            math_nodes.addAction(add_node_action)
+        for action in self._add_node_actions:
+            math_nodes.addAction(action)
 
         # Rest of context menu
         context_menu.addMenu(math_nodes)
@@ -519,9 +520,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Action callbacks ---------------
 
-    def add_node_from_cls(self, cls: type):
+    def add_node_from_action(self):
+        node_cls: type = self.sender().data()
         new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
-        new_node: cls = cls((new_pos.x(), new_pos.y()), self._undo_stack)
+        new_node: node_cls = node_cls((new_pos.x(), new_pos.y()), self._undo_stack)
         self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
 
     def open(self):
