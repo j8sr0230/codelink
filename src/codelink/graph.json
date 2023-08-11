@@ -11,14 +11,19 @@
                 "Y": 32010,
                 "Width": 160
             },
-            "Option Idx": 2,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Properties": {
                         "Name": "A",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -30,7 +35,13 @@
                     "Properties": {
                         "Name": "B",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -42,7 +53,13 @@
                     "Properties": {
                         "Name": "Sum",
                         "Is Input": false,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -53,8 +70,7 @@
             "Subgraph": {
                 "Nodes": [],
                 "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
+                "Frames": []
             }
         },
         {
@@ -68,14 +84,19 @@
                 "Y": 31950,
                 "Width": 160
             },
-            "Option Idx": 1,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Properties": {
                         "Name": "X",
                         "Is Input": true,
-                        "Data": 1
+                        "Data": 1,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -87,7 +108,13 @@
                     "Properties": {
                         "Name": "Y",
                         "Is Input": true,
-                        "Data": 1
+                        "Data": 1,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -99,7 +126,13 @@
                     "Properties": {
                         "Name": "Z",
                         "Is Input": true,
-                        "Data": 1
+                        "Data": 1,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -111,7 +144,13 @@
                     "Properties": {
                         "Name": "Vec",
                         "Is Input": false,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -122,8 +161,7 @@
             "Subgraph": {
                 "Nodes": [],
                 "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
+                "Frames": []
             }
         },
         {
@@ -137,14 +175,19 @@
                 "Y": 32140,
                 "Width": 160
             },
-            "Option Idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Properties": {
                         "Name": "A",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -156,7 +199,13 @@
                     "Properties": {
                         "Name": "B",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -168,7 +217,13 @@
                     "Properties": {
                         "Name": "Res",
                         "Is Input": false,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -179,8 +234,7 @@
             "Subgraph": {
                 "Nodes": [],
                 "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
+                "Frames": []
             }
         },
         {
@@ -194,14 +248,19 @@
                 "Y": 32140,
                 "Width": 160
             },
-            "Option Idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Properties": {
                         "Name": "A",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -213,7 +272,13 @@
                     "Properties": {
                         "Name": "B",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -225,7 +290,13 @@
                     "Properties": {
                         "Name": "Res",
                         "Is Input": false,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "",
@@ -236,8 +307,7 @@
             "Subgraph": {
                 "Nodes": [],
                 "Edges": [],
-                "Frames": [],
-                "Pin Map": {}
+                "Frames": []
             }
         },
         {
@@ -251,14 +321,19 @@
                 "Y": 31930,
                 "Width": 160
             },
-            "Option Idx": 0,
             "Sockets": [
                 {
                     "Class": "SocketWidget",
                     "Properties": {
                         "Name": "A",
                         "Is Input": true,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "{dd34f1bd-16da-4f1a-8dca-ca1d9eca7590}",
@@ -270,7 +345,13 @@
                     "Properties": {
                         "Name": "Res",
                         "Is Input": false,
-                        "Data": 0
+                        "Data": 0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
                     },
                     "Link": [
                         "{1ed3a41a-45f5-4314-9591-76f836010af2}",
@@ -291,14 +372,19 @@
                             "Y": 31800,
                             "Width": 80
                         },
-                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
                                 "Properties": {
                                     "Name": "A",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -310,7 +396,13 @@
                                 "Properties": {
                                     "Name": "B",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -322,7 +414,13 @@
                                 "Properties": {
                                     "Name": "Res",
                                     "Is Input": false,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
@@ -333,8 +431,7 @@
                         "Subgraph": {
                             "Nodes": [],
                             "Edges": [],
-                            "Frames": [],
-                            "Pin Map": {}
+                            "Frames": []
                         }
                     },
                     {
@@ -348,14 +445,19 @@
                             "Y": 31700,
                             "Width": 160
                         },
-                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
                                 "Properties": {
                                     "Name": "A",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -367,7 +469,13 @@
                                 "Properties": {
                                     "Name": "B",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -379,7 +487,13 @@
                                 "Properties": {
                                     "Name": "Res",
                                     "Is Input": false,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -390,8 +504,7 @@
                         "Subgraph": {
                             "Nodes": [],
                             "Edges": [],
-                            "Frames": [],
-                            "Pin Map": {}
+                            "Frames": []
                         }
                     },
                     {
@@ -405,14 +518,19 @@
                             "Y": 31810,
                             "Width": 80
                         },
-                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
                                 "Properties": {
                                     "Name": "A",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "{5c68c474-2ab6-4fcd-a361-68905ec19d87}",
@@ -424,7 +542,13 @@
                                 "Properties": {
                                     "Name": "B",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -436,7 +560,13 @@
                                 "Properties": {
                                     "Name": "Res",
                                     "Is Input": false,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "",
@@ -447,8 +577,7 @@
                         "Subgraph": {
                             "Nodes": [],
                             "Edges": [],
-                            "Frames": [],
-                            "Pin Map": {}
+                            "Frames": []
                         }
                     },
                     {
@@ -462,14 +591,19 @@
                             "Y": 31890,
                             "Width": 160
                         },
-                        "Option Idx": 0,
                         "Sockets": [
                             {
                                 "Class": "SocketWidget",
                                 "Properties": {
                                     "Name": "A",
                                     "Is Input": true,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "{0c3b1c13-ad86-4590-85c1-ffd7c7ba3a1a}",
@@ -481,7 +615,13 @@
                                 "Properties": {
                                     "Name": "Res",
                                     "Is Input": false,
-                                    "Data": 0
+                                    "Data": 0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
                                 },
                                 "Link": [
                                     "{3aae2237-e145-43d3-90b1-04f2031cf3f7}",
@@ -502,14 +642,19 @@
                                         "Y": 31950,
                                         "Width": 160
                                     },
-                                    "Option Idx": 0,
                                     "Sockets": [
                                         {
                                             "Class": "SocketWidget",
                                             "Properties": {
                                                 "Name": "A",
                                                 "Is Input": true,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "",
@@ -521,7 +666,13 @@
                                             "Properties": {
                                                 "Name": "B",
                                                 "Is Input": true,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "",
@@ -533,7 +684,13 @@
                                             "Properties": {
                                                 "Name": "Res",
                                                 "Is Input": false,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
@@ -544,8 +701,7 @@
                                     "Subgraph": {
                                         "Nodes": [],
                                         "Edges": [],
-                                        "Frames": [],
-                                        "Pin Map": {}
+                                        "Frames": []
                                     }
                                 },
                                 {
@@ -559,14 +715,19 @@
                                         "Y": 31940,
                                         "Width": 160
                                     },
-                                    "Option Idx": 0,
                                     "Sockets": [
                                         {
                                             "Class": "SocketWidget",
                                             "Properties": {
                                                 "Name": "A",
                                                 "Is Input": true,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}",
@@ -578,7 +739,13 @@
                                             "Properties": {
                                                 "Name": "B",
                                                 "Is Input": true,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "",
@@ -590,7 +757,13 @@
                                             "Properties": {
                                                 "Name": "Res",
                                                 "Is Input": false,
-                                                "Data": 0
+                                                "Data": 0,
+                                                "Flatten": false,
+                                                "Simplify": false,
+                                                "Graft": false,
+                                                "Graft Topo": false,
+                                                "Unwrap": false,
+                                                "Wrap": false
                                             },
                                             "Link": [
                                                 "",
@@ -601,8 +774,7 @@
                                     "Subgraph": {
                                         "Nodes": [],
                                         "Edges": [],
-                                        "Frames": [],
-                                        "Pin Map": {}
+                                        "Frames": []
                                     }
                                 }
                             ],
@@ -615,8 +787,7 @@
                                     "End Socket Idx": 0
                                 }
                             ],
-                            "Frames": [],
-                            "Pin Map": {}
+                            "Frames": []
                         }
                     }
                 ],
@@ -669,8 +840,7 @@
                             "{ed80a4b9-ef8e-4202-a7a6-213697b354cb}"
                         ]
                     }
-                ],
-                "Pin Map": {}
+                ]
             }
         }
     ],
