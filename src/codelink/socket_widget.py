@@ -187,10 +187,19 @@ class SocketWidget(QtWidgets.QWidget):
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self._label_widget.setStyleSheet("background-color: transparent")
 
+    def update_socket_actions(self) -> None:
+        self._flatten_action.setChecked(bool(self._prop_model.properties["Flatten"]))
+        self._simplify_action.setChecked(bool(self._prop_model.properties["Simplify"]))
+        self._graft_action.setChecked(bool(self._prop_model.properties["Graft"]))
+        self._graft_topo_action.setChecked(bool(self._prop_model.properties["Graft Topo"]))
+        self._unwrap_action.setChecked(bool(self._prop_model.properties["Unwrap"]))
+        self._wrap_action.setChecked(bool(self._prop_model.properties["Wrap"]))
+
     def update_all(self):
         self._label_widget.setText(self._prop_model.properties["Name"])
         self.update_pin_position()
         self.update_stylesheets()
+        self.update_socket_actions()
         self.parent_node.update_details(self._parent_node.zoom_level)
 
     # --------------- Overwrites ---------------
