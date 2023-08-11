@@ -136,6 +136,13 @@ class SocketWidget(QtWidgets.QWidget):
 
     # --------------- Socket data ---------------
 
+    def socket_actions(self) -> list[QtWidgets.QAction]:
+        return [self._flatten_action, self._simplify_action, self._graft_action, self._graft_topo_action,
+                self._unwrap_action,  self._wrap_action]
+
+    def socket_options_state(self) -> list[bool]:
+        return [action.isChecked() for action in self.socket_actions()]
+
     def input_data(self) -> list:
         result: list = []
         if self._pin_item.has_edges():
@@ -154,10 +161,6 @@ class SocketWidget(QtWidgets.QWidget):
             result.append(0.)
 
         return result
-
-    def socket_actions(self) -> list[QtWidgets.QAction]:
-        return [self._flatten_action, self._simplify_action, self._graft_action, self._graft_topo_action,
-                self._unwrap_action,  self._wrap_action]
 
     # --------------- Callbacks ---------------
 
