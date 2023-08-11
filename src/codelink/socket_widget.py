@@ -72,32 +72,32 @@ class SocketWidget(QtWidgets.QWidget):
         self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
         self._flatten_action.setCheckable(True)
         self._flatten_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(self.on_socket_action)
 
         self._simplify_action: QtWidgets.QAction = QtWidgets.QAction("Simplify", self)
         self._simplify_action.setCheckable(True)
         self._simplify_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(self.on_socket_action)
 
         self._graft_action: QtWidgets.QAction = QtWidgets.QAction("Graft", self)
         self._graft_action.setCheckable(True)
         self._graft_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._graft_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._graft_action.triggered).connect(self.on_socket_action)
 
         self._graft_topo_action: QtWidgets.QAction = QtWidgets.QAction("Graft Topo", self)
         self._graft_topo_action.setCheckable(True)
         self._graft_topo_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(self.on_socket_action)
 
         self._unwrap_action: QtWidgets.QAction = QtWidgets.QAction("Unwrap", self)
         self._unwrap_action.setCheckable(True)
         self._unwrap_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._unwrap_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._unwrap_action.triggered).connect(self.on_socket_action)
 
         self._wrap_action: QtWidgets.QAction = QtWidgets.QAction("Wrap", self)
         self._wrap_action.setCheckable(True)
         self._wrap_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._wrap_action.triggered).connect(print)
+        cast(QtCore.SignalInstance, self._wrap_action.triggered).connect(self.on_socket_action)
 
         # Listeners
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
@@ -156,10 +156,17 @@ class SocketWidget(QtWidgets.QWidget):
         return result
 
     def socket_actions(self) -> list[QtWidgets.QAction]:
-        return [self._flatten_action, self._graft_action, self._graft_topo_action, self._unwrap_action,
-                self._wrap_action]
+        return [self._flatten_action, self._simplify_action, self._graft_action, self._graft_topo_action,
+                self._unwrap_action,  self._wrap_action]
 
     # --------------- Callbacks ---------------
+
+    def on_socket_action(self) -> None:
+        sender: QtWidgets.QAction = self.sender()
+        row: int = list(self._prop_model.properties.keys()).index(sender.text())
+        self._prop_model.setData(
+            self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
+        )
 
     def update_pin_position(self) -> None:
         if not self._parent_node.is_collapsed:
