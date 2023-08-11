@@ -151,6 +151,36 @@ class EditorWidget(QtWidgets.QGraphicsView):
         for action in self._add_node_actions:
             action.triggered.connect(self.add_node_from_action)
 
+        self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
+        self._flatten_action.setCheckable(True)
+        self._flatten_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(print)
+
+        self._simplify_action: QtWidgets.QAction = QtWidgets.QAction("Simplify", self)
+        self._simplify_action.setCheckable(True)
+        self._simplify_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(print)
+
+        self._graft_action: QtWidgets.QAction = QtWidgets.QAction("Graft", self)
+        self._graft_action.setCheckable(True)
+        self._graft_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._graft_action.triggered).connect(print)
+
+        self._graft_topo_action: QtWidgets.QAction = QtWidgets.QAction("Graft Topology", self)
+        self._graft_topo_action.setCheckable(True)
+        self._graft_topo_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(print)
+
+        self._unwrap_action: QtWidgets.QAction = QtWidgets.QAction("Unwrap", self)
+        self._unwrap_action.setCheckable(True)
+        self._unwrap_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._unwrap_action.triggered).connect(print)
+
+        self._wrap_action: QtWidgets.QAction = QtWidgets.QAction("Wrap", self)
+        self._wrap_action.setCheckable(True)
+        self._wrap_action.setChecked(False)
+        cast(QtCore.SignalInstance, self._wrap_action.triggered).connect(print)
+
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
         cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.context_menu)
@@ -419,70 +449,82 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Menus ---------------
     def context_menu(self, position: QtCore.QPoint):
-        context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+        if type(self.itemAt(position)) == PinItem:
+            socket_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-        # Add menu
-        math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-        math_nodes.setTitle("&Math")
-        for action in self._add_node_actions:
-            math_nodes.addAction(action)
+            socket_menu.addAction(self._flatten_action)
+            socket_menu.addAction(self._simplify_action)
+            socket_menu.addAction(self._graft_action)
+            socket_menu.addAction(self._graft_topo_action)
+            socket_menu.addAction(self._unwrap_action)
+            socket_menu.addAction(self._wrap_action)
 
-        # Rest of context menu
-        context_menu.addMenu(math_nodes)
-        context_menu.addSeparator()
-
-        context_menu.addAction(self._open_action)
-        context_menu.addAction(self._save_action)
-        context_menu.addSeparator()
-
-        context_menu.addAction(self._undo_action)
-        context_menu.addAction(self._redo_action)
-        context_menu.addAction(self._fit_action)
-
-        selected_items: list[Any] = self.scene().selectedItems()
-        nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
-        frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
-
-        if nodes_selected or frames_selected:
-            self._delete_action.setEnabled(True)
+            socket_menu.exec_(self.mapToGlobal(position))
         else:
-            self._delete_action.setEnabled(False)
-        context_menu.addAction(self._delete_action)
+            context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-        context_menu.addSeparator()
+            # Add menu
+            math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+            math_nodes.setTitle("&Math")
+            for action in self._add_node_actions:
+                math_nodes.addAction(action)
 
-        if nodes_selected:
+            # Rest of context menu
+            context_menu.addMenu(math_nodes)
+            context_menu.addSeparator()
+
+            context_menu.addAction(self._open_action)
+            context_menu.addAction(self._save_action)
+            context_menu.addSeparator()
+
+            context_menu.addAction(self._undo_action)
+            context_menu.addAction(self._redo_action)
+            context_menu.addAction(self._fit_action)
+
+            selected_items: list[Any] = self.scene().selectedItems()
+            nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
+            frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
+
+            if nodes_selected or frames_selected:
+                self._delete_action.setEnabled(True)
+            else:
+                self._delete_action.setEnabled(False)
+            context_menu.addAction(self._delete_action)
+
+            context_menu.addSeparator()
+
+            if nodes_selected:
+                self._add_frame_action.setEnabled(True)
+                self._add_grp_node_action.setEnabled(True)
+            else:
+                self._add_frame_action.setEnabled(False)
+                self._add_grp_node_action.setEnabled(False)
+            context_menu.addAction(self._add_frame_action)
+            context_menu.addAction(self._add_grp_node_action)
+
+            if nodes_selected and self.scene().selected_nodes()[0].has_sub_scene():
+                self._open_sub_action.setEnabled(True)
+                self._resolve_grp_node_action.setEnabled(True)
+            else:
+                self._open_sub_action.setEnabled(False)
+                self._resolve_grp_node_action.setEnabled(False)
+            context_menu.addAction(self._resolve_grp_node_action)
+            context_menu.addAction(self._open_sub_action)
+
+            if self.scene().parent_node is not None:
+                self._close_sub_action.setEnabled(True)
+            else:
+                self._close_sub_action.setEnabled(False)
+            context_menu.addAction(self._close_sub_action)
+
+            context_menu.exec_(self.mapToGlobal(position))
+
+            self._delete_action.setEnabled(True)
             self._add_frame_action.setEnabled(True)
             self._add_grp_node_action.setEnabled(True)
-        else:
-            self._add_frame_action.setEnabled(False)
-            self._add_grp_node_action.setEnabled(False)
-        context_menu.addAction(self._add_frame_action)
-        context_menu.addAction(self._add_grp_node_action)
-
-        if nodes_selected and self.scene().selected_nodes()[0].has_sub_scene():
-            self._open_sub_action.setEnabled(True)
             self._resolve_grp_node_action.setEnabled(True)
-        else:
-            self._open_sub_action.setEnabled(False)
-            self._resolve_grp_node_action.setEnabled(False)
-        context_menu.addAction(self._resolve_grp_node_action)
-        context_menu.addAction(self._open_sub_action)
-
-        if self.scene().parent_node is not None:
+            self._open_sub_action.setEnabled(True)
             self._close_sub_action.setEnabled(True)
-        else:
-            self._close_sub_action.setEnabled(False)
-        context_menu.addAction(self._close_sub_action)
-
-        context_menu.exec_(self.mapToGlobal(position))
-
-        self._delete_action.setEnabled(True)
-        self._add_frame_action.setEnabled(True)
-        self._add_grp_node_action.setEnabled(True)
-        self._resolve_grp_node_action.setEnabled(True)
-        self._open_sub_action.setEnabled(True)
-        self._close_sub_action.setEnabled(True)
 
     # --------------- Viewport, focus and zoom ---------------
 
