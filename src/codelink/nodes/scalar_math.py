@@ -2,10 +2,11 @@ from __future__ import annotations
 from typing import Optional, cast
 import importlib
 
+import awkward as ak
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import broadcast_data_tree, map_objects, unwrap
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
@@ -104,90 +105,29 @@ class ScalarMath(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def add(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a + b
-
-    @staticmethod
-    def sub(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a - b
-
-    @staticmethod
-    def mul(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a * b
-
-    @staticmethod
-    def div(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a / b
-
-    @staticmethod
-    def sqrt(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        return a ** 0.5
-
     def eval_socket_1(self, *args) -> list:
         try:
             if self._option_box.currentText() == "Add" and len(args) == 2:
-                # Collect input data
-                a: list[float] = args[0]
-                b: list[float] = args[1]
-
-                #  Broadcast and calculate result
-                data_tree: list = list(broadcast_data_tree(a, b))
-                result: list = list(map_objects(data_tree, tuple, self.add))
-
+                result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
             elif self._option_box.currentText() == "Sub" and len(args) == 2:
-                # Collect input data
-                a: list[float] = args[0]
-                b: list[float] = args[1]
-
-                #  Broadcast and calculate result
-                data_tree: list = list(broadcast_data_tree(a, b))
-                result: list = list(map_objects(data_tree, tuple, self.sub))
-
+                result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
             elif self._option_box.currentText() == "Mul" and len(args) == 2:
-                # Collect input data
-                a: list[float] = args[0]
-                b: list[float] = args[1]
-
-                #  Broadcast and calculate result
-                data_tree: list = list(broadcast_data_tree(a, b))
-                result: list = list(map_objects(data_tree, tuple, self.mul))
-
+                result: ak.Array = ak.Array(args[0]) * ak.Array(args[1])
             elif self._option_box.currentText() == "Div" and len(args) == 2:
                 try:
-                    # Collect input data
-                    a: list[float] = args[0]
-                    b: list[float] = args[1]
-
-                    #  Broadcast and calculate result
-                    data_tree: list = list(broadcast_data_tree(a, b))
-                    result: list = list(map_objects(data_tree, tuple, self.div))
+                    result: ak.Array = ak.Array(args[0]) / ak.Array(args[1])
                 except ZeroDivisionError:
                     print("Division by zero")
-                    result: list = [0]
+                    result: ak.Array = ak.Array([0])
             elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                # Collect input data
-                a: list[float] = args[0]
-
-                #  Broadcast and calculate result
-                data_tree: list = list(broadcast_data_tree(a))
-                result: list = list(map_objects(data_tree, tuple, self.sqrt))
+                result: ak.Array = ak.Array(args[0]) ** 0.5
             else:
-                result: list = [0]
+                result: ak.Array = ak.Array([0])
 
-            if type(result) == list and len(result) > 0 and type(result[0]) == list:
-                result: list = list(unwrap(result))
+            if result.ndim > 1:
+                result: ak.Array = ak.flatten(result, axis=0)
 
-            return result
+            return result.to_list()
         except ValueError as e:
             print(e)
 
