@@ -151,36 +151,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         for action in self._add_node_actions:
             action.triggered.connect(self.add_node_from_action)
 
-        self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
-        self._flatten_action.setCheckable(True)
-        self._flatten_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(print)
-
-        self._simplify_action: QtWidgets.QAction = QtWidgets.QAction("Simplify", self)
-        self._simplify_action.setCheckable(True)
-        self._simplify_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(print)
-
-        self._graft_action: QtWidgets.QAction = QtWidgets.QAction("Graft", self)
-        self._graft_action.setCheckable(True)
-        self._graft_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._graft_action.triggered).connect(print)
-
-        self._graft_topo_action: QtWidgets.QAction = QtWidgets.QAction("Graft Topology", self)
-        self._graft_topo_action.setCheckable(True)
-        self._graft_topo_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(print)
-
-        self._unwrap_action: QtWidgets.QAction = QtWidgets.QAction("Unwrap", self)
-        self._unwrap_action.setCheckable(True)
-        self._unwrap_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._unwrap_action.triggered).connect(print)
-
-        self._wrap_action: QtWidgets.QAction = QtWidgets.QAction("Wrap", self)
-        self._wrap_action.setCheckable(True)
-        self._wrap_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._wrap_action.triggered).connect(print)
-
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
         cast(QtCore.SignalInstance, self.customContextMenuRequested).connect(self.context_menu)
@@ -450,16 +420,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
     # --------------- Menus ---------------
     def context_menu(self, position: QtCore.QPoint):
         if type(self.itemAt(position)) == PinItem:
+            # Socket menu
+            pin: PinItem = self.itemAt(position)
+            socket_actions: list[QtWidgets.QAction] = pin.socket_widget.socket_actions()
             socket_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
-
-            socket_menu.addAction(self._flatten_action)
-            socket_menu.addAction(self._simplify_action)
-            socket_menu.addAction(self._graft_action)
-            socket_menu.addAction(self._graft_topo_action)
-            socket_menu.addAction(self._unwrap_action)
-            socket_menu.addAction(self._wrap_action)
-
+            socket_menu.addActions(socket_actions)
             socket_menu.exec_(self.mapToGlobal(position))
+
         else:
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 

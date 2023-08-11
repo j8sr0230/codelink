@@ -701,6 +701,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 data=socket_widget_dict["Properties"]["Data"],
                 parent_node=self
             )
+            new_socket_widget.prop_model.properties["Flatten"] = socket_widget_dict["Properties"]["Flatten"]
+            new_socket_widget.prop_model.properties["Simplify"] = socket_widget_dict["Properties"]["Simplify"]
+            new_socket_widget.prop_model.properties["Graft"] = socket_widget_dict["Properties"]["Graft"]
+            new_socket_widget.prop_model.properties["Graft Topo"] = socket_widget_dict["Properties"]["Graft Topo"]
+            new_socket_widget.prop_model.properties["Unwrap"] = socket_widget_dict["Properties"]["Unwrap"]
+            new_socket_widget.prop_model.properties["Wrap"] = socket_widget_dict["Properties"]["Wrap"]
             new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
