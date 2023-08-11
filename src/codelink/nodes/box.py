@@ -6,7 +6,7 @@ import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import broadcast_data_tree, map_objects
+from utils import broadcast_data_tree, map_objects, unwrap
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from number_line import NumberLine
@@ -52,13 +52,17 @@ class Box(NodeItem):
     def eval_socket_1(self, *args) -> list:
         try:
             # Collect input data
-            length: list[float] = args[0]
-            width: list[float] = args[1]
-            height: list[float] = args[2]
+            length: list = args[0]
+            width: list = args[1]
+            height: list = args[2]
 
             #  Broadcast and calculate result
             data_tree: list = list(broadcast_data_tree(length, width, height))
-            boxes: list = list(map_objects(data_tree, tuple, self.make_box))
-            return boxes
+            result: list = list(map_objects(data_tree, tuple, self.make_box))
+
+            if type(result) == list and len(result) > 0 and type(result[0]) == list:
+                result: list = list(unwrap(result))
+
+            return result
         except ValueError as e:
             print(e)

@@ -3,14 +3,12 @@ from typing import Optional, cast
 import sys
 import importlib
 
-import awkward as ak
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
-from utils import crop_text
+from utils import crop_text, broadcast_data_tree, map_objects, unwrap
 from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
@@ -413,32 +411,54 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def eval_socket_1(*args) -> list:
+    def add(parameter_zip: tuple) -> float:
+        a: float = parameter_zip[0]
+        b: float = parameter_zip[1]
+        return a + b
+
+    @staticmethod
+    def sub(parameter_zip: tuple) -> float:
+        a: float = parameter_zip[0]
+        b: float = parameter_zip[1]
+        return a - b
+
+    def eval_socket_1(self, *args) -> list:
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
+                # Collect input data
+                a: list[float] = args[0]
+                b: list[float] = args[1]
+
+                #  Broadcast and calculate result
+                data_tree: list = list(broadcast_data_tree(a, b))
+                result: list = list(map_objects(data_tree, tuple, self.add))
             else:
-                result: ak.Array = ak.Array([0])
+                result: list = [0]
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=1)
+            if type(result) == list and len(result) > 0 and type(result[0]) == list:
+                result: list = list(unwrap(result))
 
-            return result.to_list()
+            return result
         except ValueError as e:
             print(e)
 
-    @staticmethod
-    def eval_socket_2(*args) -> list:
+    def eval_socket_2(self, *args) -> list:
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
+                # Collect input data
+                a: list[float] = args[0]
+                b: list[float] = args[1]
+
+                #  Broadcast and calculate result
+                data_tree: list = list(broadcast_data_tree(a, b))
+                result: list = list(map_objects(data_tree, tuple, self.add))
             else:
-                result: ak.Array = ak.Array([0])
+                result: list = [0]
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=1)
+            if type(result) == list and len(result) > 0 and type(result[0]) == list:
+                result: list = list(unwrap(result))
 
-            return result.to_list()
+            return result
         except ValueError as e:
             print(e)
 
