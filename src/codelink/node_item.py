@@ -10,7 +10,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
-from utils import crop_text
+from utils import crop_text, simplify
 from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
@@ -416,14 +416,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def eval_socket_1(*args) -> list:
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
+                result: ak.Array = ak.Array(simplify(args[0])) + ak.Array(simplify(args[1]))
             else:
                 result: ak.Array = ak.Array([0])
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=0)
-
-            return result.to_list()
+            return list(simplify(result.to_list()))
         except ValueError as e:
             print(e)
 
@@ -431,14 +428,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def eval_socket_2(*args) -> list:
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
+                result: ak.Array = ak.Array(simplify(args[0])) - ak.Array(simplify(args[1]))
             else:
                 result: ak.Array = ak.Array([0])
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=0)
-
-            return result.to_list()
+            return list(simplify(result.to_list()))
         except ValueError as e:
             print(e)
 

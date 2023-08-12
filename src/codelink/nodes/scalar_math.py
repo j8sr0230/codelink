@@ -7,6 +7,7 @@ import awkward as ak
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplify
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
@@ -108,26 +109,23 @@ class ScalarMath(NodeItem):
     def eval_socket_1(self, *args) -> list:
         try:
             if self._option_box.currentText() == "Add" and len(args) == 2:
-                result: ak.Array = ak.Array(args[0]) + ak.Array(args[1])
+                result: ak.Array = ak.Array(simplify(args[0])) + ak.Array(simplify(args[1]))
             elif self._option_box.currentText() == "Sub" and len(args) == 2:
-                result: ak.Array = ak.Array(args[0]) - ak.Array(args[1])
+                result: ak.Array = ak.Array(simplify(args[0])) - ak.Array(simplify(args[1]))
             elif self._option_box.currentText() == "Mul" and len(args) == 2:
-                result: ak.Array = ak.Array(args[0]) * ak.Array(args[1])
+                result: ak.Array = ak.Array(simplify(args[0])) * ak.Array(simplify(args[1]))
             elif self._option_box.currentText() == "Div" and len(args) == 2:
                 try:
-                    result: ak.Array = ak.Array(args[0]) / ak.Array(args[1])
+                    result: ak.Array = ak.Array(simplify(args[0])) / ak.Array(simplify(args[1]))
                 except ZeroDivisionError:
                     print("Division by zero")
                     result: ak.Array = ak.Array([0])
             elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                result: ak.Array = ak.Array(args[0]) ** 0.5
+                result: ak.Array = ak.Array(simplify(args[0])) ** 0.5
             else:
                 result: ak.Array = ak.Array([0])
 
-            if result.ndim > 1:
-                result: ak.Array = ak.flatten(result, axis=0)
-
-            return result.to_list()
+            return list(simplify(result.to_list()))
         except ValueError as e:
             print(e)
 
