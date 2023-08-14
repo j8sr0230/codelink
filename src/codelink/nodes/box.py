@@ -39,7 +39,7 @@ class Box(NodeItem):
         self.update_all()
 
         # Socket-wise node methods
-        self._evals: list[object] = [self.eval_socket_1]
+        self._evals: list[object] = [self.eval_socket_0]
 
     # --------------- Node eval methods ---------------
 
@@ -52,20 +52,26 @@ class Box(NodeItem):
 
     def eval_socket_0(self, *args) -> list:
         try:
-            # Collect input data
+            # Collect and pre-process input data
             length: list = resolve_inner_level(args[0]) if type(resolve_inner_level(args[0])) == list else args[0]
             length: list = self.input_socket_widgets[0].perform_socket_operation(length)
 
             width: list = resolve_inner_level(args[1]) if type(resolve_inner_level(args[1])) == list else args[1]
-            width: list = self.input_socket_widgets[0].perform_socket_operation(width)
+            width: list = self.input_socket_widgets[1].perform_socket_operation(width)
 
             height: list = resolve_inner_level(args[2]) if type(resolve_inner_level(args[2])) == list else args[2]
-            height: list = self.input_socket_widgets[0].perform_socket_operation(height)
+            height: list = self.input_socket_widgets[2].perform_socket_operation(height)
 
             #  Broadcast and calculate result
-            data_tree: list = list(broadcast_data_tree(length, width, height))
-            result: list = add_inner_level(list(map_objects(data_tree, tuple, self.make_box)))
+            try:
+                data_tree: list = list(broadcast_data_tree(length, width, height))
+                result: list = list(map_objects(data_tree, tuple, self.make_box))
+            except TypeError as e:
+                result: list = [Part.Shape()]
+                print(e)
 
+            # Post-process output data
+            result: list = add_inner_level(result) if len(result) == 1 and type(result) != list else result
             out_socket_index: int = int(inspect.stack()[0][3][-1])
             result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
 
