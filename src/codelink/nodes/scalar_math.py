@@ -7,6 +7,7 @@ import awkward as ak
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import unwrap, simplify
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
@@ -110,9 +111,8 @@ class ScalarMath(NodeItem):
 
         try:
             if len(args) == 2:
-                a = args[0]
-                b = args[1]
-                print("a", a, "b", b)
+                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
 
                 if self._option_box.currentText() == "Add":
                     result: ak.Array = ak.Array(a) + ak.Array(b)
@@ -128,11 +128,15 @@ class ScalarMath(NodeItem):
                         result: ak.Array = ak.Array([0])
 
             elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                result: ak.Array = ak.Array(args[0]) ** 0.5
+                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                result: ak.Array = ak.Array(a) ** 0.5
 
-            return result.to_list()
+            result = result.to_list()
+
         except ValueError as e:
             print(e)
+
+        return result
 
 # --------------- Serialization ---------------
 

@@ -2,9 +2,9 @@ import awkward as ak
 
 from utils import simplify
 
-a: ak.Array = ak.Array(simplify([[[[50.0]]], [[50.0]], [50.0]]))
-b: ak.Array = ak.Array(simplify([0]))
-c: ak.Array = ak.Array(simplify([0]))
+a: ak.Array = ak.Array([[[10], [20]], [30], [40]])
+b: ak.Array = ak.Array([0])
+c: ak.Array = ak.Array([0])
 
 print("a", a.to_list())
 print("b", b.to_list())
