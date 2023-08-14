@@ -10,7 +10,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
-from utils import crop_text, simplify
+from utils import crop_text, unwrap
 from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
@@ -414,27 +414,39 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     @staticmethod
     def eval_socket_1(*args) -> list:
+        result: list = [0]
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(simplify(args[0])) + ak.Array(simplify(args[1]))
+                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+
+                result: ak.Array = ak.Array(a) + ak.Array(b)
             else:
                 result: ak.Array = ak.Array([0])
 
-            return list(simplify(result.to_list()))
+            result = result.to_list()
         except ValueError as e:
             print(e)
+
+        return result
 
     @staticmethod
     def eval_socket_2(*args) -> list:
+        result: list = [0]
         try:
             if len(args) > 1:
-                result: ak.Array = ak.Array(simplify(args[0])) - ak.Array(simplify(args[1]))
+                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+
+                result: ak.Array = ak.Array(a) - ak.Array(b)
             else:
                 result: ak.Array = ak.Array([0])
 
-            return list(simplify(result.to_list()))
+            result = result.to_list()
         except ValueError as e:
             print(e)
+
+        return result
 
     # --------------- Overwrites ---------------
 

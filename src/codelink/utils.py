@@ -22,6 +22,20 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
     return cropped_text
 
 
+def add_inner_level(nested_list: list) -> list:
+    if type(nested_list) != list:
+        return [nested_list]
+    else:
+        return [add_inner_level(sub_list) for sub_list in nested_list]
+
+
+def resolve_inner_level(nested_list: list) -> list:
+    if len(nested_list) == 1:
+        return nested_list[0]
+    else:
+        return [resolve_inner_level(sub_list) for sub_list in nested_list]
+
+
 def flatten(nested_list: Iterable) -> Iterable:
     """Flattens an arbitrary nested iterable.
 

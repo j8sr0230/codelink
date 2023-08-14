@@ -7,7 +7,7 @@ import awkward as ak
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import unwrap, simplify
+from utils import unwrap
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
