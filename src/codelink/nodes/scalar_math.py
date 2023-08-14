@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Optional, cast
 import importlib
-import inspect
 
 import awkward as ak
 
@@ -140,8 +139,7 @@ class ScalarMath(NodeItem):
         except ValueError as e:
             print(e)
 
-        out_socket_index: int = int(inspect.stack()[0][3][-1])
-        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
+        result: list = self.output_socket_widgets[0].perform_socket_operation(result)
 
         return result
 

@@ -54,9 +54,9 @@ class Box(NodeItem):
     def eval_socket_0(self, *args) -> list:
         try:
             # Collect and pre-process input data
-            length: list = args[0]
-            width: list = args[1]
-            height: list = args[2]
+            length: list = self.input_socket_widgets[0].perform_socket_operation(args[0])
+            width: list = self.input_socket_widgets[1].perform_socket_operation(args[1])
+            height: list = self.input_socket_widgets[2].perform_socket_operation(args[2])
 
             #  Broadcast and calculate result
             broadcasted_input: list = ak.broadcast_arrays(length, width, height)
