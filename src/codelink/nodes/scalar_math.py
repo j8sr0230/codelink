@@ -7,7 +7,6 @@ import awkward as ak
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
@@ -107,25 +106,31 @@ class ScalarMath(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_socket_1(self, *args) -> list:
-        try:
-            if self._option_box.currentText() == "Add" and len(args) == 2:
-                result: ak.Array = ak.Array(simplify(args[0])) + ak.Array(simplify(args[1]))
-            elif self._option_box.currentText() == "Sub" and len(args) == 2:
-                result: ak.Array = ak.Array(simplify(args[0])) - ak.Array(simplify(args[1]))
-            elif self._option_box.currentText() == "Mul" and len(args) == 2:
-                result: ak.Array = ak.Array(simplify(args[0])) * ak.Array(simplify(args[1]))
-            elif self._option_box.currentText() == "Div" and len(args) == 2:
-                try:
-                    result: ak.Array = ak.Array(simplify(args[0])) / ak.Array(simplify(args[1]))
-                except ZeroDivisionError:
-                    print("Division by zero")
-                    result: ak.Array = ak.Array([0])
-            elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                result: ak.Array = ak.Array(simplify(args[0])) ** 0.5
-            else:
-                result: ak.Array = ak.Array([0])
+        result: list = [0]
 
-            return list(simplify(result.to_list()))
+        try:
+            if len(args) == 2:
+                a = args[0]
+                b = args[1]
+                print("a", a, "b", b)
+
+                if self._option_box.currentText() == "Add":
+                    result: ak.Array = ak.Array(a) + ak.Array(b)
+                elif self._option_box.currentText() == "Sub":
+                    result: ak.Array = ak.Array(a) - ak.Array(b)
+                elif self._option_box.currentText() == "Mul":
+                    result: ak.Array = ak.Array(a) * ak.Array(b)
+                elif self._option_box.currentText() == "Div":
+                    try:
+                        result: ak.Array = ak.Array(a) / ak.Array(b)
+                    except ZeroDivisionError:
+                        print("Division by zero")
+                        result: ak.Array = ak.Array([0])
+
+            elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
+                result: ak.Array = ak.Array(args[0]) ** 0.5
+
+            return result.to_list()
         except ValueError as e:
             print(e)
 
