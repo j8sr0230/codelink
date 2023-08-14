@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Optional, cast
 import sys
 import importlib
+import inspect
 
 import awkward as ak
 
@@ -51,7 +52,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene.parent_node = self
 
         self._socket_widgets: list[SocketWidget] = []
-        self._evals: list[object] = [self.eval_socket_1]
+        self._evals: list[object] = [self.eval_socket_0]
 
         self._mode: str = ""
         self._lm_pressed: bool = False
@@ -412,39 +413,49 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def eval_socket_1(*args) -> list:
+    def eval_socket_0(self, *args) -> list:
         result: list = [0]
         try:
             if len(args) > 1:
-                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+
+                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
 
                 result: ak.Array = ak.Array(a) + ak.Array(b)
             else:
                 result: ak.Array = ak.Array([0])
 
-            result = result.to_list()
+            result: list = result.to_list()
         except ValueError as e:
             print(e)
 
+        out_socket_index: int = int(inspect.stack()[0][3][-1])
+        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
+
         return result
 
-    @staticmethod
-    def eval_socket_2(*args) -> list:
+    def eval_socket_1(self, *args) -> list:
         result: list = [0]
         try:
             if len(args) > 1:
-                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+
+                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
 
                 result: ak.Array = ak.Array(a) - ak.Array(b)
             else:
                 result: ak.Array = ak.Array([0])
 
-            result = result.to_list()
+            result: list = result.to_list()
         except ValueError as e:
             print(e)
+
+        out_socket_index: int = int(inspect.stack()[0][3][-1])
+        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
 
         return result
 

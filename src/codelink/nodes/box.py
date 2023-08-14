@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Optional
+import inspect
 
 import FreeCAD
 import Part
@@ -49,16 +50,24 @@ class Box(NodeItem):
         height: float = parameter_zip[2]
         return Part.makeBox(width, length, height)
 
-    def eval_socket_1(self, *args) -> list:
+    def eval_socket_0(self, *args) -> list:
         try:
             # Collect input data
             length: list = resolve_inner_level(args[0]) if type(resolve_inner_level(args[0])) == list else args[0]
+            length: list = self.input_socket_widgets[0].perform_socket_operation(length)
+
             width: list = resolve_inner_level(args[1]) if type(resolve_inner_level(args[1])) == list else args[1]
+            width: list = self.input_socket_widgets[0].perform_socket_operation(width)
+
             height: list = resolve_inner_level(args[2]) if type(resolve_inner_level(args[2])) == list else args[2]
+            height: list = self.input_socket_widgets[0].perform_socket_operation(height)
 
             #  Broadcast and calculate result
             data_tree: list = list(broadcast_data_tree(length, width, height))
             result: list = add_inner_level(list(map_objects(data_tree, tuple, self.make_box)))
+
+            out_socket_index: int = int(inspect.stack()[0][3][-1])
+            result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
 
             return result
         except ValueError as e:

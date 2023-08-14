@@ -5,6 +5,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from utils import flatten, simplify, graft, graft_topology, unwrap, wrap
 from property_model import PropertyModel
 from pin_item import PinItem
 
@@ -161,6 +162,21 @@ class SocketWidget(QtWidgets.QWidget):
             result.append(0.)
 
         return result
+
+    def perform_socket_operation(self, input_data: list) -> list:
+        if self.socket_options_state()[0]:  # Flatten
+            input_data: list = list(flatten(input_data))
+        if self.socket_options_state()[1]:  # Simplify
+            input_data: list = list(simplify(input_data))
+        if self.socket_options_state()[2]:  # Graft
+            input_data: list = list(graft(input_data))
+        if self.socket_options_state()[3]:  # Graft Topo
+            input_data: list = list(graft_topology(input_data))
+        if self.socket_options_state()[4]:  # Unwrap
+            input_data: list = list(unwrap(input_data))
+        if self.socket_options_state()[5]:  # Wrap
+            input_data: list = list(wrap(input_data))
+        return input_data
 
     # --------------- Callbacks ---------------
 

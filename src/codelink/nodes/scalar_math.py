@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional, cast
 import importlib
+import inspect
 
 import awkward as ak
 
@@ -49,7 +50,7 @@ class ScalarMath(NodeItem):
         self.update_all()
 
         # Socket-wise node methods
-        self._evals: list[object] = [self.eval_socket_1]
+        self._evals: list[object] = [self.eval_socket_0]
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -106,13 +107,16 @@ class ScalarMath(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_1(self, *args) -> list:
+    def eval_socket_0(self, *args) -> list:
         result: list = [0]
 
         try:
             if len(args) == 2:
-                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                b = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
+                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+
+                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
+                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
 
                 if self._option_box.currentText() == "Add":
                     result: ak.Array = ak.Array(a) + ak.Array(b)
@@ -131,10 +135,13 @@ class ScalarMath(NodeItem):
                 a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
                 result: ak.Array = ak.Array(a) ** 0.5
 
-            result = result.to_list()
+            result: list = result.to_list()
 
         except ValueError as e:
             print(e)
+
+        out_socket_index: int = int(inspect.stack()[0][3][-1])
+        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
 
         return result
 
