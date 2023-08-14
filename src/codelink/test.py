@@ -1,11 +1,11 @@
 import awkward as ak
 
-from utils import resolve_inner_level
+from utils import zip_nested
 
 
 a: ak.Array = ak.Array([[[10], [20]], [30], [40]])
-b: ak.Array = ak.Array([0])
-c: ak.Array = ak.Array([0])
+b: ak.Array = ak.Array([5])
+c: ak.Array = ak.Array([7])
 
 print("a", a.to_list())
 print("b", b.to_list())
@@ -19,12 +19,4 @@ print("a_casted", a_cast.to_list())
 print("b_casted", b_cast.to_list())
 print("c_casted", c_cast.to_list())
 
-print("a_resolved", resolve_inner_level(a_cast.to_list()))
-print("b_resolved", resolve_inner_level(b_cast.to_list()))
-print("c_resolved", resolve_inner_level(c_cast.to_list()))
-
-print("zip", ak.zip([
-    resolve_inner_level(a_cast.to_list()),
-    resolve_inner_level(b_cast.to_list()),
-    resolve_inner_level(b_cast.to_list())
-]))
+print("zip", zip_nested(a_cast.to_list(), b_cast.to_list(), c_cast.to_list()))

@@ -1,13 +1,14 @@
 from __future__ import annotations
 from typing import Optional
-import inspect
+
+import awkward as ak
 
 import FreeCAD
 import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import add_inner_level, resolve_inner_level, broadcast_data_tree, map_objects
+from utils import map_objects, zip_nested
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from number_line import NumberLine
@@ -53,27 +54,20 @@ class Box(NodeItem):
     def eval_socket_0(self, *args) -> list:
         try:
             # Collect and pre-process input data
-            length: list = resolve_inner_level(args[0]) if type(resolve_inner_level(args[0])) == list else args[0]
-            length: list = self.input_socket_widgets[0].perform_socket_operation(length)
-
-            width: list = resolve_inner_level(args[1]) if type(resolve_inner_level(args[1])) == list else args[1]
-            width: list = self.input_socket_widgets[1].perform_socket_operation(width)
-
-            height: list = resolve_inner_level(args[2]) if type(resolve_inner_level(args[2])) == list else args[2]
-            height: list = self.input_socket_widgets[2].perform_socket_operation(height)
+            length: list = args[0]
+            width: list = args[1]
+            height: list = args[2]
 
             #  Broadcast and calculate result
-            try:
-                data_tree: list = list(broadcast_data_tree(length, width, height))
-                result: list = list(map_objects(data_tree, tuple, self.make_box))
-            except TypeError as e:
-                result: list = [Part.Shape()]
-                print(e)
+            broadcasted_input: list = ak.broadcast_arrays(length, width, height)
+            zipped_input: list = zip_nested(
+                broadcasted_input[0].to_list(),
+                broadcasted_input[1].to_list(),
+                broadcasted_input[2].to_list())
+            result: list = list(map_objects(zipped_input, tuple, self.make_box))
 
-            # Post-process output data
-            result: list = add_inner_level(result) if len(result) == 1 and type(result) != list else result
-            out_socket_index: int = int(inspect.stack()[0][3][-1])
-            result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
+            # Post-process result
+            result: list = self.output_socket_widgets[0].perform_socket_operation(result)
 
             return result
         except ValueError as e:

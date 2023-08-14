@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections.abc import Iterable
-from typing import Callable
+from typing import Callable, Union
 
 import awkward as ak
 import PySide2.QtGui as QtGui
@@ -34,6 +34,23 @@ def resolve_inner_level(nested_list: list) -> list:
         return nested_list[0]
     else:
         return [resolve_inner_level(sub_list) for sub_list in nested_list]
+
+
+def zip_to_template(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
+    if type(nested_data_template) != list:
+        item_idx: int = flat_data[0].index(nested_data_template)
+        zipped_data: list = []
+        for flat_list in flat_data:
+            zipped_data.append(flat_list[item_idx])
+        return tuple(zipped_data)
+    else:
+        return [zip_to_template(sub_list, flat_data) for sub_list in nested_data_template]
+
+
+def zip_nested(*nested_lists: list) -> list:
+    nested_data_template: list = nested_lists[0]
+    flat_data: list = [flatten(nested_list) for nested_list in nested_lists]
+    return zip_to_template(nested_data_template, flat_data)
 
 
 def flatten(nested_list: Iterable) -> Iterable:
