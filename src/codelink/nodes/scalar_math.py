@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Optional, cast
 import importlib
+import warnings
 
 import awkward as ak
 
@@ -107,7 +108,7 @@ class ScalarMath(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_socket_0(self, *args) -> list:
-        result: list = [0]
+        result: ak.Array = ak.Array([0])
 
         try:
             if len(args) == 2:
@@ -119,27 +120,36 @@ class ScalarMath(NodeItem):
 
                 if self._option_box.currentText() == "Add":
                     result: ak.Array = ak.Array(a) + ak.Array(b)
+                    self._is_dirty: bool = False
+
                 elif self._option_box.currentText() == "Sub":
                     result: ak.Array = ak.Array(a) - ak.Array(b)
+                    self._is_dirty: bool = False
+
                 elif self._option_box.currentText() == "Mul":
                     result: ak.Array = ak.Array(a) * ak.Array(b)
+                    self._is_dirty: bool = False
+
                 elif self._option_box.currentText() == "Div":
-                    try:
-                        result: ak.Array = ak.Array(a) / ak.Array(b)
-                    except ZeroDivisionError:
-                        print("Division by zero")
-                        result: ak.Array = ak.Array([0])
+                    with warnings.catch_warnings():
+                        warnings.filterwarnings("error")
+                        try:
+                            result: ak.Array = ak.Array(a) / ak.Array(b)
+                            self._is_dirty: bool = False
+                        except Warning as e:
+                            self._is_dirty: bool = True
+                            print(e)
 
             elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
                 a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
                 result: ak.Array = ak.Array(a) ** 0.5
-
-            result: list = result.to_list()
+                self._is_dirty: bool = False
 
         except ValueError as e:
+            self._is_dirty: bool = True
             print(e)
 
-        result: list = self.output_socket_widgets[0].perform_socket_operation(result)
+        result: list = self.output_socket_widgets[0].perform_socket_operation(result.to_list())
 
         return result
 

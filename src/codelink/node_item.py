@@ -61,6 +61,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._last_position: QtCore.QPointF = QtCore.QPointF(pos[0], pos[1])
         self._last_width: int = 0
         self._zoom_level: Optional[int] = None
+        self._is_dirty: bool = False
 
         # Node geometry
         self._title_left_padding: int = 20
@@ -75,10 +76,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
         # Assets
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
         self._default_border_color: QtGui.QColor = QtGui.QColor("black")
+        self._dirty_border_color: QtGui.QColor = QtGui.QColor("red")
         self._selected_border_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
         self._font_color: QtGui.QColor = QtGui.QColor("#E5E5E5")
 
         self._default_border_pen: QtGui.QPen = QtGui.QPen(self._default_border_color)
+        self._dirty_pen: QtGui.QPen = QtGui.QPen(self._dirty_border_color)
         self._selected_border_pen: QtGui.QPen = QtGui.QPen(self._selected_border_color)
         self._selected_border_pen.setWidthF(1.5)
 
@@ -424,11 +427,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 b: list = self.input_socket_widgets[1].perform_socket_operation(b)
 
                 result: ak.Array = ak.Array(a) + ak.Array(b)
+                self._is_dirty: bool = False
             else:
                 result: ak.Array = ak.Array([0])
 
             result: list = result.to_list()
         except ValueError as e:
+            self._is_dirty: bool = True
             print(e)
 
         out_socket_index: int = int(inspect.stack()[0][3][-1])
@@ -447,11 +452,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 b: list = self.input_socket_widgets[1].perform_socket_operation(b)
 
                 result: ak.Array = ak.Array(a) - ak.Array(b)
+                self._is_dirty: bool = False
             else:
                 result: ak.Array = ak.Array([0])
 
             result: list = result.to_list()
         except ValueError as e:
+            self._is_dirty: bool = True
             print(e)
 
         out_socket_index: int = int(inspect.stack()[0][3][-1])
@@ -679,6 +686,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         painter.setBrush(QtCore.Qt.NoBrush)
         if self.isSelected():
             painter.setPen(self._selected_border_pen)
+        elif self._is_dirty:
+            painter.setPen(self._dirty_border_color)
         else:
             painter.setPen(self._default_border_pen)
         # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)

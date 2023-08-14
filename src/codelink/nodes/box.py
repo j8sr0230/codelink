@@ -68,7 +68,10 @@ class Box(NodeItem):
 
             # Post-process result
             result: list = self.output_socket_widgets[0].perform_socket_operation(result)
-
+            self._is_dirty: bool = False
             return result
+
         except ValueError as e:
+            self._is_dirty: bool = True
             print(e)
+            return [Part.Shape]
