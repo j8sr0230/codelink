@@ -24,4 +24,4 @@ for (_, module_name, _) in iter_modules([package_dir]):
             globals()[attribute_name] = attribute
             category_name: str = os.path.basename(os.path.normpath(package_dir)).capitalize().replace("_", " ")
             register_node(category_name, attribute.REG_NAME, attribute)
-            print("Registered nodes:", attribute)
+            # print("Registered nodes:", attribute)

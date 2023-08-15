@@ -232,6 +232,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def remove_node(self, node: NodeItem) -> None:
         # noinspection PyTypeChecker
         node.content_widget.setParent(None)
+        node.on_remove()
         self.removeItem(node)
         self._nodes.remove(node)
 

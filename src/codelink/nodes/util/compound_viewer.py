@@ -27,7 +27,8 @@ class CompoundViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            Shape(undo_stack=self._undo_stack, label="Shp", is_input=True, data=str(Part.Shape()), parent_node=self),
+            Shape(undo_stack=self._undo_stack, label="Shp", is_input=True,  data=str(Part.Shape()),
+                  parent_node=self),
             Shape(undo_stack=self._undo_stack, label="Shp", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
@@ -40,16 +41,9 @@ class CompoundViewer(NodeItem):
         # Socket-wise node eval methods
         self._evals: list[object] = [self.eval_socket_0]
 
-        self._compound_obj: Optional[Part.Compound] = None
+        self._compound_name: str = ""
 
     # --------------- Node eval methods ---------------
-
-    @staticmethod
-    def make_box(parameter_zip: tuple) -> Part.Shape:
-        width: float = parameter_zip[0]
-        length: float = parameter_zip[1]
-        height: float = parameter_zip[2]
-        return Part.makeBox(width, length, height)
 
     def eval_socket_0(self, *args) -> list:
         result: list = [Part.Shape()]
@@ -58,17 +52,24 @@ class CompoundViewer(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
+                    shapes: list = self.input_data(0, args)
                     if hasattr(Gui, "ActiveDocument"):
-                        shapes: list = self.input_data(0, args)
-                        flat_shapes: list = list(flatten(shapes))
+                        flat_shapes: list = [shape for shape in flatten(shapes) if len(shape.Vertexes) > 0]
                         if len(flat_shapes) > 0:
-                            if self._compound_obj is None:
-                                self._compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
-                                self._compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
+                            if self._compound_name == "":
+                                compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
+                                compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
+                                self._compound_name: str = compound_obj.Name
+                            else:
+                                compound_obj = App.ActiveDocument.getObject(self._compound_name)
 
-                            self._compound_obj.Shape = Part.makeCompound(flat_shapes)
+                            compound_obj.Shape = Part.makeCompound(flat_shapes)
                             App.activeDocument().recompute()
-                            self._is_dirty: bool = False
+                        else:
+                            self.on_remove()
+
+                    self._is_dirty: bool = False
+                    result: list = shapes
 
                 except Exception as e:
                     self._is_dirty: bool = True
@@ -78,3 +79,19 @@ class CompoundViewer(NodeItem):
                 print(e)
 
         return self.output_data(0, result)
+
+    def on_remove(self):
+        if hasattr(Gui, "ActiveDocument") and self._compound_name != "":
+            App.ActiveDocument.removeObject(self._compound_name)
+            App.activeDocument().recompute()
+            self._compound_name: str = ""
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = super().__getstate__()
+        data_dict["Compound Name"] = self._compound_name
+        return data_dict
+
+    def __setstate__(self, state: dict):
+        super().__setstate__(state)
+        self._compound_name: str = state["Compound Name"]
+        self.update()

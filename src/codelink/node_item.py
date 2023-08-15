@@ -324,6 +324,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
             self.parent_frame.update()
             self._parent_frame: Optional[FrameItem] = None
 
+    def on_remove(self):
+        pass
+
     # --------------- DAG analytics ---------------
 
     def has_in_edges(self) -> bool:
