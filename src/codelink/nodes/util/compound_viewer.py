@@ -61,11 +61,14 @@ class CompoundViewer(NodeItem):
                     if hasattr(Gui, "ActiveDocument"):
                         shapes: list = self.input_data(0, args)
                         flat_shapes: list = list(flatten(shapes))
-                        self._compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
-                        self._compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
-                        self._is_dirty: bool = False
-                    else:
-                        self._is_dirty: bool = True
+                        if len(flat_shapes) > 0:
+                            if self._compound_obj is None:
+                                self._compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
+                                self._compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
+
+                            self._compound_obj.Shape = Part.makeCompound(flat_shapes)
+                            App.activeDocument().recompute()
+                            self._is_dirty: bool = False
 
                 except Exception as e:
                     self._is_dirty: bool = True
