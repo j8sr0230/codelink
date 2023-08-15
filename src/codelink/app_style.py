@@ -6,7 +6,11 @@ MAIN_STYLE: str = """
 	    background-color: black;
 	    selection-background-color: #545454;
 	    color: #E5E5E5;
-	    padding: 5px;
+	    padding-left: 5px;
+	    padding-right: 15px;
+	    padding-top: 5px;
+	    padding-bottom: 5px;
+
 	}
 	
 	QMenu::item:selected, QMenu::item:pressed { 

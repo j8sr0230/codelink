@@ -437,14 +437,16 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
             # Add menu
+            add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+            add_menu.setTitle("&Add")
             for node_category, nodes in self._node_actions.items():
-                new_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+                new_menu: QtWidgets.QMenu = QtWidgets.QMenu(add_menu)
                 new_menu.setTitle(node_category)
 
                 for node_name, node_action in nodes.items():
                     new_menu.addAction(node_action)
-                context_menu.addMenu(new_menu)
-
+                add_menu.addMenu(new_menu)
+            context_menu.addMenu(add_menu)
             context_menu.addSeparator()
 
             # Rest of context menu
