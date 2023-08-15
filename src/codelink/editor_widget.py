@@ -454,8 +454,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu.addAction(self._save_action)
             context_menu.addSeparator()
 
-            context_menu.addAction(self._undo_action)
-            context_menu.addAction(self._redo_action)
+            # context_menu.addAction(self._undo_action)
+            # context_menu.addAction(self._redo_action)
             context_menu.addAction(self._fit_action)
 
             selected_items: list[Any] = self.scene().selectedItems()
