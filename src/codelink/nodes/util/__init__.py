@@ -22,6 +22,6 @@ for (_, module_name, _) in iter_modules([package_dir]):
         if isclass(attribute) and issubclass(attribute, NodeItem) and attribute is not NodeItem:
             # Adds class to the global namespace
             globals()[attribute_name] = attribute
-            category_name: str = os.path.basename(os.path.normpath(package_dir)).capitalize()
+            category_name: str = os.path.basename(os.path.normpath(package_dir)).capitalize().replace("_", " ")
             register_node(category_name, attribute.REG_NAME, attribute)
-            # print("Registered nodes:", attribute)
+            print("Registered nodes:", attribute)

@@ -7,7 +7,7 @@ from path_loader import *
 from app_style import MAIN_STYLE
 from editor_widget import EditorWidget
 from dag_scene import DAGScene
-from nodes.scalar_math.scalar_math import ScalarMath
+from nodes.util.scalar_math import ScalarMath
 
 
 def main() -> None:

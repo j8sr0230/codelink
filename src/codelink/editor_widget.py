@@ -143,22 +143,19 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._past_action.triggered).connect(self.paste)
         self.addAction(self._past_action)
 
-        self._add_node_actions: dict[str, list[QtWidgets.QAction]] = {}
-        for node_category, sub_dict, in nodes_dict.items():
-            for node_name, node_cls, in sub_dict.items():
-                if node_category in self._add_node_actions.keys():
-                    action_list: list[QtWidgets.QAction] = self._add_node_actions[node_category]
-                else:
-                    action_list: list[QtWidgets.QAction] = []
+        self._node_actions: dict[str, dict[str, QtWidgets.QAction]] = {}
+        for node_category, nodes, in nodes_dict.items():
+            if node_category in self._node_actions.keys():
+                action_dict: dict[str, QtWidgets.QAction] = self._node_actions[node_category]
+            else:
+                action_dict: dict[str, list[QtWidgets.QAction]] = {}
 
+            for node_name, node_cls, in nodes.items():
                 add_node_action: QtWidgets.QAction = QtWidgets.QAction(node_name, self)
                 add_node_action.setData(node_cls)
-                action_list.append(add_node_action)
-                self._add_node_actions[node_category] = action_list
-
-        for node_category, action_list in self._add_node_actions.items():
-            for add_action in action_list:
-                add_action.triggered.connect(self.add_node_from_action)
+                add_node_action.triggered.connect(self.add_node_from_action)
+                action_dict[node_name] = add_node_action
+                self._node_actions[node_category] = action_dict
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -440,24 +437,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
             # Add menu
-            for node_category, node_action_list in self._add_node_actions.items():
-                add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-                add_menu.setTitle(node_category)
-                for action in self._add_node_actions:
-                    math_nodes.addAction(action)
-                context_menu.addMenu(math_nodes)
+            for node_category, nodes in self._node_actions.items():
+                new_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+                new_menu.setTitle(node_category)
 
-            math_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-            math_nodes.setTitle("&Math")
-            for action in self._add_node_actions:
-                math_nodes.addAction(action)
-            context_menu.addMenu(math_nodes)
-
-            gen_nodes: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
-            gen_nodes.setTitle("&Generators")
-            for action in self._add_node_actions:
-                gen_nodes.addAction(action)
-            context_menu.addMenu(gen_nodes)
+                for node_name, node_action in nodes.items():
+                    new_menu.addAction(node_action)
+                context_menu.addMenu(new_menu)
 
             context_menu.addSeparator()
 
