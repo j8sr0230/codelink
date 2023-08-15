@@ -90,8 +90,13 @@ class CompoundViewer(NodeItem):
 
     def on_remove(self):
         if hasattr(Gui, "ActiveDocument") and self._compound_name != "":
-            App.ActiveDocument.removeObject(self._compound_name)
-            App.activeDocument().recompute()
+            if App.ActiveDocument.getObject(self._compound_name) is not None:
+                compound_object: App.DocumentObject = App.ActiveDocument.getObject(self._compound_name)
+                for obj in App.ActiveDocument.Objects:
+                    if "Base" in obj.PropertiesList and obj.getPropertyByName("Base") == compound_object:
+                        App.ActiveDocument.removeObject(obj.Name)
+
+                App.ActiveDocument.removeObject(self._compound_name)
             self._compound_name: str = ""
 
     def __getstate__(self) -> dict:
