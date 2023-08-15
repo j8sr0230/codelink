@@ -73,7 +73,7 @@ class NumberLine(SocketWidget):
 		if self._prop_model.properties["Is Input"]:
 			self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
-			if self._pin_item.has_edges():
+			if self._pin_item.has_edges() or self.link != ("", -1):
 				self._label_widget.setStyleSheet("background-color: transparent")
 				self._input_widget.hide()
 				self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
