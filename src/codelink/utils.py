@@ -2,7 +2,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Callable, Union
 
-import awkward as ak
 import PySide2.QtGui as QtGui
 
 
@@ -20,20 +19,6 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
         cropped_text: str = cropped_text[:len(text)]
 
     return cropped_text
-
-
-def add_inner_level(nested_list: list) -> list:
-    if type(nested_list) != list:
-        return [nested_list]
-    else:
-        return [add_inner_level(sub_list) for sub_list in nested_list]
-
-
-def resolve_inner_level(nested_list: list) -> list:
-    if len(nested_list) == 1 and type(nested_list[0]) != list:
-        return nested_list[0]
-    else:
-        return [resolve_inner_level(sub_list) for sub_list in nested_list]
 
 
 def _zip_to_template(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
@@ -231,62 +216,3 @@ def map_last_level(nested_list: Iterable, object_type: type, callback: Callable)
             for sub_list in nested_list:
                 temp_list.append(map_last_level(sub_list, object_type, callback))
             return temp_list
-
-
-def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
-    """Broadcast any number of socket inputs against each other.
-
-    Like NumPy's broadcast_arrays function, this function returns the socket inputs, duplicating elements if necessary
-    so that the socket inputs can be combined element by element. This replaces individual elements of the socket inputs
-    with element arrays and increases the dimension.
-
-    :param socket_inputs: Arbitrary nested socket inputs
-    :type socket_inputs: Iterable
-    :return: Broadcasted zipped socket inputs as list of tuples
-    :rtype: Iterable
-    """
-
-    flatten_inputs: list = [flatten(socket_input) for socket_input in socket_inputs]
-    nested_idx_trees: list = []
-    for idx, socket_input in enumerate(socket_inputs):
-        nested_idx_trees.append(map_objects(socket_input, object, lambda obj: flatten_inputs[idx].index(obj)))
-
-    broadcasted_idx_trees: list = ak.broadcast_arrays(*nested_idx_trees)
-    broadcasted_idx_zip: list = ak.zip(broadcasted_idx_trees).tolist()
-
-    # Transforms index tuple to socket input value tuple
-    def index_to_obj(idx_tuple: tuple) -> tuple:
-        return tuple([flatten_inputs[input_idx][input_elem] for input_idx, input_elem in enumerate(idx_tuple)])
-
-    broadcasted_input_zip: Iterable = map_objects(broadcasted_idx_zip, tuple, index_to_obj)
-    return broadcasted_input_zip
-
-
-def traverse_tuples(nested_list: Iterable) -> Iterable:
-    """Generator to yield every tuple within an arbitrary nested iterable.
-
-    :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
-    :return: Tuple item.
-    :rtype: Iterable
-   """
-
-    if isinstance(nested_list, list):
-        for sub_list in nested_list:
-            yield from traverse_tuples(sub_list)
-    else:
-        if isinstance(nested_list, tuple):
-            yield nested_list
-
-
-class ListWrapper:
-    """Wrapper for lists.
-
-    This simple class can be used to wrap lists into non-iterable objects to be treated as atomic, non-decomposable
-    elements in array broadcasting (many-to-one relationship).
-
-     Attributes:
-        wrapped_data (list): Wrapped list
-    """
-    def __init__(self, wrapped_data: list):
-        self.wrapped_data: list = wrapped_data

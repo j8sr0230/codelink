@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Optional, cast
 import sys
 import importlib
-import inspect
+import warnings
 
 import awkward as ak
 
@@ -416,55 +416,62 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Node eval methods ---------------
 
+    def input_data(self, socket_index: int, args) -> list:
+        socket_data: list = []
+        if 0 <= socket_index < len(self.input_socket_widgets):
+            if type(unwrap(args[socket_index])) == list:
+                socket_data: list = list(unwrap(args[socket_index]))
+            else:
+                socket_data: list = args[socket_index]
+
+            socket_data: list = self.input_socket_widgets[socket_index].perform_socket_operation(socket_data)
+        return socket_data
+
+    def output_data(self, socket_index: int, args) -> list:
+        socket_data: list = self.output_socket_widgets[socket_index].perform_socket_operation(args)
+        return socket_data
+
     def eval_socket_0(self, *args) -> list:
         result: list = [0]
-        try:
-            if len(args) > 1:
-                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                try:
+                    a: list = self.input_data(0, args)
+                    b: list = self.input_data(1, args)
+                    result: ak.Array = ak.Array(a) + ak.Array(b)
+                    self._is_dirty: bool = False
+                    result: list = result.to_list()
 
-                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
-                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
+                except Exception as e:
+                    self._is_dirty: bool = True
+                    print(e)
+            except Warning as e:
+                self._is_dirty: bool = True
+                print(e)
 
-                result: ak.Array = ak.Array(a) + ak.Array(b)
-                self._is_dirty: bool = False
-            else:
-                result: ak.Array = ak.Array([0])
-
-            result: list = result.to_list()
-        except ValueError as e:
-            self._is_dirty: bool = True
-            print(e)
-
-        out_socket_index: int = int(inspect.stack()[0][3][-1])
-        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
-
-        return result
+        return self.output_data(0, result)
 
     def eval_socket_1(self, *args) -> list:
         result: list = [0]
-        try:
-            if len(args) > 1:
-                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                try:
+                    a: list = self.input_data(0, args)
+                    b: list = self.input_data(1, args)
+                    result: ak.Array = ak.Array(a) - ak.Array(b)
+                    self._is_dirty: bool = False
+                    result: list = result.to_list()
 
-                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
-                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
+                except Exception as e:
+                    self._is_dirty: bool = True
+                    print(e)
+            except Warning as e:
+                self._is_dirty: bool = True
+                print(e)
 
-                result: ak.Array = ak.Array(a) - ak.Array(b)
-                self._is_dirty: bool = False
-            else:
-                result: ak.Array = ak.Array([0])
-
-            result: list = result.to_list()
-        except ValueError as e:
-            self._is_dirty: bool = True
-            print(e)
-
-        out_socket_index: int = int(inspect.stack()[0][3][-1])
-        result: list = self.output_socket_widgets[out_socket_index].perform_socket_operation(result)
-
-        return result
+        return self.output_data(0, result)
 
     # --------------- Overwrites ---------------
 
@@ -516,10 +523,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    # Hack to prevent cyclic imports
-                    # tgl_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ToggleNodeCollapseCommand")
-                    # self._undo_stack.push(tgl_cmd_cls(self.scene(), self))
-
                     collapse_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
                     self._prop_model.setData(
                         self._prop_model.index(collapse_row, 1, QtCore.QModelIndex()), not self.is_collapsed, 2
@@ -548,11 +551,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
-
-        # Hack to prevent cyclic imports
-        # resize_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ResizeNodeCommand")
-        # if self._resized:
-        #     self._undo_stack.push(resize_cmd_cls(self.scene(), self))
 
         self.setZValue(2)
 

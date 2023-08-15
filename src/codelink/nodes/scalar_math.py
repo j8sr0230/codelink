@@ -8,7 +8,6 @@ import awkward as ak
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import unwrap
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from number_line import NumberLine
@@ -49,7 +48,7 @@ class ScalarMath(NodeItem):
 
         self.update_all()
 
-        # Socket-wise node methods
+        # Socket-wise node eval methods
         self._evals: list[object] = [self.eval_socket_0]
 
         # Listeners
@@ -110,48 +109,40 @@ class ScalarMath(NodeItem):
     def eval_socket_0(self, *args) -> list:
         result: ak.Array = ak.Array([0])
 
-        try:
-            if len(args) == 2:
-                a: list = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                a: list = self.input_socket_widgets[0].perform_socket_operation(a)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                try:
+                    a: list = self.input_data(0, args)
 
-                b: list = unwrap(args[1]) if type(unwrap(args[1])) == list else args[1]
-                b: list = self.input_socket_widgets[1].perform_socket_operation(b)
+                    if len(args) == 2:
+                        b: list = self.input_data(1, args)
 
-                if self._option_box.currentText() == "Add":
-                    result: ak.Array = ak.Array(a) + ak.Array(b)
-                    self._is_dirty: bool = False
+                        if self._option_box.currentText() == "Add":
+                            result: ak.Array = ak.Array(a) + ak.Array(b)
 
-                elif self._option_box.currentText() == "Sub":
-                    result: ak.Array = ak.Array(a) - ak.Array(b)
-                    self._is_dirty: bool = False
+                        elif self._option_box.currentText() == "Sub":
+                            result: ak.Array = ak.Array(a) - ak.Array(b)
 
-                elif self._option_box.currentText() == "Mul":
-                    result: ak.Array = ak.Array(a) * ak.Array(b)
-                    self._is_dirty: bool = False
+                        elif self._option_box.currentText() == "Mul":
+                            result: ak.Array = ak.Array(a) * ak.Array(b)
 
-                elif self._option_box.currentText() == "Div":
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings("error")
-                        try:
+                        elif self._option_box.currentText() == "Div":
                             result: ak.Array = ak.Array(a) / ak.Array(b)
-                            self._is_dirty: bool = False
-                        except Warning as e:
-                            self._is_dirty: bool = True
-                            print(e)
 
-            elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                a = unwrap(args[0]) if type(unwrap(args[0])) == list else args[0]
-                result: ak.Array = ak.Array(a) ** 0.5
-                self._is_dirty: bool = False
+                    elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
+                        result: ak.Array = ak.Array(a) ** 0.5
 
-        except ValueError as e:
-            self._is_dirty: bool = True
-            print(e)
+                    self._is_dirty: bool = False
 
-        result: list = self.output_socket_widgets[0].perform_socket_operation(result.to_list())
+                except Exception as e:
+                    self._is_dirty: bool = True
+                    print(e)
+            except Warning as e:
+                self._is_dirty: bool = True
+                print(e)
 
-        return result
+        return self.output_data(0, result.to_list())
 
 # --------------- Serialization ---------------
 

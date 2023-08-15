@@ -1,8 +1,10 @@
 from __future__ import annotations
 from typing import Optional
+import warnings
 
 import awkward as ak
 
+# noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
 
@@ -39,7 +41,7 @@ class Box(NodeItem):
 
         self.update_all()
 
-        # Socket-wise node methods
+        # Socket-wise node eval methods
         self._evals: list[object] = [self.eval_socket_0]
 
     # --------------- Node eval methods ---------------
@@ -52,26 +54,29 @@ class Box(NodeItem):
         return Part.makeBox(width, length, height)
 
     def eval_socket_0(self, *args) -> list:
-        try:
-            # Collect and pre-process input data
-            length: list = self.input_socket_widgets[0].perform_socket_operation(args[0])
-            width: list = self.input_socket_widgets[1].perform_socket_operation(args[1])
-            height: list = self.input_socket_widgets[2].perform_socket_operation(args[2])
+        result: list = [Part.Shape()]
 
-            #  Broadcast and calculate result
-            broadcasted_input: list = ak.broadcast_arrays(length, width, height)
-            zipped_input: list = zip_nested(
-                broadcasted_input[0].to_list(),
-                broadcasted_input[1].to_list(),
-                broadcasted_input[2].to_list())
-            result: list = list(map_objects(zipped_input, tuple, self.make_box))
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                try:
+                    length: list = self.input_data(0, args)
+                    width: list = self.input_data(1, args)
+                    height: list = self.input_data(2, args)
 
-            # Post-process result
-            result: list = self.output_socket_widgets[0].perform_socket_operation(result)
-            self._is_dirty: bool = False
-            return result
+                    broadcasted_input: list = ak.broadcast_arrays(length, width, height)
+                    zipped_input: list = zip_nested(
+                        broadcasted_input[0].to_list(),
+                        broadcasted_input[1].to_list(),
+                        broadcasted_input[2].to_list())
+                    result: list = list(map_objects(zipped_input, tuple, self.make_box))
+                    self._is_dirty: bool = False
 
-        except ValueError as e:
-            self._is_dirty: bool = True
-            print(e)
-            return [Part.Shape]
+                except Exception as e:
+                    self._is_dirty: bool = True
+                    print(e)
+            except Warning as e:
+                self._is_dirty: bool = True
+                print(e)
+
+        return self.output_data(0, result)
