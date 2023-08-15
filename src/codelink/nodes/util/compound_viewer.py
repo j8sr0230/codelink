@@ -43,6 +43,14 @@ class CompoundViewer(NodeItem):
 
         self._compound_name: str = ""
 
+    @property
+    def compound_name(self) -> str:
+        return self._compound_name
+
+    @compound_name.setter
+    def compound_name(self, value: str) -> None:
+        self._compound_name: str = value
+
     # --------------- Node eval methods ---------------
 
     def eval_socket_0(self, *args) -> list:
