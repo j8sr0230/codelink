@@ -5,18 +5,18 @@ build-backend = "hatchling.build"
 [project]
 name = "codelink"
 version = "0.0.2"
-dynamic = ["dependencies"]
-description = "Node-based visual programming environment"
-readme = "README.md"
 authors = [
   { name="Ronny Scharf-Wildenhain", email="ronny.scharf08@gmail.com" },
 ]
+description = "Node-based visual programming environment"
+readme = "README.md"
+requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: LGPL-2.1",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.10"
+dynamic = ["dependencies"]
 
 [project.urls]
 "Homepage" = "https://github.com/j8sr0230/codelink"
