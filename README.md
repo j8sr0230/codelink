@@ -6,7 +6,7 @@ be logically linked to each other via wires, as in flowcharts, to create directe
 perform complex calculations or control other programs. A main application area is node-based modeling of 3D geometries 
 with the parametric CAD software [FreeCAD](https://www.freecad.org/).
 
-![Startup image](./img/start_up_image.png)
+![Startup image](https://github.com/j8sr0230/codelink/blob/main/img/start_up_image.png)
 
 
 It provides:
