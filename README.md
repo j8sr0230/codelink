@@ -23,7 +23,9 @@ It provides:
 ## Installation
 Binary wheels for [codelink](https://pypi.org/project/codelink/) are available on 
 [PyPI](https://pypi.org/).  
-`pip install codelink`
+```
+pip install codelink
+```
 
 ## Run
 After installing Codelink via [PyPI](https://pypi.org/) start your Python interpreter and run the following commands:
