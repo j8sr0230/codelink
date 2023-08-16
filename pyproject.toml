@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-requirements-txt"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
@@ -11,16 +11,18 @@ authors = [
 description = "Node-based visual programming environment"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+  "PySide2>=5.15.8",
+  "networkx>=3.1",
+  "dask>=2023.2.1",
+  "awkward>=2.3.1",
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)",
     "Operating System :: OS Independent",
 ]
-dynamic = ["dependencies"]
 
 [project.urls]
 "Homepage" = "https://github.com/j8sr0230/codelink"
 "Bug Tracker" = "https://github.com/j8sr0230/codelink/issues"
-
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]

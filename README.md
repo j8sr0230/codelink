@@ -6,7 +6,7 @@ be logically linked to each other via wires, as in flowcharts, to create directe
 perform complex calculations or control other programs. A main application area is node-based modeling of 3D geometries 
 with the parametric CAD software [FreeCAD](https://www.freecad.org/).
 
-![Startup image](https://github.com/j8sr0230/codelink/blob/main/img/start_up_image.png)
+![Startup image](https://github.com/j8sr0230/codelink/raw/main/img/start_up_image.png)
 
 
 It provides:
@@ -24,3 +24,19 @@ It provides:
 Binary wheels for [codelink](https://pypi.org/project/codelink/) are available on 
 [PyPI](https://pypi.org/).  
 `pip install codelink`
+
+## Run
+After installing Codelink via [PyPI](https://pypi.org/) start your Python interpreter and run the following commands:
+```
+>>> import codelink.path_loader
+>>> from codelink.app import main
+>>> main()
+```
+
+If you want to run Codelink from within [FreeCAD](https://www.freecad.org/), execute the following commands in the 
+integrated Python interpreter:
+```
+>>> import codelink.path_loader
+>>> from codelink.app_fc import main
+>>> main()
+```
