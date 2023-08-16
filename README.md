@@ -15,6 +15,7 @@ It provides:
 * sub-graphs and group nodes
 * socket options
 * validation node connections (links)
+* full undo/redo implementation
 * framework for node developer
 * easy integration in [PySide2](https://pypi.org/project/PySide2/) applications
 * made for [FreeCAD](https://www.freecad.org/)
