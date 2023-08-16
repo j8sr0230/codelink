@@ -6,23 +6,21 @@ build-backend = "hatchling.build"
 name = "codelink"
 version = "0.0.2"
 dynamic = ["dependencies"]
-
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
-
+description = "Node-based visual programming environment"
+readme = "README.md"
 authors = [
   { name="Ronny Scharf-Wildenhain", email="ronny.scharf08@gmail.com" },
 ]
-description = "Node-based visual programming environment"
-readme = "README.md"
-requires-python = ">=3.10"
-
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: LGPL-2.1",
     "Operating System :: OS Independent",
 ]
+requires-python = ">=3.10"
 
 [project.urls]
 "Homepage" = "https://github.com/j8sr0230/codelink"
 "Bug Tracker" = "https://github.com/j8sr0230/codelink/issues"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
