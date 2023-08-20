@@ -40,7 +40,6 @@ from sockets import *
 
 if TYPE_CHECKING:
     from socket_item_rev import SocketItemRev
-    from edge_item import EdgeItem
 
 
 class NodeItemRev(QtWidgets.QGraphicsItem):
@@ -262,63 +261,52 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
     # --------------- Socket widget editing ---------------
 
-    def insert_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0) -> None:
-        socket_widget.pin.setParentItem(self)
+    def append_socket(self, socket: SocketItemRev, is_input: bool = False) -> None:
+        socket.setParentItem(self)
+        layout_offset: int = len(
+            [child for child in self._content_widget.children() if not isinstance(child, SocketItemRev)]
+        ) - 1
 
         self._content_widget.hide()
-        self._socket_widgets.insert(insert_idx, socket_widget)
-        layout_offset: int = len([child for child in self._content_widget.children()
-                                  if not isinstance(child, SocketWidget)]) - 1
-        self._content_layout.insertWidget(insert_idx + layout_offset, socket_widget)
+        if is_input:
+            self._inputs.append(socket)
+            self._content_layout.insertWidget(len(self._inputs) + layout_offset, socket)
+        else:
+            self._outputs.append(socket)
+            self._content_layout.insertWidget(len(self._inputs) + len(self._outputs) + layout_offset, socket)
+
         self._content_widget.show()
         self.update_all()
 
-    def remove_socket_widget(self, remove_idx: int = 0):
-        if 0 <= remove_idx < len(self._socket_widgets):
-            self._content_widget.hide()
+    def remove_socket(self, remove_idx: int = 0, is_input: bool = False) -> None:
+        self._content_widget.hide()
 
-            remove_widget: SocketWidget = self._socket_widgets[remove_idx]
-            remove_edges: list[EdgeItem] = remove_widget.pin.edges
+        if is_input:
+            if 0 <= remove_idx < len(self._inputs):
+                socket: SocketItemRev = self._inputs[remove_idx]
+                socket_content: QtWidgets.QWidget = socket.content
+                socket_content.setParent(None)
+                self._content_layout.removeWidget(socket_content)
+                self.scene().removeItem(socket)
+                self._inputs.remove(socket)
 
-            while len(remove_edges) > 0:
-                edge: EdgeItem = remove_edges.pop()
-                self.scene().remove_edge(edge)
-
-            self.scene().removeItem(remove_widget.pin)
-            self._content_layout.removeWidget(remove_widget)
-            # noinspection PyTypeChecker
-            remove_widget.setParent(None)
-            self._socket_widgets.remove(remove_widget)
+        if not is_input:
+            if 0 <= remove_idx < len(self._outputs):
+                socket: SocketItemRev = self._outputs[remove_idx]
+                socket_content: QtWidgets.QWidget = socket.content
+                socket_content.setParent(None)
+                self._content_layout.removeWidget(socket_content)
+                self.scene().removeItem(socket)
+                self._inputs.remove(socket)
 
             self._content_widget.show()
             self.update_all()
 
-    def clear_socket_widgets(self):
-        while len(self.socket_widgets) > 0:
-            self.remove_socket_widget(0)
-
-    def sort_socket_widgets(self) -> None:
-        # Sorts widgets in layout
-        for socket_widget in self._socket_widgets:
-            if not socket_widget.is_input:
-                self._content_widget.hide()
-                self._content_layout.removeWidget(socket_widget)
-                self._content_layout.insertWidget(self._content_layout.count(), socket_widget)
-                self._content_widget.show()
-                self.update_all()
-
-        # Sorts socket widget list
-        self._socket_widgets = [
-            child for child in self._content_widget.children() if isinstance(child, SocketWidget) and child.is_input
-        ] + [
-            child for child in self._content_widget.children() if isinstance(child, SocketWidget) and not child.is_input
-        ]
-
-        # Sort socket widget links
-        for idx, sorted_socket in enumerate(self._socket_widgets):
-            linked_node: NodeItemRev = self._sub_scene.dag_item(sorted_socket.link[0])
-            linked_socket: SocketWidget = linked_node.socket_widgets[sorted_socket.link[1]]
-            linked_socket.link = (self.uuid, idx)
+    def clear_sockets(self):
+        while len(self._inputs) > 0:
+            self.remove_socket(0, is_input=True)
+        while len(self._outputs) > 0:
+            self.remove_socket(0, is_input=False)
 
     def remove_from_frame(self):
         if self.parent_frame is not None:
@@ -332,29 +320,29 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
     # --------------- DAG analytics ---------------
 
     def has_in_edges(self) -> bool:
-        for socket_widget in self.input_socket_widgets:
-            if socket_widget.pin.has_edges():
+        for socket in self._inputs:
+            if socket.has_edges():
                 return True
         return False
 
     def has_out_edges(self) -> bool:
-        for socket_widget in self.output_socket_widgets:
-            if socket_widget.pin.has_edges():
+        for socket in self._outputs:
+            if socket.has_edges():
                 return True
         return False
 
-    def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+    def linked_lowest_socket(self, socket: SocketItemRev) -> Optional[SocketItemRev]:
         if len(self._sub_scene.nodes) > 0:
             linked_node: NodeItemRev = self.sub_scene.dag_item(socket.link[0])
-            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+            linked_socket: SocketItemRev = linked_node._inputs[socket.link[1]]
             return linked_node.linked_lowest_socket(linked_socket)
         else:
             return socket
 
-    def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
+    def linked_highest_socket(self, socket: SocketItemRev) -> Optional[SocketItemRev]:
         if self.scene().parent_node is not None and socket.link[0] == self.scene().parent_node.uuid:
             linked_node: NodeItemRev = self.scene().parent_node
-            linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
+            linked_socket: SocketItemRev = linked_node._outputs[socket.link[1]]
             return self.scene().parent_node.linked_highest_socket(linked_socket)
         else:
             return socket
@@ -362,26 +350,26 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
     def predecessors(self) -> list[NodeItemRev]:
         result: list[NodeItemRev] = []
         if not self.has_sub_scene():
-            for socket_widget in self.input_socket_widgets:
-                if len(socket_widget.pin.edges) > 0:
-                    for edge in socket_widget.pin.edges:
+            for socket in self._inputs:
+                if socket.has_edges():
+                    for edge in socket.edges:
                         pre_node: NodeItemRev = edge.start_pin.parent_node
                         if len(pre_node.sub_scene.nodes) > 0:
-                            linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
-                            result.append(linked_lowest.parent_node)
+                            linked_lowest: SocketItemRev = pre_node.linked_lowest_socket(edge.start_pin)
+                            result.append(linked_lowest.parentItem())
                         else:
-                            result.append(edge.start_pin.parent_node)
+                            result.append(edge.start_pin.parentItem())
 
                 else:
-                    linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
-                    if linked_highest != socket_widget:
-                        for edge in linked_highest.pin.edges:
-                            start_socket: SocketWidget = edge.start_pin.socket_widget
-                            linked_lowest: SocketWidget = start_socket.parent_node.linked_lowest_socket(start_socket)
-                            result.append(linked_lowest.parent_node)
+                    linked_highest: SocketItemRev = self.linked_highest_socket(socket)
+                    if linked_highest != socket:
+                        for edge in linked_highest.edges:
+                            start_socket: SocketItemRev = edge.start_pin
+                            linked_lowest: SocketItemRev = start_socket.partenItem().linked_lowest_socket(start_socket)
+                            result.append(linked_lowest.parentItem())
         else:
-            for socket_widget in self.output_socket_widgets:
-                result.append(self.linked_lowest_socket(socket_widget).parent_node)
+            for socket in self._outputs:
+                result.append(self.linked_lowest_socket(socket.parentItem()))
 
         return result
 
