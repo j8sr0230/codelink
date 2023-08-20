@@ -556,15 +556,14 @@ class DAGSceneRev(QtWidgets.QGraphicsScene):
 
         return nodes_dict
 
-    def deserialize_nodes(self, nodes_dict: list[dict]) -> list[NodeItem]:
-        deserialized_nodes: list[NodeItem] = []
+    def deserialize_nodes(self, nodes_dict: list[dict]) -> list[NodeItemRev]:
+        deserialized_nodes: list[NodeItemRev] = []
 
         for node_dict in nodes_dict:
 
             # Create node from dict
             node_class: type = getattr(sys.modules[__name__], node_dict["Class"])
-            node_pos: tuple = (node_dict["Properties"]["X"], node_dict["Properties"]["Y"])
-            new_node: node_class = node_class(node_pos, self._undo_stack)
+            new_node: node_class = node_class(self._undo_stack)
             self.add_node(new_node)
 
             # Reset node state
@@ -586,15 +585,13 @@ class DAGSceneRev(QtWidgets.QGraphicsScene):
         deserialized_edges: list[EdgeItem] = []
 
         for edge_dict in edges_dict:
-            start_node: NodeItem = self.dag_item(edge_dict["Start Node UUID"])
-            start_socket_widget: SocketWidget = start_node.socket_widgets[edge_dict["Start Socket Idx"]]
-            start_pin: PinItem = start_socket_widget.pin
+            start_node: NodeItemRev = self.dag_item(edge_dict["Start Node UUID"])
+            start_socket: SocketItemRev = start_node.outputs[edge_dict["Start Socket Idx"]]
 
-            end_node: NodeItem = self.dag_item(edge_dict["End Node UUID"])
-            end_socket_widget: SocketWidget = end_node.socket_widgets[edge_dict["End Socket Idx"]]
-            end_pin: PinItem = end_socket_widget.pin
+            end_node: NodeItemRev = self.dag_item(edge_dict["End Node UUID"])
+            end_socket: SocketItemRev = end_node.inputs[edge_dict["End Socket Idx"]]
 
-            new_edge: EdgeItem = self.add_edge_from_pins(start_pin, end_pin)
+            new_edge: EdgeItem = self.add_edge_from_pins(start_socket, end_socket)
 
             # Reset edge state
             new_edge.__setstate__(edge_dict)
@@ -616,7 +613,7 @@ class DAGSceneRev(QtWidgets.QGraphicsScene):
 
         for frame_dict in frames_dict:
             framed_nodes_uuid: list[str] = frame_dict["Framed Nodes UUID's"]
-            framed_nodes: list[NodeItem] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
+            framed_nodes: list[NodeItemRev] = [self.dag_item(uuid) for uuid in framed_nodes_uuid]
             new_frame: FrameItem = FrameItem(framed_nodes, self._undo_stack)
             self.add_frame(new_frame)
 
