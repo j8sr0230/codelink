@@ -20,7 +20,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, Union
 
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -40,6 +40,9 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             print("Wrong input format")
 
         return self._last_valid_value
+
+    def set_input_data(self, value: Union[bool, float, str]):
+        self.setText(str(value))
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):

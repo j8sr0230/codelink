@@ -91,7 +91,7 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         if input_widget is not None:
             self._input_widget.setMinimumWidth(5)
             self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-            self._input_widget.setText(str(self._prop_model.properties["Value"]))
+            self._input_widget.set_input_data(self._prop_model.properties["Value"])
             self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
             self._content_layout.addWidget(self._input_widget)
             self._content.setFocusProxy(self._input_widget)
