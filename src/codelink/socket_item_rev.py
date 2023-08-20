@@ -73,7 +73,8 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         self._border_pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("black"))
         self._background_brush: QtGui.QBrush = QtGui.QBrush(self._color)
 
-        # UI container and layout
+        # UI
+        # Container and layout
         self._content: QtWidgets.QWidget = QtWidgets.QWidget()
         self._content.setFixedHeight(24)
         self._content_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()

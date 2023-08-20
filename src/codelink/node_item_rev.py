@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 import sys
 import importlib
 import warnings
@@ -37,29 +37,32 @@ from utils import crop_text, unwrap
 from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
-from socket_widget import SocketWidget
-from edge_item import EdgeItem
+
+if TYPE_CHECKING:
+    from socket_item_rev import SocketItemRev
+    from edge_item import EdgeItem
 
 
 class NodeItemRev(QtWidgets.QGraphicsItem):
     REG_NAME: str = "Node Item"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack,
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, uuid: str = QtCore.QUuid.createUuid().toString(),
+                 x: float = 0., y: float = 0., width: float = 160,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
         # Persistent data model
-        self._uuid: str = QtCore.QUuid.createUuid().toString()
         self._prop_model: PropertyModel = PropertyModel(
             properties={
+                        "UUID": uuid,
                         "Name": "Node Item",
                         "Color": "#1D1D1D",
-                        "Collapse State": False,
-                        "X": pos[0],
-                        "Y": pos[1],
-                        "Width": 160
+                        "Collapsed": False,
+                        "X": x,
+                        "Y": y,
+                        "Width": width
                         },
-            header_left="Base Prop",
+            header_left="Node Property",
             header_right="Value",
             undo_stack=undo_stack
         )
@@ -67,20 +70,21 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         # Non persistent data model
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
+        self._inputs: list[SocketItemRev] = []
+        self._outputs: list[SocketItemRev] = []
+        self._evals: list[object] = [self.eval_socket_0]
+
         self._parent_frame: Optional[FrameItem] = None
         dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
         self._sub_scene: dag_scene_cls = dag_scene_cls(self._undo_stack)
         self._sub_scene.background_color = QtGui.QColor("#383838")
         self._sub_scene.parent_node = self
 
-        self._socket_widgets: list[SocketWidget] = []
-        self._evals: list[object] = [self.eval_socket_0]
-
         self._mode: str = ""
         self._lm_pressed: bool = False
         self._moved: bool = False
         self._resized: bool = False
-        self._last_position: QtCore.QPointF = QtCore.QPointF(pos[0], pos[1])
+        self._last_position: QtCore.QPointF = QtCore.QPointF(x, y)
         self._last_width: int = 0
         self._zoom_level: Optional[int] = None
         self._is_dirty: bool = False
@@ -93,7 +97,6 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         self._min_height: int = self._header_height
         self._content_padding: int = 8
         self._content_y: int = self._header_height + self._content_padding
-        # self._corner_radius: int = 0
 
         # Assets
         self._node_background_color: QtGui.QColor = QtGui.QColor("#303030")
@@ -160,7 +163,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         self.update_all()
 
         # Widget setup
-        self.setPos(QtCore.QPointF(pos[0], pos[1]))
+        self.setPos(QtCore.QPointF(x, y))
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
@@ -170,20 +173,32 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())
 
     @property
-    def uuid(self) -> str:
-        return self._uuid
-
-    @uuid.setter
-    def uuid(self, value: str) -> None:
-        self._uuid: str = value
-
-    @property
     def prop_model(self) -> PropertyModel:
         return self._prop_model
 
     @property
-    def is_collapsed(self) -> str:
-        return self._prop_model.properties["Collapse State"]
+    def uuid(self) -> str:
+        return self._prop_model.properties["UUID"]
+
+    @property
+    def name(self) -> str:
+        return self._prop_model.properties["Name"]
+
+    @property
+    def collapsed(self) -> str:
+        return self._prop_model.properties["Collapsed"]
+
+    @property
+    def inputs(self) -> list[SocketItemRev]:
+        return self._inputs
+
+    @property
+    def outputs(self) -> list[SocketItemRev]:
+        return self._outputs
+
+    @property
+    def evals(self) -> list[object]:
+        return self._evals
 
     @property
     def parent_frame(self) -> FrameItem:
@@ -202,42 +217,6 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         self._sub_scene: Any = value
 
     @property
-    def content_widget(self) -> QtWidgets.QWidget:
-        return self._content_widget
-
-    @property
-    def content_layout(self) -> QtWidgets.QLayout:
-        return self._content_layout
-
-    @property
-    def socket_widgets(self) -> list[SocketWidget]:
-        return self._socket_widgets
-
-    @socket_widgets.setter
-    def socket_widgets(self, value: list[SocketWidget]) -> None:
-        self._socket_widgets: list[SocketWidget] = value
-
-    @property
-    def input_socket_widgets(self) -> list[SocketWidget]:
-        return [
-            socket_widget for socket_widget in self._socket_widgets if socket_widget.is_input
-        ]
-
-    @property
-    def output_socket_widgets(self) -> list[SocketWidget]:
-        return [
-            socket_widget for socket_widget in self._socket_widgets if not socket_widget.is_input
-        ]
-
-    @property
-    def evals(self) -> list[object]:
-        return self._evals
-
-    @evals.setter
-    def evals(self, value: list[object]) -> None:
-        self._evals: list[object] = value
-
-    @property
     def header_height(self) -> int:
         return self._header_height
 
@@ -246,19 +225,12 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         return self._content_y
 
     @property
-    def center(self) -> QtCore.QPointF:
-        return QtCore.QPointF(
-            self.x() + self.boundingRect().width() / 2,
-            self.y() + self.boundingRect().height() / 2
-        )
+    def content_widget(self) -> QtWidgets.QWidget:
+        return self._content_widget
 
     @property
-    def last_position(self) -> QtCore.QPointF:
-        return self._last_position
-
-    @last_position.setter
-    def last_position(self, value: QtCore.QPointF) -> None:
-        self._last_position: QtCore.QPointF = value
+    def content_layout(self) -> QtWidgets.QLayout:
+        return self._content_layout
 
     @property
     def moved(self) -> bool:
@@ -267,6 +239,14 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
     @moved.setter
     def moved(self, value: bool) -> None:
         self._moved: bool = value
+
+    @property
+    def last_position(self) -> QtCore.QPointF:
+        return self._last_position
+
+    @last_position.setter
+    def last_position(self, value: QtCore.QPointF) -> None:
+        self._last_position: QtCore.QPointF = value
 
     @property
     def last_width(self) -> int:
@@ -336,7 +316,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
         # Sort socket widget links
         for idx, sorted_socket in enumerate(self._socket_widgets):
-            linked_node: NodeItem = self._sub_scene.dag_item(sorted_socket.link[0])
+            linked_node: NodeItemRev = self._sub_scene.dag_item(sorted_socket.link[0])
             linked_socket: SocketWidget = linked_node.socket_widgets[sorted_socket.link[1]]
             linked_socket.link = (self.uuid, idx)
 
@@ -365,7 +345,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
     def linked_lowest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if len(self._sub_scene.nodes) > 0:
-            linked_node: NodeItem = self.sub_scene.dag_item(socket.link[0])
+            linked_node: NodeItemRev = self.sub_scene.dag_item(socket.link[0])
             linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
             return linked_node.linked_lowest_socket(linked_socket)
         else:
@@ -373,19 +353,19 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
     def linked_highest_socket(self, socket: SocketWidget) -> Optional[SocketWidget]:
         if self.scene().parent_node is not None and socket.link[0] == self.scene().parent_node.uuid:
-            linked_node: NodeItem = self.scene().parent_node
+            linked_node: NodeItemRev = self.scene().parent_node
             linked_socket: SocketWidget = linked_node.socket_widgets[socket.link[1]]
             return self.scene().parent_node.linked_highest_socket(linked_socket)
         else:
             return socket
 
-    def predecessors(self) -> list[NodeItem]:
-        result: list[NodeItem] = []
+    def predecessors(self) -> list[NodeItemRev]:
+        result: list[NodeItemRev] = []
         if not self.has_sub_scene():
             for socket_widget in self.input_socket_widgets:
                 if len(socket_widget.pin.edges) > 0:
                     for edge in socket_widget.pin.edges:
-                        pre_node: NodeItem = edge.start_pin.parent_node
+                        pre_node: NodeItemRev = edge.start_pin.parent_node
                         if len(pre_node.sub_scene.nodes) > 0:
                             linked_lowest: SocketWidget = pre_node.linked_lowest_socket(edge.start_pin.socket_widget)
                             result.append(linked_lowest.parent_node)
@@ -405,13 +385,13 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
         return result
 
-    def successors(self) -> list[NodeItem]:
-        result: list[NodeItem] = []
+    def successors(self) -> list[NodeItemRev]:
+        result: list[NodeItemRev] = []
         if not self.has_sub_scene():
             for socket_widget in self.output_socket_widgets:
                 if len(socket_widget.pin.edges) > 0:
                     for edge in socket_widget.pin.edges:
-                        suc_node: NodeItem = edge.end_pin.parent_node
+                        suc_node: NodeItemRev = edge.end_pin.parent_node
                         if len(suc_node.sub_scene.nodes) > 0:
                             linked_lowest: SocketWidget = suc_node.linked_lowest_socket(edge.end_pin.socket_widget)
                             result.append(linked_lowest.parent_node)
@@ -689,6 +669,9 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     # --------------- Shape and painting ---------------
+
+    def center(self) -> QtCore.QPointF:
+        return QtCore.QPointF(self.x() + self.boundingRect().width() / 2, self.y() + self.boundingRect().height() / 2)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._height)
