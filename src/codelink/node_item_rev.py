@@ -74,7 +74,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         self._evals: list[object] = [self.eval_socket_0]
 
         self._parent_frame: Optional[FrameItem] = None
-        dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGScene")  # Hack: Prevents cyclic import
+        dag_scene_cls: type = getattr(importlib.import_module("dag_scene"), "DAGSceneRev")  # Hack: Prevents cyclic im
         self._sub_scene: dag_scene_cls = dag_scene_cls(self._undo_stack)
         self._sub_scene.background_color = QtGui.QColor("#383838")
         self._sub_scene.parent_node = self
@@ -487,7 +487,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    collapse_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
+                    collapse_row: int = list(self._prop_model.properties.keys()).index("Collapsed")
                     self._prop_model.setData(
                         self._prop_model.index(collapse_row, 1, QtCore.QModelIndex()), not self.is_collapsed, 2
                     )
@@ -529,7 +529,6 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
-        # print("Node UUID:", self._uuid)
 
     def hoverMoveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverMoveEvent(event)
@@ -603,16 +602,14 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
         self._zoom_level = zoom_level
 
         if self._zoom_level < 8:
-            # self.setEnabled(False)
             self.content_widget.hide()
-            for socket_widget in self._socket_widgets:
-                socket_widget.pin.hide()
+            for socket in self._inputs + self._outputs:
+                socket.hide()
         else:
-            # self.setEnabled(True)
             if not self.is_collapsed:
                 self.content_widget.show()
-                for socket_widget in self._socket_widgets:
-                    socket_widget.pin.show()
+                for socket in self._inputs + self._outputs:
+                    socket.show()
 
     def update_all(self):
         self.update_name(self._prop_model.properties["Name"])
@@ -640,12 +637,10 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(self._node_background_color)
-        # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
         painter.drawRect(self.boundingRect())
 
         rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
         painter.setBrush(QtGui.QColor(self._prop_model.properties["Color"]))
-        # painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
         painter.drawRect(rect)
 
         painter.setBrush(QtCore.Qt.NoBrush)
@@ -655,7 +650,6 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
             painter.setPen(self._dirty_border_color)
         else:
             painter.setPen(self._default_border_pen)
-        # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
         painter.drawRect(self.boundingRect())
 
     # --------------- Serialization ---------------
@@ -663,52 +657,66 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
     def __getstate__(self) -> dict:
         data_dict: dict = {
             "Class": self.__class__.__name__,
-            "UUID": self._uuid,
             "Properties": self.prop_model.__getstate__()  # ,
         }
 
-        sockets_list: list[dict] = []
-        for idx, socket_widget in enumerate(self._socket_widgets):
-            sockets_list.append(socket_widget.__getstate__())
-        data_dict["Sockets"] = sockets_list
+        inputs_state: list[dict] = []
+        for socket in self._inputs:
+            inputs_state.append(socket.__getstate__())
+        data_dict["Inputs"] = inputs_state
+
+        outputs_state: list[dict] = []
+        for socket in self._outputs:
+            outputs_state.append(socket.__getstate__())
+        data_dict["Outputs"] = outputs_state
 
         data_dict["Subgraph"] = self.sub_scene.serialize()
 
         return data_dict
 
     def __setstate__(self, state: dict):
-        self._uuid = state["UUID"]
         self.prop_model.__setstate__(state["Properties"])
 
         # Add socket widgets from state
         self.clear_socket_widgets()
-        for i in range(len(state["Sockets"])):
-            socket_widget_dict: dict = state["Sockets"][i]
-            socket_widget_cls: type = getattr(sys.modules[__name__], socket_widget_dict["Class"])
-            new_socket_widget: socket_widget_cls = socket_widget_cls(
+        for input_state in state["Inputs"]:
+            input_cls: type = getattr(sys.modules[__name__], input_state["Class"])
+            new_input: input_cls = input_cls(
                 undo_stack=self._undo_stack,
-                label=socket_widget_dict["Properties"]["Name"],
-                is_input=socket_widget_dict["Properties"]["Is Input"],
-                data=socket_widget_dict["Properties"]["Data"],
+                name=input_state["Properties"]["Name"],
+                value=input_state["Properties"]["Value"],
+                link=input_state["Properties"]["Link"],
+                flatten=input_state["Properties"]["Flatten"],
+                simplify=input_state["Properties"]["Simplify"],
+                graft=input_state["Properties"]["Graft"],
+                graft_topo=input_state["Properties"]["Graft Topo"],
+                unwarp=input_state["Properties"]["Unwrap"],
+                warp=input_state["Properties"]["Wrap"],
                 parent_node=self
             )
-            new_socket_widget.prop_model.properties["Flatten"] = socket_widget_dict["Properties"]["Flatten"]
-            new_socket_widget.prop_model.properties["Simplify"] = socket_widget_dict["Properties"]["Simplify"]
-            new_socket_widget.prop_model.properties["Graft"] = socket_widget_dict["Properties"]["Graft"]
-            new_socket_widget.prop_model.properties["Graft Topo"] = socket_widget_dict["Properties"]["Graft Topo"]
-            new_socket_widget.prop_model.properties["Unwrap"] = socket_widget_dict["Properties"]["Unwrap"]
-            new_socket_widget.prop_model.properties["Wrap"] = socket_widget_dict["Properties"]["Wrap"]
-            new_socket_widget.link = tuple(socket_widget_dict["Link"])
-            self.insert_socket_widget(new_socket_widget, i)
+            self.append_socket(new_input, is_input=True)
+            new_input.update_all()
 
-            new_socket_widget.update_all()
+        for output_state in state["Outputs"]:
+            output_cls: type = getattr(sys.modules[__name__], output_state["Class"])
+            new_output: input_cls = output_cls(
+                undo_stack=self._undo_stack,
+                name=output_state["Properties"]["Name"],
+                value=output_state["Properties"]["Value"],
+                link=output_state["Properties"]["Link"],
+                flatten=output_state["Properties"]["Flatten"],
+                simplify=output_state["Properties"]["Simplify"],
+                graft=output_state["Properties"]["Graft"],
+                graft_topo=output_state["Properties"]["Graft Topo"],
+                unwarp=output_state["Properties"]["Unwrap"],
+                warp=output_state["Properties"]["Wrap"],
+                parent_node=self
+            )
+            self.append_socket(new_output, is_input=False)
+            new_output.update_all()
 
         # Reset sub graph data
         self.sub_scene.deserialize(state["Subgraph"])
-
         if self.has_sub_scene():
-            # If custom node with sub scene
             for sub_node in self.sub_scene.nodes:
                 sub_node.scene().parent_node = self
-
-        self.update()
