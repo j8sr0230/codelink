@@ -81,12 +81,12 @@ class DAGSceneRev(QtWidgets.QGraphicsScene):
         self._frames: list[FrameItem] = value
 
     @property
-    def nodes(self) -> list[NodeItem]:
+    def nodes(self) -> list[NodeItemRev]:
         return self._nodes
 
     @nodes.setter
-    def nodes(self, value: list[NodeItem]) -> None:
-        self._nodes: list[NodeItem] = value
+    def nodes(self, value: list[NodeItemRev]) -> None:
+        self._nodes: list[NodeItemRev] = value
 
     @property
     def edges(self) -> list[EdgeItem]:
