@@ -27,6 +27,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from utils import flatten, simplify, graft, graft_topology, unwrap, wrap
 from property_model import PropertyModel
 
 if TYPE_CHECKING:
@@ -35,17 +36,18 @@ if TYPE_CHECKING:
 
 
 class SocketItemRev(QtWidgets.QGraphicsItem):
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, name: str = "A", input_data: Union[bool, float, str] = 0.,
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, name: str = "A", value: Union[bool, float, str] = 0.,
                  link: tuple[str, int] = ("", -1), is_flatten: bool = False, is_simplify: bool = False,
                  is_graft: bool = False, is_graft_topo: bool = False, is_unwrap: bool = False,
-                 is_wrap: bool = False, parent_node: Optional[NodeItem] = None) -> None:
+                 is_wrap: bool = False, input_widget: Optional[QtWidgets.QWidget] = None,
+                 parent_node: Optional[NodeItem] = None) -> None:
         super().__init__(parent_node)
 
         # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={
                 "Name": name,
-                "Input Data": input_data,
+                "Value": value,
                 "Link": link,
                 "Flatten": is_flatten,
                 "Simplify": is_simplify,
@@ -72,27 +74,27 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         self._background_brush: QtGui.QBrush = QtGui.QBrush(self._color)
 
         # UI container and layout
-        self._widget: QtWidgets.QWidget = QtWidgets.QWidget()
-        self._widget.setFixedHeight(24)
-        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-        self._layout.setMargin(0)
-        self._layout.setSpacing(0)
-        self._widget.setLayout(self._layout)
+        self._content: QtWidgets.QWidget = QtWidgets.QWidget()
+        self._content.setFixedHeight(24)
+        self._content_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self._content_layout.setMargin(0)
+        self._content_layout.setSpacing(0)
+        self._content.setLayout(self._content_layout)
 
         # Label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
         self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self._layout.addWidget(self._label_widget)
+        self._content_layout.addWidget(self._label_widget)
 
         # Input widget
-        self._input_widget: QtWidgets.QLabel = QtWidgets.QLabel("", self)
-        self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self._layout.addWidget(self._input_widget)
-        self._input_widget.hide()
-
-        # Widget setup
-        self.setAcceptHoverEvents(True)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self._input_widget: Optional[QtWidgets.QWidget] = input_widget
+        if input_widget is not None:
+            self._input_widget.setMinimumWidth(5)
+            self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            self._input_widget.setText(str(self._prop_model.properties["Value"]))
+            self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+            self._content_layout.addWidget(self._input_widget)
+            self._content.setFocusProxy(self._input_widget)
 
         # Socket option actions
         self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
@@ -125,8 +127,14 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         self._wrap_action.setChecked(self._prop_model.properties["Wrap"])
         self._wrap_action.triggered.connect(self.on_socket_action)
 
+        # Widget setup
+        self.setAcceptHoverEvents(True)
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+
         # Listeners
         self._prop_model.dataChanged.connect(lambda: self.update_all())
+        if self._input_widget is not None:
+            self._input_widget.editingFinished.connect(self.on_editing_finished)
 
     @property
     def prop_model(self) -> QtCore.QAbstractTableModel:
@@ -137,8 +145,8 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         return self._prop_model.properties["Name"]
 
     @property
-    def input_data(self) -> Union[bool, float, str]:
-        return self._prop_model.properties["Input Data"]
+    def value(self) -> Union[bool, float, str]:
+        return self._prop_model.properties["Value"]
 
     @property
     def link(self) -> tuple[str, int]:
@@ -157,8 +165,8 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         return self._color
 
     @property
-    def widget(self) -> QtWidgets.QWidget:
-        return self._widget
+    def content(self) -> QtWidgets.QWidget:
+        return self._content
 
     @property
     def uuid(self) -> tuple[str, int]:
@@ -181,7 +189,46 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
     def has_edges(self) -> bool:
         return len(self._edges) > 0
 
-    # --------------- Overwrites ---------------
+    # --------------- Socket data ---------------
+
+    def input_data(self) -> list:
+        result: list = []
+        if self.has_edges():
+            for edge in self.edges:
+                pre_node: NodeItem = edge.start_pin.parent_node
+                if len(pre_node.sub_scene.nodes) > 0:
+                    result.append(pre_node.linked_lowest_socket(edge.start_pin.socket_widget).pin)
+                else:
+                    result.append(edge.start_pin)
+        else:
+            linked_highest: SocketItemRev = self.parent_node.linked_highest_socket(self)
+            if linked_highest != self:
+                result.extend(linked_highest.input_data())
+
+        if len(result) == 0:
+            if self._input_widget is not None:
+                result.append(self._input_widget.input_data())
+            else:
+                result.append(0.)
+
+        return result
+
+    def perform_socket_operation(self, input_data: list) -> list:
+        if self.socket_options_state()[0]:  # Flatten
+            input_data: list = list(flatten(input_data))
+        if self.socket_options_state()[1]:  # Simplify
+            input_data: list = list(simplify(input_data))
+        if self.socket_options_state()[2]:  # Graft
+            input_data: list = list(graft(input_data))
+        if self.socket_options_state()[3]:  # Graft Topo
+            input_data: list = list(graft_topology(input_data))
+        if self.socket_options_state()[4]:  # Unwrap
+            input_data: list = list(unwrap(input_data))
+        if self.socket_options_state()[5]:  # Wrap
+            input_data: list = list(wrap(input_data))
+        return input_data
+
+    # --------------- Events ---------------
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
@@ -191,14 +238,27 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         super().hoverLeaveEvent(event)
         QtWidgets.QApplication.restoreOverrideCursor()
 
-    # --------------- Callbacks ---------------
+    # --------------- Slots and callbacks ---------------
+
+    def on_editing_finished(self) -> None:
+        value: Union[bool, float, str] = self._input_widget.input_data()
+        self._prop_model.setData(self._prop_model.index(2, 1, QtCore.QModelIndex()), value, 2)
+        self.clearFocus()
 
     def on_socket_action(self) -> None:
         sender: QtWidgets.QAction = self.sender()
         row: int = list(self._prop_model.properties.keys()).index(sender.text())
-        self._prop_model.setData(
-            self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
-        )
+        self._prop_model.setData(self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2)
+
+    def update_stylesheet(self) -> None:
+        if self.has_edges() or self.link != ("", -1):
+            self._label_widget.setStyleSheet("background-color: transparent")
+            self._input_widget.hide()
+            self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
+        else:
+            self._label_widget.setStyleSheet("background-color: #545454")
+            self._input_widget.show()
+            self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def update_socket_actions(self) -> None:
         self._flatten_action.setChecked(self._prop_model.properties["Flatten"])
@@ -209,6 +269,7 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         self._wrap_action.setChecked(self._prop_model.properties["Wrap"])
 
     def update_all(self):
+        self.update_stylesheet()
         self._label_widget.setText(self._prop_model.properties["Name"])
         self.update_socket_actions()
 

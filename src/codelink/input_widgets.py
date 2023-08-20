@@ -30,11 +30,25 @@ class NumberInputWidget(QtWidgets.QLineEdit):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
+        self._last_valid_value: float = 0
+
+    def input_data(self):
+        try:
+            self._last_valid_value: float = float(self.text())
+        except ValueError:
+            self.setText(str(self._last_valid_value))
+            print("Wrong input format")
+
+        return self._last_valid_value
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
             event.ignore()
         else:
             super().keyPressEvent(event)
+
+    def focusNextPrevChild(self, forward: bool) -> bool:
+        return super().focusNextPrevChild(forward)
 
 
 class OptionBoxWidget(QtWidgets.QComboBox):
