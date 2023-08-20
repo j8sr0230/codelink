@@ -31,7 +31,7 @@ from utils import flatten, simplify, graft, graft_topology, unwrap, wrap
 from property_model import PropertyModel
 
 if TYPE_CHECKING:
-    from node_item import NodeItem
+    from node_item_rev import NodeItemRev
     from edge_item import EdgeItem
 
 
@@ -40,7 +40,7 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
                  link: tuple[str, int] = ("", -1), is_flatten: bool = False, is_simplify: bool = False,
                  is_graft: bool = False, is_graft_topo: bool = False, is_unwrap: bool = False,
                  is_wrap: bool = False, input_widget: Optional[QtWidgets.QWidget] = None,
-                 parent_node: Optional[NodeItem] = None) -> None:
+                 parent_node: Optional[NodeItemRev] = None) -> None:
         super().__init__(parent_node)
 
         # Persistent data model
@@ -170,8 +170,8 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
 
     @property
     def uuid(self) -> tuple[str, int]:
-        if self.parentItem() is not None and isinstance(self.parentItem(), NodeItem):
-            parent_node: NodeItem = cast(self.parentItem(), NodeItem)
+        if self.parentItem() is not None and isinstance(self.parentItem(), NodeItemRev):
+            parent_node: NodeItemRev = cast(self.parentItem(), NodeItemRev)
             return parent_node.uuid, parent_node.socket_widgets.index(self)
         else:
             return "", -1
@@ -195,7 +195,7 @@ class SocketItemRev(QtWidgets.QGraphicsItem):
         result: list = []
         if self.has_edges():
             for edge in self.edges:
-                pre_node: NodeItem = edge.start_pin.parent_node
+                pre_node: NodeItemRev = edge.start_pin.parent_node
                 if len(pre_node.sub_scene.nodes) > 0:
                     result.append(pre_node.linked_lowest_socket(edge.start_pin.socket_widget).pin)
                 else:
