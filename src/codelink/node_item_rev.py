@@ -354,7 +354,7 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
                 if socket.has_edges():
                     for edge in socket.edges:
                         pre_node: NodeItemRev = edge.start_pin.parent_node
-                        if len(pre_node.sub_scene.nodes) > 0:
+                        if pre_node.has_sub_scene():
                             linked_lowest: SocketItemRev = pre_node.linked_lowest_socket(edge.start_pin)
                             result.append(linked_lowest.parentItem())
                         else:
@@ -373,55 +373,30 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
         return result
 
-    def successors(self) -> list[NodeItemRev]:
-        result: list[NodeItemRev] = []
-        if not self.has_sub_scene():
-            for socket_widget in self.output_socket_widgets:
-                if len(socket_widget.pin.edges) > 0:
-                    for edge in socket_widget.pin.edges:
-                        suc_node: NodeItemRev = edge.end_pin.parent_node
-                        if len(suc_node.sub_scene.nodes) > 0:
-                            linked_lowest: SocketWidget = suc_node.linked_lowest_socket(edge.end_pin.socket_widget)
-                            result.append(linked_lowest.parent_node)
-                        else:
-                            result.append(edge.end_pin.parent_node)
-                else:
-                    linked_highest: SocketWidget = self.linked_highest_socket(socket_widget)
-                    if linked_highest != socket_widget:
-                        for edge in linked_highest.pin.edges:
-                            end_socket: SocketWidget = edge.end_pin.socket_widget
-                            linked_lowest: SocketWidget = end_socket.parent_node.linked_lowest_socket(end_socket)
-                            result.append(linked_lowest.parent_node)
-        else:
-            for socket_widget in self.input_socket_widgets:
-                result.append(self.linked_lowest_socket(socket_widget).parent_node)
-
-        return result
-
     def has_sub_scene(self) -> bool:
         return len(self._sub_scene.nodes) > 0
 
     def is_grp_interface(self) -> bool:
-        has_links: bool = any([True for socket in self._socket_widgets if socket.link != ("", -1)])
+        has_links: bool = any([True for socket in self._inputs + self._outputs if socket.link != ("", -1)])
         if not self.has_sub_scene() and has_links:
             return True
         return False
 
     # --------------- Node eval methods ---------------
 
-    def input_data(self, socket_index: int, args) -> list:
+    def input_data(self, input_index: int, args) -> list:
         socket_data: list = []
-        if 0 <= socket_index < len(self.input_socket_widgets):
-            if type(unwrap(args[socket_index])) == list:
-                socket_data: list = list(unwrap(args[socket_index]))
+        if 0 <= input_index < len(self._inputs):
+            if type(unwrap(args[input_index])) == list:
+                socket_data: list = list(unwrap(args[input_index]))
             else:
-                socket_data: list = args[socket_index]
+                socket_data: list = args[input_index]
 
-            socket_data: list = self.input_socket_widgets[socket_index].perform_socket_operation(socket_data)
+            socket_data: list = self._inputs[input_index].perform_socket_operation(socket_data)
         return socket_data
 
-    def output_data(self, socket_index: int, args) -> list:
-        socket_data: list = self.output_socket_widgets[socket_index].perform_socket_operation(args)
+    def output_data(self, output_index: int, args) -> list:
+        socket_data: list = self._outputs[output_index].perform_socket_operation(args)
         return socket_data
 
     def eval_socket_0(self, *args) -> list:
@@ -486,12 +461,8 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
             x_mode_row: int = list(self._prop_model.properties.keys()).index("X")
             y_mode_row: int = list(self._prop_model.properties.keys()).index("Y")
 
-            self._prop_model.setData(
-                self._prop_model.index(x_mode_row, 1, QtCore.QModelIndex()), int(x_snap), 2  # QtCore.Qt.EditRole
-            )
-            self._prop_model.setData(
-                self._prop_model.index(y_mode_row, 1, QtCore.QModelIndex()), int(y_snap), 2  # QtCore.Qt.EditRole
-            )
+            self._prop_model.setData(self._prop_model.index(x_mode_row, 1, QtCore.QModelIndex()), int(x_snap), 2)
+            self._prop_model.setData(self._prop_model.index(y_mode_row, 1, QtCore.QModelIndex()), int(y_snap), 2)
 
             return QtCore.QPointF(x_snap, y_snap)
         else:
