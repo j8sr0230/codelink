@@ -373,6 +373,31 @@ class NodeItemRev(QtWidgets.QGraphicsItem):
 
         return result
 
+    def successors(self) -> list[NodeItemRev]:
+        result: list[NodeItemRev] = []
+        if not self.has_sub_scene():
+            for socket in self._outputs:
+                if len(socket.edges) > 0:
+                    for edge in socket.edges:
+                        suc_node: NodeItemRev = edge.end_pin.parent_node
+                        if suc_node.has_sub_scene():
+                            linked_lowest: SocketItemRev = suc_node.linked_lowest_socket(edge.end_pin)
+                            result.append(linked_lowest.parent_node)
+                        else:
+                            result.append(edge.end_pin.parent_node)
+                else:
+                    linked_highest: SocketItemRev = self.linked_highest_socket(socket)
+                    if linked_highest != socket:
+                        for edge in linked_highest.edges:
+                            end_socket: SocketItemRev = edge.end_pin
+                            linked_lowest: SocketItemRev = end_socket.parent_node.linked_lowest_socket(end_socket)
+                            result.append(linked_lowest.parent_node)
+        else:
+            for socket in self._inputs:
+                result.append(self.linked_lowest_socket(socket).parent_node)
+
+        return result
+
     def has_sub_scene(self) -> bool:
         return len(self._sub_scene.nodes) > 0
 
