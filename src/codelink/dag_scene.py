@@ -26,6 +26,8 @@ import sys
 import math
 import json
 
+from dask.threaded import get
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -44,6 +46,7 @@ if TYPE_CHECKING:
 
 class DAGScene(QtWidgets.QGraphicsScene):
     node_added: QtCore.Signal = QtCore.Signal(NodeItem)
+    dag_changed: QtCore.Signal = QtCore.Signal(NodeItem)
 
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -139,6 +142,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._nodes.append(node)
         self.addItem(node)
         cast(QtCore.SignalInstance, self.node_added).emit(node)
+        for socket_widget in node.input_socket_widgets:
+            cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(lambda: self.execute_dag())
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
@@ -466,6 +471,12 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
     def is_sub_scene(self) -> bool:
         return self._parent_node is not None
+
+    def execute_dag(self):
+        for node in self.ends():
+            dsk: dict = self.to_dsk(node, {})
+            for socket in node.output_socket_widgets:
+                print(get(dsk, node.linked_lowest_socket(socket).pin))
 
     # --------------- Background ---------------
 

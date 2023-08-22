@@ -101,10 +101,7 @@ class ScalarMath(NodeItem):
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
 
-                self._undo_stack.push(
-                    remove_socket_cmd_cls(self, remove_idx)
-                )
-                # self.remove_socket_widget(remove_idx)
+                self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
 
             self._undo_stack.endMacro()
@@ -120,9 +117,7 @@ class ScalarMath(NodeItem):
                     undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
                 )
                 insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(
-                    add_socket_cmd_cls(self, new_socket_widget, insert_idx)
-                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
                 input_widget_count += 1
 
             self._undo_stack.endMacro()
