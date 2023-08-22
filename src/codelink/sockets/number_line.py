@@ -48,7 +48,7 @@ class NumberLine(SocketWidget):
 		)
 
 		# Pin setup
-		self._pin_item.color = QtGui.QColor("yellow")
+		self._pin_item.color = QtGui.QColor("#A1A1A1")
 		self._pin_item.pin_type = float
 
 		# Input widget setup
@@ -125,6 +125,3 @@ class NumberLine(SocketWidget):
 	def editing_finished(self) -> None:
 		self.validate_input()
 		self.clearFocus()
-
-	def return_pressed(self) -> None:
-		self.return_pressed()

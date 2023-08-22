@@ -50,8 +50,10 @@ class Shape(SocketWidget):
 		)
 
 		# Pin setup
-		self._pin_item.color = QtGui.QColor("blue")
+		self._pin_item.color = QtGui.QColor("#00D6A3")
 		self._pin_item.pin_type = Part.Shape
+
+		self.update_stylesheets()
 
 	# --------------- Socket data ---------------
 
