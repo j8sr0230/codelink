@@ -23,9 +23,6 @@
 from typing import Union, Optional, Any, cast
 import json
 import os
-import random
-
-from dask.threaded import get
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -367,34 +364,35 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self.scene().remove_edge(self._temp_edge)
 
             # Evaluates open dag ends
-            for node in self.scene().ends():
-                dsk: dict = self.scene().to_dsk(node, {})
-                for socket in node.output_socket_widgets:
-                    print(get(dsk, node.linked_lowest_socket(socket).pin))
-
-                # Pretty prints dask graph
-                string_dsk: dict = dict()
-                for pin, args in dsk.items():
-                    pretty_args: list = list()
-                    for arg_item in args:
-                        if hasattr(arg_item, "__name__"):
-                            # Eval method
-                            pretty_args.append(arg_item.__name__)
-                        elif type(arg_item) == list:
-                            # Socket wise eval inputs
-                            inputs: list = list()
-                            for socket_input in arg_item:
-                                if type(socket_input) == PinItem:
-                                    inputs.append(socket_input.socket_widget.prop_model.properties["Name"])
-                                else:
-                                    inputs.append(socket_input)
-                            pretty_args.append(inputs)
-                    string_dsk_key: str = pin.socket_widget.prop_model.properties["Name"]
-                    if string_dsk_key in list(string_dsk.keys()):
-                        string_dsk_key: str = string_dsk_key + str(random.randint(0, 1000))
-                    string_dsk[string_dsk_key] = str(pretty_args)
-
-                # print(json.dumps(string_dsk, indent=4))
+            self.scene().dag_changed.emit()
+            # for node in self.scene().ends():
+            #     dsk: dict = self.scene().to_dsk(node, {})
+            #     for socket in node.output_socket_widgets:
+            #         print(get(dsk, node.linked_lowest_socket(socket).pin))
+            #
+            #     # Pretty prints dask graph
+            #     string_dsk: dict = dict()
+            #     for pin, args in dsk.items():
+            #         pretty_args: list = list()
+            #         for arg_item in args:
+            #             if hasattr(arg_item, "__name__"):
+            #                 # Eval method
+            #                 pretty_args.append(arg_item.__name__)
+            #             elif type(arg_item) == list:
+            #                 # Socket wise eval inputs
+            #                 inputs: list = list()
+            #                 for socket_input in arg_item:
+            #                     if type(socket_input) == PinItem:
+            #                         inputs.append(socket_input.socket_widget.prop_model.properties["Name"])
+            #                     else:
+            #                         inputs.append(socket_input)
+            #                 pretty_args.append(inputs)
+            #         string_dsk_key: str = pin.socket_widget.prop_model.properties["Name"]
+            #         if string_dsk_key in list(string_dsk.keys()):
+            #             string_dsk_key: str = string_dsk_key + str(random.randint(0, 1000))
+            #         string_dsk[string_dsk_key] = str(pretty_args)
+            #
+            #     # print(json.dumps(string_dsk, indent=4))
 
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)

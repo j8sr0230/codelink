@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 class DAGScene(QtWidgets.QGraphicsScene):
     node_added: QtCore.Signal = QtCore.Signal(NodeItem)
-    dag_changed: QtCore.Signal = QtCore.Signal(NodeItem)
+    dag_changed: QtCore.Signal = QtCore.Signal()
 
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -77,6 +77,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         # Listeners
         cast(QtCore.SignalInstance, self.node_added).connect(lambda node: node.update_details(self._zoom_level))
+        cast(QtCore.SignalInstance, self.dag_changed).connect(self.execute_dag)
 
     @property
     def frames(self) -> list[FrameItem]:
