@@ -54,7 +54,7 @@ def main() -> None:
 
     for i in range(2):
         for j in range(2):
-            node = ScalarMath((32000 + i * 200, 32000 + j * 200), undo_stack)
+            node = ScalarMath((32000. + i * 200, 32000. + j * 200), undo_stack)
             editor_scene.add_node(node)
 
     editor_widget.fit_content()

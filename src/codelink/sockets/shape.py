@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 class Shape(SocketWidget):
 	def __init__(
-			self, undo_stack: QtWidgets.QUndoStack, name: str = "Shp", content_value: str = str(Part.Shape()),
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "Shp", content_value: str = "<No Input>",
 			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
 			is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
 			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None

@@ -54,7 +54,7 @@ class Box(NodeItem):
             NumberLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
             NumberLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
             NumberLine(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
-            Shape(undo_stack=self._undo_stack, name="Res", is_input=False, parent_node=self)
+            Shape(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()

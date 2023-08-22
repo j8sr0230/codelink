@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, undo_stack: QtWidgets.QUndoStack, name: str = "x", content_value: Any = 0.0,
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, name: str = "A", content_value: Any = "<No Input>",
                  is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
                  is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
                  parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None) -> None:

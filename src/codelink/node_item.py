@@ -57,7 +57,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                         "Collapse State": False,
                         "X": pos[0],
                         "Y": pos[1],
-                        "Width": 160
+                        "Width": 160.
                         },
             header_left="Base Prop",
             header_right="Value",

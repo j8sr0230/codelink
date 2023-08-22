@@ -54,12 +54,9 @@ class PropertyWidget(QtWidgets.QWidget):
 		# cast(QtCore.SignalInstance, self._node_prop_table.table_top_reached).connect(self.focus_up)
 		cast(QtCore.SignalInstance, self._node_prop_table.table_bottom_reached).connect(self.focus_down)
 
-		self._node_prop_table.setItemDelegateForRow(0, StringDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(1, StringDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(2, BooleanDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(3, IntegerDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(4, IntegerDelegate(self._node_prop_table))
-		self._node_prop_table.setItemDelegateForRow(5, IntegerDelegate(self._node_prop_table))
+		for i in range(len(self._node_prop_table.model().properties.keys())):
+			self.set_delegate(self._node_prop_table, i)
+
 		self._node_prop_table.setFixedHeight(
 			self._node_prop_table.model().rowCount() * self._node_prop_table.rowHeight(0) +
 			self._node_prop_table.horizontalHeader().height()
@@ -82,14 +79,8 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.model().rowCount() * socket_prop_table.rowHeight(0) +
 				socket_prop_table.horizontalHeader().height()
 			)
-			socket_prop_table.setItemDelegateForRow(0, StringDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(1, IntegerDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(3, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(4, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(5, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(6, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(7, BooleanDelegate(socket_prop_table))
+			for i in range(len(socket_prop_table.model().properties.keys())):
+				self.set_delegate(socket_prop_table, i)
 			self._layout.addWidget(socket_prop_table)
 
 		# Widget setup
@@ -97,6 +88,18 @@ class PropertyWidget(QtWidgets.QWidget):
 		self._layout.setSpacing(0)
 		self.setLayout(self._layout)
 		self.setFixedWidth(self._width)
+
+	@staticmethod
+	def set_delegate(prop_table: PropertyTable, row: int) -> None:
+		key: str = list(prop_table.model().properties.keys())[row]
+		data_type = type(prop_table.model().properties[key])
+
+		if data_type == bool:
+			prop_table.setItemDelegateForRow(row, BooleanDelegate(prop_table))
+		elif data_type == float:
+			prop_table.setItemDelegateForRow(row, IntegerDelegate(prop_table))
+		elif data_type == str:
+			prop_table.setItemDelegateForRow(row, StringDelegate(prop_table))
 
 	def get_next_prop_table(self, current_table: QtWidgets.QTableView) -> QtWidgets.QTableView:
 		table_views: list[QtWidgets.QTableView] = []

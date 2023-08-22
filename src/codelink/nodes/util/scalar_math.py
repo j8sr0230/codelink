@@ -61,7 +61,8 @@ class ScalarMath(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             NumberLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
             SocketWidget(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
-            SocketWidget(undo_stack=self._undo_stack, name="Res", is_input=False, parent_node=self)
+            SocketWidget(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                         parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()

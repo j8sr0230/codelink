@@ -531,7 +531,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def on_prop_scroller_focus_changed(self, focus_target: QtWidgets.QTableView):
         x: int = focus_target.pos().x()
         y: int = focus_target.pos().y()
-        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=200)
+        self._prop_scroller.ensureVisible(x, y, xmargin=0, ymargin=300)
 
     def fit_content(self) -> None:
         top_left: QtCore.QPointF = self.mapToScene(self.sceneRect().x(), self.sceneRect().y())

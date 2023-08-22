@@ -49,9 +49,8 @@ class CompoundViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            Shape(undo_stack=self._undo_stack, name="Shp", content_value=str(Part.Shape()), is_input=True,
-                  parent_node=self),
-            Shape(undo_stack=self._undo_stack, name="Shp", is_input=False, parent_node=self)
+            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True, parent_node=self),
+            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -88,12 +87,15 @@ class CompoundViewer(NodeItem):
                         if len(flat_shapes) > 0:
                             if self._compound_name == "":
                                 compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
-                                compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
                                 self._compound_name: str = compound_obj.Name
                             else:
-                                compound_obj = App.ActiveDocument.getObject(self._compound_name)
+                                if App.ActiveDocument.getObject(self._compound_name) is not None:
+                                    compound_obj = App.ActiveDocument.getObject(self._compound_name)
+                                else:
+                                    compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
 
                             compound_obj.Shape = Part.makeCompound(flat_shapes)
+                            compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
                             App.activeDocument().recompute()
                         else:
                             self.on_remove()
