@@ -2,70 +2,14 @@
     "Nodes": [
         {
             "Class": "ScalarMath",
-            "UUID": "{6becea98-3d11-4d83-b9d6-5b5d87c63bcc}",
+            "UUID": "{1f770191-61e2-45de-909e-b788be362b1b}",
             "Properties": {
                 "Name": "Scalar Math",
-                "Color": "green",
-                "Collapse State": false,
-                "X": 31893,
-                "Y": 32000,
-                "Width": 160
-            },
-            "Sockets": [
-                {
-                    "Class": "NumberLine",
-                    "Properties": {
-                        "Name": "A",
-                        "Value": 4.0,
-                        "Flatten": false,
-                        "Simplify": false,
-                        "Graft": false,
-                        "Graft Topo": false,
-                        "Unwrap": false,
-                        "Wrap": false
-                    },
-                    "Is Input": true,
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "SocketWidget",
-                    "Properties": {
-                        "Name": "Res",
-                        "Value": 0.0,
-                        "Flatten": false,
-                        "Simplify": false,
-                        "Graft": false,
-                        "Graft Topo": false,
-                        "Unwrap": false,
-                        "Wrap": false
-                    },
-                    "Is Input": false,
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                }
-            ],
-            "Subgraph": {
-                "Nodes": [],
-                "Edges": [],
-                "Frames": []
-            },
-            "Option Idx": 4
-        },
-        {
-            "Class": "ScalarMath",
-            "UUID": "{6731409c-807b-4327-8b94-5e909f3654b9}",
-            "Properties": {
-                "Name": "Scalar Math",
-                "Color": "red",
-                "Collapse State": false,
-                "X": 32459,
-                "Y": 32007,
-                "Width": 160
+                "Color": "#1D1D1D",
+                "Collapsed": true,
+                "X": 31999.0,
+                "Y": 32002.0,
+                "Width": 160.0
             },
             "Sockets": [
                 {
@@ -87,7 +31,7 @@
                     ]
                 },
                 {
-                    "Class": "SocketWidget",
+                    "Class": "NumberLine",
                     "Properties": {
                         "Name": "B",
                         "Value": 0.0,
@@ -105,10 +49,10 @@
                     ]
                 },
                 {
-                    "Class": "SocketWidget",
+                    "Class": "NumberLine",
                     "Properties": {
                         "Name": "Res",
-                        "Value": 0.0,
+                        "Value": "<No Input>",
                         "Flatten": false,
                         "Simplify": false,
                         "Graft": false,
@@ -131,15 +75,15 @@
             "Option Idx": 0
         },
         {
-            "Class": "NodeItem",
-            "UUID": "{ad1328a8-499e-4904-8eee-5fc0ebcf08e3}",
+            "Class": "ScalarMath",
+            "UUID": "{2402f7c7-1a38-431d-a140-6c1e158ab492}",
             "Properties": {
-                "Name": "Group Node",
+                "Name": "Scalar Math",
                 "Color": "#1D1D1D",
-                "Collapse State": false,
-                "X": 32183,
-                "Y": 32036,
-                "Width": 160
+                "Collapsed": false,
+                "X": 32000.0,
+                "Y": 32200.0,
+                "Width": 160.0
             },
             "Sockets": [
                 {
@@ -156,15 +100,33 @@
                     },
                     "Is Input": true,
                     "Link": [
-                        "{f1bb4038-f480-4440-b257-7bd42ddc733f}",
-                        0
+                        "",
+                        -1
                     ]
                 },
                 {
-                    "Class": "SocketWidget",
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "B",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
                     "Properties": {
                         "Name": "Res",
-                        "Value": 0.0,
+                        "Value": "<No Input>",
                         "Flatten": false,
                         "Simplify": false,
                         "Graft": false,
@@ -174,201 +136,167 @@
                     },
                     "Is Input": false,
                     "Link": [
-                        "{de6d3574-6b6f-452e-ba55-94b860606aed}",
-                        2
+                        "",
+                        -1
                     ]
                 }
             ],
             "Subgraph": {
-                "Nodes": [
-                    {
-                        "Class": "ScalarMath",
-                        "UUID": "{f1bb4038-f480-4440-b257-7bd42ddc733f}",
-                        "Properties": {
-                            "Name": "Scalar Math",
-                            "Color": "#1D1D1D",
-                            "Collapse State": false,
-                            "X": 32182,
-                            "Y": 31908,
-                            "Width": 160
-                        },
-                        "Sockets": [
-                            {
-                                "Class": "NumberLine",
-                                "Properties": {
-                                    "Name": "A ^",
-                                    "Value": 0.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": true,
-                                "Link": [
-                                    "{ad1328a8-499e-4904-8eee-5fc0ebcf08e3}",
-                                    0
-                                ]
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Properties": {
-                                    "Name": "B",
-                                    "Value": 0.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": true,
-                                "Link": [
-                                    "",
-                                    -1
-                                ]
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Properties": {
-                                    "Name": "Res",
-                                    "Value": 0.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": false,
-                                "Link": [
-                                    "",
-                                    -1
-                                ]
-                            }
-                        ],
-                        "Subgraph": {
-                            "Nodes": [],
-                            "Edges": [],
-                            "Frames": []
-                        },
-                        "Option Idx": 0
-                    },
-                    {
-                        "Class": "ScalarMath",
-                        "UUID": "{de6d3574-6b6f-452e-ba55-94b860606aed}",
-                        "Properties": {
-                            "Name": "Scalar Math",
-                            "Color": "#1D1D1D",
-                            "Collapse State": false,
-                            "X": 32184,
-                            "Y": 32106,
-                            "Width": 160
-                        },
-                        "Sockets": [
-                            {
-                                "Class": "NumberLine",
-                                "Properties": {
-                                    "Name": "A",
-                                    "Value": 4.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": true,
-                                "Link": [
-                                    "",
-                                    -1
-                                ]
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Properties": {
-                                    "Name": "B",
-                                    "Value": 0.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": true,
-                                "Link": [
-                                    "",
-                                    -1
-                                ]
-                            },
-                            {
-                                "Class": "SocketWidget",
-                                "Properties": {
-                                    "Name": "Res ^",
-                                    "Value": 0.0,
-                                    "Flatten": false,
-                                    "Simplify": false,
-                                    "Graft": false,
-                                    "Graft Topo": false,
-                                    "Unwrap": false,
-                                    "Wrap": false
-                                },
-                                "Is Input": false,
-                                "Link": [
-                                    "{ad1328a8-499e-4904-8eee-5fc0ebcf08e3}",
-                                    1
-                                ]
-                            }
-                        ],
-                        "Subgraph": {
-                            "Nodes": [],
-                            "Edges": [],
-                            "Frames": []
-                        },
-                        "Option Idx": 0
-                    }
-                ],
-                "Edges": [
-                    {
-                        "UUID": "{ff13a955-dd79-4459-887d-a1e9a17ba945}",
-                        "Start Node UUID": "{f1bb4038-f480-4440-b257-7bd42ddc733f}",
-                        "Start Socket Idx": 2,
-                        "End Node UUID": "{de6d3574-6b6f-452e-ba55-94b860606aed}",
-                        "End Socket Idx": 1
-                    }
-                ],
+                "Nodes": [],
+                "Edges": [],
                 "Frames": []
-            }
-        }
-    ],
-    "Edges": [
-        {
-            "UUID": "{b54a91bc-392a-4598-9539-8bd0ac9d8ea9}",
-            "Start Node UUID": "{6becea98-3d11-4d83-b9d6-5b5d87c63bcc}",
-            "Start Socket Idx": 1,
-            "End Node UUID": "{ad1328a8-499e-4904-8eee-5fc0ebcf08e3}",
-            "End Socket Idx": 0
+            },
+            "Option Idx": 0
         },
         {
-            "UUID": "{f6c9987c-4595-4670-a010-b0bc76302f0c}",
-            "Start Node UUID": "{ad1328a8-499e-4904-8eee-5fc0ebcf08e3}",
-            "Start Socket Idx": 1,
-            "End Node UUID": "{6731409c-807b-4327-8b94-5e909f3654b9}",
-            "End Socket Idx": 1
+            "Class": "ScalarMath",
+            "UUID": "{b9eeb198-552e-4773-b19d-48005a9c70c4}",
+            "Properties": {
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapsed": false,
+                "X": 32200.0,
+                "Y": 32000.0,
+                "Width": 160.0
+            },
+            "Sockets": [
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "A",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "B",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "Res",
+                        "Value": "<No Input>",
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": false,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": []
+            },
+            "Option Idx": 0
+        },
+        {
+            "Class": "ScalarMath",
+            "UUID": "{0785c881-5a18-4c21-8a72-31fe019994b7}",
+            "Properties": {
+                "Name": "Scalar Math",
+                "Color": "#1D1D1D",
+                "Collapsed": true,
+                "X": 32200.0,
+                "Y": 32200.0,
+                "Width": 160.0
+            },
+            "Sockets": [
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "A",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "B",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "Res",
+                        "Value": "<No Input>",
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": false,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": []
+            },
+            "Option Idx": 0
         }
     ],
-    "Frames": [
-        {
-            "UUID": "{97ab7365-bf40-471f-af65-c14637c647c3}",
-            "Properties": {
-                "Name": "Frame Label",
-                "Color": "green"
-            },
-            "Framed Nodes UUID's": [
-                "{6731409c-807b-4327-8b94-5e909f3654b9}"
-            ]
-        }
-    ]
+    "Edges": [],
+    "Frames": []
 }

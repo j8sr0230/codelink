@@ -85,12 +85,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._content_layout.addWidget(self._label_widget)
 
         # Input widget placeholder
-        self._input_widget: QtWidgets.QLabel = QtWidgets.QLabel("", self)
-        self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self._content_layout.addWidget(self._input_widget)
-        self._input_widget.hide()
-
-        self.update_stylesheets()
+        self._input_widget: Optional[QtWidgets.QWidget] = None
 
         # QActions
         self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
@@ -131,12 +126,12 @@ class SocketWidget(QtWidgets.QWidget):
         return self._prop_model
 
     @property
-    def link(self) -> tuple[str, int]:
-        return self._link
+    def name(self) -> str:
+        return self._prop_model.properties["Name"]
 
-    @link.setter
-    def link(self, value: tuple[str, int]) -> None:
-        self._link: tuple[str, int] = value
+    @property
+    def value(self) -> Any:
+        return self._prop_model.properties["Value"]
 
     @property
     def is_input(self) -> bool:
@@ -145,6 +140,14 @@ class SocketWidget(QtWidgets.QWidget):
     @is_input.setter
     def is_input(self, value: bool):
         self._is_input: bool = value
+
+    @property
+    def link(self) -> tuple[str, int]:
+        return self._link
+
+    @link.setter
+    def link(self, value: tuple[str, int]) -> None:
+        self._link: tuple[str, int] = value
 
     @property
     def parent_node(self) -> NodeItem:
@@ -214,8 +217,8 @@ class SocketWidget(QtWidgets.QWidget):
             self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
         )
 
-    def update_pin_position(self) -> None:
-        if not self._parent_node.is_collapsed:
+    def update_pin_position(self, is_node_collapsed: bool) -> None:
+        if not is_node_collapsed:
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._pin_item.size) / 2)
 
             if self._is_input:
@@ -249,11 +252,9 @@ class SocketWidget(QtWidgets.QWidget):
         self._wrap_action.setChecked(bool(self._prop_model.properties["Wrap"]))
 
     def update_all(self):
-        self._label_widget.setText(self._prop_model.properties["Name"])
-        self.update_pin_position()
+        self._label_widget.setText(self.name)
         self.update_stylesheets()
         self.update_socket_actions()
-        self.parent_node.update_details(self._parent_node.zoom_level)
 
     # --------------- Overwrites ---------------
 

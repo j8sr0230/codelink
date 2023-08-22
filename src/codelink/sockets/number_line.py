@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
 class NumberLine(SocketWidget):
 	def __init__(
-			self, undo_stack: QtWidgets.QUndoStack, name: str = "A", content_value: float = 0.0,
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "A", content_value: Any = 0.0,
 			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
 			is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
 			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
@@ -46,10 +46,6 @@ class NumberLine(SocketWidget):
 			undo_stack, name, content_value, is_flatten, is_simplify, is_graft, is_graft_topo, is_unwrap, is_wrap,
 			is_input, parent_node, parent_widget
 		)
-
-		# Removes input widget placeholder from paren class
-		self._content_layout.removeWidget(self._input_widget)
-		self._input_widget.setParent(None)
 
 		# Pin setup
 		self._pin_item.color = QtGui.QColor("yellow")
@@ -96,9 +92,9 @@ class NumberLine(SocketWidget):
 	# --------------- Callbacks ---------------
 
 	def update_stylesheets(self) -> None:
-		if self._is_input:
-			self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		super().update_stylesheets()
 
+		if self._is_input:
 			if self._pin_item.has_edges() or self.link != ("", -1):
 				self._label_widget.setStyleSheet("background-color: transparent")
 				self._input_widget.hide()
@@ -107,10 +103,7 @@ class NumberLine(SocketWidget):
 				self._label_widget.setStyleSheet("background-color: #545454")
 				self._input_widget.show()
 				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
-
 		else:
-			self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-			self._label_widget.setStyleSheet("background-color: transparent")
 			self._input_widget.hide()
 
 	def update_all(self):

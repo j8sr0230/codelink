@@ -100,7 +100,7 @@ class FrameItem(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         super().hoverEnterEvent(event)
-        print("Frame UUID:", self._uuid)
+        # print("Frame UUID:", self._uuid)
 
     # --------------- Shape and painting ---------------
 

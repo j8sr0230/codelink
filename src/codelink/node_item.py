@@ -54,7 +54,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             properties={
                         "Name": "Node Item",
                         "Color": "#1D1D1D",
-                        "Collapse State": False,
+                        "Collapsed": False,
                         "X": pos[0],
                         "Y": pos[1],
                         "Width": 160.
@@ -182,8 +182,16 @@ class NodeItem(QtWidgets.QGraphicsItem):
         return self._prop_model
 
     @property
-    def is_collapsed(self) -> str:
-        return self._prop_model.properties["Collapse State"]
+    def name(self) -> str:
+        return self._prop_model.properties["Name"]
+
+    @property
+    def color(self) -> str:
+        return self._prop_model.properties["Color"]
+
+    @property
+    def is_collapsed(self) -> bool:
+        return self._prop_model.properties["Collapsed"]
 
     @property
     def parent_frame(self) -> FrameItem:
@@ -253,20 +261,20 @@ class NodeItem(QtWidgets.QGraphicsItem):
         )
 
     @property
-    def last_position(self) -> QtCore.QPointF:
-        return self._last_position
-
-    @last_position.setter
-    def last_position(self, value: QtCore.QPointF) -> None:
-        self._last_position: QtCore.QPointF = value
-
-    @property
     def moved(self) -> bool:
         return self._moved
 
     @moved.setter
     def moved(self, value: bool) -> None:
         self._moved: bool = value
+
+    @property
+    def last_position(self) -> QtCore.QPointF:
+        return self._last_position
+
+    @last_position.setter
+    def last_position(self, value: QtCore.QPointF) -> None:
+        self._last_position: QtCore.QPointF = value
 
     @property
     def last_width(self) -> int:
@@ -548,7 +556,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
             if collapse_btn_left <= event.pos().x() <= collapse_btn_right:
                 if collapse_btn_top <= event.pos().y() <= collapse_btn_bottom:
-                    collapse_row: int = list(self._prop_model.properties.keys()).index("Collapse State")
+                    collapse_row: int = list(self._prop_model.properties.keys()).index("Collapsed")
                     self._prop_model.setData(
                         self._prop_model.index(collapse_row, 1, QtCore.QModelIndex()), not self.is_collapsed, 2
                     )
@@ -658,7 +666,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     def update_pin_positions(self) -> None:
         for widget in self._socket_widgets:
-            widget.update_pin_position()
+            widget.update_pin_position(self.is_collapsed)
 
     def update_details(self, zoom_level: int) -> None:
         self._zoom_level = zoom_level

@@ -32,7 +32,6 @@ MAIN_STYLE: str = """
 	    padding-right: 15px;
 	    padding-top: 5px;
 	    padding-bottom: 5px;
-
 	}
 	
 	QMenu::item:selected, QMenu::item:pressed { 
