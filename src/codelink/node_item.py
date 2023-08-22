@@ -745,23 +745,23 @@ class NodeItem(QtWidgets.QGraphicsItem):
             socket_widget_cls: type = getattr(sys.modules[__name__], socket_widget_dict["Class"])
             new_socket_widget: socket_widget_cls = socket_widget_cls(
                 undo_stack=self._undo_stack,
-                label=socket_widget_dict["Properties"]["Name"],
-                is_input=socket_widget_dict["Properties"]["Is Input"],
-                data=socket_widget_dict["Properties"]["Data"],
+                name=socket_widget_dict["Properties"]["Name"],
+                content_value=socket_widget_dict["Properties"]["Value"],
+                is_flatten=socket_widget_dict["Properties"]["Flatten"],
+                is_simplify=socket_widget_dict["Properties"]["Simplify"],
+                is_graft=socket_widget_dict["Properties"]["Graft"],
+                is_graft_topo=socket_widget_dict["Properties"]["Graft Topo"],
+                is_unwrap=socket_widget_dict["Properties"]["Unwrap"],
+                is_wrap=socket_widget_dict["Properties"]["Wrap"],
                 parent_node=self
             )
-            new_socket_widget.prop_model.properties["Flatten"] = socket_widget_dict["Properties"]["Flatten"]
-            new_socket_widget.prop_model.properties["Simplify"] = socket_widget_dict["Properties"]["Simplify"]
-            new_socket_widget.prop_model.properties["Graft"] = socket_widget_dict["Properties"]["Graft"]
-            new_socket_widget.prop_model.properties["Graft Topo"] = socket_widget_dict["Properties"]["Graft Topo"]
-            new_socket_widget.prop_model.properties["Unwrap"] = socket_widget_dict["Properties"]["Unwrap"]
-            new_socket_widget.prop_model.properties["Wrap"] = socket_widget_dict["Properties"]["Wrap"]
+            new_socket_widget.is_input = bool(socket_widget_dict["Is Input"])
             new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
             new_socket_widget.update_all()
 
-        # Reset sub graph data
+        # Reset sub graph content_value
         self.sub_scene.deserialize(state["Subgraph"])
 
         if self.has_sub_scene():

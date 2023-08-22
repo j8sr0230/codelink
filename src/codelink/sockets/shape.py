@@ -23,6 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
+# noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
 
@@ -37,11 +38,16 @@ if TYPE_CHECKING:
 
 class Shape(SocketWidget):
 	def __init__(
-			self, undo_stack: QtWidgets.QUndoStack, label: str = "Shape", is_input: bool = True,
-			data: str = str(Part.Shape()), parent_node: Optional[NodeItem] = None,
-			parent_widget: Optional[QtWidgets.QWidget] = None
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "Shp", content_value: str = str(Part.Shape()),
+			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
+			is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
+			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
 	) -> None:
-		super().__init__(undo_stack, label, is_input, data, parent_node, parent_widget)
+
+		super().__init__(
+			undo_stack, name, content_value, is_flatten, is_simplify, is_graft, is_graft_topo, is_unwrap, is_wrap,
+			is_input, parent_node, parent_widget
+		)
 
 		# Pin setup
 		self._pin_item.color = QtGui.QColor("blue")

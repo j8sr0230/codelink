@@ -83,14 +83,13 @@ class PropertyWidget(QtWidgets.QWidget):
 				socket_prop_table.horizontalHeader().height()
 			)
 			socket_prop_table.setItemDelegateForRow(0, StringDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(1, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(2, IntegerDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(1, IntegerDelegate(socket_prop_table))
+			socket_prop_table.setItemDelegateForRow(2, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(3, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(4, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(5, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(6, BooleanDelegate(socket_prop_table))
 			socket_prop_table.setItemDelegateForRow(7, BooleanDelegate(socket_prop_table))
-			socket_prop_table.setItemDelegateForRow(8, BooleanDelegate(socket_prop_table))
 			self._layout.addWidget(socket_prop_table)
 
 		# Widget setup

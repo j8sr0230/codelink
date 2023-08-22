@@ -36,28 +36,29 @@ if TYPE_CHECKING:
 
 
 class SocketWidget(QtWidgets.QWidget):
-    def __init__(self, undo_stack: QtWidgets.QUndoStack,
-                 label: str = "In", is_input: bool = True, data: Any = 0.0, parent_node: Optional[NodeItem] = None,
-                 parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, name: str = "x", content_value: Any = 0.0,
+                 is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
+                 is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
+                 parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent_widget)
 
         # Persistent data model
         self._prop_model: PropertyModel = PropertyModel(
             properties={
-                        "Name": label,
-                        "Is Input": is_input,
-                        "Data": data,
-                        "Flatten": False,
-                        "Simplify": False,
-                        "Graft": False,
-                        "Graft Topo": False,
-                        "Unwrap": False,
-                        "Wrap": False
+                        "Name": name,
+                        "Value": content_value,
+                        "Flatten": is_flatten,
+                        "Simplify": is_simplify,
+                        "Graft": is_graft,
+                        "Graft Topo": is_graft_topo,
+                        "Unwrap": is_unwrap,
+                        "Wrap": is_wrap
                         },
             header_left="Socket Property",
             header_right="Value",
             undo_stack=undo_stack
         )
+        self._is_input: bool = is_input
         self._link: tuple[str, int] = ("", -1)
 
         # Non persistent data model
@@ -72,21 +73,21 @@ class SocketWidget(QtWidgets.QWidget):
 
         # UI
         # Layout
-        self._layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
-        self._layout.setMargin(0)
-        self._layout.setSpacing(0)
+        self._content_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
+        self._content_layout.setMargin(0)
+        self._content_layout.setSpacing(0)
         self.setFixedHeight(24)
-        self.setLayout(self._layout)
+        self.setLayout(self._content_layout)
 
         # Label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
         self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self._layout.addWidget(self._label_widget)
+        self._content_layout.addWidget(self._label_widget)
 
         # Input widget placeholder
         self._input_widget: QtWidgets.QLabel = QtWidgets.QLabel("", self)
         self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self._layout.addWidget(self._input_widget)
+        self._content_layout.addWidget(self._input_widget)
         self._input_widget.hide()
 
         self.update_stylesheets()
@@ -139,7 +140,11 @@ class SocketWidget(QtWidgets.QWidget):
 
     @property
     def is_input(self) -> bool:
-        return self._prop_model.properties["Is Input"]
+        return self._is_input
+
+    @is_input.setter
+    def is_input(self, value: bool):
+        self._is_input: bool = value
 
     @property
     def parent_node(self) -> NodeItem:
@@ -147,7 +152,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     @parent_node.setter
     def parent_node(self, value: NodeItem) -> None:
-        self._parent_node: 'NodeItem' = value
+        self._parent_node: NodeItem = value
 
     @property
     def pin(self) -> PinItem:
@@ -213,7 +218,7 @@ class SocketWidget(QtWidgets.QWidget):
         if not self._parent_node.is_collapsed:
             y_pos: float = (self._parent_node.content_y + self.y() + (self.height() - self._pin_item.size) / 2)
 
-            if self._prop_model.properties["Is Input"]:
+            if self._is_input:
                 self._pin_item.setPos(-self._pin_item.size / 2, y_pos)
             else:
                 self._pin_item.setPos(self._parent_node.boundingRect().width() - self._pin_item.size / 2, y_pos)
@@ -221,14 +226,14 @@ class SocketWidget(QtWidgets.QWidget):
 
         else:
             y_pos: float = (self._parent_node.header_height - self._pin_item.size) / 2
-            if self._prop_model.properties["Is Input"]:
+            if self._is_input:
                 self._pin_item.setPos(-self._pin_item.size / 2, y_pos)
             else:
                 self._pin_item.setPos(self._parent_node.boundingRect().width() - self._pin_item.size / 2, y_pos)
             self._pin_item.hide()
 
     def update_stylesheets(self) -> None:
-        if self._prop_model.properties["Is Input"]:
+        if self._is_input:
             self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
             self._label_widget.setStyleSheet("background-color: transparent")
         else:
@@ -274,6 +279,7 @@ class SocketWidget(QtWidgets.QWidget):
         data_dict: dict = {
             "Class": self.__class__.__name__,
             "Properties": self._prop_model.__getstate__(),
+            "Is Input": self._is_input,
             "Link": self._link
         }
         return data_dict

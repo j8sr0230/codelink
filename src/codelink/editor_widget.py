@@ -745,11 +745,17 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         if len(outer_socket_edges) > 0:
                             new_socket_widget: socket_widget.__class__ = socket_widget.__class__(
                                 undo_stack=self._undo_stack,
-                                label=socket_widget.prop_model.properties["Name"],
-                                is_input=socket_widget.prop_model.properties["Is Input"],
-                                data=socket_widget.prop_model.properties["Data"],
+                                name=socket_widget.prop_model.properties["Name"],
+                                content_value=socket_widget.prop_model.properties["Value"],
+                                is_flatten=socket_widget.prop_model.properties["Flatten"],
+                                is_simplify=socket_widget.prop_model.properties["Simplify"],
+                                is_graft=socket_widget.prop_model.properties["Graft"],
+                                is_graft_topo=socket_widget.prop_model.properties["Graft Topo"],
+                                is_unwrap=socket_widget.prop_model.properties["Unwrap"],
+                                is_wrap=socket_widget.prop_model.properties["Wrap"],
                                 parent_node=grp_node
                             )
+                            new_socket_widget.is_input = socket_widget.is_input
                             new_socket_widget.link = (node.uuid, socket_idx)
                             grp_node.insert_socket_widget(new_socket_widget, len(grp_node.socket_widgets))
 

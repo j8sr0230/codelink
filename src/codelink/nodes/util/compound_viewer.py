@@ -49,9 +49,9 @@ class CompoundViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            Shape(undo_stack=self._undo_stack, label="Shp", is_input=True,  data=str(Part.Shape()),
+            Shape(undo_stack=self._undo_stack, name="Shp", content_value=str(Part.Shape()), is_input=True,
                   parent_node=self),
-            Shape(undo_stack=self._undo_stack, label="Shp", is_input=False, parent_node=self)
+            Shape(undo_stack=self._undo_stack, name="Shp", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
