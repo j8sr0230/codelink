@@ -47,10 +47,13 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.remove_node(self._node)
+		for node in self._scene.ends():
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 	def redo(self) -> None:
 		self._scene.clearSelection()
 		self._scene.add_node(self._node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node)
 
 
 class AddGrpNodeCommand(QtWidgets.QUndoCommand):
