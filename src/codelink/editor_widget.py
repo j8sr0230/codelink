@@ -346,6 +346,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             self._undo_stack.push(RerouteEdgeCommand(self.scene(), edge=self._temp_edge,
                                                                      undo_pin=self._last_pin,
                                                                      redo_pin=self._temp_edge.end_pin))
+                        cast(QtCore.SignalInstance, self.scene().dag_changed).emit(
+                            self._temp_edge.end_pin.parent_node
+                        )
                 else:
                     self._temp_edge.end_pin = self._last_pin
                     if self._temp_edge.end_pin != self._temp_edge.start_pin:
@@ -355,6 +358,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     else:
                         # Invalid edge with same start and end pin
                         self.scene().remove_edge(self._temp_edge)
+
+                    for node in self.scene().ends():
+                        cast(QtCore.SignalInstance, self.scene().dag_changed).emit(node)
             else:
                 # If target is not a PinItem (mouse btn release in empty area)
                 self._temp_edge.end_pin = self._last_pin
@@ -362,6 +368,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self._undo_stack.push(RemoveEdgeCommand(self.scene(), self._temp_edge))
                 else:
                     self.scene().remove_edge(self._temp_edge)
+
+                for node in self.scene().ends():
+                    cast(QtCore.SignalInstance, self.scene().dag_changed).emit(node)
 
             # Evaluates open dag ends
             # self.scene().dag_changed.emit(self._temp_edge.end_pin.parent_node)
@@ -564,6 +573,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
         new_node: node_cls = node_cls((new_pos.x(), new_pos.y()), self._undo_stack)
         self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
+        cast(QtCore.SignalInstance, self.scene().dag_changed).emit(new_node)
 
     def open(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
@@ -675,6 +685,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 item.setSelected(True)
 
             self._undo_stack.push(PasteClipboardCommand(self.scene(), nodes, edges, frames))
+
+            for node in self.scene().ends():
+                if node in nodes:
+                    cast(QtCore.SignalInstance, self.scene().dag_changed).emit(node)
+
         except json.JSONDecodeError:
             print("Pasting failed!")
 
@@ -708,6 +723,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         for node in nodes:
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
         self._undo_stack.endMacro()
+
+        for node in self.scene().ends():
+            cast(QtCore.SignalInstance, self.scene().dag_changed).emit(node)
 
     def add_grp_node(self):
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()

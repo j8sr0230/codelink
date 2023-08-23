@@ -147,7 +147,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
                 lambda: self.execute_dag(socket_widget.parent_node)
             )
-        cast(QtCore.SignalInstance, self.dag_changed).emit(node)
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
