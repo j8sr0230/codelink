@@ -92,7 +92,7 @@ class ScalarMath(NodeItem):
         if current_option_name == "Sqrt":
             self._undo_stack.beginMacro("Changes option box")
             self._undo_stack.push(
-                set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
+                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
             )
 
             while input_widget_count > 1:
@@ -109,7 +109,7 @@ class ScalarMath(NodeItem):
         else:
             self._undo_stack.beginMacro("Changes option box")
             self._undo_stack.push(
-                set_op_idx_cmd_cls(self._option_box, last_option_index, current_option_index)
+                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
             )
 
             while input_widget_count < 2:

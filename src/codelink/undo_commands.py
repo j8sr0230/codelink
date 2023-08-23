@@ -151,10 +151,12 @@ class RemoveSocketCommand(QtWidgets.QUndoCommand):
 
 class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, option_box: OptionBoxWidget, undo_idx: int, redo_idx, parent: Optional[QtWidgets.QUndoCommand] = None
+			self, node: NodeItem, option_box: OptionBoxWidget, undo_idx: int, redo_idx,
+			parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
+		self._node: NodeItem = node
 		self._option_box: OptionBoxWidget = option_box
 		self._undo_idx: int = undo_idx
 		self._redo_idx: int = redo_idx
@@ -164,6 +166,7 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 		self._option_box.setCurrentIndex(self._undo_idx)
 		self._option_box.update()
 		self._option_box.blockSignals(False)
+		cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 	def redo(self) -> None:
 		if self._option_box.currentIndex() != self._redo_idx:
@@ -172,50 +175,7 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 			self._option_box.update()
 			self._option_box.blockSignals(False)
 
-
-# class ToggleNodeCollapseCommand(QtWidgets.QUndoCommand):
-# 	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-# 		super().__init__(parent)
-#
-# 		self._scene: DAGScene = scene
-# 		self._node = node
-#
-# 	def undo(self) -> None:
-# 		self.redo()
-#
-# 	def redo(self) -> None:
-# 		new_collapse_state: bool = not self._node.prop_model.properties["Collapse State"]
-# 		collapse_mode_row: int = list(self._node.prop_model.properties.keys()).index("Collapse State")
-#
-# 		# noinspection PyTypeChecker
-# 		self._node.prop_model.setData(
-# 			self._node.prop_model.index(collapse_mode_row, 1, QtCore.QModelIndex()),
-# 			new_collapse_state, QtCore.Qt.EditRole
-# 		)
-#
-#
-# class ResizeNodeCommand(QtWidgets.QUndoCommand):
-# 	def __init__(self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-# 		super().__init__(parent)
-#
-# 		self._scene: DAGScene = scene
-# 		self._node: NodeItem = node
-# 		self._undo_width: int = node.last_width
-# 		self._redo_width: int = node.boundingRect().width()
-#
-# 	def undo(self) -> None:
-# 		width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
-# 		self._node.prop_model.setData(
-# 			self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._undo_width, 2
-# 		)
-#
-# 	def redo(self) -> None:
-# 		if self._undo_width != self._redo_width:
-# 			width_row: int = list(self._node.prop_model.properties.keys()).index("Width")
-#
-# 			self._node.prop_model.setData(
-# 				self._node.prop_model.index(width_row, 1, QtCore.QModelIndex()), self._redo_width, 2
-# 			)
+		cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 
 class MoveNodesCommand(QtWidgets.QUndoCommand):
@@ -254,9 +214,12 @@ class RemoveNodeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.add_node(self._node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node)
 
 	def redo(self) -> None:
 		self._scene.remove_node(self._node)
+		for node in self._scene.ends():
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 
 class AddEdgeCommand(QtWidgets.QUndoCommand):
@@ -270,10 +233,13 @@ class AddEdgeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.remove_edge(self._edge)
+		for node in self._scene.ends():
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 	def redo(self) -> None:
 		if self._edge not in self._scene.edges:
 			self._scene.add_edge(self._edge)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
 
 
 class RerouteEdgeCommand(QtWidgets.QUndoCommand):
@@ -295,6 +261,7 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		self._edge.end_pin = self._undo_pin
 		self._edge.end_pin.add_edge(self._edge)
 		self._edge.end_pin.socket_widget.update_stylesheets()
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
 
 	def redo(self) -> None:
 		self._edge.end_pin.remove_edge(self._edge)
@@ -303,6 +270,7 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		self._edge.end_pin = self._redo_pin
 		self._edge.end_pin.add_edge(self._edge)
 		self._edge.end_pin.socket_widget.update_stylesheets()
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
 
 
 class RemoveEdgeCommand(QtWidgets.QUndoCommand):
@@ -314,9 +282,12 @@ class RemoveEdgeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.add_edge(self._edge)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
 
 	def redo(self) -> None:
 		self._scene.remove_edge(self._edge)
+		for node in self._scene.ends():
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
@@ -425,6 +396,9 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 		for node in self._nodes:
 			self._scene.remove_node(node)
 
+		for node in self._scene.ends():
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+
 	def redo(self) -> None:
 		for node in self._nodes:
 			if node not in self._scene.nodes:
@@ -437,6 +411,10 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 				self._scene.add_frame(frame)
 				for node in frame.framed_nodes:
 					node.parent_frame = frame
+
+		for node in self._scene.ends():
+			if node in self._nodes:
+				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 
 class EditModelDataCommand(QtWidgets.QUndoCommand):

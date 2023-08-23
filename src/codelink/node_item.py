@@ -300,6 +300,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._content_layout.insertWidget(insert_idx + layout_offset, socket_widget)
         self._content_widget.show()
         self.update_all()
+        cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
+                lambda: self.scene().execute_dag(socket_widget.parent_node)
+        )
 
     def remove_socket_widget(self, remove_idx: int = 0):
         if 0 <= remove_idx < len(self._socket_widgets):
