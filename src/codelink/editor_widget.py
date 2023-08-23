@@ -364,7 +364,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     self.scene().remove_edge(self._temp_edge)
 
             # Evaluates open dag ends
-            self.scene().dag_changed.emit()
+            # self.scene().dag_changed.emit(self._temp_edge.end_pin.parent_node)
             # for node in self.scene().ends():
             #     dsk: dict = self.scene().to_dsk(node, {})
             #     for socket in node.output_socket_widgets:

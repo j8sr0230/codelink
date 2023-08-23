@@ -46,7 +46,7 @@ if TYPE_CHECKING:
 
 class DAGScene(QtWidgets.QGraphicsScene):
     node_added: QtCore.Signal = QtCore.Signal(NodeItem)
-    dag_changed: QtCore.Signal = QtCore.Signal()
+    dag_changed: QtCore.Signal = QtCore.Signal(NodeItem)
 
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -144,7 +144,10 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self.addItem(node)
         cast(QtCore.SignalInstance, self.node_added).emit(node)
         for socket_widget in node.input_socket_widgets:
-            cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(lambda: self.execute_dag())
+            cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
+                lambda: self.execute_dag(socket_widget.parent_node)
+            )
+        cast(QtCore.SignalInstance, self.dag_changed).emit(node)
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
@@ -431,6 +434,18 @@ class DAGScene(QtWidgets.QGraphicsScene):
                 result.append(node)
         return result
 
+    def _path_ends(self, current_node: NodeItem, result: list[NodeItem]) -> None:
+        if len(current_node.successors()) == 0:
+            result.append(current_node)
+        else:
+            for suc_node in current_node.successors():
+                self._path_ends(suc_node, result)
+
+    def path_ends(self, node: NodeItem) -> list[NodeItem]:
+        result: list[NodeItem] = []
+        self._path_ends(node, result)
+        return result
+
     def to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
             self.to_dsk(node, graph_dict)
@@ -473,11 +488,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def is_sub_scene(self) -> bool:
         return self._parent_node is not None
 
-    def execute_dag(self):
-        for node in self.ends():
-            dsk: dict = self.to_dsk(node, {})
-            for socket in node.output_socket_widgets:
-                print(get(dsk, node.linked_lowest_socket(socket).pin))
+    def execute_dag(self, node: NodeItem):
+        for end_node in self.path_ends(node):
+            dsk: dict = self.to_dsk(end_node, {})
+            for socket in end_node.output_socket_widgets:
+                print(get(dsk, end_node.linked_lowest_socket(socket).pin))
 
     # --------------- Background ---------------
 
