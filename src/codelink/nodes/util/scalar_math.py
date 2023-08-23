@@ -91,9 +91,6 @@ class ScalarMath(NodeItem):
 
         if current_option_name == "Sqrt":
             self._undo_stack.beginMacro("Changes option box")
-            self._undo_stack.push(
-                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-            )
 
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
@@ -104,13 +101,14 @@ class ScalarMath(NodeItem):
                 self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
 
+                self._undo_stack.push(
+                    set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
+                )
+
             self._undo_stack.endMacro()
 
         else:
             self._undo_stack.beginMacro("Changes option box")
-            self._undo_stack.push(
-                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-            )
 
             while input_widget_count < 2:
                 new_socket_widget: NumberLine = NumberLine(
@@ -119,6 +117,10 @@ class ScalarMath(NodeItem):
                 insert_idx: int = len(self.input_socket_widgets)
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
                 input_widget_count += 1
+
+            self._undo_stack.push(
+                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
+            )
 
             self._undo_stack.endMacro()
 
