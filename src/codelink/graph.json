@@ -2,87 +2,13 @@
     "Nodes": [
         {
             "Class": "ScalarMath",
-            "UUID": "{1f770191-61e2-45de-909e-b788be362b1b}",
-            "Properties": {
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapsed": true,
-                "X": 31999.0,
-                "Y": 32002.0,
-                "Width": 160.0
-            },
-            "Sockets": [
-                {
-                    "Class": "NumberLine",
-                    "Properties": {
-                        "Name": "A",
-                        "Value": 0.0,
-                        "Flatten": false,
-                        "Simplify": false,
-                        "Graft": false,
-                        "Graft Topo": false,
-                        "Unwrap": false,
-                        "Wrap": false
-                    },
-                    "Is Input": true,
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "NumberLine",
-                    "Properties": {
-                        "Name": "B",
-                        "Value": 0.0,
-                        "Flatten": false,
-                        "Simplify": false,
-                        "Graft": false,
-                        "Graft Topo": false,
-                        "Unwrap": false,
-                        "Wrap": false
-                    },
-                    "Is Input": true,
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                },
-                {
-                    "Class": "NumberLine",
-                    "Properties": {
-                        "Name": "Res",
-                        "Value": "<No Input>",
-                        "Flatten": false,
-                        "Simplify": false,
-                        "Graft": false,
-                        "Graft Topo": false,
-                        "Unwrap": false,
-                        "Wrap": false
-                    },
-                    "Is Input": false,
-                    "Link": [
-                        "",
-                        -1
-                    ]
-                }
-            ],
-            "Subgraph": {
-                "Nodes": [],
-                "Edges": [],
-                "Frames": []
-            },
-            "Option Idx": 0
-        },
-        {
-            "Class": "ScalarMath",
-            "UUID": "{2402f7c7-1a38-431d-a140-6c1e158ab492}",
+            "UUID": "{1d541c3c-1666-4be1-ae09-9c43e9edee7c}",
             "Properties": {
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapsed": false,
-                "X": 32000.0,
-                "Y": 32200.0,
+                "X": 31909.0,
+                "Y": 31990.0,
                 "Width": 160.0
             },
             "Sockets": [
@@ -90,7 +16,7 @@
                     "Class": "NumberLine",
                     "Properties": {
                         "Name": "A",
-                        "Value": 0.0,
+                        "Value": 10.0,
                         "Flatten": false,
                         "Simplify": false,
                         "Graft": false,
@@ -150,13 +76,13 @@
         },
         {
             "Class": "ScalarMath",
-            "UUID": "{b9eeb198-552e-4773-b19d-48005a9c70c4}",
+            "UUID": "{2f3b4d7d-4a0c-4d8b-b09d-01eb8ee63b80}",
             "Properties": {
                 "Name": "Scalar Math",
                 "Color": "#1D1D1D",
                 "Collapsed": false,
-                "X": 32200.0,
-                "Y": 32000.0,
+                "X": 32346.0,
+                "Y": 32198.0,
                 "Width": 160.0
             },
             "Sockets": [
@@ -165,6 +91,80 @@
                     "Properties": {
                         "Name": "A",
                         "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "B",
+                        "Value": 50.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "Res",
+                        "Value": "<No Input>",
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": false,
+                    "Link": [
+                        "",
+                        -1
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [],
+                "Edges": [],
+                "Frames": []
+            },
+            "Option Idx": 0
+        },
+        {
+            "Class": "ScalarMath",
+            "UUID": "{0def664f-2bfd-4d32-b9a7-a6f4b9e379fe}",
+            "Properties": {
+                "Name": "Start",
+                "Color": "green",
+                "Collapsed": false,
+                "X": 31680.0,
+                "Y": 32103.0,
+                "Width": 160.0
+            },
+            "Sockets": [
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "A",
+                        "Value": 50.0,
                         "Flatten": false,
                         "Simplify": false,
                         "Graft": false,
@@ -224,13 +224,13 @@
         },
         {
             "Class": "ScalarMath",
-            "UUID": "{0785c881-5a18-4c21-8a72-31fe019994b7}",
+            "UUID": "{4caa604f-f8f4-4b8d-a93a-cc4c8de05cf9}",
             "Properties": {
-                "Name": "Scalar Math",
-                "Color": "#1D1D1D",
-                "Collapsed": true,
-                "X": 32200.0,
-                "Y": 32200.0,
+                "Name": "End",
+                "Color": "red",
+                "Collapsed": false,
+                "X": 32551.0,
+                "Y": 32084.0,
                 "Width": 160.0
             },
             "Sockets": [
@@ -238,7 +238,7 @@
                     "Class": "NumberLine",
                     "Properties": {
                         "Name": "A",
-                        "Value": 0.0,
+                        "Value": 70.0,
                         "Flatten": false,
                         "Simplify": false,
                         "Graft": false,
@@ -295,8 +295,272 @@
                 "Frames": []
             },
             "Option Idx": 0
+        },
+        {
+            "Class": "NodeItem",
+            "UUID": "{45eaec34-78bd-461f-953a-3f1feb99aa95}",
+            "Properties": {
+                "Name": "Group Node",
+                "Color": "olive",
+                "Collapsed": false,
+                "X": 32124,
+                "Y": 32095,
+                "Width": 160.0
+            },
+            "Sockets": [
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "B",
+                        "Value": 0.0,
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": true,
+                    "Link": [
+                        "{70858f49-ae88-4e6c-96a1-5be55a3e6026}",
+                        1
+                    ]
+                },
+                {
+                    "Class": "NumberLine",
+                    "Properties": {
+                        "Name": "Res",
+                        "Value": "<No Input>",
+                        "Flatten": false,
+                        "Simplify": false,
+                        "Graft": false,
+                        "Graft Topo": false,
+                        "Unwrap": false,
+                        "Wrap": false
+                    },
+                    "Is Input": false,
+                    "Link": [
+                        "{bfc07103-cd44-4f46-9ec5-998abb41f637}",
+                        2
+                    ]
+                }
+            ],
+            "Subgraph": {
+                "Nodes": [
+                    {
+                        "Class": "ScalarMath",
+                        "UUID": "{bfc07103-cd44-4f46-9ec5-998abb41f637}",
+                        "Properties": {
+                            "Name": "Scalar Math",
+                            "Color": "#1D1D1D",
+                            "Collapsed": false,
+                            "X": 32108.0,
+                            "Y": 32165.0,
+                            "Width": 160.0
+                        },
+                        "Sockets": [
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "A",
+                                    "Value": 0.0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": true,
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "B",
+                                    "Value": 0.0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": true,
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "Res ^",
+                                    "Value": "<No Input>",
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": false,
+                                "Link": [
+                                    "{45eaec34-78bd-461f-953a-3f1feb99aa95}",
+                                    1
+                                ]
+                            }
+                        ],
+                        "Subgraph": {
+                            "Nodes": [],
+                            "Edges": [],
+                            "Frames": []
+                        },
+                        "Option Idx": 0
+                    },
+                    {
+                        "Class": "ScalarMath",
+                        "UUID": "{70858f49-ae88-4e6c-96a1-5be55a3e6026}",
+                        "Properties": {
+                            "Name": "Scalar Math",
+                            "Color": "#1D1D1D",
+                            "Collapsed": false,
+                            "X": 32109.0,
+                            "Y": 31990.0,
+                            "Width": 160.0
+                        },
+                        "Sockets": [
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "A",
+                                    "Value": 10.0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": true,
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            },
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "B ^",
+                                    "Value": 0.0,
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": true,
+                                "Link": [
+                                    "{45eaec34-78bd-461f-953a-3f1feb99aa95}",
+                                    0
+                                ]
+                            },
+                            {
+                                "Class": "NumberLine",
+                                "Properties": {
+                                    "Name": "Res",
+                                    "Value": "<No Input>",
+                                    "Flatten": false,
+                                    "Simplify": false,
+                                    "Graft": false,
+                                    "Graft Topo": false,
+                                    "Unwrap": false,
+                                    "Wrap": false
+                                },
+                                "Is Input": false,
+                                "Link": [
+                                    "",
+                                    -1
+                                ]
+                            }
+                        ],
+                        "Subgraph": {
+                            "Nodes": [],
+                            "Edges": [],
+                            "Frames": []
+                        },
+                        "Option Idx": 0
+                    }
+                ],
+                "Edges": [
+                    {
+                        "UUID": "{6611705e-292c-4fbf-8b35-5739e4ea1a13}",
+                        "Start Node UUID": "{70858f49-ae88-4e6c-96a1-5be55a3e6026}",
+                        "Start Socket Idx": 2,
+                        "End Node UUID": "{bfc07103-cd44-4f46-9ec5-998abb41f637}",
+                        "End Socket Idx": 1
+                    }
+                ],
+                "Frames": []
+            }
         }
     ],
-    "Edges": [],
-    "Frames": []
+    "Edges": [
+        {
+            "UUID": "{8fb704cd-d53c-42cf-acd7-346ee3cd1383}",
+            "Start Node UUID": "{0def664f-2bfd-4d32-b9a7-a6f4b9e379fe}",
+            "Start Socket Idx": 2,
+            "End Node UUID": "{1d541c3c-1666-4be1-ae09-9c43e9edee7c}",
+            "End Socket Idx": 1
+        },
+        {
+            "UUID": "{6e3fb0ed-c23d-4ad3-a56a-1bd99bf49eae}",
+            "Start Node UUID": "{1d541c3c-1666-4be1-ae09-9c43e9edee7c}",
+            "Start Socket Idx": 2,
+            "End Node UUID": "{45eaec34-78bd-461f-953a-3f1feb99aa95}",
+            "End Socket Idx": 0
+        },
+        {
+            "UUID": "{3f500af5-fe23-4cb9-adfc-9466eab28f49}",
+            "Start Node UUID": "{45eaec34-78bd-461f-953a-3f1feb99aa95}",
+            "Start Socket Idx": 1,
+            "End Node UUID": "{2f3b4d7d-4a0c-4d8b-b09d-01eb8ee63b80}",
+            "End Socket Idx": 0
+        },
+        {
+            "UUID": "{19386a1a-bdad-4d5f-aab4-45fc1472049e}",
+            "Start Node UUID": "{2f3b4d7d-4a0c-4d8b-b09d-01eb8ee63b80}",
+            "Start Socket Idx": 2,
+            "End Node UUID": "{4caa604f-f8f4-4b8d-a93a-cc4c8de05cf9}",
+            "End Socket Idx": 1
+        }
+    ],
+    "Frames": [
+        {
+            "UUID": "{b2d61dd3-1275-4d4e-be22-00c91fe5442e}",
+            "Properties": {
+                "Name": "Frame Label",
+                "Color": "green"
+            },
+            "Framed Nodes UUID's": [
+                "{1d541c3c-1666-4be1-ae09-9c43e9edee7c}",
+                "{0def664f-2bfd-4d32-b9a7-a6f4b9e379fe}"
+            ]
+        },
+        {
+            "UUID": "{4f5c0a8e-cb1a-425f-b905-67629a1556da}",
+            "Properties": {
+                "Name": "Frame Label",
+                "Color": "green"
+            },
+            "Framed Nodes UUID's": [
+                "{4caa604f-f8f4-4b8d-a93a-cc4c8de05cf9}",
+                "{2f3b4d7d-4a0c-4d8b-b09d-01eb8ee63b80}"
+            ]
+        }
+    ]
 }
