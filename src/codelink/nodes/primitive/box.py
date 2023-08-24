@@ -24,30 +24,37 @@ from __future__ import annotations
 from typing import Optional
 import warnings
 
+import awkward as ak
+
 # noinspection PyUnresolvedReferences
-import FreeCAD as App
-import FreeCADGui as Gui
+import FreeCAD
 import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import flatten
+from utils import map_objects, zip_nested
 from node_item import NodeItem
 from socket_widget import SocketWidget
+from value_line import ValueLine
 from shape import Shape
 
 
-class CompoundViewer(NodeItem):
-    REG_NAME: str = "CViewer"
+class Box(NodeItem):
+    REG_NAME: str = "Box"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
 
+        # Node name
+        #self._prop_model.properties["Name"] = self.REG_NAME
+
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True, parent_node=self),
-            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False, parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
+            Shape(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -59,17 +66,14 @@ class CompoundViewer(NodeItem):
         # Socket-wise node eval methods
         self._evals: list[object] = [self.eval_socket_0]
 
-        self._compound_name: str = ""
-
-    @property
-    def compound_name(self) -> str:
-        return self._compound_name
-
-    @compound_name.setter
-    def compound_name(self, value: str) -> None:
-        self._compound_name: str = value
-
     # --------------- Node eval methods ---------------
+
+    @staticmethod
+    def make_box(parameter_zip: tuple) -> Part.Shape:
+        width: float = parameter_zip[0]
+        length: float = parameter_zip[1]
+        height: float = parameter_zip[2]
+        return Part.makeBox(width, length, height)
 
     def eval_socket_0(self, *args) -> list:
         result: list = [Part.Shape()]
@@ -78,27 +82,17 @@ class CompoundViewer(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    shapes: list = self.input_data(0, args)
-                    if hasattr(Gui, "ActiveDocument"):
-                        flat_shapes: list = [shape for shape in flatten(shapes) if len(shape.Vertexes) > 0]
-                        if len(flat_shapes) > 0:
-                            if self._compound_name == "":
-                                compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
-                                self._compound_name: str = compound_obj.Name
-                            else:
-                                if App.ActiveDocument.getObject(self._compound_name) is not None:
-                                    compound_obj = App.ActiveDocument.getObject(self._compound_name)
-                                else:
-                                    compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
+                    length: list = self.input_data(0, args)
+                    width: list = self.input_data(1, args)
+                    height: list = self.input_data(2, args)
 
-                            compound_obj.Shape = Part.makeCompound(flat_shapes)
-                            compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
-                            App.activeDocument().recompute()
-                        else:
-                            self.on_remove()
-
+                    broadcasted_input: list = ak.broadcast_arrays(length, width, height)
+                    zipped_input: list = zip_nested(
+                        broadcasted_input[0].to_list(),
+                        broadcasted_input[1].to_list(),
+                        broadcasted_input[2].to_list())
+                    result: list = list(map_objects(zipped_input, tuple, self.make_box))
                     self._is_dirty: bool = False
-                    result: list = shapes
 
                 except Exception as e:
                     self._is_dirty: bool = True
@@ -108,24 +102,3 @@ class CompoundViewer(NodeItem):
                 print(e)
 
         return self.output_data(0, result)
-
-    def on_remove(self):
-        if hasattr(Gui, "ActiveDocument") and self._compound_name != "":
-            if App.ActiveDocument.getObject(self._compound_name) is not None:
-                compound_object: App.DocumentObject = App.ActiveDocument.getObject(self._compound_name)
-                for obj in App.ActiveDocument.Objects:
-                    if "Base" in obj.PropertiesList and obj.getPropertyByName("Base") == compound_object:
-                        App.ActiveDocument.removeObject(obj.Name)
-
-                App.ActiveDocument.removeObject(self._compound_name)
-            self._compound_name: str = ""
-
-    def __getstate__(self) -> dict:
-        data_dict: dict = super().__getstate__()
-        data_dict["Compound Name"] = self._compound_name
-        return data_dict
-
-    def __setstate__(self, state: dict):
-        super().__setstate__(state)
-        self._compound_name: str = state["Compound Name"]
-        self.update()

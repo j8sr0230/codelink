@@ -44,7 +44,7 @@ from edge_item import EdgeItem
 class NodeItem(QtWidgets.QGraphicsItem):
     REG_NAME: str = "Node Item"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack,
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = "Node Item",
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
@@ -52,7 +52,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._uuid: str = QtCore.QUuid.createUuid().toString()
         self._prop_model: PropertyModel = PropertyModel(
             properties={
-                        "Name": "Node Item",
+                        "Name": name,
                         "Color": "#1D1D1D",
                         "Collapsed": False,
                         "X": pos[0],

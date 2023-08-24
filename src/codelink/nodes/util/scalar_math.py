@@ -32,19 +32,16 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from number_line import NumberLine
+from value_line import ValueLine
 from socket_widget import SocketWidget
 
 
 class ScalarMath(NodeItem):
     REG_NAME: str = "Scalar Math"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack,
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(pos, undo_stack, parent)
-
-        # Node name
-        self._prop_model.properties["Name"] = "Scalar Math"
+        super().__init__(pos, undo_stack, name, parent)
 
         # Option combo box
         self._option_box: OptionBoxWidget = OptionBoxWidget()
@@ -59,10 +56,10 @@ class ScalarMath(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            NumberLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
-            NumberLine(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
-            NumberLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
-                       parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -111,7 +108,7 @@ class ScalarMath(NodeItem):
             self._undo_stack.beginMacro("Changes option box")
 
             while input_widget_count < 2:
-                new_socket_widget: NumberLine = NumberLine(
+                new_socket_widget: ValueLine = ValueLine(
                     undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
                 )
                 insert_idx: int = len(self.input_socket_widgets)

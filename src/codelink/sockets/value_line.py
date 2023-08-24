@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 	from node_item import NodeItem
 
 
-class NumberLine(SocketWidget):
+class ValueLine(SocketWidget):
 	def __init__(
 			self, undo_stack: QtWidgets.QUndoStack, name: str = "A", content_value: Any = 0.0,
 			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
