@@ -181,5 +181,7 @@ class ScalarFunctions(NodeItem):
 
     def __setstate__(self, state: dict):
         super().__setstate__(state)
+        self._option_box.blockSignals(True)
         self._option_box.setCurrentIndex(state["Option Idx"])
+        self._option_box.blockSignals(False)
         self.update()
