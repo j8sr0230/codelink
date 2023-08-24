@@ -46,6 +46,7 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
 
 
 def _zip_to_template(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
+    # TODO: Find proper zipping implementation
     if type(nested_data_template) != list:
         item_idx: int = flat_data[0].index(nested_data_template)
         zipped_data: list = []
@@ -56,7 +57,7 @@ def _zip_to_template(nested_data_template: list, flat_data: list) -> Union[list,
         return [_zip_to_template(sub_list, flat_data) for sub_list in nested_data_template]
 
 
-def zip_nested(*nested_lists: list) -> list:
+def zip_nested(nested_lists: list) -> list:
     nested_data_template: list = nested_lists[0]
     flat_data: list = [flatten(nested_list) for nested_list in nested_lists]
     return _zip_to_template(nested_data_template, flat_data)
@@ -261,7 +262,8 @@ def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
         nested_idx_trees.append(map_objects(socket_input, object, lambda obj: flatten_inputs[idx].index(obj)))
 
     broadcasted_idx_trees: list = ak.broadcast_arrays(*nested_idx_trees)
-    broadcasted_idx_zip: list = zip_nested(*[tree.to_list() for tree in broadcasted_idx_trees])
+    print("bk_idx", [tree.to_list() for tree in broadcasted_idx_trees])
+    broadcasted_idx_zip: list = zip_nested([tree.to_list() for tree in broadcasted_idx_trees])
 
     # Transforms index tuple to socket input value tuple
     def index_to_obj(idx_tuple: tuple) -> tuple:
