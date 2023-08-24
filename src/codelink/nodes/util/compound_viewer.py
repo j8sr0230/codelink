@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 import warnings
 
 # noinspection PyUnresolvedReferences
@@ -33,8 +33,10 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import flatten
 from node_item import NodeItem
-from socket_widget import SocketWidget
-from shape import Shape
+from shape_none import ShapeNone
+
+if TYPE_CHECKING:
+    from socket_widget import SocketWidget
 
 
 class CompoundViewer(NodeItem):
@@ -46,8 +48,8 @@ class CompoundViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True, parent_node=self),
-            Shape(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False, parent_node=self)
+            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True, parent_node=self),
+            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()

@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 import warnings
 
 import numpy as np
@@ -30,8 +30,10 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
-from socket_widget import SocketWidget
 from value_line import ValueLine
+
+if TYPE_CHECKING:
+    from socket_widget import SocketWidget
 
 
 class Range(NodeItem):

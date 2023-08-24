@@ -23,9 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 
-# noinspection PyUnresolvedReferences
 import FreeCAD
-import Part
 
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
@@ -36,9 +34,9 @@ if TYPE_CHECKING:
 	from node_item import NodeItem
 
 
-class Shape(SocketWidget):
+class VectorNone(SocketWidget):
 	def __init__(
-			self, undo_stack: QtWidgets.QUndoStack, name: str = "Shp", content_value: Any = "<No Input>",
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "Vector", content_value: Any = "<No Input>",
 			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
 			is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
 			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
@@ -50,8 +48,8 @@ class Shape(SocketWidget):
 		)
 
 		# Pin setup
-		self._pin_item.color = QtGui.QColor("#00D6A3")
-		self._pin_item.pin_type = Part.Shape
+		self._pin_item.color = QtGui.QColor("#6363C7")
+		self._pin_item.pin_type = FreeCAD.Vector
 
 		self.update_stylesheets()
 
@@ -72,6 +70,6 @@ class Shape(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(Part.Shape())
+			result.append(FreeCAD.Vector(0, 0, 0))
 
 		return result

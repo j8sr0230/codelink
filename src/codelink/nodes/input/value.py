@@ -21,14 +21,16 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 import warnings
 
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from value_line import ValueLine
-from socket_widget import SocketWidget
+
+if TYPE_CHECKING:
+    from socket_widget import SocketWidget
 
 
 class Value(NodeItem):

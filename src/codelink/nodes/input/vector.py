@@ -24,34 +24,32 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 
-# noinspection PyUnresolvedReferences
 import FreeCAD
-import Part
-
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import broadcast_data_tree, map_objects
 from node_item import NodeItem
 from value_line import ValueLine
-from shape_none import ShapeNone
+from vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class Box(NodeItem):
-    REG_NAME: str = "Box"
+class Vector(NodeItem):
+    REG_NAME: str = "Vector"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
-            ShapeNone(undo_stack=self._undo_stack, name="Box", content_value="<No Input>", is_input=False, parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
+                       parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -66,25 +64,25 @@ class Box(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_box(parameter_zip: tuple) -> Part.Shape:
-        width: float = parameter_zip[0]
-        length: float = parameter_zip[1]
-        height: float = parameter_zip[2]
-        return Part.makeBox(width, length, height)
+    def make_vector(parameter_zip: tuple) -> FreeCAD.Vector:
+        x: float = parameter_zip[0]
+        y: float = parameter_zip[1]
+        z: float = parameter_zip[2]
+        return FreeCAD.Vector(x, y, z)
 
     def eval_socket_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        result: list = [0]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
-                    length: list = self.input_data(0, args)
-                    width: list = self.input_data(1, args)
-                    height: list = self.input_data(2, args)
+                    x: list = self.input_data(0, args)
+                    y: list = self.input_data(1, args)
+                    z: list = self.input_data(2, args)
 
-                    data_tree: list = list(broadcast_data_tree(length, width, height))
-                    result: list = list(map_objects(data_tree, tuple, self.make_box))
+                    data_tree: list = list(broadcast_data_tree(x, y, z))
+                    result: list = list(map_objects(data_tree, tuple, self.make_vector))
 
                     self._is_dirty: bool = False
 

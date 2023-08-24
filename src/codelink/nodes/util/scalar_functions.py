@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 
@@ -35,7 +35,9 @@ from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from value_line import ValueLine
-from socket_widget import SocketWidget
+
+if TYPE_CHECKING:
+    from socket_widget import SocketWidget
 
 
 class ScalarFunctions(NodeItem):
