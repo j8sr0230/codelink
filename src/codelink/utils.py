@@ -24,6 +24,8 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Callable, Union
 
+import awkward as ak
+
 import PySide2.QtGui as QtGui
 
 
@@ -238,3 +240,32 @@ def map_last_level(nested_list: Iterable, object_type: type, callback: Callable)
             for sub_list in nested_list:
                 temp_list.append(map_last_level(sub_list, object_type, callback))
             return temp_list
+
+
+def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
+    """Broadcast any number of socket inputs against each other.
+
+    Like NumPy's broadcast_arrays function, this function returns the socket inputs, duplicating elements if necessary
+    so that the socket inputs can be combined element by element. This replaces individual elements of the socket inputs
+    with element arrays and increases the dimension.
+
+    :param socket_inputs: Arbitrary nested socket inputs
+    :type socket_inputs: Iterable
+    :return: Broadcasted zipped socket inputs as list of tuples
+    :rtype: Iterable
+    """
+
+    flatten_inputs: list = [flatten(socket_input) for socket_input in socket_inputs]
+    nested_idx_trees: list = []
+    for idx, socket_input in enumerate(socket_inputs):
+        nested_idx_trees.append(map_objects(socket_input, object, lambda obj: flatten_inputs[idx].index(obj)))
+
+    broadcasted_idx_trees: list = ak.broadcast_arrays(*nested_idx_trees)
+    broadcasted_idx_zip: list = zip_nested(*[tree.to_list() for tree in broadcasted_idx_trees])
+
+    # Transforms index tuple to socket input value tuple
+    def index_to_obj(idx_tuple: tuple) -> tuple:
+        return tuple([flatten_inputs[input_idx][input_elem] for input_idx, input_elem in enumerate(idx_tuple)])
+
+    broadcasted_input_zip: Iterable = map_objects(broadcasted_idx_zip, tuple, index_to_obj)
+    return broadcasted_input_zip

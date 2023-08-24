@@ -24,12 +24,11 @@ from __future__ import annotations
 from typing import Optional
 import warnings
 
-import awkward as ak
 import numpy as np
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, zip_nested
+from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from value_line import ValueLine
@@ -80,12 +79,9 @@ class Range(NodeItem):
                     stop: list = self.input_data(1, args)
                     step: list = self.input_data(2, args)
 
-                    broadcasted_input: list = ak.broadcast_arrays(start, stop, step)
-                    zipped_input: list = zip_nested(
-                        broadcasted_input[0].to_list(),
-                        broadcasted_input[1].to_list(),
-                        broadcasted_input[2].to_list())
-                    result: list = list(map_objects(zipped_input, tuple, self.make_range))
+                    data_tree: list = list(broadcast_data_tree(start, stop, step))
+                    result: list = list(map_objects(data_tree, tuple, self.make_range))
+
                     self._is_dirty: bool = False
 
                 except Exception as e:
