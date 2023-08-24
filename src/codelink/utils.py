@@ -45,8 +45,7 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
     return cropped_text
 
 
-def _zip_to_template(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
-    # TODO: Find proper zipping implementation
+def _zip_nested(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
     if type(nested_data_template) != list:
         item_idx: int = flat_data[0].index(nested_data_template)
         zipped_data: list = []
@@ -54,13 +53,13 @@ def _zip_to_template(nested_data_template: list, flat_data: list) -> Union[list,
             zipped_data.append(flat_list[item_idx])
         return tuple(zipped_data)
     else:
-        return [_zip_to_template(sub_list, flat_data) for sub_list in nested_data_template]
+        return [_zip_nested(sub_list, flat_data) for sub_list in nested_data_template]
 
 
 def zip_nested(nested_lists: list) -> list:
     nested_data_template: list = nested_lists[0]
     flat_data: list = [flatten(nested_list) for nested_list in nested_lists]
-    return _zip_to_template(nested_data_template, flat_data)
+    return _zip_nested(nested_data_template, flat_data)
 
 
 def flatten(nested_list: Iterable) -> Iterable:
@@ -261,13 +260,40 @@ def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
     for idx, socket_input in enumerate(socket_inputs):
         nested_idx_trees.append(map_objects(socket_input, object, lambda obj: flatten_inputs[idx].index(obj)))
 
-    broadcasted_idx_trees: list = ak.broadcast_arrays(*nested_idx_trees)
-    print("bk_idx", [tree.to_list() for tree in broadcasted_idx_trees])
-    broadcasted_idx_zip: list = zip_nested([tree.to_list() for tree in broadcasted_idx_trees])
+    broadcasted_idx_trees: list = [tree.to_list() for tree in ak.broadcast_arrays(*nested_idx_trees)]
+    wrapped_idx_trees: list = list(map_objects(broadcasted_idx_trees, int, ItemWrapper))
+    wrapped_idx_zip: list = zip_nested(wrapped_idx_trees)
 
     # Transforms index tuple to socket input value tuple
     def index_to_obj(idx_tuple: tuple) -> tuple:
-        return tuple([flatten_inputs[input_idx][input_elem] for input_idx, input_elem in enumerate(idx_tuple)])
+        return tuple(
+            [flatten_inputs[input_idx][input_elem.wrapped_data] for input_idx, input_elem in enumerate(idx_tuple)]
+        )
 
-    broadcasted_input_zip: Iterable = map_objects(broadcasted_idx_zip, tuple, index_to_obj)
+    broadcasted_input_zip: Iterable = map_objects(wrapped_idx_zip, tuple, index_to_obj)
     return broadcasted_input_zip
+
+
+class ListWrapper:
+    """Wrapper for lists.
+
+    This simple class can be used to wrap lists into non-iterable objects to be treated as atomic, non-decomposable
+    elements in array broadcasting (many-to-one relationship).
+
+     Attributes:
+        wrapped_data (list): Wrapped list
+    """
+    def __init__(self, wrapped_data: list):
+        self.wrapped_data: list = wrapped_data
+
+
+class ItemWrapper:
+    """Wrapper for objects.
+
+        This simple class can be used to wrap i.e. integer or float data into unique objects.
+
+         Attributes:
+            wrapped_data (object): Wrapped data item
+        """
+    def __init__(self, wrapped_data: object):
+        self.wrapped_data: object = wrapped_data
