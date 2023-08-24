@@ -31,6 +31,7 @@ import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from value_line import ValueLine
@@ -99,9 +100,9 @@ class ScalarFunctions(NodeItem):
                 self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
 
-                self._undo_stack.push(
-                    set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-                )
+            self._undo_stack.push(
+                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
+            )
 
             self._undo_stack.endMacro()
 
@@ -123,6 +124,12 @@ class ScalarFunctions(NodeItem):
             self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
+
+    @staticmethod
+    def calc_log(parameter_zip: tuple) -> float:
+        a: float = parameter_zip[0]
+        b: float = parameter_zip[1]
+        return np.emath.logn(b, a)
 
     def eval_socket_0(self, *args) -> list:
         result: ak.Array = ak.Array([0])
@@ -152,14 +159,15 @@ class ScalarFunctions(NodeItem):
                             result: ak.Array = ak.Array(a) ** ak.Array(b)
 
                         elif self._option_box.currentText() == "Log":
-                            result: ak.Array = ak.Array(np.emath.logn(b, a))
+                            data_tree: list = list(broadcast_data_tree(a, b))
+                            result: ak.Array = ak.Array(map_objects(data_tree, tuple, self.calc_log))
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Sqrt":
                             result: ak.Array = ak.Array(a) ** 0.5
 
                         elif self._option_box.currentText() == "Exp":
-                            result: ak.Array = ak.Array(np.exp(a))
+                            result: ak.Array = ak.Array(map_objects(a, float, np.exp))
 
                     self._is_dirty: bool = False
 

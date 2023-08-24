@@ -31,6 +31,7 @@ import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import map_objects
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from value_line import ValueLine
@@ -97,22 +98,22 @@ class ScalarTrigonometric(NodeItem):
                     a: list = self.input_data(0, args)
 
                     if self._option_box.currentText() == "Sin":
-                        result: ak.Array = ak.Array(np.sin(a))
+                        result: list = list(map_objects(a, float, np.sin))
 
                     elif self._option_box.currentText() == "Cos":
-                        result: ak.Array = ak.Array(np.cos(a))
+                        result: list = list(map_objects(a, float, np.cos))
 
                     elif self._option_box.currentText() == "Tan":
-                        result: ak.Array = ak.Array(np.tan(a))
+                        result: list = list(map_objects(a, float, np.tan))
 
                     elif self._option_box.currentText() == "ASin":
-                        result: ak.Array = ak.Array(np.arcsin(a))
+                        result: list = list(map_objects(a, float, np.arcsin))
 
                     elif self._option_box.currentText() == "ACos":
-                        result: ak.Array = ak.Array(np.arccos(a))
+                        result: list = list(map_objects(a, float, np.arccos))
 
                     elif self._option_box.currentText() == "ATan":
-                        result: ak.Array = ak.Array(np.arctan(a))
+                        result: list = list(map_objects(a, float, np.arctan))
 
                     self._is_dirty: bool = False
 
@@ -123,7 +124,7 @@ class ScalarTrigonometric(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, result.to_list())
+        return self.output_data(0, result)
 
 # --------------- Serialization ---------------
 
