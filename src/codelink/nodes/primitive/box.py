@@ -46,9 +46,6 @@ class Box(NodeItem):
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
 
-        # Node name
-        #self._prop_model.properties["Name"] = self.REG_NAME
-
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
             ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
