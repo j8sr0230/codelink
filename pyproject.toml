@@ -6,16 +6,17 @@ build-backend = "hatchling.build"
 name = "codelink"
 version = "0.0.4"
 authors = [
-  { name="Ronny Scharf-Wildenhain", email="ronny.scharf08@gmail.com" },
+    {name="Ronny Scharf-Wildenhain", email="ronny.scharf08@gmail.com" },
 ]
 description = "Node-based visual programming environment"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "PySide2>=5.15.8",
-  "networkx>=3.1",
-  "dask>=2023.2.1",
-  "awkward>=2.3.1",
+    "PySide2>=5.15.8",
+    "networkx>=3.1",
+    "dask>=2023.2.1",
+    "awkward>=2.3.1",
+    "numpy>=1.24.3"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

@@ -26,6 +26,7 @@ import importlib
 import warnings
 
 import awkward as ak
+import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -36,8 +37,8 @@ from value_line import ValueLine
 from socket_widget import SocketWidget
 
 
-class ScalarMath(NodeItem):
-    REG_NAME: str = "Scalar Math"
+class ScalarFunctions(NodeItem):
+    REG_NAME: str = "Scalar Functions"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -47,7 +48,7 @@ class ScalarMath(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Sqrt"])
+        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Log", "Sqrt", "Exp"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()
@@ -86,7 +87,7 @@ class ScalarMath(NodeItem):
         current_option_index: int = self._option_box.currentIndex()
         input_widget_count: int = len(self.input_socket_widgets)
 
-        if current_option_name == "Sqrt":
+        if current_option_name == "Sqrt" or current_option_name == "Exp":
             self._undo_stack.beginMacro("Changes option box")
 
             while input_widget_count > 1:
@@ -147,8 +148,18 @@ class ScalarMath(NodeItem):
                         elif self._option_box.currentText() == "Div":
                             result: ak.Array = ak.Array(a) / ak.Array(b)
 
-                    elif self._option_box.currentText() == "Sqrt" and len(args) == 1:
-                        result: ak.Array = ak.Array(a) ** 0.5
+                        elif self._option_box.currentText() == "Pow":
+                            result: ak.Array = ak.Array(a) ** ak.Array(b)
+
+                        elif self._option_box.currentText() == "Log":
+                            result: ak.Array = ak.Array(np.emath.logn(b, a))
+
+                    if len(args) == 1:
+                        if self._option_box.currentText() == "Sqrt":
+                            result: ak.Array = ak.Array(a) ** 0.5
+
+                        elif self._option_box.currentText() == "Exp":
+                            result: ak.Array = ak.Array(np.exp(a))
 
                     self._is_dirty: bool = False
 
