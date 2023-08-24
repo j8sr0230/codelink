@@ -90,9 +90,9 @@ class ScalarFunctions(NodeItem):
         current_option_index: int = self._option_box.currentIndex()
         input_widget_count: int = len(self.input_socket_widgets)
 
-        if current_option_name == "Sqrt" or current_option_name == "Exp":
-            self._undo_stack.beginMacro("Changes option box")
+        self._undo_stack.beginMacro("Changes option box")
 
+        if current_option_name == "Sqrt" or current_option_name == "Exp":
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -109,8 +109,6 @@ class ScalarFunctions(NodeItem):
             self._undo_stack.endMacro()
 
         else:
-            self._undo_stack.beginMacro("Changes option box")
-
             while input_widget_count < 2:
                 new_socket_widget: ValueLine = ValueLine(
                     undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
@@ -119,11 +117,11 @@ class ScalarFunctions(NodeItem):
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
                 input_widget_count += 1
 
-            self._undo_stack.push(
-                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-            )
+        self._undo_stack.push(
+            set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
+        )
 
-            self._undo_stack.endMacro()
+        self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
 

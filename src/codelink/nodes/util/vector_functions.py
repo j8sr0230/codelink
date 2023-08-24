@@ -51,7 +51,7 @@ class VectorFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Cross", "Dot"])
+        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Cross", "Dot", "Scale", "Length"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()
@@ -90,53 +90,177 @@ class VectorFunctions(NodeItem):
         last_option_index: int = self._option_box.last_index
         current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
-        input_widget_count: int = len(self.input_socket_widgets)
+
+        self._undo_stack.beginMacro("Changes option box")
 
         if current_option_name == "Dot":
-            self._undo_stack.beginMacro("Changes option box")
-
-            while input_widget_count < 2:
-                new_socket_widget: VectorNone = VectorNone(
-                    undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True, parent_node=self
-                )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
-
-            remove_socket: SocketWidget = self._socket_widgets[len(self.socket_widgets) - 1]
-            for edge in remove_socket.pin.edges:
-                self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
-            self._undo_stack.push(remove_socket_cmd_cls(self, len(self.socket_widgets) - 1))
-
-            new_socket_widget: ValueLine = ValueLine(
-                undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False, parent_node=self
-            )
-            self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, len(self.socket_widgets)))
-            self._undo_stack.endMacro()
-
-        else:
-            if type(self.output_socket_widgets[0]) != VectorNone:
-                self._undo_stack.beginMacro("Changes option box")
-
-                remove_socket: SocketWidget = self._socket_widgets[len(self.socket_widgets) - 1]
+            if type(self._socket_widgets[0]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[0]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
-                self._undo_stack.push(remove_socket_cmd_cls(self, len(self.socket_widgets) - 1))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="A", content_value="<No Input>", is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 0))
+
+            if len(self.input_socket_widgets) == 2:
+                if type(self._socket_widgets[1]) != VectorNone:
+                    remove_socket: SocketWidget = self._socket_widgets[1]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+                    new_socket_widget: VectorNone = VectorNone(
+                        undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
+                        parent_node=self
+                    )
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+            else:
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+
+            if type(self._socket_widgets[2]) != ValueLine:
+                remove_socket: SocketWidget = self._socket_widgets[2]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 2))
+
+                new_socket_widget: ValueLine = ValueLine(
+                    undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 2))
+
+        elif current_option_name == "Scale":
+            if type(self._socket_widgets[0]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[0]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="A", content_value="<No Input>", is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 0))
+
+            if len(self.input_socket_widgets) == 2:
+                if type(self._socket_widgets[1]) != ValueLine:
+                    remove_socket: SocketWidget = self._socket_widgets[1]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+                    new_socket_widget: ValueLine = ValueLine(
+                        undo_stack=self._undo_stack, name="B", content_value=1., is_input=True,
+                        parent_node=self
+                    )
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+            else:
+                new_socket_widget: ValueLine = ValueLine(
+                    undo_stack=self._undo_stack, name="B", content_value=1., is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+
+            if len(self.input_socket_widgets) == 2 and type(self._socket_widgets[2]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[2]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 2))
 
                 new_socket_widget: VectorNone = VectorNone(
                     undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
                     parent_node=self
                 )
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, len(self.socket_widgets)))
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 2))
 
-                self._undo_stack.push(
-                    set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
+        elif current_option_name == "Length":
+            if type(self._socket_widgets[0]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[0]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="A", content_value="<No Input>", is_input=True,
+                    parent_node=self
                 )
-                self._undo_stack.endMacro()
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 0))
+
+            if len(self.input_socket_widgets) > 1:
+                remove_socket: SocketWidget = self._socket_widgets[1]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+            if type(self._socket_widgets[1]) != ValueLine:
+                remove_socket: SocketWidget = self._socket_widgets[1]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+                new_socket_widget: ValueLine = ValueLine(
+                    undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+
+        else:
+            if type(self._socket_widgets[0]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[0]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="A", content_value="<No Input>", is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 0))
+
+            if len(self.input_socket_widgets) == 2:
+                if type(self._socket_widgets[1]) != VectorNone:
+                    remove_socket: SocketWidget = self._socket_widgets[1]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+                    new_socket_widget: VectorNone = VectorNone(
+                        undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
+                        parent_node=self
+                    )
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+            else:
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+
+            if type(self._socket_widgets[2]) != VectorNone:
+                remove_socket: SocketWidget = self._socket_widgets[2]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 2))
+
+                new_socket_widget: VectorNone = VectorNone(
+                    undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                    parent_node=self
+                )
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 2))
 
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
+
+        self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
 
@@ -176,6 +300,17 @@ class VectorFunctions(NodeItem):
         b: FreeCAD.Vector = parameter_zip[1]
         return a.dot(b)
 
+    @staticmethod
+    def scale_vec(parameter_zip: tuple) -> float:
+        a: FreeCAD.Vector = parameter_zip[0]
+        b: float = parameter_zip[1]
+        return a.scale(b, b, b)
+
+    @staticmethod
+    def length(parameter_zip: tuple) -> float:
+        a: FreeCAD.Vector = parameter_zip[0]
+        return a.Length
+
     def eval_socket_0(self, *args) -> list:
         result: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0)
 
@@ -184,6 +319,10 @@ class VectorFunctions(NodeItem):
             try:
                 try:
                     a: list = self.input_data(0, args)
+                    if len(args) == 1:
+                        if self._option_box.currentText() == "Length":
+                            data_tree: list = list(broadcast_data_tree(a))
+                            result: list = list(map_objects(data_tree, tuple, self.length))
 
                     if len(args) == 2:
                         b: list = self.input_data(1, args)
@@ -206,6 +345,9 @@ class VectorFunctions(NodeItem):
 
                         elif self._option_box.currentText() == "Dot":
                             result: list = list(map_objects(data_tree, tuple, self.dot))
+
+                        elif self._option_box.currentText() == "Scale":
+                            result: list = list(map_objects(data_tree, tuple, self.scale_vec))
 
                     self._is_dirty: bool = False
 
