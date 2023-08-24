@@ -64,11 +64,11 @@ class Range(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_range(parameter_zip: tuple) -> list[float]:
+    def make_range(parameter_zip: tuple) -> list:
         start: float = parameter_zip[0]
         stop: float = parameter_zip[1]
         step: float = parameter_zip[2]
-        return list(np.arange(start, stop, step))
+        return list([i] for i in np.arange(start, stop, step))
 
     def eval_socket_0(self, *args) -> list:
         result: list = []

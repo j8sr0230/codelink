@@ -203,7 +203,8 @@ class SocketWidget(QtWidgets.QWidget):
         if self.socket_options_state()[3]:  # Graft Topo
             input_data: list = list(graft_topology(input_data))
         if self.socket_options_state()[4]:  # Unwrap
-            input_data: list = list(unwrap(input_data))
+            if type(unwrap(input_data)) == list:
+                input_data: list = list(unwrap(input_data))
         if self.socket_options_state()[5]:  # Wrap
             input_data: list = list(wrap(input_data))
         return input_data
