@@ -25,10 +25,7 @@ from typing import Optional
 import warnings
 
 import awkward as ak
-
-# noinspection PyUnresolvedReferences
-import FreeCAD
-import Part
+import numpy as np
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -36,11 +33,10 @@ from utils import map_objects, zip_nested
 from node_item import NodeItem
 from socket_widget import SocketWidget
 from value_line import ValueLine
-from shape import Shape
 
 
-class Box(NodeItem):
-    REG_NAME: str = "Box"
+class Range(NodeItem):
+    REG_NAME: str = "Range"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -48,10 +44,11 @@ class Box(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
-            Shape(undo_stack=self._undo_stack, name="Box", content_value="<No Input>", is_input=False, parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="Start", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Stop", content_value=1., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Step", content_value=0.1, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Range", content_value="<No Input>",
+                      is_input=False, parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()
@@ -66,29 +63,29 @@ class Box(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_box(parameter_zip: tuple) -> Part.Shape:
-        width: float = parameter_zip[0]
-        length: float = parameter_zip[1]
-        height: float = parameter_zip[2]
-        return Part.makeBox(width, length, height)
+    def make_range(parameter_zip: tuple) -> list[float]:
+        start: float = parameter_zip[0]
+        stop: float = parameter_zip[1]
+        step: float = parameter_zip[2]
+        return list(np.arange(start, stop, step))
 
     def eval_socket_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        result: list = []
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
-                    length: list = self.input_data(0, args)
-                    width: list = self.input_data(1, args)
-                    height: list = self.input_data(2, args)
+                    start: list = self.input_data(0, args)
+                    stop: list = self.input_data(1, args)
+                    step: list = self.input_data(2, args)
 
-                    broadcasted_input: list = ak.broadcast_arrays(length, width, height)
+                    broadcasted_input: list = ak.broadcast_arrays(start, stop, step)
                     zipped_input: list = zip_nested(
                         broadcasted_input[0].to_list(),
                         broadcasted_input[1].to_list(),
                         broadcasted_input[2].to_list())
-                    result: list = list(map_objects(zipped_input, tuple, self.make_box))
+                    result: list = list(map_objects(zipped_input, tuple, self.make_range))
                     self._is_dirty: bool = False
 
                 except Exception as e:
