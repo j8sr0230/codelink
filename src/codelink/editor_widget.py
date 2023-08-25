@@ -39,7 +39,7 @@ from property_widget import PropertyWidget
 from property_table import PropertyTable
 from frame_item import FrameItem
 from node_item import NodeItem
-from nodes.util.compound_viewer import CompoundViewer
+from nodes.output.shape_viewer import ShapeViewer
 from pin_item import PinItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
@@ -665,7 +665,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for node in nodes:
                 node.setPos(dx + node.x(), dy + node.y())
                 node.last_position = QtCore.QPointF(dx + node.x(), dy + node.y())
-                if type(node) == CompoundViewer:
+                if type(node) == ShapeViewer:
                     node.compound_name = ""
 
             self.scene().clearSelection()

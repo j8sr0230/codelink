@@ -39,8 +39,8 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class CompoundViewer(NodeItem):
-    REG_NAME: str = "CViewer"
+class ShapeViewer(NodeItem):
+    REG_NAME: str = "Shape Viewer"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -48,8 +48,10 @@ class CompoundViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True, parent_node=self),
-            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False, parent_node=self)
+            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True,
+                      parent_node=self),
+            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
         for widget in self._socket_widgets:
             self._content_widget.hide()

@@ -132,7 +132,7 @@ class ScalarFunctions(NodeItem):
         return np.emath.logn(b, a)
 
     def eval_socket_0(self, *args) -> list:
-        result: ak.Array = ak.Array([0])
+        result: ak.Array = ak.Array([0.])
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")

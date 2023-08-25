@@ -113,7 +113,7 @@ class EdgeItem(QtWidgets.QGraphicsPathItem):
             socket_type_start: type = self._start_pin.pin_type
             socket_type_end: type = self._end_pin.pin_type
 
-            if socket_type_start == socket_type_end:
+            if (socket_type_start == socket_type_end) or issubclass(socket_type_start, socket_type_end):
                 if self._start_pin.parentItem() is self._end_pin.parentItem():
                     # Sockets of the same node
                     result: bool = False

@@ -46,8 +46,8 @@ class Range(NodeItem):
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
             ValueLine(undo_stack=self._undo_stack, name="Start", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Stop", content_value=1., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Step", content_value=0.1, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Stop", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Step", content_value=1., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Range", content_value="<No Input>",
                       is_input=False, parent_node=self)
         ]
