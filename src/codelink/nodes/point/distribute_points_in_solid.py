@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-DEBUG = True
+DEBUG = False
 BATCH_SIZE = 100
 MAX_ITERATIONS = 1000
 
