@@ -24,13 +24,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 
-# noinspection PyUnresolvedReferences
+import numpy as np
+
 import FreeCAD
 import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import flatten, map_objects
 from node_item import NodeItem
 from shape_none import ShapeNone
 from value_line import ValueLine
@@ -38,6 +39,11 @@ from vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
+BATCH_SIZE = 100
+MAX_ITERATIONS = 1000
 
 
 class DistributePointsSolid(NodeItem):
@@ -51,7 +57,8 @@ class DistributePointsSolid(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Solid", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Density", content_value=1., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Count", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Distance", content_value=1., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Seed", content_value=0., is_input=True, parent_node=self),
             VectorNone(undo_stack=self._undo_stack, name="Points", content_value="<No Input>", is_input=False,
                        parent_node=self)
@@ -66,28 +73,88 @@ class DistributePointsSolid(NodeItem):
         # Socket-wise node eval methods
         self._evals: list[object] = [self.eval_socket_0]
 
+    # Based on https://github.com/nortikin/sverchok/blob/master/utils/field/probe.py
+    @staticmethod
+    def check_min_radius(new_position: list, old_positions: list, min_radius: float) -> bool:
+        if not old_positions:
+            return True
+
+        new_position: np.array = np.array(new_position)
+        old_positions: np.array = np.array(old_positions)
+        distances: np.array = np.linalg.norm(old_positions - new_position, axis=1)
+        ok: bool = (min_radius < distances).all()
+
+        return ok
+
+    def populate_positions(self, solid: Part.Solid, count: int = 10, distance: float = 10.) -> list:
+        if isinstance(solid, Part.Solid):
+            box = solid.BoundBox
+            bbox = ((box.XMin, box.YMin, box.ZMin), (box.XMax, box.YMax, box.ZMax))
+            b1, b2 = bbox
+            x_min, y_min, z_min = b1
+            x_max, y_max, z_max = b2
+
+            done: int = 0
+            iterations: int = 0
+            generated_positions: list = []
+
+            while done < count:
+                iterations += 1
+
+                if DEBUG:
+                    print("Iteration no.:", iterations)
+
+                if iterations > MAX_ITERATIONS:
+                    raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
+
+                left: int = count - done
+                batch_size: int = min(BATCH_SIZE, left)
+
+                batch_x: list = list(np.random.uniform(low=x_min, high=x_max, size=batch_size))
+                batch_y: list = list(np.random.uniform(low=y_min, high=y_max, size=batch_size))
+                batch_z: list = list(np.random.uniform(low=z_min, high=z_max, size=batch_size))
+                batch: list = list(zip(batch_x, batch_y, batch_z))
+
+                candidates: list = [
+                    coordinate for coordinate in batch if solid.isInside(FreeCAD.Vector(coordinate), 0.1, True)
+                ]
+
+                if len(candidates) > 0:
+                    if distance == 0:
+                        good_positions: list = candidates
+                    else:
+                        good_positions: list = []
+                        for candidate in candidates:
+                            if self.check_min_radius(candidate, generated_positions + good_positions, distance):
+                                good_positions.append(candidate)
+
+                    generated_positions.extend(good_positions)
+                    done += len(good_positions)
+
+            return [FreeCAD.Vector(coordinates) for coordinates in generated_positions]
+
+        else:
+            return [FreeCAD.Vector(0, 0, 0)]
+
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def make_box(parameter_zip: tuple) -> Part.Shape:
-        width: float = parameter_zip[0]
-        length: float = parameter_zip[1]
-        height: float = parameter_zip[2]
-        return Part.makeBox(width, length, height)
-
     def eval_socket_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        result: list = [FreeCAD.Vector(0, 0, 0,)]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
-                    length: list = self.input_data(0, args)
-                    width: list = self.input_data(1, args)
-                    height: list = self.input_data(2, args)
+                    solid: list = self.input_data(0, args)
+                    count: int = int(list(flatten(self.input_data(1, args)))[0])
+                    distance: float = list(flatten(self.input_data(2, args)))[0]
+                    seed: int = int(list(flatten(self.input_data(3, args)))[0])
 
-                    data_tree: list = list(broadcast_data_tree(length, width, height))
-                    result: list = list(map_objects(data_tree, tuple, self.make_box))
+                    np.random.seed(seed)
+
+                    result: list = list(
+                        map_objects(solid, Part.Shape, lambda target: self.populate_positions(target, count, distance))
+                    )
 
                     self._is_dirty: bool = False
 
