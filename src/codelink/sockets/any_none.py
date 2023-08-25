@@ -47,7 +47,7 @@ class AnyNone(SocketWidget):
 
 		# Pin setup
 		self._pin_item.color = QtGui.QColor("#333333")
-		self._pin_item.pin_type = object
+		self._pin_item.pin_type = Any
 
 		self.update_stylesheets()
 
