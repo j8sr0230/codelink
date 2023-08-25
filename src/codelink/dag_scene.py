@@ -491,7 +491,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         for end_node in self.path_ends(node):
             dsk: dict = self.to_dsk(end_node, {})
             for socket in end_node.output_socket_widgets:
-                print(get(dsk, end_node.linked_lowest_socket(socket).pin))
+                get(dsk, end_node.linked_lowest_socket(socket).pin)
+                # print(get(dsk, end_node.linked_lowest_socket(socket).pin))
 
     # --------------- Background ---------------
 

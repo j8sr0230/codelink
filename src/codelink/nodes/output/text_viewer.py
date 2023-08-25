@@ -60,7 +60,7 @@ class TextViewer(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_socket_0(self, *args) -> list:
-        result: list = [""]
+        result: list = []
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
