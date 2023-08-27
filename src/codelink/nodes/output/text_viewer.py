@@ -47,11 +47,7 @@ class TextViewer(NodeItem):
             AnyNone(undo_stack=self._undo_stack, name="Out", content_value="<No Input>", is_input=False,
                     parent_node=self)
         ]
-        self._content_widget.hide()
-        for widget in self._socket_widgets:
-            self._content_layout.addWidget(widget)
-        self._content_widget.show()
-
+        self.register_sockets()
         self.update_all()
 
         # Socket-wise node eval methods

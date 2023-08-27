@@ -290,6 +290,12 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Socket widget editing ---------------
 
+    def register_sockets(self):
+        self._content_widget.hide()
+        for widget in self._socket_widgets:
+            self._content_layout.addWidget(widget)
+        self._content_widget.show()
+
     def insert_socket_widget(self, socket_widget: SocketWidget, insert_idx: int = 0) -> None:
         socket_widget.pin.setParentItem(self)
 

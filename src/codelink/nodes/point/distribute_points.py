@@ -46,8 +46,8 @@ BATCH_SIZE = 100
 MAX_ITERATIONS = 1000
 
 
-class DistributePointsSolid(NodeItem):
-    REG_NAME: str = "Distribute Points in Solid"
+class DistributePoints(NodeItem):
+    REG_NAME: str = "Distribute Points"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -60,14 +60,10 @@ class DistributePointsSolid(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="Count", content_value=10., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Distance", content_value=1., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Seed", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Points", content_value="<No Input>", is_input=False,
+            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
-        self._content_widget.hide()
-        for widget in self._socket_widgets:
-            self._content_layout.addWidget(widget)
-        self._content_widget.show()
-
+        self.register_sockets()
         self.update_all()
 
         # Socket-wise node eval methods
