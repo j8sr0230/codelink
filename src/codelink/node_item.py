@@ -24,9 +24,6 @@ from __future__ import annotations
 from typing import Optional, cast
 import sys
 import importlib
-import warnings
-
-import awkward as ak
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -74,7 +71,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene.parent_node = self
 
         self._socket_widgets: list[SocketWidget] = []
-        self._evals: list[object] = [self.eval_socket_0]
+        self._evals: list[object] = []
 
         self._mode: str = ""
         self._lm_pressed: bool = False
@@ -472,48 +469,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def output_data(self, socket_index: int, args) -> list:
         socket_data: list = self.output_socket_widgets[socket_index].perform_socket_operation(args)
         return socket_data
-
-    def eval_socket_0(self, *args) -> list:
-        result: list = [0]
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
-                try:
-                    a: list = self.input_data(0, args)
-                    b: list = self.input_data(1, args)
-                    result: ak.Array = ak.Array(a) + ak.Array(b)
-                    self._is_dirty: bool = False
-                    result: list = result.to_list()
-
-                except Exception as e:
-                    self._is_dirty: bool = True
-                    print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
-
-        return self.output_data(0, result)
-
-    def eval_socket_1(self, *args) -> list:
-        result: list = [0]
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
-                try:
-                    a: list = self.input_data(0, args)
-                    b: list = self.input_data(1, args)
-                    result: ak.Array = ak.Array(a) - ak.Array(b)
-                    self._is_dirty: bool = False
-                    result: list = result.to_list()
-
-                except Exception as e:
-                    self._is_dirty: bool = True
-                    print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
-
-        return self.output_data(0, result)
 
     # --------------- Overwrites ---------------
 
