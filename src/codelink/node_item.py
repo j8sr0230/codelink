@@ -453,7 +453,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             return True
         return False
 
-    # --------------- Node eval methods ---------------
+    # --------------- Data processing methods ---------------
 
     def input_data(self, socket_index: int, args) -> list:
         socket_data: list = []
