@@ -169,6 +169,7 @@ class VectorFunctions(NodeItem):
 
         else:
             if len(self.input_socket_widgets) == 2:
+                # TODO: Insufficient type check
                 if type(self._socket_widgets[1]) != VectorNone:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
