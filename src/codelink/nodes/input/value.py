@@ -27,7 +27,7 @@ import warnings
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from value_line import ValueLine
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget

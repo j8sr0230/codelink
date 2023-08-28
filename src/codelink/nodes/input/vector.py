@@ -29,8 +29,8 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import broadcast_data_tree, map_objects
 from node_item import NodeItem
-from value_line import ValueLine
-from vector_none import VectorNone
+from sockets.value_line import ValueLine
+from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget

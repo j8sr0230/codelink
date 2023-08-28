@@ -32,8 +32,8 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import map_objects
 from node_item import NodeItem
-from value_line import ValueLine
-from shape_none import ShapeNone
+from sockets.value_line import ValueLine
+from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget

@@ -33,8 +33,8 @@ import PySide2.QtWidgets as QtWidgets
 from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from vector_none import VectorNone
-from value_line import ValueLine
+from sockets.vector_none import VectorNone
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -169,7 +169,6 @@ class VectorFunctions(NodeItem):
 
         else:
             if len(self.input_socket_widgets) == 2:
-                # TODO: Insufficient type check
                 if type(self._socket_widgets[1]) != VectorNone:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:

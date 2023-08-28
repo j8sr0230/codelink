@@ -27,7 +27,7 @@ import warnings
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from any_none import AnyNone
+from sockets.any_none import AnyNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget

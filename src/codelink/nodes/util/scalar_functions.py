@@ -34,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from value_line import ValueLine
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget

@@ -33,7 +33,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import flatten
 from node_item import NodeItem
-from shape_none import ShapeNone
+from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
