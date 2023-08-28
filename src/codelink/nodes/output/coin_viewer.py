@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class ShapeViewer(NodeItem):
+class CoinViewer(NodeItem):
     REG_NAME: str = "Coin Viewer"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
