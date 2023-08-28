@@ -81,7 +81,7 @@ class DistributePoints(NodeItem):
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
-    def update_socket_widgets(self):
+    def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
 
@@ -245,3 +245,17 @@ class DistributePoints(NodeItem):
                 print(e)
 
         return self.output_data(0, result)
+
+# --------------- Serialization ---------------
+
+    def __getstate__(self) -> dict:
+        data_dict: dict = super().__getstate__()
+        data_dict["Option Idx"] = self._option_box.currentIndex()
+        return data_dict
+
+    def __setstate__(self, state: dict):
+        super().__setstate__(state)
+        self._option_box.blockSignals(True)
+        self._option_box.setCurrentIndex(state["Option Idx"])
+        self._option_box.blockSignals(False)
+        self.update()

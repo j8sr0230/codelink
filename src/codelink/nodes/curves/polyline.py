@@ -22,26 +22,28 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
-import importlib
 import warnings
+import importlib
 
-import awkward as ak
-import numpy as np
+# noinspection PyUnresolvedReferences
+import FreeCAD
+import Part
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import map_last_level, map_objects, broadcast_data_tree, ListWrapper
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from value_line import ValueLine
+from vector_none import VectorNone
+from shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class ScalarFunctions(NodeItem):
-    REG_NAME: str = "Scalar Functions"
+class Polyline(NodeItem):
+    REG_NAME: str = "Polyline"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -51,7 +53,7 @@ class ScalarFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Log", "Sqrt", "Exp"])
+        self._option_box.addItems(["Open", "Cyclic"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()
@@ -60,9 +62,9 @@ class ScalarFunctions(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            ShapeNone(undo_stack=self._undo_stack, name="Polyline", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
 
@@ -71,94 +73,51 @@ class ScalarFunctions(NodeItem):
 
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
-        add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
-        remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
-        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
 
         last_option_index: int = self._option_box.last_index
-        current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
-        input_widget_count: int = len(self.input_socket_widgets)
-
-        self._undo_stack.beginMacro("Changes option box")
-
-        if current_option_name == "Sqrt" or current_option_name == "Exp":
-            while input_widget_count > 1:
-                remove_idx: int = len(self.input_socket_widgets) - 1
-                remove_socket: SocketWidget = self._socket_widgets[remove_idx]
-                for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
-
-                self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
-                input_widget_count -= 1
-
-            self._undo_stack.push(
-                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-            )
-
-            self._undo_stack.endMacro()
-
-        else:
-            while input_widget_count < 2:
-                new_socket_widget: ValueLine = ValueLine(
-                    undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
-                )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
 
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
 
-        self._undo_stack.endMacro()
-
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def calc_log(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return np.emath.logn(b, a)
+    def make_polyline(parameter_zip: tuple) -> Part.Shape:
+        positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
+        is_cyclic: bool = parameter_zip[1]
+
+        if type(positions) == list and len(positions) > 1:
+            segments = []
+            for i in range(len(positions)):
+                if i + 1 < len(positions):
+                    segments.append(Part.LineSegment(positions[i], positions[i + 1]))
+
+            if is_cyclic:
+                segments.append(Part.LineSegment(positions[-1], positions[0]))
+
+            return Part.Wire(Part.Shape(segments).Edges)
+        else:
+            return Part.Shape()
 
     def eval_0(self, *args) -> list:
-        result: ak.Array = ak.Array([0.])
+        result: list = [Part.Shape()]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
-                    a: list = self.input_data(0, args)
+                    cyclic: list = [False]
+                    if self._option_box.currentText() == "Cyclic":
+                        cyclic: list = [True]
 
-                    if len(args) == 2:
-                        b: list = self.input_data(1, args)
+                    positions: list = self.input_data(0, args)
+                    wrapped_positions: list = list(map_last_level([positions], FreeCAD.Vector, ListWrapper))
 
-                        if self._option_box.currentText() == "Add":
-                            result: ak.Array = ak.Array(a) + ak.Array(b)
-
-                        elif self._option_box.currentText() == "Sub":
-                            result: ak.Array = ak.Array(a) - ak.Array(b)
-
-                        elif self._option_box.currentText() == "Mul":
-                            result: ak.Array = ak.Array(a) * ak.Array(b)
-
-                        elif self._option_box.currentText() == "Div":
-                            result: ak.Array = ak.Array(a) / ak.Array(b)
-
-                        elif self._option_box.currentText() == "Pow":
-                            result: ak.Array = ak.Array(a) ** ak.Array(b)
-
-                        elif self._option_box.currentText() == "Log":
-                            data_tree: list = list(broadcast_data_tree(a, b))
-                            result: ak.Array = ak.Array(map_objects(data_tree, tuple, self.calc_log))
-
-                    if len(args) == 1:
-                        if self._option_box.currentText() == "Sqrt":
-                            result: ak.Array = ak.Array(a) ** 0.5
-
-                        elif self._option_box.currentText() == "Exp":
-                            result: ak.Array = ak.Array(map_objects(a, float, np.exp))
+                    data_tree: list = list(broadcast_data_tree(wrapped_positions, cyclic))
+                    result: list = list(map_objects(data_tree, tuple, self.make_polyline))
 
                     self._is_dirty: bool = False
 
@@ -169,7 +128,7 @@ class ScalarFunctions(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, result.to_list())
+        return self.output_data(0, result)
 
 # --------------- Serialization ---------------
 

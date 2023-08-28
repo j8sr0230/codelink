@@ -71,7 +71,7 @@ class VectorFunctions(NodeItem):
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
-    def update_socket_widgets(self):
+    def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
         add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
         remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
