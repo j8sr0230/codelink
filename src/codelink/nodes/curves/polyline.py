@@ -27,7 +27,10 @@ import importlib
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
+import FreeCADGui as Gui
 import Part
+# noinspection PyPackageRequirements
+from pivy import coin
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -85,6 +88,41 @@ class Polyline(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
+    def preview_polyline(parameter_zip: tuple) -> Part.Shape:
+        positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
+        is_cyclic: bool = parameter_zip[1]
+
+        if type(positions) == list and len(positions) > 1:
+            if hasattr(Gui, "ActiveDocument"):
+                if is_cyclic:
+                    positions.append(positions[0])
+
+                polyline_sep: coin.SoSeparator = coin.SoSeparator()
+
+                color: coin.SoBaseColor = coin.SoBaseColor()
+                color.rgb = (0, 0, 0)
+                polyline_sep.addChild(color)
+
+                draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
+                draw_style.lineWidth = 1
+                polyline_sep.addChild(draw_style)
+
+                control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
+                # noinspection PyTypeChecker
+                pts: tuple = tuple([tuple(pos) for pos in positions])
+                control_pts.point.setValues(0, len(pts), pts)
+                polyline_sep.addChild(control_pts)
+
+                polyline: coin.SoLineSet = coin.SoLineSet()
+                polyline.numVertices = len(pts)
+                polyline_sep.addChild(polyline)
+
+                sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
+                sg.addChild(polyline_sep)
+
+            return Part.Shape()
+
+    @staticmethod
     def make_polyline(parameter_zip: tuple) -> Part.Shape:
         positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
         is_cyclic: bool = parameter_zip[1]
@@ -117,7 +155,8 @@ class Polyline(NodeItem):
                     wrapped_positions: list = list(map_last_level([positions], FreeCAD.Vector, ListWrapper))
 
                     data_tree: list = list(broadcast_data_tree(wrapped_positions, cyclic))
-                    result: list = list(map_objects(data_tree, tuple, self.make_polyline))
+                    # result: list = list(map_objects(data_tree, tuple, self.make_polyline))
+                    result: list = list(map_objects(data_tree, tuple, self.preview_polyline))
 
                     self._is_dirty: bool = False
 
