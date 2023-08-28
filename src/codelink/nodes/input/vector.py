@@ -51,11 +51,6 @@ class Vector(NodeItem):
             VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
     # --------------- Node eval methods ---------------
 
@@ -66,7 +61,7 @@ class Vector(NodeItem):
         z: float = parameter_zip[2]
         return FreeCAD.Vector(x, y, z)
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: list = [0]
 
         with warnings.catch_warnings():

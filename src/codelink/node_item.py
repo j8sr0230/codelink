@@ -21,9 +21,10 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional, cast
+from typing import Optional, Callable, cast
 import sys
 import importlib
+import inspect
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -286,6 +287,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._zoom_level: int = value
 
     # --------------- Socket widget editing ---------------
+    def register_evals(self):
+        eval_methods = [
+            getattr(self, attr) for attr in dir(self) if (
+                    attr.startswith("eval_") and inspect.ismethod(getattr(self, attr))
+            )
+        ]
+        self._evals: list[Callable] = eval_methods
 
     def register_sockets(self):
         self._content_widget.hide()

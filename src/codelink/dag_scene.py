@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import Optional, Union, cast
 import sys
 import math
 import json
@@ -37,11 +37,9 @@ import networkx as nx
 from nodes import *
 from frame_item import FrameItem
 from node_item import NodeItem
+from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
-
-if TYPE_CHECKING:
-    from socket_widget import SocketWidget
 
 
 class DAGScene(QtWidgets.QGraphicsScene):
@@ -140,13 +138,23 @@ class DAGScene(QtWidgets.QGraphicsScene):
         if node.uuid == "":
             node.uuid = QtCore.QUuid.createUuid().toString()
 
-        self._nodes.append(node)
-        self.addItem(node)
-        cast(QtCore.SignalInstance, self.node_added).emit(node)
         for socket_widget in node.input_socket_widgets:
             cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
                 lambda: self.execute_dag(socket_widget.parent_node)
             )
+
+        registered_widgets: list[SocketWidget] = [
+            child for child in node.content_widget.children() if isinstance(child, SocketWidget)
+        ]
+        if len(registered_widgets) == 0:
+            node.register_sockets()
+            node.update_all()
+            node.register_evals()
+
+        self._nodes.append(node)
+        self.addItem(node)
+
+        cast(QtCore.SignalInstance, self.node_added).emit(node)
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
