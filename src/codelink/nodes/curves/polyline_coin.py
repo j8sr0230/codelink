@@ -27,7 +27,8 @@ import importlib
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
-import Part
+# noinspection PyPackageRequirements
+from pivy import coin
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -36,14 +37,14 @@ from utils import map_last_level, map_objects, broadcast_data_tree, ListWrapper
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone
-from sockets.shape_none import ShapeNone
+from sockets.coin_none import CoinNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class Polyline(NodeItem):
-    REG_NAME: str = "Polyline"
+class PolylineCoin(NodeItem):
+    REG_NAME: str = "Polyline Coin"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -64,9 +65,11 @@ class Polyline(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
                        parent_node=self),
-            ShapeNone(undo_stack=self._undo_stack, name="Polyline", content_value="<No Input>", is_input=False,
-                      parent_node=self)
+            CoinNone(undo_stack=self._undo_stack, name="Polyline Coin", content_value="<No Input>", is_input=False,
+                     parent_node=self)
         ]
+
+        self._polyline_sep: Optional[coin.SoSeparator] = None
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -85,25 +88,41 @@ class Polyline(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_polyline(parameter_zip: tuple) -> Part.Shape:
+    def make_polyline_sep(parameter_zip: tuple) -> coin.SoSeparator:
         positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
         is_cyclic: bool = parameter_zip[1]
 
         if type(positions) == list and len(positions) > 1:
-            segments = []
-            for i in range(len(positions)):
-                if i + 1 < len(positions):
-                    segments.append(Part.LineSegment(positions[i], positions[i + 1]))
-
             if is_cyclic:
-                segments.append(Part.LineSegment(positions[-1], positions[0]))
+                positions.append(positions[0])
 
-            return Part.Wire(Part.Shape(segments).Edges)
+            polyline_sep: coin.SoSeparator = coin.SoSeparator()
+
+            color: coin.SoBaseColor = coin.SoBaseColor()
+            color.rgb = (0, 0, 0)
+            polyline_sep.addChild(color)
+
+            draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
+            draw_style.lineWidth = 1
+            polyline_sep.addChild(draw_style)
+
+            control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
+            # noinspection PyTypeChecker
+            pts: tuple = tuple([tuple(pos) for pos in positions])
+            control_pts.point.setValues(0, len(pts), pts)
+            polyline_sep.addChild(control_pts)
+
+            polyline: coin.SoLineSet = coin.SoLineSet()
+            polyline.numVertices = len(pts)
+            polyline_sep.addChild(polyline)
+
+            return polyline_sep
+
         else:
-            return Part.Shape()
+            return coin.SoSeparator()
 
     def eval_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        result: list = [coin.SoSeparator()]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
@@ -117,7 +136,7 @@ class Polyline(NodeItem):
                     wrapped_positions: list = list(map_last_level([positions], FreeCAD.Vector, ListWrapper))
 
                     data_tree: list = list(broadcast_data_tree(wrapped_positions, cyclic))
-                    result: list = list(map_objects(data_tree, tuple, self.make_polyline))
+                    result: list = list(map_objects(data_tree, tuple, self.make_polyline_sep))
 
                     self._is_dirty: bool = False
 
