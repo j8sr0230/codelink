@@ -58,7 +58,10 @@ class TextViewer(NodeItem):
             try:
                 try:
                     result: list = self.input_data(0, args)
-                    print([str(input_item) for input_item in self.input_data(0, args)])
+                    print(
+                        "Domain size: " + str(len(self.input_data(0, args))) + "->",
+                        [str(input_item) for input_item in self.input_data(0, args)]
+                    )
                     self._is_dirty: bool = False
 
                 except Exception as e:
