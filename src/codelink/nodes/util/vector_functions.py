@@ -67,15 +67,6 @@ class VectorFunctions(NodeItem):
             VectorNone(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
-        self._content_widget.hide()
-        for widget in self._socket_widgets:
-            self._content_layout.addWidget(widget)
-        self._content_widget.show()
-
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -263,7 +254,7 @@ class VectorFunctions(NodeItem):
         a: FreeCAD.Vector = parameter_zip[0]
         return a.Length
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0)
 
         with warnings.catch_warnings():

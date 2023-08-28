@@ -53,11 +53,6 @@ class ShapeViewer(NodeItem):
             ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
         self._compound_name: str = ""
 
@@ -71,7 +66,7 @@ class ShapeViewer(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: list = [Part.Shape()]
 
         with warnings.catch_warnings():

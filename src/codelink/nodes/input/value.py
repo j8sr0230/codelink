@@ -46,15 +46,10 @@ class Value(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="Value", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: list = [0]
 
         with warnings.catch_warnings():

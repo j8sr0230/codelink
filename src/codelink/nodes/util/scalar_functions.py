@@ -65,11 +65,6 @@ class ScalarFunctions(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -127,7 +122,7 @@ class ScalarFunctions(NodeItem):
         b: float = parameter_zip[1]
         return np.emath.logn(b, a)
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([0.])
 
         with warnings.catch_warnings():

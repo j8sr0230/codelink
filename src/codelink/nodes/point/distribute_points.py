@@ -63,11 +63,6 @@ class DistributePoints(NodeItem):
             VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
     # Based on https://github.com/nortikin/sverchok/blob/master/utils/field/probe.py
     @staticmethod
@@ -134,7 +129,7 @@ class DistributePoints(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_0(self, *args) -> list:
         result: list = [FreeCAD.Vector(0, 0, 0,)]
 
         with warnings.catch_warnings():
