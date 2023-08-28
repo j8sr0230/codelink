@@ -79,6 +79,8 @@ class ShapeViewer(NodeItem):
                             for child in flat_coin_seps:
                                 self._coin_sep.addChild(child)
                             sg.addChild(self._coin_sep)
+                    else:
+                        self.on_remove()
 
                     self._is_dirty: bool = False
                     result: list = coin_seps
@@ -96,4 +98,4 @@ class ShapeViewer(NodeItem):
         if hasattr(Gui, "ActiveDocument") and self._coin_sep is not None:
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
             sg.removeChild(self._coin_sep)
-            self._coin_sep: Optional[coin.SoSeparator] = None
+        self._coin_sep: Optional[coin.SoSeparator] = None
