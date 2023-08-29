@@ -24,6 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Callable, Union
 
+# import numpy as np
 import awkward as ak
 
 import PySide2.QtGui as QtGui
@@ -254,6 +255,10 @@ def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
     :return: Broadcasted zipped socket inputs as list of tuples
     :rtype: Iterable
     """
+
+    # for socket_input in socket_inputs:
+    #     n_idx: ak.Array = ak.full_like(socket_input, np.arange(0, ak.count(socket_input, axis=None)))
+    #     print(n_idx)
 
     flatten_inputs: list = [flatten(socket_input) for socket_input in socket_inputs]
     nested_idx_trees: list = []
