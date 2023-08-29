@@ -25,10 +25,11 @@ from typing import TYPE_CHECKING, Optional
 import warnings
 
 import numpy as np
+import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import map_objects
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 
@@ -51,20 +52,15 @@ class Range(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="Range", content_value="<No Input>",
                       is_input=False, parent_node=self)
         ]
-        self.register_sockets()
-        self.update_all()
-
-        # Socket-wise node eval methods
-        self._evals: list[object] = [self.eval_socket_0]
 
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_range(parameter_zip: tuple) -> list:
+    def make_range(parameter_zip: tuple) -> list[float]:
         start: float = parameter_zip[0]
         stop: float = parameter_zip[1]
         step: float = parameter_zip[2]
-        return list([i] for i in np.arange(start, stop, step))
+        return list(np.arange(start, stop, step))
 
     def eval_socket_0(self, *args) -> list:
         result: list = []
@@ -77,8 +73,9 @@ class Range(NodeItem):
                     stop: list = self.input_data(1, args)
                     step: list = self.input_data(2, args)
 
-                    data_tree: list = list(broadcast_data_tree(start, stop, step))
-                    result: list = list(map_objects(data_tree, tuple, self.make_range))
+                    data_tree: list = ak.broadcast_arrays(start, stop, step)
+                    nested_parameter_zip = ak.zip(data_tree).to_list()
+                    result: list = list(map_objects(nested_parameter_zip, tuple, self.make_range))
 
                     self._is_dirty: bool = False
 
