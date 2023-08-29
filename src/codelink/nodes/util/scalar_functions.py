@@ -31,7 +31,7 @@ import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import map_objects
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.value_line import ValueLine
@@ -150,8 +150,9 @@ class ScalarFunctions(NodeItem):
                             result: ak.Array = ak.Array(a) ** ak.Array(b)
 
                         elif self._option_box.currentText() == "Log":
-                            data_tree: list = list(broadcast_data_tree(a, b))
-                            result: ak.Array = ak.Array(map_objects(data_tree, tuple, self.calc_log))
+                            data_tree: list = ak.broadcast_arrays(a, b)
+                            nested_parameter_zip = ak.zip(data_tree).to_list()
+                            result: ak.Array = ak.Array(map_objects(nested_parameter_zip, tuple, self.calc_log))
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Sqrt":
