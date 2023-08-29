@@ -25,13 +25,12 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 
-import awkward as ak
 import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
+from utils import map_last_level
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.value_line import ValueLine
@@ -81,8 +80,32 @@ class ScalarTrigonometric(NodeItem):
 
     # --------------- Node eval methods ---------------
 
+    @staticmethod
+    def sinus(inputs: list[float]) -> list[float]:
+        return np.sin(inputs).tolist()
+
+    @staticmethod
+    def cosinus(inputs: list[float]) -> list[float]:
+        return np.cos(inputs).tolist()
+
+    @staticmethod
+    def tangent(inputs: list[float]) -> list[float]:
+        return np.tan(inputs).tolist()
+
+    @staticmethod
+    def asinus(inputs: list[float]) -> list[float]:
+        return np.arcsin(inputs).tolist()
+
+    @staticmethod
+    def acosinus(inputs: list[float]) -> list[float]:
+        return np.arccos(inputs).tolist()
+
+    @staticmethod
+    def atangent(inputs: list[float]) -> list[float]:
+        return np.arctan(inputs).tolist()
+
     def eval_0(self, *args) -> list:
-        result: ak.Array = ak.Array([0])
+        result: list = [0]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
@@ -91,22 +114,22 @@ class ScalarTrigonometric(NodeItem):
                     a: list = self.input_data(0, args)
 
                     if self._option_box.currentText() == "Sin":
-                        result: list = list(map_objects(a, float, np.sin))
+                        result: list = list(map_last_level(a, float, self.sinus))
 
                     elif self._option_box.currentText() == "Cos":
-                        result: list = list(map_objects(a, float, np.cos))
+                        result: list = list(map_last_level(a, float, self.cosinus))
 
                     elif self._option_box.currentText() == "Tan":
-                        result: list = list(map_objects(a, float, np.tan))
+                        result: list = list(map_last_level(a, float, self.tangent))
 
                     elif self._option_box.currentText() == "ASin":
-                        result: list = list(map_objects(a, float, np.arcsin))
+                        result: list = list(map_last_level(a, float, self.asinus))
 
                     elif self._option_box.currentText() == "ACos":
-                        result: list = list(map_objects(a, float, np.arccos))
+                        result: list = list(map_last_level(a, float, self.acosinus))
 
                     elif self._option_box.currentText() == "ATan":
-                        result: list = list(map_objects(a, float, np.arctan))
+                        result: list = list(map_last_level(a, float, self.atangent))
 
                     self._is_dirty: bool = False
 

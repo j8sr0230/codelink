@@ -31,7 +31,7 @@ import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
+from utils import map_last_level
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.value_line import ValueLine
@@ -117,10 +117,12 @@ class ScalarFunctions(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def calc_log(parameter_zip: tuple) -> float:
-        a: float = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return np.emath.logn(b, a)
+    def log_nat(a: list[float]) -> list[float]:
+        return np.log(a).tolist()
+
+    @staticmethod
+    def exponential(a: list[float]) -> list[float]:
+        return np.exp(a).tolist()
 
     def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([0.])
@@ -150,16 +152,14 @@ class ScalarFunctions(NodeItem):
                             result: ak.Array = ak.Array(a) ** ak.Array(b)
 
                         elif self._option_box.currentText() == "Log":
-                            data_tree: list = ak.broadcast_arrays(a, b)
-                            nested_parameter_zip = ak.zip(data_tree).to_list()
-                            result: ak.Array = ak.Array(map_objects(nested_parameter_zip, tuple, self.calc_log))
+                            result: ak.Array = ak.Array(map_last_level(a, float, self.log_nat))
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Sqrt":
                             result: ak.Array = ak.Array(a) ** 0.5
 
                         elif self._option_box.currentText() == "Exp":
-                            result: ak.Array = ak.Array(map_objects(a, float, np.exp))
+                            result: ak.Array = ak.Array(map_last_level(a, float, np.exp))
 
                     self._is_dirty: bool = False
 
