@@ -25,12 +25,13 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 
-import FreeCAD
+import awkward as ak
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+import numpy as np
 
-from utils import map_objects, broadcast_data_tree
+from utils import map_objects, map_last_level
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone
@@ -207,55 +208,25 @@ class VectorFunctions(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def add(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a + b
-
-    @staticmethod
-    def sub(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a - b
-
-    @staticmethod
-    def mul(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return FreeCAD.Vector(a.x * b.x, a.y * b.y, a.z * b.z)
-
-    @staticmethod
-    def div(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return FreeCAD.Vector(a.x / b.x, a.y / b.y, a.z / b.z)
-
-    @staticmethod
-    def cross(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a.cross(b)
-
-    @staticmethod
-    def dot(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a.dot(b)
-
-    @staticmethod
-    def scale_vec(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a.scale(b, b, b)
-
-    @staticmethod
-    def length(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        return a.Length
+    # @staticmethod
+    # def length(vector: tuple) -> float:
+    #     a: FreeCAD.Vector = parameter_zip[0]
+    #     return a.Length
+    #
+    # @staticmethod
+    # def cross(parameter_zip: tuple) -> FreeCAD.Vector:
+    #     a: FreeCAD.Vector = parameter_zip[0]
+    #     b: FreeCAD.Vector = parameter_zip[1]
+    #     return a.cross(b)
+    #
+    # @staticmethod
+    # def dot(parameter_zip: tuple) -> float:
+    #     a: FreeCAD.Vector = parameter_zip[0]
+    #     b: FreeCAD.Vector = parameter_zip[1]
+    #     return a.dot(b)
 
     def eval_0(self, *args) -> list:
-        result: FreeCAD.Vector = FreeCAD.Vector(0, 0, 0)
+        result: ak.Array = ak.Array([0., 0., 0.])
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
@@ -264,33 +235,32 @@ class VectorFunctions(NodeItem):
                     a: list = self.input_data(0, args)
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
-                            data_tree: list = list(broadcast_data_tree(a))
-                            result: list = list(map_objects(data_tree, tuple, self.length))
+                            print(np.linalg.norm(a, axis=1))
+                            # result: list = list(map_last_level(a, float, self.length))
 
                     if len(args) == 2:
                         b: list = self.input_data(1, args)
-                        data_tree: list = list(broadcast_data_tree(a, b))
 
                         if self._option_box.currentText() == "Add":
-                            result: list = list(map_objects(data_tree, tuple, self.add))
+                            result: ak.Array = ak.Array(a) + ak.Array(b)
 
                         elif self._option_box.currentText() == "Sub":
-                            result: list = list(map_objects(data_tree, tuple, self.sub))
+                            result: ak.Array = ak.Array(a) - ak.Array(b)
 
                         elif self._option_box.currentText() == "Mul":
-                            result: list = list(map_objects(data_tree, tuple, self.mul))
+                            result: ak.Array = ak.Array(a) * ak.Array(b)
 
                         elif self._option_box.currentText() == "Div":
-                            result: list = list(map_objects(data_tree, tuple, self.div))
+                            result: ak.Array = ak.Array(a) / ak.Array(b)
 
-                        elif self._option_box.currentText() == "Cross":
-                            result: list = list(map_objects(data_tree, tuple, self.cross))
-
-                        elif self._option_box.currentText() == "Dot":
-                            result: list = list(map_objects(data_tree, tuple, self.dot))
+                        # elif self._option_box.currentText() == "Cross":
+                        #     result: list = list(map_objects(data_tree, tuple, self.cross))
+                        #
+                        # elif self._option_box.currentText() == "Dot":
+                        #     result: list = list(map_objects(data_tree, tuple, self.dot))
 
                         elif self._option_box.currentText() == "Scale":
-                            result: list = list(map_objects(data_tree, tuple, self.scale_vec))
+                            result: ak.Array = ak.Array(a) * b
 
                     self._is_dirty: bool = False
 
@@ -301,7 +271,7 @@ class VectorFunctions(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, result)
+        return self.output_data(0, result.to_list())
 
 # --------------- Serialization ---------------
 
