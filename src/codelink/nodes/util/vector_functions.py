@@ -208,11 +208,10 @@ class VectorFunctions(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    # @staticmethod
-    # def length(vector: tuple) -> float:
-    #     a: FreeCAD.Vector = parameter_zip[0]
-    #     return a.Length
-    #
+    @staticmethod
+    def length(vector: list) -> float:
+        return np.linalg.norm(vector)
+
     # @staticmethod
     # def cross(parameter_zip: tuple) -> FreeCAD.Vector:
     #     a: FreeCAD.Vector = parameter_zip[0]
@@ -235,8 +234,7 @@ class VectorFunctions(NodeItem):
                     a: list = self.input_data(0, args)
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
-                            print(np.linalg.norm(a, axis=1))
-                            # result: list = list(map_last_level(a, float, self.length))
+                            result: ak.Array = ak.Array(map_last_level(a, float, self.length))
 
                     if len(args) == 2:
                         b: list = self.input_data(1, args)
