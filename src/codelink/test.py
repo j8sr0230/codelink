@@ -21,11 +21,21 @@
 # ***************************************************************************
 
 import awkward as ak
+import numpy as np
+
+from utils import zip_nested
 
 
 class Vector3DArray(ak.Array):
     def dot_prod(self, other):
         return (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
+
+    def cross_prod(self, other):
+        return ak.Array({
+           "x": self.y * other.z - self.z * other.y,
+           "y": self.z * other.x - self.x * other.z,
+           "z": self.x * other.y - self.y * other.x,
+        })
 
 
 ak.behavior["*", "vector3D"] = Vector3DArray
@@ -37,7 +47,7 @@ one = ak.Array([[[{"x": 0, "y": 2, "z": 0}, {"x": 2, "y": 2.2, "z": 0}], {"x": 3
                 [[{"x": 7, "y": 7.7, "z": 0}], [{"x": 8, "y": 8.8, "z": 0}], [{"x": 9, "y": 9.9, "z": 0}]]],
                with_name="vector3D")
 
-two = ak.Array([[{"x": 2, "y": 50, "z": 0}, {"x": 0, "y": 0, "z": 0}],
+two = ak.Array([[{"x": 1, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0}],
                 [],
                 [{"x": 3.9, "y": 4, "z": 0}, {"x": 5, "y": 5.5, "z": 0}],
                 [{"x": 5.9, "y": 6, "z": 0}],
@@ -49,4 +59,12 @@ two = ak.Array([[{"x": 2, "y": 50, "z": 0}, {"x": 0, "y": 0, "z": 0}],
 # one[0][0].show()
 # one["x"].show()
 
-one.dot_prod(two).show()
+# one.dot_prod(two).show()
+
+cross = one.cross_prod(two)
+zip = ak.zip([cross["x"], cross["y"], cross["z"]])
+cross.show()
+zip.show()
+
+
+
