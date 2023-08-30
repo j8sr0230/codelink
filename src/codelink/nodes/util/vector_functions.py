@@ -31,7 +31,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import numpy as np
 
-from utils import map_objects, map_last_level
+from utils import map_last_level
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone

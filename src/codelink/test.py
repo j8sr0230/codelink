@@ -19,17 +19,21 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
-
+import FreeCAD
 import awkward as ak
 import numpy as np
 
+from utils import map_last_level, flatten
+
 
 a = ak.Array([
-    [[[1, 0, 0], [2, 0, 0]], [1, 2, 3, 4, 5]],
-    [],
-    [[4, 3, 2], [1, 2, 3]],
-    [[5, 6, 7]],
-    [[1, 2, 3], [6, 7, 8], [8, 8, 8]]
+    [[1, 0, 0], [2, 0, 0]], [1, 2, 3], [1, 2, 3], [6, 7, 8], [8, 8, 8]
 ])
 
-print(np.sin(a))
+b = ak.Array([
+    [1, 0, 0], [2, 0, 0], [1, 2, 3], [1, 2, 3], [6, 7, 8], [8, 8, 8]
+])
+
+ak.local_index(a).show()
+min_depth: int = a.layout.minmax_depth[0]
+ak.flatten(a, axis=min_depth-2).show()
