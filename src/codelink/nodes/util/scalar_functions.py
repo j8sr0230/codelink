@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
-import math
 
 import awkward as ak
 import numpy as np
@@ -32,7 +31,6 @@ import numpy as np
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_last_level
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.value_line import ValueLine
@@ -52,7 +50,7 @@ class ScalarFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Log", "Sqrt", "Exp"])
+        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Sqrt", "Exp", "Ln"])
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()
@@ -84,7 +82,7 @@ class ScalarFunctions(NodeItem):
 
         self._undo_stack.beginMacro("Changes option box")
 
-        if current_option_name == "Sqrt" or current_option_name == "Exp":
+        if current_option_name in ("Sqrt", "Exp", "Ln"):
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -117,10 +115,6 @@ class ScalarFunctions(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def log_nat(a: list[float]) -> list[float]:
-        return np.log(a).tolist()
-
     def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([0.])
 
@@ -148,15 +142,15 @@ class ScalarFunctions(NodeItem):
                         elif self._option_box.currentText() == "Pow":
                             result: ak.Array = ak.Array(a) ** ak.Array(b)
 
-                        elif self._option_box.currentText() == "Log":
-                            result: ak.Array = ak.Array(map_last_level(a, float, self.log_nat))
-
                     if len(args) == 1:
                         if self._option_box.currentText() == "Sqrt":
-                            result: ak.Array = ak.Array(a) ** 0.5
+                            result: np.ndarray = np.sqrt(ak.Array(a))
 
                         elif self._option_box.currentText() == "Exp":
-                            result: ak.Array = math.e ** ak.Array(a)
+                            result: np.ndarray = np.exp(ak.Array(a))
+
+                        elif self._option_box.currentText() == "Ln":
+                            result: np.ndarray = np.log(ak.Array(a))
 
                     self._is_dirty: bool = False
 
@@ -167,7 +161,7 @@ class ScalarFunctions(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, result.to_list())
+        return self.output_data(0, result.tolist())
 
 # --------------- Serialization ---------------
 
