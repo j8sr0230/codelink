@@ -19,21 +19,34 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
-import FreeCAD
+
 import awkward as ak
-import numpy as np
-
-from utils import map_last_level, flatten
 
 
-a = ak.Array([
-    [[1, 0, 0], [2, 0, 0]], [1, 2, 3], [1, 2, 3], [6, 7, 8], [8, 8, 8]
-])
+class Vector3DArray(ak.Array):
+    def dot_prod(self, other):
+        return (self.x * other.x) + (self.y * other.y)
 
-b = ak.Array([
-    [1, 0, 0], [2, 0, 0], [1, 2, 3], [1, 2, 3], [6, 7, 8], [8, 8, 8]
-])
 
-ak.local_index(a).show()
-min_depth: int = a.layout.minmax_depth[0]
-ak.flatten(a, axis=min_depth-2).show()
+ak.behavior["*", "vector3D"] = Vector3DArray
+
+one = ak.Array([[[{"x": 1, "y": 1, "z": 0}, {"x": 2, "y": 2.2, "z": 0}], {"x": 3, "y": 0, "z": 0}],
+                [],
+                [{"x": 4, "y": 4.4, "z": 0}, {"x": 5, "y": 5.5, "z": 0}],
+                [{"x": 6, "y": 6.6, "z": 0}],
+                [{"x": 7, "y": 7.7, "z": 0}, {"x": 8, "y": 8.8, "z": 0}, {"x": 9, "y": 9.9, "z": 0}]],
+               with_name="vector3D")
+
+two = ak.Array([[{"x": 2, "y": 3, "z": 0}, {"x": 0, "y": 0, "z": 0}],
+                [],
+                [{"x": 3.9, "y": 4, "z": 0}, {"x": 5, "y": 5.5, "z": 0}],
+                [{"x": 5.9, "y": 6, "z": 0}],
+                [{"x": 6.9, "y": 7, "z": 0}, {"x": 8, "y": 8.8, "z": 0}, {"x": 8.9, "y": 9, "z": 0}]],
+               with_name="vector3D")
+
+# print(one.layout)
+# one[0].show()
+# one[0][0].show()
+# one["x"].show()
+
+one.dot_prod(two).show()
