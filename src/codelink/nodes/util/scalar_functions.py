@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
+import math
 
 import awkward as ak
 import numpy as np
@@ -120,10 +121,6 @@ class ScalarFunctions(NodeItem):
     def log_nat(a: list[float]) -> list[float]:
         return np.log(a).tolist()
 
-    @staticmethod
-    def exponential(a: list[float]) -> list[float]:
-        return np.exp(a).tolist()
-
     def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([0.])
 
@@ -159,7 +156,7 @@ class ScalarFunctions(NodeItem):
                             result: ak.Array = ak.Array(a) ** 0.5
 
                         elif self._option_box.currentText() == "Exp":
-                            result: ak.Array = ak.Array(map_last_level(a, float, np.exp))
+                            result: ak.Array = math.e ** ak.Array(a)
 
                     self._is_dirty: bool = False
 
