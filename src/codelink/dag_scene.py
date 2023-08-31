@@ -302,6 +302,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         edge.start_pin = start_pin
         edge.start_pin.add_edge(edge)
+        edge.start_pin.socket_widget.update_stylesheets()
 
         edge.end_pin = end_pin
         if type(end_pin) == PinItem:
