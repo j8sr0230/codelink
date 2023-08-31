@@ -63,7 +63,7 @@ class Vector(NodeItem):
         return FreeCAD.Vector(x, y, z)
 
     def eval_0(self, *args) -> list:
-        result: list = [FreeCAD.Vector(0, 0, )]
+        result: list = [FreeCAD.Vector(0, 0, 0)]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
