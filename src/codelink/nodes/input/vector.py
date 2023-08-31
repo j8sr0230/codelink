@@ -24,11 +24,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 
-import awkward as ak
+import FreeCAD
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
+from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 from sockets.vector_none import VectorNone
@@ -56,14 +56,14 @@ class Vector(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_vector(parameter_zip: tuple) -> list[float]:
+    def make_vector(parameter_zip: tuple) -> FreeCAD.Vector:
         x: float = parameter_zip[0]
         y: float = parameter_zip[1]
         z: float = parameter_zip[2]
-        return [x, y, z]
+        return FreeCAD.Vector(x, y, z)
 
     def eval_0(self, *args) -> list:
-        result: list = [0, 0, 0]
+        result: list = [FreeCAD.Vector(0, 0, )]
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
@@ -73,9 +73,8 @@ class Vector(NodeItem):
                     y: list = self.input_data(1, args)
                     z: list = self.input_data(2, args)
 
-                    data_tree: list = ak.broadcast_arrays(x, y, z)
-                    nested_parameter_zip = ak.zip(data_tree).to_list()
-                    result: list = list(map_objects(nested_parameter_zip, tuple, self.make_vector))
+                    data_tree: list = list(broadcast_data_tree(x, y, z))
+                    result: list = list(map_objects(data_tree, tuple, self.make_vector))
 
                     self._is_dirty: bool = False
 
