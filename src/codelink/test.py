@@ -33,3 +33,13 @@ v2 = ak.Array(
      [{"x": -2.2, "y": 0.0, "z": 0}, {"x": 1.1, "y": 0.9, "z": 0}]
      ], with_name="Vector3D"
 )
+
+
+from_columns = ak.Array(
+    {
+        "x": [1, 2, 3, 4, 5],
+        "y": [1.1, 2.2, 3.3, 4.4, 5.5],
+        "z": ["one", "two", "three", "four", "five"],
+    }
+)
+from_columns.show()
