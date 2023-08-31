@@ -29,26 +29,24 @@ import awkward as ak
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from sockets.value_line import ValueLine
 from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class VectorAk(NodeItem):
-    REG_NAME: str = "Vector Ak"
+class AwkwardViewer(NodeItem):
+    REG_NAME: str = "Awkward Viewer"
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
+    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
+            VectorNone(undo_stack=self._undo_stack, name="In", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Out", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
 
@@ -61,14 +59,8 @@ class VectorAk(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    x: list = self.input_data(0, args)
-                    y: list = self.input_data(1, args)
-                    z: list = self.input_data(2, args)
-
-                    zipped_input: ak.Array = ak.zip({"x": x, "y": y, "z": z})
-                    # zipped_input.show()
-                    result: ak.Array = zipped_input
-
+                    result: ak.Array = ak.Array(self.input_data(0, args))
+                    result.show(limit_rows=100, limit_cols=100)
                     self._is_dirty: bool = False
 
                 except Exception as e:
