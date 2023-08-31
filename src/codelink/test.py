@@ -23,22 +23,6 @@
 import awkward as ak
 import numpy as np
 
-from utils import zip_nested
-
-
-class Vector3DArray(ak.Array):
-    def dot_prod(self, other):
-        return (self.x * other.x) + (self.y * other.y) + (self.z * other.z)
-
-    def cross_prod(self, other):
-        return ak.Array({
-           "x": self.y * other.z - self.z * other.y,
-           "y": self.z * other.x - self.x * other.z,
-           "z": self.x * other.y - self.y * other.x,
-        })
-
-
-ak.behavior["*", "vector3D"] = Vector3DArray
 
 one = ak.Array([[[{"x": 0, "y": 2, "z": 0}, {"x": 2, "y": 2.2, "z": 0}], {"x": 3, "y": 0, "z": 0}],
                 [],
@@ -54,17 +38,53 @@ two = ak.Array([[{"x": 1, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0}],
                 [{"x": 6.9, "y": 7, "z": 0}, {"x": 8, "y": 8.8, "z": 0}, {"x": 8.9, "y": 9, "z": 0}]],
                with_name="vector3D")
 
-# print(one.layout)
-# one[0].show()
-# one[0][0].show()
-# one["x"].show()
+# (one * two)
 
-# one.dot_prod(two).show()
+v1 = ak.Array(
+    [[[{"x": 1, "y": 0, "z": 0}, {"x": 1.1, "y": 0.1, "z": 0}]], [],
+     [[{"x": 0.2, "y": 1, "z": 0}], [{"x": 3.1, "y": 0.9, "z": 0}]]
+     ], with_name="Vector3D"
+)
+v2 = ak.Array(
+    [[{"x": 0, "y": 1, "z": 0}], [],
+     [{"x": -2.2, "y": 0.0, "z": 0}, {"x": 1.1, "y": 0.9, "z": 0}]
+     ], with_name="Vector3D"
+)
 
-cross = one.cross_prod(two)
-zip = ak.zip([cross["x"], cross["y"], cross["z"]])
-cross.show()
-zip.show()
+v3 = ak.Array([[[{"x": 0, "y": 2, "z": 0}, {"x": 2, "y": 2.2, "z": 0}], {"x": 3, "y": 0, "z": 0}],
+               [],
+               [{"x": 4, "y": 4.4, "z": 0}, {"x": 5, "y": 5.5, "z": 0}],
+               [{"x": 6, "y": 6.6, "z": 0}],
+               [[{"x": 7, "y": 7.7, "z": 0}], [{"x": 8, "y": 8.8, "z": 0}], [{"x": 9, "y": 9.9, "z": 0}]]],
+              with_name="Vector3D")
+
+v4 = ak.Array([[{"x": 1, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0}],
+               [],
+               [{"x": 3.9, "y": 4, "z": 0}, {"x": 5, "y": 5.5, "z": 0}],
+               [{"x": 5.9, "y": 6, "z": 0}],
+               [{"x": 6.9, "y": 7, "z": 0}, {"x": 8, "y": 8.8, "z": 0}, {"x": 8.9, "y": 9, "z": 0}]],
+              with_name="Vector3D")
+
+np.multiply(v3, v4).show()
+
+ak.behavior[np.multiply, np.ndarray, np.ndarray] = np.multiply
 
 
-
+# def test(left, right):
+#     print("l", left)
+#     return ak.Array(
+#         [
+#             1, # left[1] * right[2] - left[2] * right[1],
+#             2, # left[2] * right[0] - left[0] * right[2],
+#             3, # left[0] * right[1] - left[1] * right[0]
+#         ]
+#     )
+#
+#
+# ak.behavior[np.multiply, "v3", "v3"] = test
+#
+# l1 = ak.with_parameter([[1, 0, 0], [4, 8, 0], [2, 4, 0]], "__list__", "v3")
+# l2 = ak.with_parameter([[0, 1, 0], [4, 0, 7], [5, 6, 7]], "__list__", "v3")
+#
+#
+# (l1 * l2).show()
