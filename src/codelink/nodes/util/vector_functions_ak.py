@@ -274,15 +274,15 @@ class VectorFunctionsAk(NodeItem):
         return a.Length
 
     def eval_0(self, *args) -> list:
-        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
+        result: ak.Record = ak.Record({"x": 0, "y": 0, "z": 0})
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
                     # TODO: Slow vector with name creation
-                    # a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
-                    a: ak.Array = self.input_data(0, args)
+                    a: ak.Array = ak.Array(self.input_data(0, args).to_list(), with_name="Vector3D")
+                    # a: ak.Array = self.input_data(0, args)
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
@@ -291,8 +291,8 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 2:
                         # TODO: Slow vector with name creation
-                        # b: ak.Array = self.input_data(1, args), with_name="Vector3D")
-                        b: ak.Array = self.input_data(1, args)
+                        b: ak.Array = ak.Array(self.input_data(1, args).to_list(), with_name="Vector3D")
+                        #b: ak.Array = self.input_data(1, args)
 
                         if self._option_box.currentText() == "Add":
                             result: ak.Array = a + b

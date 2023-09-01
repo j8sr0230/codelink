@@ -54,7 +54,7 @@ class VectorAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> ak.Array:
+    def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
 
         with warnings.catch_warnings():
@@ -78,4 +78,4 @@ class VectorAk(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return ak.Array(self.output_data(0, result))
+        return self.output_data(0, result.to_list())

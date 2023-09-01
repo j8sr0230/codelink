@@ -72,6 +72,6 @@ class VectorNoneAk(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(ak.Array([{"x": 0, "y": 0, "z": 0}]))
+			result.append(ak.Record({"x": 0, "y": 0, "z": 0}).to_list())
 
 		return result
