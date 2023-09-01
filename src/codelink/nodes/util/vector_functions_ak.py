@@ -286,6 +286,7 @@ class VectorFunctionsAk(NodeItem):
 
                     if type(self.input_data(0, args)) == list:
                         a: ak.Array = ak.Array(self.input_data(0, args)[0], with_name="Vector3D")
+
                     else:
                         a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
 
