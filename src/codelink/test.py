@@ -60,6 +60,7 @@ y = [0]
 z = [0]
 
 v1 = ak.zip({"x": x, "y": y, "z": z})
+v1 = ak.concatenate([v1, v1])
 v2 = ak.Array([{"x": 1, "y": 0, "z": 0}])
 res = ak.Array(v1, with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
 
