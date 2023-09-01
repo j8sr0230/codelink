@@ -470,8 +470,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         if 0 <= socket_index < len(self.input_socket_widgets):
             if type(unwrap(args[socket_index])) == list:
                 socket_data: list = list(unwrap(args[socket_index]))
-            elif type(unwrap(args[socket_index])) == ak.Array:
-                socket_data: list = args[socket_index]
+            # elif type(unwrap(args[socket_index])) == ak.Array:
+            #     socket_data: list = args[socket_index]
             else:
                 socket_data: list = args[socket_index]
 
