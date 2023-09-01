@@ -280,9 +280,9 @@ class VectorFunctionsAk(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    # TODO: Slow vector with name creation
-                    a: ak.Array = ak.Array(self.input_data(0, args).to_list(), with_name="Vector3D")
-                    # a: ak.Array = self.input_data(0, args)
+                    # TODO: Pass awkward array as input, not list
+                    a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
+                    print(type(self.input_data(0, args)))
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
@@ -290,9 +290,7 @@ class VectorFunctionsAk(NodeItem):
                             result: list = list(map_objects(data_tree, tuple, self.length))
 
                     if len(args) == 2:
-                        # TODO: Slow vector with name creation
-                        b: ak.Array = ak.Array(self.input_data(1, args).to_list(), with_name="Vector3D")
-                        #b: ak.Array = self.input_data(1, args)
+                        b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                         if self._option_box.currentText() == "Add":
                             result: ak.Array = a + b
