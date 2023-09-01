@@ -468,13 +468,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def input_data(self, socket_index: int, args) -> list:
         socket_data: list = []
         if 0 <= socket_index < len(self.input_socket_widgets):
-            if type(args[socket_index]) == list and all(
-                    [type(item) == ak.Array for item in args[socket_index]]
-            ):
-                print([ak.type(item) for item in args[socket_index]])
-                # socket_data: list = list(unwrap(args[socket_index]))
+            if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
                 socket_data: ak.Array = ak.concatenate([item for item in unwrap(args[socket_index])])
-
             elif type(unwrap(args[socket_index])) == list:
                 socket_data: list = list(unwrap(args[socket_index]))
             else:
