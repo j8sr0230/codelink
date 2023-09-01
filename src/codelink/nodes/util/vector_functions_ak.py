@@ -274,21 +274,13 @@ class VectorFunctionsAk(NodeItem):
         return a.Length
 
     def eval_0(self, *args) -> list:
-        result: ak.Record = ak.Record({"x": 0, "y": 0, "z": 0})
+        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
                 try:
-                    # TODO: Pass awkward array as input, not list
-                    # self.input_data(0, args).show()
-                    # self.input_data(0, args)[0].show()
-
-                    if type(self.input_data(0, args)) == list:
-                        a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
-
-                    else:
-                        a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
+                    a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
