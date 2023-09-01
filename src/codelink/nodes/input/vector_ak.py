@@ -30,7 +30,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from sockets.value_line import ValueLine
-from sockets.vector_none import VectorNone
+from sockets.vector_none_ak import VectorNoneAk
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -48,8 +48,8 @@ class VectorAk(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
-                       parent_node=self)
+            VectorNoneAk(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
+                         parent_node=self)
         ]
 
     # --------------- Node eval methods ---------------

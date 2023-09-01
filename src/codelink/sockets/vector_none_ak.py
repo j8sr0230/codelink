@@ -21,53 +21,57 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
-import warnings
+from typing import TYPE_CHECKING, Any, Optional
 
 import awkward as ak
 
+import FreeCAD
+
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from node_item import NodeItem
-from sockets.vector_none_ak import VectorNoneAk
+from socket_widget import SocketWidget
 
 if TYPE_CHECKING:
-    from socket_widget import SocketWidget
+	from node_item import NodeItem
 
 
-class AwkwardViewer(NodeItem):
-    REG_NAME: str = "Awkward Viewer"
+class VectorNoneAk(SocketWidget):
+	def __init__(
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "Vector", content_value: Any = "<No Input>",
+			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False,
+			is_graft_topo: bool = False, is_unwrap: bool = False, is_wrap: bool = False, is_input: bool = True,
+			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
+	) -> None:
 
-    def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
-                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
-        super().__init__(pos, undo_stack, name, parent)
+		super().__init__(
+			undo_stack, name, content_value, is_flatten, is_simplify, is_graft, is_graft_topo, is_unwrap, is_wrap,
+			is_input, parent_node, parent_widget
+		)
 
-        # Socket widgets
-        self._socket_widgets: list[SocketWidget] = [
-            VectorNoneAk(undo_stack=self._undo_stack, name="In", content_value="<No Input>", is_input=True,
-                         parent_node=self),
-            VectorNoneAk(undo_stack=self._undo_stack, name="Out", content_value="<No Input>", is_input=False,
-                         parent_node=self)
-        ]
+		# Pin setup
+		self._pin_item.color = QtGui.QColor("#6363C7")
+		self._pin_item.pin_type = FreeCAD.Vector
 
-    # --------------- Node eval methods ---------------
+		self.update_stylesheets()
 
-    def eval_0(self, *args) -> ak.Array:
-        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
+	# --------------- Socket data ---------------
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
-                try:
-                    result: ak.Array = ak.Array(self.input_data(0, args))
-                    result.show(limit_rows=100, limit_cols=100)
-                    self._is_dirty: bool = False
+	def input_data(self) -> list:
+		result: list = []
+		if self._pin_item.has_edges():
+			for edge in self._pin_item.edges:
+				pre_node: NodeItem = edge.start_pin.parent_node
+				if len(pre_node.sub_scene.nodes) > 0:
+					result.append(pre_node.linked_lowest_socket(edge.start_pin.socket_widget).pin)
+				else:
+					result.append(edge.start_pin)
+		else:
+			linked_highest: SocketWidget = self.parent_node.linked_highest_socket(self)
+			if linked_highest != self:
+				result.extend(linked_highest.input_data())
 
-                except Exception as e:
-                    self._is_dirty: bool = True
-                    print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
+		if len(result) == 0:
+			result.append(ak.Array([{"x": 0, "y": 0, "z": 0}]))
 
-        return ak.Array(self.output_data(0, result))
+		return result
