@@ -71,6 +71,10 @@ class VectorFunctionsAk(NodeItem):
                          parent_node=self)
         ]
 
+        # Overwrite numpy universal functions with awkward behaviors for custom records
+        ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
+        ak.behavior[np.subtract, "Vector3D", "Vector3D"] = self.vector_sub
+
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
@@ -139,7 +143,7 @@ class VectorFunctionsAk(NodeItem):
                 )
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
 
-            if len(self.input_socket_widgets) == 2 and type(self._socket_widgets[2]) != VectorNone:
+            if len(self.input_socket_widgets) == 2 and type(self._socket_widgets[2]) != VectorNoneAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
@@ -211,12 +215,6 @@ class VectorFunctionsAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def add(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a + b
-
-    @staticmethod
     def vector_add(a, b):
         return ak.contents.RecordArray(
             [
@@ -229,10 +227,16 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def sub(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a - b
+    def vector_sub(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a["x"] - b["x"]),
+                ak.to_layout(a["y"] - b["y"]),
+                ak.to_layout(a["z"] - b["z"]),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
 
     @staticmethod
     def mul(parameter_zip: tuple) -> FreeCAD.Vector:
@@ -284,15 +288,12 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 2:
                         b: list = self.input_data(1, args)
-                        # data_tree: list = list(broadcast_data_tree(a, b))
 
                         if self._option_box.currentText() == "Add":
-                            # result: list = list(map_objects(data_tree, tuple, self.add))
-                            ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
                             result: ak.Array = ak.Array(a, with_name="Vector3D") + ak.Array(b, with_name="Vector3D")
 
                         elif self._option_box.currentText() == "Sub":
-                            result: list = list(map_objects(data_tree, tuple, self.sub))
+                            result: ak.Array = ak.Array(a, with_name="Vector3D") - ak.Array(b, with_name="Vector3D")
 
                         elif self._option_box.currentText() == "Mul":
                             result: list = list(map_objects(data_tree, tuple, self.mul))
