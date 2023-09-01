@@ -280,20 +280,25 @@ class VectorFunctionsAk(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    a: list = self.input_data(0, args)
+                    # TODO: Slow vector with name creation
+                    # a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
+                    a: ak.Array = self.input_data(0, args)
+
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
                             data_tree: list = list(broadcast_data_tree(a))
                             result: list = list(map_objects(data_tree, tuple, self.length))
 
                     if len(args) == 2:
-                        b: list = self.input_data(1, args)
+                        # TODO: Slow vector with name creation
+                        # b: ak.Array = self.input_data(1, args), with_name="Vector3D")
+                        b: ak.Array = self.input_data(1, args)
 
                         if self._option_box.currentText() == "Add":
-                            result: ak.Array = ak.Array(a, with_name="Vector3D") + ak.Array(b, with_name="Vector3D")
+                            result: ak.Array = a + b
 
                         elif self._option_box.currentText() == "Sub":
-                            result: ak.Array = ak.Array(a, with_name="Vector3D") - ak.Array(b, with_name="Vector3D")
+                            result: ak.Array = a - b
 
                         elif self._option_box.currentText() == "Mul":
                             result: list = list(map_objects(data_tree, tuple, self.mul))
