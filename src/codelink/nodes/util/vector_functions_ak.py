@@ -281,8 +281,8 @@ class VectorFunctionsAk(NodeItem):
             try:
                 try:
                     # TODO: Pass awkward array as input, not list
-                    # print("a", type(self.input_data(0, args)))
-                    # print(self.input_data(0, args))
+                    print("a", type(self.input_data(0, args)))
+                    print(self.input_data(0, args))
 
                     if type(self.input_data(0, args)) == list:
                         a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
