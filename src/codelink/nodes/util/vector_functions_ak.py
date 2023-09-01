@@ -281,8 +281,9 @@ class VectorFunctionsAk(NodeItem):
             try:
                 try:
                     # TODO: Pass awkward array as input, not list
-                    a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
-                    print(type(self.input_data(0, args)))
+                    # print("a", type(self.input_data(0, args)[0]))
+                    # print(self.input_data(0, args)[0])
+                    a: ak.Array = ak.Array(self.input_data(0, args)[0], with_name="Vector3D")
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
@@ -290,7 +291,9 @@ class VectorFunctionsAk(NodeItem):
                             result: list = list(map_objects(data_tree, tuple, self.length))
 
                     if len(args) == 2:
-                        b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
+                        b: ak.Array = ak.Array(self.input_data(1, args)[0], with_name="Vector3D")
+                        # print("b", type(self.input_data(1, args)))
+                        # print(self.input_data(1, args))
 
                         if self._option_box.currentText() == "Add":
                             result: ak.Array = a + b

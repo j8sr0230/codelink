@@ -66,8 +66,7 @@ class VectorAk(NodeItem):
                     z: list = self.input_data(2, args)
 
                     zipped_input: ak.Array = ak.zip({"x": x, "y": y, "z": z})
-                    # zipped_input.show()
-                    result: ak.Array = zipped_input
+                    result: ak.Array = ak.Array(zipped_input)
 
                     self._is_dirty: bool = False
 
@@ -78,4 +77,4 @@ class VectorAk(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, result.to_list())
+        return self.output_data(0, result)
