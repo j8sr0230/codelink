@@ -319,7 +319,11 @@ class VectorFunctionsAk(NodeItem):
 
                         elif self._option_box.currentText() == "Scale":
                             b: list = self.input_data(1, args)
-                            result: ak.Array = a * ak.Array([{"x": b[0], "y": b[0], "z": b[0]}], with_name="Vector3D")
+                            print("b in", b)
+                            b: ak.Array = ak.Array([{"x": b[0], "y": b[0], "z": b[0]}], with_name="Vector3D")
+                            print("b vec", b)
+
+                            result: ak.Array = a * b
 
                     self._is_dirty: bool = False
 
