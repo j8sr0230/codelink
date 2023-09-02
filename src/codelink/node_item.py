@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional, Callable, cast
+from typing import Optional, Union, Callable, cast
 import sys
 import importlib
 import inspect
@@ -465,21 +465,25 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Data processing methods ---------------
 
-    def input_data(self, socket_index: int, args) -> list:
-        socket_data: list = []
+    def input_data(self, socket_index: int, args) -> Union[list, ak.Array]:
+        socket_data: Union[list, ak.Array] = []
         if 0 <= socket_index < len(self.input_socket_widgets):
             if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
-                socket_data: ak.Array = ak.concatenate([item for item in unwrap(args[socket_index])])
+                socket_data: ak.Array = ak.concatenate([item for item in args[socket_index]])
+            elif type(unwrap(args[socket_index])) == ak.Array:
+                socket_data: ak.Array = args[socket_index][0]
             elif type(unwrap(args[socket_index])) == list:
                 socket_data: list = list(unwrap(args[socket_index]))
             else:
                 socket_data: list = args[socket_index]
 
-            socket_data: list = self.input_socket_widgets[socket_index].perform_socket_operation(socket_data)
+            socket_data: Union[list, ak.Array] = self.input_socket_widgets[socket_index].perform_socket_operation(
+                socket_data
+            )
         return socket_data
 
-    def output_data(self, socket_index: int, args) -> list:
-        socket_data: list = self.output_socket_widgets[socket_index].perform_socket_operation(args)
+    def output_data(self, socket_index: int, args) -> Union[list, ak.Array]:
+        socket_data: Union[list, ak.Array] = self.output_socket_widgets[socket_index].perform_socket_operation(args)
         return socket_data
 
     # --------------- Overwrites ---------------
