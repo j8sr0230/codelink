@@ -78,8 +78,11 @@ class VectorNoneAk(SocketWidget):
 		return result
 
 	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
-		# if self.socket_options_state()[0]:  # Flatten
-		# 	input_data: list = list(flatten(input_data))
+		if self.socket_options_state()[0]:  # Flatten
+			x = ak.flatten(input_data.x, axis=None)
+			y = ak.flatten(input_data.y, axis=None)
+			z = ak.flatten(input_data.z, axis=None)
+			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 		# if self.socket_options_state()[1]:  # Simplify
 		# 	input_data: list = list(simplify(input_data))
 		if self.socket_options_state()[2]:  # Graft
