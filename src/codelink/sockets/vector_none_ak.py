@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 
 import awkward as ak
+import numpy as np
 
 import FreeCAD
 
@@ -81,13 +82,16 @@ class VectorNoneAk(SocketWidget):
 		# 	input_data: list = list(flatten(input_data))
 		# if self.socket_options_state()[1]:  # Simplify
 		# 	input_data: list = list(simplify(input_data))
-		# if self.socket_options_state()[2]:  # Graft
-		# 	input_data: list = list(graft(input_data))
+		if self.socket_options_state()[2]:  # Graft
+			if input_data.layout.minmax_depth[0] == 1:
+				input_data: ak.Array = input_data[:, np.newaxis]
+			else:
+				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 		# if self.socket_options_state()[3]:  # Graft Topo
 		# 	input_data: list = list(graft_topology(input_data))
 		# if self.socket_options_state()[4]:  # Unwrap
 		# 	if type(unwrap(input_data)) == list:
 		# 		input_data: list = list(unwrap(input_data))
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.unflatten(input_data, axis=0, counts=1)
+			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 		return input_data

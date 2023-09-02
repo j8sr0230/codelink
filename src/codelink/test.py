@@ -55,7 +55,7 @@ ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
 start = time.perf_counter()
 
-x = [np.arange(0, 10).tolist()]
+x = np.arange(0, 1) #[:, np.newaxis]]
 y = [0]
 z = [0]
 
@@ -70,5 +70,15 @@ print(f"Elapsed: {ms:.03f} milliseconds.")
 
 # print(res.to_list())
 
-res.show()
-ak.unflatten(res, axis=0, counts=1).show()
+#res.show()
+#ak.unflatten(res, axis=-1, counts=1).show()
+
+v1 = ak.Array([{"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}])
+v1.show()
+ak.unflatten(v1, axis=-1, counts=1).show()
+
+v1 = ak.Array([{"x": 1, "y": 2, "z": 3}])
+v1.show()
+v1[:, np.newaxis].show()
+
+#ak.unflatten(v1, axis=-1, counts=1).show()
