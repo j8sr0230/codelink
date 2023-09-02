@@ -93,5 +93,5 @@ class VectorNoneAk(SocketWidget):
 		# 	if type(unwrap(input_data)) == list:
 		# 		input_data: list = list(unwrap(input_data))
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
+			input_data: ak.Array = input_data[:, np.newaxis]
 		return input_data
