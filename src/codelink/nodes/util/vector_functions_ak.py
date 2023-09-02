@@ -74,6 +74,8 @@ class VectorFunctionsAk(NodeItem):
         # Overwrite numpy universal functions with awkward behaviors for custom records
         ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
         ak.behavior[np.subtract, "Vector3D", "Vector3D"] = self.vector_sub
+        ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
+        ak.behavior[np.divide, "Vector3D", "Vector3D"] = self.vector_div
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -239,16 +241,28 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def mul(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return FreeCAD.Vector(a.x * b.x, a.y * b.y, a.z * b.z)
+    def vector_mul(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a["x"] * b["x"]),
+                ak.to_layout(a["y"] * b["y"]),
+                ak.to_layout(a["z"] * b["z"]),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
 
     @staticmethod
-    def div(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return FreeCAD.Vector(a.x / b.x, a.y / b.y, a.z / b.z)
+    def vector_div(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a["x"] / b["x"]),
+                ak.to_layout(a["y"] / b["y"]),
+                ak.to_layout(a["z"] / b["z"]),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
 
     @staticmethod
     def cross(parameter_zip: tuple) -> FreeCAD.Vector:
@@ -261,12 +275,6 @@ class VectorFunctionsAk(NodeItem):
         a: FreeCAD.Vector = parameter_zip[0]
         b: FreeCAD.Vector = parameter_zip[1]
         return a.dot(b)
-
-    @staticmethod
-    def scale_vec(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: float = parameter_zip[1]
-        return a.scale(b, b, b)
 
     @staticmethod
     def length(parameter_zip: tuple) -> float:
@@ -298,10 +306,10 @@ class VectorFunctionsAk(NodeItem):
                             result: ak.Array = a - b
 
                         elif self._option_box.currentText() == "Mul":
-                            result: list = list(map_objects(data_tree, tuple, self.mul))
+                            result: ak.Array = a * b
 
                         elif self._option_box.currentText() == "Div":
-                            result: list = list(map_objects(data_tree, tuple, self.div))
+                            result: ak.Array = a / b
 
                         elif self._option_box.currentText() == "Cross":
                             result: list = list(map_objects(data_tree, tuple, self.cross))
@@ -310,7 +318,8 @@ class VectorFunctionsAk(NodeItem):
                             result: list = list(map_objects(data_tree, tuple, self.dot))
 
                         elif self._option_box.currentText() == "Scale":
-                            result: list = list(map_objects(data_tree, tuple, self.scale_vec))
+                            b: list = self.input_data(1, args)
+                            result: ak.Array = a * ak.Array([{"x": b[0], "y": b[0], "z": b[0]}], with_name="Vector3D")
 
                     self._is_dirty: bool = False
 
