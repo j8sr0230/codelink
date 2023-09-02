@@ -91,4 +91,3 @@ class VectorNoneAk(SocketWidget):
 		# if self.socket_options_state()[5]:  # Wrap
 		# 	input_data: list = list(wrap(input_data))
 		return input_data
-

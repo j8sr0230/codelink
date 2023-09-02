@@ -280,6 +280,7 @@ class VectorFunctionsAk(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
+                    # print("a", type(self.input_data(0, args)))
                     a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
 
                     if len(args) == 1:
@@ -289,8 +290,6 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 2:
                         b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
-                        # print("b", type(self.input_data(1, args)))
-                        # print(self.input_data(1, args))
 
                         if self._option_box.currentText() == "Add":
                             result: ak.Array = a + b
