@@ -54,7 +54,7 @@ class VectorAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> ak.Array:
         result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
 
         with warnings.catch_warnings():
@@ -68,7 +68,15 @@ class VectorAk(NodeItem):
                     zipped_input: ak.Array = ak.zip({"x": x, "y": y, "z": z})
                     result: ak.Array = ak.Array(zipped_input)
 
-                    self._is_dirty: bool = False
+                    x_num: int = ak.num(ak.flatten(result.x, axis=None), axis=0)
+                    y_num: int = ak.num(ak.flatten(result.y, axis=None), axis=0)
+                    z_num: int = ak.num(ak.flatten(result.z, axis=None), axis=0)
+
+                    if not (x_num == y_num == z_num):
+                        self._is_dirty: bool = True
+                        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
+                    else:
+                        self._is_dirty: bool = False
 
                 except Exception as e:
                     self._is_dirty: bool = True
