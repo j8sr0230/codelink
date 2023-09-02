@@ -55,7 +55,7 @@ ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
 start = time.perf_counter()
 
-x = [np.arange(0, 1000000).tolist()]
+x = [np.arange(0, 10).tolist()]
 y = [0]
 z = [0]
 
@@ -69,3 +69,6 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
 # print(res.to_list())
+
+res.show()
+ak.unflatten(res, axis=0, counts=1).show()

@@ -88,6 +88,6 @@ class VectorNoneAk(SocketWidget):
 		# if self.socket_options_state()[4]:  # Unwrap
 		# 	if type(unwrap(input_data)) == list:
 		# 		input_data: list = list(unwrap(input_data))
-		# if self.socket_options_state()[5]:  # Wrap
-		# 	input_data: list = list(wrap(input_data))
+		if self.socket_options_state()[5]:  # Wrap
+			input_data: ak.Array = ak.unflatten(input_data, axis=0, counts=1)
 		return input_data
