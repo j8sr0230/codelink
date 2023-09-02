@@ -71,12 +71,11 @@ print(f"Elapsed: {ms:.03f} milliseconds.")
 #res.show()
 #ak.unflatten(res, axis=-1, counts=1).show()
 
-v1 = ak.Array([{"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}])
+v1 = ak.Array([{"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}])
 v1.show()
-ak.unflatten(v1, axis=-1, counts=1).show()
+print(ak.num(v1, axis=0))
+ak.unflatten(v1, axis=1, counts=3).show()
 
-v1 = ak.Array([{"x": 1, "y": 2, "z": 3}])
-v1.show()
-v1[:, np.newaxis].show()
-
-#ak.unflatten(v1, axis=-1, counts=1).show()
+# v1 = ak.Array([{"x": 1, "y": 2, "z": 3}])
+# v1.show()
+# v1[:, np.newaxis].show()
