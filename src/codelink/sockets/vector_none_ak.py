@@ -76,7 +76,7 @@ class VectorNoneAk(SocketWidget):
 
 		return result
 
-	def perform_socket_operation(self, input_data: list) -> list:
+	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
 		# if self.socket_options_state()[0]:  # Flatten
 		# 	input_data: list = list(flatten(input_data))
 		# if self.socket_options_state()[1]:  # Simplify
