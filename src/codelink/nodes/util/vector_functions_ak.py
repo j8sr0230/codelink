@@ -70,12 +70,17 @@ class VectorFunctionsAk(NodeItem):
                          parent_node=self)
         ]
 
+        class Vector3DArray(ak.Array):
+            def vector_dot(self, other):
+                return self.x*other.x + self.y*other.y + self.z*other.z
+
         # Overwrite numpy universal functions with awkward behaviors for custom records
         ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
         ak.behavior[np.subtract, "Vector3D", "Vector3D"] = self.vector_sub
         ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
         ak.behavior[np.divide, "Vector3D", "Vector3D"] = self.vector_div
         ak.behavior[np.abs, "Vector3D"] = self.vector_length
+        ak.behavior["*", "Vector3D"] = Vector3DArray
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -273,12 +278,6 @@ class VectorFunctionsAk(NodeItem):
         return a.cross(b)
 
     @staticmethod
-    def dot(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a.dot(b)
-
-    @staticmethod
     def vector_length(a):
         return np.sqrt(a.x**2 + a.y**2 + a.z**2)
 
@@ -315,8 +314,8 @@ class VectorFunctionsAk(NodeItem):
                             # elif self._option_box.currentText() == "Cross":
                             #     result: list = list(map_objects(data_tree, tuple, self.cross))
                             #
-                            # elif self._option_box.currentText() == "Dot":
-                            #     result: list = list(map_objects(data_tree, tuple, self.dot))
+                            elif self._option_box.currentText() == "Dot":
+                                result: ak.Array = a.vector_dot(b)
 
                         elif self._option_box.currentText() == "Scale":
                             b: list = self.input_data(1, args)
