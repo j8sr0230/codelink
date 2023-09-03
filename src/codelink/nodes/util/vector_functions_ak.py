@@ -28,8 +28,6 @@ import warnings
 import numpy as np
 import awkward as ak
 
-import FreeCAD
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
@@ -73,6 +71,16 @@ class VectorFunctionsAk(NodeItem):
         class Vector3DArray(ak.Array):
             def vector_dot(self, other):
                 return self.x*other.x + self.y*other.y + self.z*other.z
+
+            def vector_cross(self, other):
+                return ak.Array(
+                    {
+                        "x": ak.to_layout(self["y"]*other["z"] - self["z"]*other["y"]),
+                        "y": ak.to_layout(self["z"]*other["x"] - self["x"]*other["z"]),
+                        "z": ak.to_layout(self["x"]*other["y"] - self["y"]*other["x"]),
+                    },
+                    with_name="Vector3D"
+                )
 
         # Overwrite numpy universal functions with awkward behaviors for custom records
         ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
@@ -272,12 +280,6 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def cross(parameter_zip: tuple) -> FreeCAD.Vector:
-        a: FreeCAD.Vector = parameter_zip[0]
-        b: FreeCAD.Vector = parameter_zip[1]
-        return a.cross(b)
-
-    @staticmethod
     def vector_length(a):
         return np.sqrt(a.x**2 + a.y**2 + a.z**2)
 
@@ -311,9 +313,12 @@ class VectorFunctionsAk(NodeItem):
                             elif self._option_box.currentText() == "Div":
                                 result: ak.Array = a / b
 
-                            # elif self._option_box.currentText() == "Cross":
-                            #     result: list = list(map_objects(data_tree, tuple, self.cross))
-                            #
+                            elif self._option_box.currentText() == "Cross":
+                                cross_comps: ak.Array = a.vector_cross(b)
+                                result: ak.Array = ak.zip({"x": cross_comps.x,
+                                                           "y": cross_comps.y,
+                                                           "z": cross_comps.z})
+
                             elif self._option_box.currentText() == "Dot":
                                 result: ak.Array = a.vector_dot(b)
 
