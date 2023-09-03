@@ -33,7 +33,6 @@ import FreeCAD
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -76,6 +75,7 @@ class VectorFunctionsAk(NodeItem):
         ak.behavior[np.subtract, "Vector3D", "Vector3D"] = self.vector_sub
         ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
         ak.behavior[np.divide, "Vector3D", "Vector3D"] = self.vector_div
+        ak.behavior[np.abs, "Vector3D"] = self.vector_length
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -279,9 +279,8 @@ class VectorFunctionsAk(NodeItem):
         return a.dot(b)
 
     @staticmethod
-    def length(parameter_zip: tuple) -> float:
-        a: FreeCAD.Vector = parameter_zip[0]
-        return a.Length
+    def vector_length(a):
+        return np.sqrt(a.x**2 + a.y**2 + a.z**2)
 
     def eval_0(self, *args) -> list:
         result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
@@ -295,8 +294,7 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
-                            data_tree: list = list(broadcast_data_tree(a))
-                            result: list = list(map_objects(data_tree, tuple, self.length))
+                            result: ak.Array = np.abs(a)
 
                     if len(args) == 2:
                         if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
@@ -314,11 +312,11 @@ class VectorFunctionsAk(NodeItem):
                             elif self._option_box.currentText() == "Div":
                                 result: ak.Array = a / b
 
-                            elif self._option_box.currentText() == "Cross":
-                                result: list = list(map_objects(data_tree, tuple, self.cross))
-
-                            elif self._option_box.currentText() == "Dot":
-                                result: list = list(map_objects(data_tree, tuple, self.dot))
+                            # elif self._option_box.currentText() == "Cross":
+                            #     result: list = list(map_objects(data_tree, tuple, self.cross))
+                            #
+                            # elif self._option_box.currentText() == "Dot":
+                            #     result: list = list(map_objects(data_tree, tuple, self.dot))
 
                         elif self._option_box.currentText() == "Scale":
                             b: list = self.input_data(1, args)
