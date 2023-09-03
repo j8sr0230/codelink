@@ -101,7 +101,8 @@ class VectorNoneAk(SocketWidget):
 
 		if self.socket_options_state()[4]:  # Unwrap
 			min_depth: int = input_data.layout.minmax_depth[0]
-			input_data: ak.Array = ak.flatten(input_data, axis=min_depth-1)
+			if min_depth > 1:
+				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
 			input_data: ak.Array = input_data[np.newaxis, :]
