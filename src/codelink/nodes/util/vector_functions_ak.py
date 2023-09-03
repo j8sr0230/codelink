@@ -213,7 +213,7 @@ class VectorFunctionsAk(NodeItem):
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
-
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------

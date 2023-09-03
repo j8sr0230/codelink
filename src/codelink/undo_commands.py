@@ -166,7 +166,6 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 		self._option_box.setCurrentIndex(self._undo_idx)
 		self._option_box.update()
 		self._option_box.blockSignals(False)
-		# cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 	def redo(self) -> None:
 		if self._option_box.currentIndex() != self._redo_idx:
@@ -174,8 +173,6 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 			self._option_box.setCurrentIndex(self._redo_idx)
 			self._option_box.update()
 			self._option_box.blockSignals(False)
-
-		cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 
 class MoveNodesCommand(QtWidgets.QUndoCommand):
