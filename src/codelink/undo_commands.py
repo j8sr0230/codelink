@@ -166,9 +166,6 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 		self._option_box.setCurrentIndex(self._undo_idx)
 		self._option_box.update()
 		self._option_box.blockSignals(False)
-		print("here")
-		print(self._node.socket_widgets)
-
 		# cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 	def redo(self) -> None:
@@ -477,3 +474,19 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 
 		self._new_data = model.properties[key]
 		return True
+
+
+class ExecuteDagCommand(QtWidgets.QUndoCommand):
+	def __init__(
+			self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
+		super().__init__(parent)
+
+		self._scene: DAGScene = scene
+		self._node: NodeItem = node
+
+	def undo(self) -> None:
+		self._scene.execute_dag(self._node)
+
+	def redo(self) -> None:
+		pass
