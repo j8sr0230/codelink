@@ -98,7 +98,7 @@ class VectorFunctionsAk(NodeItem):
                 if type(self._socket_widgets[1]) != VectorNoneAk:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
-                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
                     new_socket_widget: VectorNoneAk = VectorNoneAk(
@@ -116,7 +116,7 @@ class VectorFunctionsAk(NodeItem):
             if type(self._socket_widgets[2]) != ValueLine:
                 remove_socket: SocketWidget = self._socket_widgets[2]
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
 
                 new_socket_widget: ValueLine = ValueLine(
@@ -130,7 +130,7 @@ class VectorFunctionsAk(NodeItem):
                 if type(self._socket_widgets[1]) != ValueLine:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
-                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
                     new_socket_widget: ValueLine = ValueLine(
@@ -148,7 +148,7 @@ class VectorFunctionsAk(NodeItem):
             if len(self.input_socket_widgets) == 2 and type(self._socket_widgets[2]) != VectorNoneAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
 
                 new_socket_widget: VectorNoneAk = VectorNoneAk(
@@ -161,7 +161,7 @@ class VectorFunctionsAk(NodeItem):
             if len(self.input_socket_widgets) > 1:
                 remove_socket: SocketWidget = self._socket_widgets[1]
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
             if type(self._socket_widgets[1]) != ValueLine:
@@ -181,7 +181,7 @@ class VectorFunctionsAk(NodeItem):
                 if type(self._socket_widgets[1]) != VectorNoneAk:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
-                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
                     new_socket_widget: VectorNoneAk = VectorNoneAk(
@@ -199,7 +199,7 @@ class VectorFunctionsAk(NodeItem):
             if type(self._socket_widgets[2]) != VectorNoneAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
 
                 new_socket_widget: VectorNoneAk = VectorNoneAk(
@@ -298,7 +298,6 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 2:
                         if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
-                            print("Called twice??", self.input_data(1, args))
                             b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
@@ -320,10 +319,12 @@ class VectorFunctionsAk(NodeItem):
                                 result: list = list(map_objects(data_tree, tuple, self.dot))
 
                         elif self._option_box.currentText() == "Scale":
-                            scale: list = self.input_data(1, args)
-                            scale_vec: ak.Array = ak.zip({"x": scale, "y": scale, "z": scale})
-                            scale_vec_ak: ak.Array = ak.Array(scale_vec, with_name="Vector3D")
-                            result: ak.Array = a * scale_vec_ak
+                            b: list = self.input_data(1, args)
+                            print("b", type(self.input_data(1, args)))
+
+                            b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
+                            b_vec: ak.Array = ak.Array(b_vec, with_name="Vector3D")
+                            result: ak.Array = a * b_vec
 
                     self._is_dirty: bool = False
 

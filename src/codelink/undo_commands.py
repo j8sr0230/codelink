@@ -166,7 +166,10 @@ class SetOptionIndexCommand(QtWidgets.QUndoCommand):
 		self._option_box.setCurrentIndex(self._undo_idx)
 		self._option_box.update()
 		self._option_box.blockSignals(False)
-		cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
+		print("here")
+		print(self._node.socket_widgets)
+
+		# cast(QtCore.SignalInstance, self._node.scene().dag_changed).emit(self._node)
 
 	def redo(self) -> None:
 		if self._option_box.currentIndex() != self._redo_idx:
@@ -274,20 +277,26 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 
 
 class RemoveEdgeCommand(QtWidgets.QUndoCommand):
-	def __init__(self, scene: DAGScene, edge: EdgeItem, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+	def __init__(
+			self, scene: DAGScene, edge: EdgeItem, is_silent: bool = False,
+			parent: Optional[QtWidgets.QUndoCommand] = None
+	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 		self._edge: EdgeItem = edge
+		self._is_silent: bool = is_silent
 
 	def undo(self) -> None:
 		self._scene.add_edge(self._edge)
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
+		if not self._is_silent:
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
 
 	def redo(self) -> None:
 		self._scene.remove_edge(self._edge)
-		for node in self._scene.ends():
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+		if not self._is_silent:
+			for node in self._scene.ends():
+				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
 
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
