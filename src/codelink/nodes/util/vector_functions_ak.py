@@ -297,33 +297,33 @@ class VectorFunctionsAk(NodeItem):
                             result: list = list(map_objects(data_tree, tuple, self.length))
 
                     if len(args) == 2:
-                        b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
+                        if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
+                            print("Called twice??", self.input_data(1, args))
+                            b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
-                        if self._option_box.currentText() == "Add":
-                            result: ak.Array = a + b
+                            if self._option_box.currentText() == "Add":
+                                result: ak.Array = a + b
 
-                        elif self._option_box.currentText() == "Sub":
-                            result: ak.Array = a - b
+                            elif self._option_box.currentText() == "Sub":
+                                result: ak.Array = a - b
 
-                        elif self._option_box.currentText() == "Mul":
-                            result: ak.Array = a * b
+                            elif self._option_box.currentText() == "Mul":
+                                result: ak.Array = a * b
 
-                        elif self._option_box.currentText() == "Div":
-                            result: ak.Array = a / b
+                            elif self._option_box.currentText() == "Div":
+                                result: ak.Array = a / b
 
-                        elif self._option_box.currentText() == "Cross":
-                            result: list = list(map_objects(data_tree, tuple, self.cross))
+                            elif self._option_box.currentText() == "Cross":
+                                result: list = list(map_objects(data_tree, tuple, self.cross))
 
-                        elif self._option_box.currentText() == "Dot":
-                            result: list = list(map_objects(data_tree, tuple, self.dot))
+                            elif self._option_box.currentText() == "Dot":
+                                result: list = list(map_objects(data_tree, tuple, self.dot))
 
                         elif self._option_box.currentText() == "Scale":
-                            b: list = self.input_data(1, args)
-                            print("b in", b)
-                            b: ak.Array = ak.Array([{"x": b[0], "y": b[0], "z": b[0]}], with_name="Vector3D")
-                            print("b vec", b)
-
-                            result: ak.Array = a * b
+                            scale: list = self.input_data(1, args)
+                            scale_vec: ak.Array = ak.zip({"x": scale, "y": scale, "z": scale})
+                            scale_vec_ak: ak.Array = ak.Array(scale_vec, with_name="Vector3D")
+                            result: ak.Array = a * scale_vec_ak
 
                     self._is_dirty: bool = False
 
