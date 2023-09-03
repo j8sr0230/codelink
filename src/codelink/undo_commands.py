@@ -478,15 +478,19 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 
 class ExecuteDagCommand(QtWidgets.QUndoCommand):
 	def __init__(
-			self, scene: DAGScene, node: NodeItem, parent: Optional[QtWidgets.QUndoCommand] = None
+			self, scene: DAGScene, node: NodeItem, on_redo: bool = False,
+			parent: Optional[QtWidgets.QUndoCommand] = None
 	) -> None:
 		super().__init__(parent)
 
 		self._scene: DAGScene = scene
 		self._node: NodeItem = node
+		self._on_redo: bool = on_redo
 
 	def undo(self) -> None:
-		self._scene.execute_dag(self._node)
+		if not self._on_redo:
+			self._scene.execute_dag(self._node)
 
 	def redo(self) -> None:
-		pass
+		if self._on_redo:
+			self._scene.execute_dag(self._node)

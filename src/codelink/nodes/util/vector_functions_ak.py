@@ -93,12 +93,12 @@ class VectorFunctionsAk(NodeItem):
         current_option_index: int = self._option_box.currentIndex()
 
         self._undo_stack.beginMacro("Changes option box")
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
 
         if current_option_name == "Dot":
             if len(self.input_socket_widgets) == 2:
                 if type(self._socket_widgets[1]) != VectorNoneAk:
                     remove_socket: SocketWidget = self._socket_widgets[1]
-                    self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
@@ -109,7 +109,6 @@ class VectorFunctionsAk(NodeItem):
                     )
                     self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
             else:
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 new_socket_widget: VectorNoneAk = VectorNoneAk(
                     undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
                     parent_node=self
@@ -118,7 +117,6 @@ class VectorFunctionsAk(NodeItem):
 
             if type(self._socket_widgets[2]) != ValueLine:
                 remove_socket: SocketWidget = self._socket_widgets[2]
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
@@ -133,7 +131,6 @@ class VectorFunctionsAk(NodeItem):
             if len(self.input_socket_widgets) == 2:
                 if type(self._socket_widgets[1]) != ValueLine:
                     remove_socket: SocketWidget = self._socket_widgets[1]
-                    self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
@@ -144,7 +141,6 @@ class VectorFunctionsAk(NodeItem):
                     )
                     self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
             else:
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 new_socket_widget: ValueLine = ValueLine(
                     undo_stack=self._undo_stack, name="B", content_value=1., is_input=True,
                     parent_node=self
@@ -153,7 +149,6 @@ class VectorFunctionsAk(NodeItem):
 
             if len(self.input_socket_widgets) == 2 and type(self._socket_widgets[2]) != VectorNoneAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
@@ -167,16 +162,14 @@ class VectorFunctionsAk(NodeItem):
         elif current_option_name == "Length":
             if len(self.input_socket_widgets) > 1:
                 remove_socket: SocketWidget = self._socket_widgets[1]
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
             if type(self._socket_widgets[1]) != ValueLine:
                 remove_socket: SocketWidget = self._socket_widgets[1]
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
                 new_socket_widget: ValueLine = ValueLine(
@@ -189,7 +182,6 @@ class VectorFunctionsAk(NodeItem):
             if len(self.input_socket_widgets) == 2:
                 if type(self._socket_widgets[1]) != VectorNoneAk:
                     remove_socket: SocketWidget = self._socket_widgets[1]
-                    self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
@@ -200,7 +192,6 @@ class VectorFunctionsAk(NodeItem):
                     )
                     self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
             else:
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 new_socket_widget: VectorNoneAk = VectorNoneAk(
                     undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
                     parent_node=self
@@ -209,7 +200,6 @@ class VectorFunctionsAk(NodeItem):
 
             if type(self._socket_widgets[2]) != VectorNoneAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
-                self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
