@@ -35,7 +35,6 @@ from pivy import coin
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_last_level, map_objects, broadcast_data_tree, ListWrapper
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone
@@ -97,6 +96,7 @@ class PolylineCoinAk(NodeItem):
     @staticmethod
     def make_polyline_sep(positions: ak.Array) -> list[coin.SoSeparator]:
         positions: ak.Array = ak.zip([positions.x, positions.y, positions.z])
+        positions: tuple = tuple(positions.to_list()[0])
 
         # if type(positions) == list and len(positions) > 1:
         #     if is_cyclic:
@@ -114,12 +114,12 @@ class PolylineCoinAk(NodeItem):
 
         control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
         # noinspection PyTypeChecker
-        pts: tuple = tuple([tuple(pos) for pos in positions])
-        control_pts.point.setValues(0, len(pts), pts)
+        # pts: tuple = tuple([tuple(pos) for pos in positions])
+        control_pts.point.setValues(0, len(positions), positions)
         polyline_sep.addChild(control_pts)
 
         polyline: coin.SoLineSet = coin.SoLineSet()
-        polyline.numVertices = len(pts)
+        polyline.numVertices = len(positions)
         polyline_sep.addChild(polyline)
 
         return [polyline_sep]
@@ -139,7 +139,6 @@ class PolylineCoinAk(NodeItem):
                     #     cyclic: bool = True
 
                     positions: ak.Array = ak.Array(self.input_data(0, args))
-
                     result: list = self.make_polyline_sep(positions)
 
                     self._is_dirty: bool = False
