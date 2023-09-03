@@ -37,7 +37,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from sockets.vector_none import VectorNone
+from sockets.vector_none_ak import VectorNoneAk
 from sockets.coin_none import CoinNone
 
 if TYPE_CHECKING:
@@ -64,8 +64,8 @@ class PolylineCoinAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
-                       parent_node=self),
+            VectorNoneAk(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+                         parent_node=self),
             CoinNone(undo_stack=self._undo_stack, name="Polyline Coin", content_value="<No Input>", is_input=False,
                      parent_node=self)
         ]
@@ -95,37 +95,37 @@ class PolylineCoinAk(NodeItem):
 
     @staticmethod
     def make_polyline_sep(positions: ak.Array) -> list[coin.SoSeparator]:
-        positions: ak.Array = ak.zip([positions.x, positions.y, positions.z])
-        positions: tuple = tuple(positions.to_list()[0])
+        flat_pos_array: ak.Array = ak.zip([
+            ak.flatten(positions.x, axis=None),
+            ak.flatten(positions.y, axis=None),
+            ak.flatten(positions.z, axis=None)
+        ])
 
-        # if type(positions) == list and len(positions) > 1:
-        #     if is_cyclic:
-        #         positions.append(positions[0])
+        pos_tuple: tuple = tuple(flat_pos_array.to_list())
 
-        polyline_sep: coin.SoSeparator = coin.SoSeparator()
+        if type(pos_tuple) == tuple and len(pos_tuple) > 1:
+            polyline_sep: coin.SoSeparator = coin.SoSeparator()
 
-        color: coin.SoBaseColor = coin.SoBaseColor()
-        color.rgb = (0, 0, 0)
-        polyline_sep.addChild(color)
+            color: coin.SoBaseColor = coin.SoBaseColor()
+            color.rgb = (0, 0, 0)
+            polyline_sep.addChild(color)
 
-        draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
-        draw_style.lineWidth = 1
-        polyline_sep.addChild(draw_style)
+            draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
+            draw_style.lineWidth = 1
+            polyline_sep.addChild(draw_style)
 
-        control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
-        # noinspection PyTypeChecker
-        # pts: tuple = tuple([tuple(pos) for pos in positions])
-        control_pts.point.setValues(0, len(positions), positions)
-        polyline_sep.addChild(control_pts)
+            control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
+            control_pts.point.setValues(0, len(pos_tuple), pos_tuple)
+            polyline_sep.addChild(control_pts)
 
-        polyline: coin.SoLineSet = coin.SoLineSet()
-        polyline.numVertices = len(positions)
-        polyline_sep.addChild(polyline)
+            polyline: coin.SoLineSet = coin.SoLineSet()
+            polyline.numVertices = len(pos_tuple)
+            polyline_sep.addChild(polyline)
 
-        return [polyline_sep]
+            return [polyline_sep]
 
-        # else:
-        #     return [coin.SoSeparator()]
+        else:
+            return [coin.SoSeparator()]
 
     def eval_0(self, *args) -> list:
         result: list = [coin.SoSeparator()]
@@ -138,7 +138,7 @@ class PolylineCoinAk(NodeItem):
                     # if self._option_box.currentText() == "Cyclic":
                     #     cyclic: bool = True
 
-                    positions: ak.Array = ak.Array(self.input_data(0, args))
+                    positions: ak.Array = self.input_data(0, args)
                     result: list = self.make_polyline_sep(positions)
 
                     self._is_dirty: bool = False
