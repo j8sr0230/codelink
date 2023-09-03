@@ -79,9 +79,13 @@ class Polyline(NodeItem):
         last_option_index: int = self._option_box.last_index
         current_option_index: int = self._option_box.currentIndex()
 
+        self._undo_stack.beginMacro("Changes option box")
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
+        self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
 
