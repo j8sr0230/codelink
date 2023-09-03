@@ -74,6 +74,7 @@ class ScalarFunctions(NodeItem):
         remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
         remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
+        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ExecuteDagCommand")
 
         last_option_index: int = self._option_box.last_index
         current_option_name: str = self._option_box.currentText()
@@ -81,22 +82,17 @@ class ScalarFunctions(NodeItem):
         input_widget_count: int = len(self.input_socket_widgets)
 
         self._undo_stack.beginMacro("Changes option box")
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
 
         if current_option_name in ("Sqrt", "Exp", "Ln"):
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
                 for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge))
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
 
                 self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
-
-            self._undo_stack.push(
-                set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
-            )
-
-            self._undo_stack.endMacro()
 
         else:
             while input_widget_count < 2:
@@ -110,7 +106,7 @@ class ScalarFunctions(NodeItem):
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
-
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------

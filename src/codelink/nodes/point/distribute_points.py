@@ -84,13 +84,18 @@ class DistributePoints(NodeItem):
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
+        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ExecuteDagCommand")
 
         last_option_index: int = self._option_box.last_index
         current_option_index: int = self._option_box.currentIndex()
 
+        self._undo_stack.beginMacro("Changes option box")
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
+        self._undo_stack.endMacro()
 
     # Based on https://github.com/nortikin/sverchok/blob/master/utils/field/probe.py
     @staticmethod
