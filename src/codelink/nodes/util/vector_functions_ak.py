@@ -70,7 +70,7 @@ class VectorFunctionsAk(NodeItem):
         class Vector3DArray(ak.Array):
             def vector_add(self, other):
                 print("self.x", self.x)
-                print("self.x", other.x)
+                print("other.x", other.x)
 
                 return ak.Array(
                     {
