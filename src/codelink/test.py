@@ -79,3 +79,11 @@ ak.unflatten(v1, axis=1, counts=3).show()
 # v1 = ak.Array([{"x": 1, "y": 2, "z": 3}])
 # v1.show()
 # v1[:, np.newaxis].show()
+
+x1: ak.Array = ak.Array([1, [1, 2], 2])
+x2: ak.Array = ak.Array([5])
+
+x1.show()
+x2.show()
+
+(x1 + x2).show()
