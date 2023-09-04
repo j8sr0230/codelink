@@ -471,8 +471,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
             # Awkward array handling
             if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
                 socket_data: ak.Array = ak.concatenate([item for item in args[socket_index]])
+                print("conc", type(socket_data))
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
+                print("unwr", type(socket_data))
+
 
             # List handling
             elif len(args[socket_index]) > 1 and all([type(item) == list for item in args[socket_index]]):
@@ -485,6 +488,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             # Default behavior
             else:
                 socket_data: list = args[socket_index]
+                print("def", type(socket_data))
+
 
             socket_data: Union[list, ak.Array] = self.input_socket_widgets[socket_index].perform_socket_operation(
                 socket_data
