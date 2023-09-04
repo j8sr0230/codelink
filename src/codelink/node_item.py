@@ -486,8 +486,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
             # Default behavior
             else:
                 socket_data: list = args[socket_index]
-                print("def", type(socket_data))
-
 
             socket_data: Union[list, ak.Array] = self.input_socket_widgets[socket_index].perform_socket_operation(
                 socket_data

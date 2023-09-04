@@ -288,7 +288,7 @@ class VectorFunctionsAk(NodeItem):
 
                             if self._option_box.currentText() == "Add":
                                 comps: ak.Array = a.vector_add(b)
-                                result: ak.Array = ak.zip({"x": [0], "y": [0], "z": [0]})
+                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
                             elif self._option_box.currentText() == "Sub":
                                 comps: ak.Array = a.vector_sub(b)
