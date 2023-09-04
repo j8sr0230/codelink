@@ -69,9 +69,6 @@ class VectorFunctionsAk(NodeItem):
 
         class Vector3DArray(ak.Array):
             def vector_add(self, other):
-                print("self.x", self.x)
-                print("other.x", other.x)
-
                 return ak.Array(
                     {
                         "x": ak.to_layout(self["x"] + other["x"]),
@@ -291,7 +288,7 @@ class VectorFunctionsAk(NodeItem):
 
                             if self._option_box.currentText() == "Add":
                                 comps: ak.Array = a.vector_add(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = ak.zip({"x": [0], "y": [0], "z": [0]})
 
                             elif self._option_box.currentText() == "Sub":
                                 comps: ak.Array = a.vector_sub(b)
