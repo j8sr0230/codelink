@@ -59,7 +59,7 @@ class AwkwardViewer(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    result: ak.Array = ak.Array(self.input_data(0, args))
+                    result: ak.Array = self.input_data(0, args)
                     result.show(limit_rows=100, limit_cols=100)
                     self._is_dirty: bool = False
 
