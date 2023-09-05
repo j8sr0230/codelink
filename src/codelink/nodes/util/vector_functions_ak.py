@@ -290,10 +290,7 @@ class VectorFunctionsAk(NodeItem):
                             if self._option_box.currentText() == "Add":
                                 comps: ak.Array = a.vector_add(b)
                                 result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z},
-                                                          behavior=self._custom_behavior)
-                                print(result.layout.parameters)
-                                result.layout.parameters["__record__"] = "Vector3D"
-                                print(result.layout.parameters)
+                                                          with_name="Vector3D")
 
                             elif self._option_box.currentText() == "Sub":
                                 comps: ak.Array = a.vector_sub(b)
