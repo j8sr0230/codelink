@@ -126,7 +126,6 @@ class VectorFunctionsAk(NodeItem):
 
         # Awkward behaviors for custom records
         ak.behavior["*", "Vector3D"] = Vector3DArray
-        self._custom_behavior: dict = {"Vector3D": Vector3DArray}
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
