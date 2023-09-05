@@ -26,6 +26,7 @@ import importlib
 import warnings
 
 import awkward as ak
+import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -125,7 +126,20 @@ class VectorFunctionsAk(NodeItem):
                 )
 
         # Awkward behaviors for custom records
-        ak.behavior["*", "Vector3D"] = Vector3DArray
+        # ak.behavior["*", "Vector3D"] = Vector3DArray
+
+        def vector_add(left, right):
+            return ak.contents.RecordArray(
+                [
+                    ak.to_layout(left["x"] + right["x"]),
+                    ak.to_layout(left["y"] + right["y"]),
+                    ak.to_layout(left["z"] + right["z"])
+                ],
+                ["x", "y", "z"],
+                parameters={"__record__": "Vector3D"},
+            )
+
+        ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -268,7 +282,7 @@ class VectorFunctionsAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> ak.Array:
         result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
 
         with warnings.catch_warnings():
@@ -287,9 +301,9 @@ class VectorFunctionsAk(NodeItem):
                             b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
-                                comps: ak.Array = a.vector_add(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z},
-                                                          with_name="Vector3D")
+                                # comps: ak.Array = a.vector_add(b)
+                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result = a + b
 
                             elif self._option_box.currentText() == "Sub":
                                 comps: ak.Array = a.vector_sub(b)
