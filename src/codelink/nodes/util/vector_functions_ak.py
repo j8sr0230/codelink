@@ -126,20 +126,7 @@ class VectorFunctionsAk(NodeItem):
                 )
 
         # Awkward behaviors for custom records
-        # ak.behavior["*", "Vector3D"] = Vector3DArray
-
-        def vector_add(left, right):
-            return ak.contents.RecordArray(
-                [
-                    ak.to_layout(left["x"] + right["x"]),
-                    ak.to_layout(left["y"] + right["y"]),
-                    ak.to_layout(left["z"] + right["z"])
-                ],
-                ["x", "y", "z"],
-                parameters={"__record__": "Vector3D"},
-            )
-
-        ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
+        ak.behavior["*", "Vector3D"] = Vector3DArray
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -301,9 +288,8 @@ class VectorFunctionsAk(NodeItem):
                             b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
-                                # comps: ak.Array = a.vector_add(b)
-                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
-                                result = a + b
+                                comps: ak.Array = a.vector_add(b)
+                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
                             elif self._option_box.currentText() == "Sub":
                                 comps: ak.Array = a.vector_sub(b)
