@@ -89,15 +89,15 @@ class VectorNoneAk(SocketWidget):
 
 		if self.socket_options_state()[2]:  # Graft
 			if input_data.layout.minmax_depth[0] == 1:
-				x = np.expand_dims(ak.flatten(input_data.x, axis=None), axis=1)
-				y = np.expand_dims(ak.flatten(input_data.y, axis=None), axis=1)
-				z = np.expand_dims(ak.flatten(input_data.z, axis=None), axis=1)
-				input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z}, with_name="Vector3D")
+				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
 			else:
 				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
 		if self.socket_options_state()[3]:  # Graft Topo
-			pass
+			if input_data.layout.minmax_depth[0] == 1:
+				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
+			else:
+				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
 		if self.socket_options_state()[4]:  # Unwrap
 			min_depth: int = input_data.layout.minmax_depth[0]
