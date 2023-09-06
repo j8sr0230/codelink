@@ -55,12 +55,15 @@ ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
 start = time.perf_counter()
 
-x = np.arange(0, 1)  # [:, np.newaxis]
+x = np.arange(0, 1000000)  # [:, np.newaxis]
 y = [0]
 z = [0]
 
 v1 = ak.zip({"x": x, "y": y, "z": z})
 # v1 = ak.concatenate([v1, v1])
+v1: ak.Array = ak.Array([v1, v1])
+v1: ak.Array = ak.flatten(v1, axis=1)
+
 v2 = ak.Array([{"x": 1, "y": 0, "z": 0}])
 res = ak.Array(v1[np.newaxis, :], with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
 
