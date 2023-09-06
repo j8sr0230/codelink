@@ -26,7 +26,6 @@ import importlib
 import warnings
 
 import awkward as ak
-import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -270,7 +269,7 @@ class VectorFunctionsAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
-        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
+        result: ak.Array = ak.Array([{"x": 0., "y": 0., "z": 0.}])
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")

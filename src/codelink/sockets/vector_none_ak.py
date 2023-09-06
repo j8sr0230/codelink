@@ -73,7 +73,7 @@ class VectorNoneAk(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(ak.Array([{"x": 0, "y": 0, "z": 0}]))
+			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}]))
 
 		return result
 
@@ -105,6 +105,6 @@ class VectorNoneAk(SocketWidget):
 				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.Array([input_data[np.newaxis]])
+			input_data: ak.Array = ak.Array(input_data[np.newaxis, :])
 
 		return input_data

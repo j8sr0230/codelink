@@ -67,14 +67,14 @@ res = ak.Array(v1, with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-
+#
 # res.show()
 # ak.unflatten(res, axis=-1, counts=1).show()
 
 v1 = ak.Array([{"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}, {"x": 1, "y": 2, "z": 3}])
-v1.show()
-print(ak.num(v1, axis=0))
-ak.unflatten(v1, axis=1, counts=3).show()
+# v1.show()
+# print(ak.num(v1, axis=0))
+# ak.unflatten(v1, axis=1, counts=3).show()
 
 # v1 = ak.Array([{"x": 1, "y": 2, "z": 3}])
 # v1.show()
@@ -83,7 +83,14 @@ ak.unflatten(v1, axis=1, counts=3).show()
 x1: ak.Array = ak.Array([1, [1, 2], 2])
 x2: ak.Array = ak.Array([5])
 
-x1.show()
-x2.show()
+# x1.show()
+# x2.show()
+#
+# (x1 + x2).show()
 
-(x1 + x2).show()
+original = ak.Array([[0, 1, 2], [], [3, 4], [5], [6, 7, 8, 9]])
+print(original)
+counts = ak.num(original)
+array = ak.flatten(original)
+print(array)
+print(ak.unflatten(array, axis=0, counts=5))
