@@ -66,8 +66,8 @@ v3 = ak.concatenate([v1, v2])
 # v3 = v3[None, :]  # Wrapping generates max recursion exception
 # v3 = ak.Array([v3])  # Works but maybe slow
 # v3 = ak.flatten(ak.flatten(ak.broadcast_arrays(v3[None, :])))  # Works but maybe slow
-v3 = ak.unflatten(v3, axis=0, counts=2)
-v3 = ak.unflatten(v3, counts=1)
+#v3 = ak.unflatten(v3, axis=0, counts=2)
+v3 = ak.unflatten(v3, counts=2)
 
 v4 = ak.concatenate([v1, v3])
 
@@ -77,4 +77,4 @@ end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-v4.show()
+res.show()
