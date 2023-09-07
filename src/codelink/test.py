@@ -65,7 +65,7 @@ v2 = ak.Array([{"x": 2, "y": 2, "z": 2}], with_name="Vector3D")
 v3 = ak.concatenate([v1, v2])
 v3 = v3[None, :]  # Wrapping generates max recursion exception
 # v3 = ak.Array([v3])  # Works but maybe slow
-v3 = ak.flatten(ak.flatten(ak.broadcast_arrays(v3[None, :])))  # Works
+# v3 = ak.flatten(ak.flatten(ak.broadcast_arrays(v3[None, :])))  # Works but maybe slow
 
 v4 = ak.concatenate([v1, v3])
 
