@@ -26,32 +26,32 @@ import awkward as ak
 import numpy as np
 
 
-def vector_add(a, b):
-    return ak.contents.RecordArray(
-        [
-            ak.to_layout(a.x + b.x),
-            ak.to_layout(a.y + b.y),
-            ak.to_layout(a.z + b.z),
-        ],
-        ["x", "y", "z"],
-        parameters={"__record__": "Vector3D"},
-    )
-
-
-def vector_sub(a, b):
-    return ak.contents.RecordArray(
-        [
-            ak.to_layout(a.x - b.x),
-            ak.to_layout(a.y - b.y),
-            ak.to_layout(a.z - b.z),
-        ],
-        ["x", "y", "z"],
-        parameters={"__record__": "Vector3D"},
-    )
-
-
-ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
-ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
+# def vector_add(a, b):
+#     return ak.contents.RecordArray(
+#         [
+#             ak.to_layout(a.x + b.x),
+#             ak.to_layout(a.y + b.y),
+#             ak.to_layout(a.z + b.z),
+#         ],
+#         ["x", "y", "z"],
+#         parameters={"__record__": "Vector3D"},
+#     )
+#
+#
+# def vector_sub(a, b):
+#     return ak.contents.RecordArray(
+#         [
+#             ak.to_layout(a.x - b.x),
+#             ak.to_layout(a.y - b.y),
+#             ak.to_layout(a.z - b.z),
+#         ],
+#         ["x", "y", "z"],
+#         parameters={"__record__": "Vector3D"},
+#     )
+#
+#
+# ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
+# ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
 start = time.perf_counter()
 
@@ -59,14 +59,15 @@ x = np.arange(0, 1000000)  # [:, np.newaxis]
 y = [0]
 z = [0]
 
-v1 = ak.zip({"x": x, "y": y, "z": z})
-# v1 = ak.concatenate([v1, v1])
-# v1: ak.Array = ak.Array([v1, v1])
-# v1: ak.Array = ak.flatten(v1, axis=1)
-v1: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}, [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0}], {"x": 0, "y": 0, "z": 0}])
+v1 = ak.Array([{"x": 1, "y": 1, "z": 1}], with_name="Vector3D")
+v2 = ak.Array([{"x": 2, "y": 2, "z": 2}], with_name="Vector3D")
 
-v2 = ak.Array([{"x": 0, "y": 0, "z": 0}])
-res = ak.Array(v1, with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
+v3 = ak.concatenate([v1, v2])
+v3 = v3[None, :]
+
+v4 = ak.concatenate([v1, v3])
+
+res = ak.zip({"x": v1.x + v4.x, "y": v1.y + v4.y, "z": v1.z + v4.z})
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
