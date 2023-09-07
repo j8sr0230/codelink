@@ -128,34 +128,34 @@ class VectorFunctionsAk(NodeItem):
         # Awkward behaviors for custom records
         # ak.behavior["*", "Vector3D"] = Vector3DArray
 
-        # def vector_add(a, b):
-        #     print("a in:")
-        #     a.show(300, 100)
-        #     print("b in:")
-        #     b.show(300, 100)
-        #     return ak.contents.RecordArray(
-        #         [
-        #             ak.to_layout(a.x + b.x),
-        #             ak.to_layout(a.y + b.y),
-        #             ak.to_layout(a.z + b.z),
-        #         ],
-        #         ["x", "y", "z"],
-        #         parameters={"__record__": "Vector3D"},
-        #     )
-        #
-        # def vector_sub(a, b):
-        #     return ak.contents.RecordArray(
-        #         [
-        #             ak.to_layout(a.x - b.x),
-        #             ak.to_layout(a.y - b.y),
-        #             ak.to_layout(a.z - b.z),
-        #         ],
-        #         ["x", "y", "z"],
-        #         parameters={"__record__": "Vector3D"},
-        #     )
+        def vector_add(a, b):
+            print("a in:")
+            a.show(300, 100)
+            print("b in:")
+            b.show(300, 100)
+            return ak.contents.RecordArray(
+                [
+                    ak.to_layout(a.x + b.x),
+                    ak.to_layout(a.y + b.y),
+                    ak.to_layout(a.z + b.z),
+                ],
+                ["x", "y", "z"],
+                parameters={"__record__": "Vector3D"},
+            )
 
-        # ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
-        # ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
+        def vector_sub(a, b):
+            return ak.contents.RecordArray(
+                [
+                    ak.to_layout(a.x - b.x),
+                    ak.to_layout(a.y - b.y),
+                    ak.to_layout(a.z - b.z),
+                ],
+                ["x", "y", "z"],
+                parameters={"__record__": "Vector3D"},
+            )
+
+        ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
+        ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -299,73 +299,65 @@ class VectorFunctionsAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
-        result: ak.Array = ak.Array([{"x": 0., "y": 0., "z": 0.}])
+        result: ak.Array = ak.Array([{"x": 0., "y": 0., "z": 0.}], with_name="Vector3D")
 
-        # with warnings.catch_warnings():
-        #     warnings.filterwarnings("error")
-        #     try:
-        #         try:
-                    # print("a", type(self.input_data(0, args)))
-        a: ak.Array = ak.Array(self.input_data(0, args))
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                try:
+                    a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
 
-        if len(args) == 1:
-            if self._option_box.currentText() == "Length":
-                result: ak.Array = a.vector_length()
+                    if len(args) == 1:
+                        if self._option_box.currentText() == "Length":
+                            result: ak.Array = a.vector_length()
 
-        if len(args) == 2:
-            if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
-                b: ak.Array = ak.Array(self.input_data(1, args))
+                    if len(args) == 2:
+                        if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
+                            b: ak.Array = ak.Array(self.input_data(1, args),  with_name="Vector3D")
 
-                if self._option_box.currentText() == "Add":
-                    # comps: ak.Array = a.vector_add(b)
-                    # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
-                    print("nun casted b", ak.type(b), b, b.layout)
+                            if self._option_box.currentText() == "Add":
+                                # comps: ak.Array = a.vector_add(b)
+                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = a + b
 
+                            elif self._option_box.currentText() == "Sub":
+                                # comps: ak.Array = a.vector_sub(b)
+                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = a - b
 
-                    ab_cast: list = ak.broadcast_arrays([a, b])
-                    #a: ak.Array = ak.Array(ab_cast[0][0])
-                    b: ak.Array = ak.Array(ab_cast[0][1])
-                    print("casted b", ak.type(b), b, b.layout)
-                    result: ak.Array = ak.zip({"x": a.x + b.x, "y": a.y + b.y, "z": a.z + b.z})
+                            elif self._option_box.currentText() == "Mul":
+                                comps: ak.Array = a.vector_mul(b)
+                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
-                elif self._option_box.currentText() == "Sub":
-                    # comps: ak.Array = a.vector_sub(b)
-                    # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
-                    result: ak.Array = a - b
+                            elif self._option_box.currentText() == "Div":
+                                comps: ak.Array = a.vector_div(b)
+                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
-                elif self._option_box.currentText() == "Mul":
-                    comps: ak.Array = a.vector_mul(b)
-                    result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                            elif self._option_box.currentText() == "Cross":
+                                comps: ak.Array = a.vector_cross(b)
+                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
-                elif self._option_box.currentText() == "Div":
-                    comps: ak.Array = a.vector_div(b)
-                    result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                            elif self._option_box.currentText() == "Dot":
+                                result: ak.Array = a.vector_dot(b)
 
-                elif self._option_box.currentText() == "Cross":
-                    comps: ak.Array = a.vector_cross(b)
-                    result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                        elif self._option_box.currentText() == "Scale":
+                            b: list = self.input_data(1, args)
+                            # print("b", type(self.input_data(1, args)))
 
-                elif self._option_box.currentText() == "Dot":
-                    result: ak.Array = a.vector_dot(b)
+                            b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
+                            b_vec: ak.Array = ak.Array(b_vec)
 
-            elif self._option_box.currentText() == "Scale":
-                b: list = self.input_data(1, args)
-                # print("b", type(self.input_data(1, args)))
+                            comps: ak.Array = a.vector_mul(b_vec)
+                            result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
 
-                b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
-                b_vec: ak.Array = ak.Array(b_vec, with_name="Vector3D")
+                    self._is_dirty: bool = False
 
-                comps: ak.Array = a.vector_mul(b_vec)
-                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
-
-        self._is_dirty: bool = False
-
-            #     except Exception as e:
-            #         self._is_dirty: bool = True
-            #         print(e)
-            # except Warning as e:
-            #     self._is_dirty: bool = True
-            #     print(e)
+                except Exception as e:
+                    self._is_dirty: bool = True
+                    print(e)
+            except Warning as e:
+                self._is_dirty: bool = True
+                print(e)
 
         return self.output_data(0, result)
 
