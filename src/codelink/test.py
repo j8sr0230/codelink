@@ -61,12 +61,15 @@ z = [0]
 
 v1 = ak.zip({"x": x, "y": y, "z": z})
 # v1 = ak.concatenate([v1, v1])
-v1: ak.Array = ak.Array([v1, v1])
-v1: ak.Array = ak.flatten(v1, axis=1)
+# v1: ak.Array = ak.Array([v1, v1])
+# v1: ak.Array = ak.flatten(v1, axis=1)
+v1: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}, [{"x": 0, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0}], {"x": 0, "y": 0, "z": 0}])
 
-v2 = ak.Array([{"x": 1, "y": 0, "z": 0}])
-res = ak.Array(v1[np.newaxis, :], with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
+v2 = ak.Array([{"x": 0, "y": 0, "z": 0}])
+res = ak.Array(v1, with_name="Vector3D") + ak.Array(v2, with_name="Vector3D")
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
+
+res.show()

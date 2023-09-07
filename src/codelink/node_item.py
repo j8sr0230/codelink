@@ -470,10 +470,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
             if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
-                # socket_data: ak.Array = ak.concatenate([item for item in args[socket_index]], axis=0)
-                # socket_data: ak.Array = ak.Array(socket_data, with_name="Vector3D")
-                socket_data: ak.Array = ak.Array([ak.Array(item) for item in args[socket_index]])
-                socket_data: ak.Array = ak.flatten(socket_data, axis=1)
+                socket_data: ak.Array = ak.concatenate(args[socket_index])
+                #socket_data: ak.Array = ak.zip({"x": socket_data.x, "y": socket_data.y, "z": socket_data.z})
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
 

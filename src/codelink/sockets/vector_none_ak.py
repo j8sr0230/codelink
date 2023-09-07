@@ -73,7 +73,7 @@ class VectorNoneAk(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}]))
+			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}], with_name="Vector3D"))
 
 		return result
 
@@ -89,7 +89,7 @@ class VectorNoneAk(SocketWidget):
 
 		if self.socket_options_state()[2]:  # Graft
 			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
+				input_data: ak.Array = ak.Array(input_data[:, np.newaxis], with_name="Vector3D")
 			else:
 				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
@@ -105,6 +105,6 @@ class VectorNoneAk(SocketWidget):
 				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.Array(input_data[np.newaxis, :])
+			input_data: ak.Array = ak.Array(input_data[np.newaxis, :], with_name="Vector3D")
 
 		return input_data

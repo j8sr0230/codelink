@@ -26,6 +26,7 @@ import importlib
 import warnings
 
 import awkward as ak
+import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -125,7 +126,32 @@ class VectorFunctionsAk(NodeItem):
                 )
 
         # Awkward behaviors for custom records
-        ak.behavior["*", "Vector3D"] = Vector3DArray
+        # ak.behavior["*", "Vector3D"] = Vector3DArray
+
+        def vector_add(a, b):
+            return ak.contents.RecordArray(
+                [
+                    ak.to_layout(a.x + b.x),
+                    ak.to_layout(a.y + b.y),
+                    ak.to_layout(a.z + b.z),
+                ],
+                ["x", "y", "z"],
+                parameters={"__record__": "Vector3D"},
+            )
+
+        def vector_sub(a, b):
+            return ak.contents.RecordArray(
+                [
+                    ak.to_layout(a.x - b.x),
+                    ak.to_layout(a.y - b.y),
+                    ak.to_layout(a.z - b.z),
+                ],
+                ["x", "y", "z"],
+                parameters={"__record__": "Vector3D"},
+            )
+
+        ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
+        ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -287,12 +313,17 @@ class VectorFunctionsAk(NodeItem):
                             b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
-                                comps: ak.Array = a.vector_add(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                # comps: ak.Array = a.vector_add(b)
+                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                # ab_cast: list = ak.broadcast_arrays([a, b])
+                                # a: ak.Array = ak.Array(ab_cast[0][0], with_name="Vector3D")
+                                # b: ak.Array = ak.Array(ab_cast[0][1], with_name="Vector3D")
+                                result: ak.Array = a + b
 
                             elif self._option_box.currentText() == "Sub":
-                                comps: ak.Array = a.vector_sub(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                # comps: ak.Array = a.vector_sub(b)
+                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = a - b
 
                             elif self._option_box.currentText() == "Mul":
                                 comps: ak.Array = a.vector_mul(b)

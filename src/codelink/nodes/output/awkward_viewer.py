@@ -60,7 +60,7 @@ class AwkwardViewer(NodeItem):
             try:
                 try:
                     result: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
-                    result.show(limit_rows=100, limit_cols=100)
+                    result.show(limit_rows=300, limit_cols=300)
                     self._is_dirty: bool = False
 
                 except Exception as e:
