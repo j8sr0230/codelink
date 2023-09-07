@@ -105,6 +105,6 @@ class VectorNoneAk(SocketWidget):
 				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.Array(input_data[np.newaxis, :], with_name="Vector3D")
+			input_data: ak.Array = ak.flatten(ak.broadcast_arrays(input_data[np.newaxis, :]))
 
 		return input_data

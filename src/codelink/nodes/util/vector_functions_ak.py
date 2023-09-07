@@ -129,10 +129,10 @@ class VectorFunctionsAk(NodeItem):
         # ak.behavior["*", "Vector3D"] = Vector3DArray
 
         def vector_add(a, b):
-            print("a in:")
-            a.show(300, 100)
-            print("b in:")
-            b.show(300, 100)
+            # print("a in:")
+            # a.show(300, 100)
+            # print("b in:")
+            # b.show(300, 100)
             return ak.contents.RecordArray(
                 [
                     ak.to_layout(a.x + b.x),
