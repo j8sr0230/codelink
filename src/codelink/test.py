@@ -26,32 +26,32 @@ import awkward as ak
 import numpy as np
 
 
-# def vector_add(a, b):
-#     return ak.contents.RecordArray(
-#         [
-#             ak.to_layout(a.x + b.x),
-#             ak.to_layout(a.y + b.y),
-#             ak.to_layout(a.z + b.z),
-#         ],
-#         ["x", "y", "z"],
-#         parameters={"__record__": "Vector3D"},
-#     )
-#
-#
-# def vector_sub(a, b):
-#     return ak.contents.RecordArray(
-#         [
-#             ak.to_layout(a.x - b.x),
-#             ak.to_layout(a.y - b.y),
-#             ak.to_layout(a.z - b.z),
-#         ],
-#         ["x", "y", "z"],
-#         parameters={"__record__": "Vector3D"},
-#     )
-#
-#
-# ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
-# ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
+def vector_add(a, b):
+    return ak.contents.RecordArray(
+        [
+            ak.to_layout(a.x + b.x),
+            ak.to_layout(a.y + b.y),
+            ak.to_layout(a.z + b.z),
+        ],
+        ["x", "y", "z"],
+        parameters={"__record__": "Vector3D"},
+    )
+
+
+def vector_sub(a, b):
+    return ak.contents.RecordArray(
+        [
+            ak.to_layout(a.x - b.x),
+            ak.to_layout(a.y - b.y),
+            ak.to_layout(a.z - b.z),
+        ],
+        ["x", "y", "z"],
+        parameters={"__record__": "Vector3D"},
+    )
+
+
+ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
+ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
 
 start = time.perf_counter()
 
@@ -63,16 +63,18 @@ v1 = ak.Array([{"x": 1, "y": 1, "z": 1}], with_name="Vector3D")
 v2 = ak.Array([{"x": 2, "y": 2, "z": 2}], with_name="Vector3D")
 
 v3 = ak.concatenate([v1, v2])
-v3 = v3[None, :]  # Wrapping generates max recursion exception
+# v3 = v3[None, :]  # Wrapping generates max recursion exception
 # v3 = ak.Array([v3])  # Works but maybe slow
 # v3 = ak.flatten(ak.flatten(ak.broadcast_arrays(v3[None, :])))  # Works but maybe slow
+v3 = ak.unflatten(v3, axis=0, counts=2)
+v3 = ak.unflatten(v3, counts=1)
 
 v4 = ak.concatenate([v1, v3])
 
-res = ak.zip({"x": v1.x + v4.x, "y": v1.y + v4.y, "z": v1.z + v4.z})
+res = v1 + v4
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-res.show()
+v4.show()
