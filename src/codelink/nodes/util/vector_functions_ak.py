@@ -68,93 +68,82 @@ class VectorFunctionsAk(NodeItem):
                          parent_node=self)
         ]
 
-        # class Vector3DArray(ak.Array):
-        #     def vector_add(self, other):
-        #         return ak.Array(
-        #             {
-        #                 "x": ak.to_layout(self["x"] + other["x"]),
-        #                 "y": ak.to_layout(self["y"] + other["y"]),
-        #                 "z": ak.to_layout(self["z"] + other["z"]),
-        #             },
-        #             with_name="Vector3D"
-        #         )
-        #
-        #     def vector_sub(self, other):
-        #         return ak.Array(
-        #             {
-        #                 "x": ak.to_layout(self["x"] - other["x"]),
-        #                 "y": ak.to_layout(self["y"] - other["y"]),
-        #                 "z": ak.to_layout(self["z"] - other["z"]),
-        #             },
-        #             with_name="Vector3D"
-        #         )
-        #
-        #     def vector_mul(self, other):
-        #         return ak.Array(
-        #             {
-        #                 "x": ak.to_layout(self["x"] * other["x"]),
-        #                 "y": ak.to_layout(self["y"] * other["y"]),
-        #                 "z": ak.to_layout(self["z"] * other["z"]),
-        #             },
-        #             with_name="Vector3D"
-        #         )
-        #
-        #     def vector_div(self, other):
-        #         return ak.Array(
-        #             {
-        #                 "x": ak.to_layout(self["x"] / other["x"]),
-        #                 "y": ak.to_layout(self["y"] / other["y"]),
-        #                 "z": ak.to_layout(self["z"] / other["z"]),
-        #             },
-        #             with_name="Vector3D"
-        #         )
-        #
-        #     def vector_length(self):
-        #         return (self.x ** 2 + self.y ** 2 + self.z ** 2)**0.5
-        #
-        #     def vector_dot(self, other):
-        #         return self.x*other.x + self.y*other.y + self.z*other.z
-        #
-        #     def vector_cross(self, other):
-        #         return ak.Array(
-        #             {
-        #                 "x": ak.to_layout(self["y"]*other["z"] - self["z"]*other["y"]),
-        #                 "y": ak.to_layout(self["z"]*other["x"] - self["x"]*other["z"]),
-        #                 "z": ak.to_layout(self["x"]*other["y"] - self["y"]*other["x"]),
-        #             },
-        #             with_name="Vector3D"
-        #         )
-        #
-        # # Awkward behaviors for custom records
-        # ak.behavior["*", "Vector3D"] = Vector3DArray
-
-        def vector_add(a, b):
-            return ak.contents.RecordArray(
-                [
-                    ak.to_layout(a.x + b.x),
-                    ak.to_layout(a.y + b.y),
-                    ak.to_layout(a.z + b.z),
-                ],
-                ["x", "y", "z"],
-                parameters={"__record__": "Vector3D"},
-            )
-
-        def vector_sub(a, b):
-            return ak.contents.RecordArray(
-                [
-                    ak.to_layout(a.x - b.x),
-                    ak.to_layout(a.y - b.y),
-                    ak.to_layout(a.z - b.z),
-                ],
-                ["x", "y", "z"],
-                parameters={"__record__": "Vector3D"},
-            )
-
-        ak.behavior[np.add, "Vector3D", "Vector3D"] = vector_add
-        ak.behavior[np.subtract, "Vector3D", "Vector3D"] = vector_sub
+        ak.behavior[np.add, "Vector3D", "Vector3D"] = self.vector_add
+        ak.behavior[np.subtract, "Vector3D", "Vector3D"] = self.vector_sub
+        ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
+        ak.behavior[np.divide, "Vector3D", "Vector3D"] = self.vector_div
+        ak.behavior[np.absolute, "Vector3D"] = self.vector_length
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
+
+    @staticmethod
+    def vector_add(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a.x + b.x),
+                ak.to_layout(a.y + b.y),
+                ak.to_layout(a.z + b.z),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
+
+    @staticmethod
+    def vector_sub(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a.x - b.x),
+                ak.to_layout(a.y - b.y),
+                ak.to_layout(a.z - b.z),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
+
+    @staticmethod
+    def vector_mul(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a.x * b.x),
+                ak.to_layout(a.y * b.y),
+                ak.to_layout(a.z * b.z),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
+
+    @staticmethod
+    def vector_div(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a.x / b.x),
+                ak.to_layout(a.y / b.y),
+                ak.to_layout(a.z / b.z),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
+
+    @staticmethod
+    def vector_cross(a, b):
+        return ak.contents.RecordArray(
+            [
+                ak.to_layout(a.y * b.z - a.z * b.y),
+                ak.to_layout(a.z * b.x - a.x * b.z),
+                ak.to_layout(a.x * b.y - a.y * b.x),
+            ],
+            ["x", "y", "z"],
+            parameters={"__record__": "Vector3D"},
+        )
+
+    @staticmethod
+    def vector_dot(a, b):
+        return ak.Array(a.x * b.x + a.y * b.y + a.z * b.z)
+
+    @staticmethod
+    def vector_length(a):
+        return np.sqrt(a.x**2 + a.y**2 + a.z**2)
 
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
@@ -305,46 +294,40 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 1:
                         if self._option_box.currentText() == "Length":
-                            result: ak.Array = a.vector_length()
+                            result: ak.Array = np.absolute(a)
 
                     if len(args) == 2:
                         if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
                             b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
-                                # comps: ak.Array = a.vector_add(b)
-                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
                                 result: ak.Array = a + b
 
                             elif self._option_box.currentText() == "Sub":
-                                # comps: ak.Array = a.vector_sub(b)
-                                # result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
                                 result: ak.Array = a - b
 
                             elif self._option_box.currentText() == "Mul":
-                                comps: ak.Array = a.vector_mul(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = a * b
 
                             elif self._option_box.currentText() == "Div":
-                                comps: ak.Array = a.vector_div(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                result: ak.Array = a / b
 
                             elif self._option_box.currentText() == "Cross":
-                                comps: ak.Array = a.vector_cross(b)
-                                result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_cross
+                                result: ak.Array = a * b
+                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
 
                             elif self._option_box.currentText() == "Dot":
-                                result: ak.Array = a.vector_dot(b)
+                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_dot
+                                result: ak.Array = a * b
+                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
 
                         elif self._option_box.currentText() == "Scale":
                             b: list = self.input_data(1, args)
-                            # print("b", type(self.input_data(1, args)))
 
                             b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
-                            b_vec: ak.Array = ak.Array(b_vec)
-
-                            comps: ak.Array = a.vector_mul(b_vec)
-                            result: ak.Array = ak.zip({"x": comps.x, "y": comps.y, "z": comps.z})
+                            b_vec: ak.Array = ak.Array(b_vec, with_name="Vector3D")
+                            result: ak.Array = a * b_vec
 
                     self._is_dirty: bool = False
 
