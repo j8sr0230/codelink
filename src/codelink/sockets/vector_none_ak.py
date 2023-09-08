@@ -106,7 +106,7 @@ class VectorNoneAk(SocketWidget):
 
 		if self.socket_options_state()[5]:  # Wrap
 			input_data: ak.Array = ak.Array(ak.contents.ListOffsetArray(
-				content=ak.to_layout(input_data), offsets=ak.index.Index64([0, 2])
+				content=ak.to_layout(input_data), offsets=ak.index.Index64([0, ak.num(input_data, axis=0)])
 			))
 
 		return input_data
