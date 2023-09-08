@@ -60,7 +60,7 @@ class AwkwardViewer(NodeItem):
             try:
                 try:
                     result: ak.Array = self.input_data(0, args)
-                    print(result)
+                    result.show(200, 100)
                     self._is_dirty: bool = False
 
                 except Exception as e:

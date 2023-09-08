@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional
 
 import awkward as ak
 import numpy as np
@@ -77,7 +77,7 @@ class VectorNoneAk(SocketWidget):
 
 		return result
 
-	def perform_socket_operation(self, input_data: ak.Array) -> Union[ak.Array, ak.contents.ListOffsetArray]:
+	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
 		if self.socket_options_state()[0]:  # Flatten
 			input_data: ak.Array = input_data
 
@@ -105,8 +105,8 @@ class VectorNoneAk(SocketWidget):
 				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.contents.ListOffsetArray = ak.contents.ListOffsetArray(
+			input_data: ak.Array = ak.Array(ak.contents.ListOffsetArray(
 				content=ak.to_layout(input_data), offsets=ak.index.Index64([0, 2])
-			)
+			))
 
 		return input_data
