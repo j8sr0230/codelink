@@ -59,8 +59,8 @@ class AwkwardViewer(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    result: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
-                    result.show(limit_rows=300, limit_cols=300)
+                    result: ak.Array = self.input_data(0, args)
+                    print(result)
                     self._is_dirty: bool = False
 
                 except Exception as e:
@@ -70,4 +70,4 @@ class AwkwardViewer(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return ak.Array(self.output_data(0, result))
+        return self.output_data(0, result)

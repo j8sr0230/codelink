@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import awkward as ak
 import numpy as np
@@ -73,11 +73,11 @@ class VectorNoneAk(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}], with_name="Vector3D"))
+			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}]))
 
 		return result
 
-	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
+	def perform_socket_operation(self, input_data: ak.Array) -> Union[ak.Array, ak.contents.ListOffsetArray]:
 		if self.socket_options_state()[0]:  # Flatten
 			input_data: ak.Array = input_data
 
@@ -89,7 +89,7 @@ class VectorNoneAk(SocketWidget):
 
 		if self.socket_options_state()[2]:  # Graft
 			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis], with_name="Vector3D")
+				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
 			else:
 				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
@@ -105,6 +105,8 @@ class VectorNoneAk(SocketWidget):
 				input_data: ak.Array = ak.flatten(input_data, axis=1)
 
 		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.flatten(ak.broadcast_arrays(input_data[np.newaxis, :]))
+			input_data: ak.contents.ListOffsetArray = ak.contents.ListOffsetArray(
+				content=ak.to_layout(input_data), offsets=ak.index.Index64([0, 2])
+			)
 
 		return input_data

@@ -25,8 +25,8 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 
-import awkward as ak
 import numpy as np
+import awkward as ak
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -124,15 +124,11 @@ class VectorFunctionsAk(NodeItem):
         #             },
         #             with_name="Vector3D"
         #         )
-
-        # Awkward behaviors for custom records
+        #
+        # # Awkward behaviors for custom records
         # ak.behavior["*", "Vector3D"] = Vector3DArray
 
         def vector_add(a, b):
-            # print("a in:")
-            # a.show(300, 100)
-            # print("b in:")
-            # b.show(300, 100)
             return ak.contents.RecordArray(
                 [
                     ak.to_layout(a.x + b.x),
@@ -313,7 +309,7 @@ class VectorFunctionsAk(NodeItem):
 
                     if len(args) == 2:
                         if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
-                            b: ak.Array = ak.Array(self.input_data(1, args),  with_name="Vector3D")
+                            b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
                             if self._option_box.currentText() == "Add":
                                 # comps: ak.Array = a.vector_add(b)
