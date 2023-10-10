@@ -468,6 +468,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         else:
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
+            # Search menu
+            context_menu.addAction("Search")
+
             # Add menu
             add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
             add_menu.setTitle("&Add")
