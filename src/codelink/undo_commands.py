@@ -53,6 +53,7 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 	def redo(self) -> None:
 		self._scene.clearSelection()
 		self._scene.add_node(self._node)
+		self._node.setSelected(True)
 		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node)
 
 
@@ -68,11 +69,16 @@ class AddGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._sub_nodes: list[NodeItem] = sub_nodes
 
 	def undo(self) -> None:
+		self._scene.clearSelection()
 		self._scene.resolve_sub_scene(self._grp_node)
+		for sub_node in self._sub_nodes:
+			sub_node.setSelected(True)
 
 	def redo(self) -> None:
+		self._scene.clearSelection()
 		if self._grp_node not in self._scene.nodes:
 			self._scene.add_node(self._grp_node)
+		self._grp_node.setSelected(True)
 
 		self._scene.populate_sub_scene(self._grp_node, self._sub_nodes)
 
@@ -103,11 +109,16 @@ class ResolveGrpNodeCommand(QtWidgets.QUndoCommand):
 		self._sub_nodes: list[NodeItem] = grp_node.sub_scene.nodes
 
 	def undo(self) -> None:
+		self._scene.clearSelection()
 		self._scene.add_node(self._grp_node)
 		self._scene.populate_sub_scene(self._grp_node, self._sub_nodes)
+		self._grp_node.setSelected(True)
 
 	def redo(self) -> None:
+		self._scene.clearSelection()
 		self._scene.resolve_sub_scene(self._grp_node)
+		for sub_node in self._sub_nodes:
+			sub_node.setSelected(True)
 
 
 class AddSocketCommand(QtWidgets.QUndoCommand):
