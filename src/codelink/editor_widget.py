@@ -63,6 +63,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._last_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
         self._temp_edge: Optional[EdgeItem] = None
+        self._new_node: Optional[NodeItem] = None
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -316,6 +317,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(item) is EdgeItem:
                     self._undo_stack.push(RemoveEdgeCommand(self.scene(), cast(EdgeItem, item)))
 
+        if self._mode == "NODE_POSITIONING":
+            current_pos: QtCore.QPoint = self.mapToScene(event.pos())
+            self._new_node.setPos(
+                QtCore.QPoint(current_pos.x() - self._new_node.boundingRect().center().x(),
+                              current_pos.y() - self._new_node.boundingRect().center().y())
+            )
+
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
@@ -397,7 +405,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self._mode == "EDGE_CUT":
             self.scene().removeItem(self._cutter)
 
-        # Resets mouse button state, widget mode, and cursor
+        if self._mode == "NODE_POSITIONING":
+            self.scene().clearFocus()
+
+        # Resets mouse button state, widget mode and cursor
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
         self._rm_pressed: bool = False
@@ -561,9 +572,20 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def add_node_from_action(self):
         node_cls: type = self.sender().data()
-        new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
-        new_node: node_cls = node_cls((new_pos.x(), new_pos.y()), self._undo_stack)
-        self._undo_stack.push(AddNodeCommand(self.scene(), new_node))
+
+        # new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
+        new_pos: QtCore.QPointF = self.scene().views()[0].mapToScene(
+            self.scene().views()[0].mapFromParent(QtGui.QCursor.pos())
+        )
+
+        self._new_node: node_cls = node_cls((new_pos.x(), new_pos.y()), self._undo_stack)
+        self._undo_stack.push(AddNodeCommand(self.scene(), self._new_node))
+        self._new_node.setPos(
+            QtCore.QPoint(new_pos.x() - self._new_node.boundingRect().center().x(),
+                          new_pos.y() - self._new_node.boundingRect().center().y())
+        )
+        self._mode: str = "NODE_POSITIONING"
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
     def open(self):
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
