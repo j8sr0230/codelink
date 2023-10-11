@@ -85,8 +85,8 @@ class NodeListAction(QtWidgets.QWidgetAction):
         node_list_widget: QtWidgets.QWidget = QtWidgets.QWidget(parent)
         layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         node_list_widget.setLayout(layout)
-        node_list_widget.setFixedWidth(150)
-        node_list_widget.setFixedHeight(200)
+        node_list_widget.setFixedWidth(130)
+        node_list_widget.setFixedHeight(145)
 
         # Pattern input
         filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_list_widget)
