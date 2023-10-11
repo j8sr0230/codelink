@@ -34,7 +34,7 @@ from undo_commands import (
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
 )
 from node_reg import nodes_dict
-from node_add_action_model import NodeActionModel
+from node_list_widget import NodeListWidget
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
@@ -179,31 +179,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 action_dict[node_name] = add_node_action
                 self._node_actions[node_category] = action_dict
 
-        node_action_list: dict[str, QtWidgets.QAction] = {}
+        flat_node_actions: dict[str, QtWidgets.QAction] = {}
         for node_category in self._node_actions:
             for node_name, node_action in self._node_actions[node_category].items():
-                node_action_list[node_name] = node_action
+                flat_node_actions[node_name] = node_action
 
-        self._node_action_model: NodeActionModel = NodeActionModel(node_action_list)
-        self._node_action_proxy_model: QtCore.QSortFilterProxyModel = QtCore.QSortFilterProxyModel()
-        self._node_action_proxy_model.setDynamicSortFilter(True)
-        self._node_action_proxy_model.setSourceModel(self._node_action_model)
-        self._node_action_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
-        self._node_action_proxy_model.setFilterKeyColumn(0)
-
-        node_search_widget: QtWidgets.QDialog = QtWidgets.QDialog(self)
-        node_search_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        node_search_widget.setLayout(node_search_layout)
-
-        self._filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_search_widget)
-        self._filter_pattern_input.textChanged.connect(self.node_filter_changed)
-        node_search_layout.addWidget(self._filter_pattern_input)
-
-        search_result_list: QtWidgets.QListView = QtWidgets.QListView(node_search_widget)
-        search_result_list.setModel(self._node_action_proxy_model)
-        node_search_layout.addWidget(search_result_list)
-
-        node_search_widget.show()
+        self._node_list_widget: NodeListWidget = NodeListWidget(flat_node_actions, self)
+        self._node_list_widget.show()
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -610,13 +592,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.scene().update_details(zoom_level)
 
     # --------------- Action callbacks ---------------
-
-    def node_filter_changed(self) -> None:
-        self._node_action_proxy_model.setFilterRegularExpression(
-            QtCore.QRegularExpression(
-                self._filter_pattern_input.text(),
-                QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
-        )
 
     def add_node_from_action(self) -> None:
         node_cls: type = self.sender().data()

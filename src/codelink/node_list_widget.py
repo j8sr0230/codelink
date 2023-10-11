@@ -26,9 +26,9 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 
-class NodeActionModel(QtCore.QAbstractListModel):
-
-    def __init__(self, node_actions: Optional[dict] = None, parent: Optional[QtCore.QObject] = None) -> None:
+class NodeListModel(QtCore.QAbstractListModel):
+    def __init__(self, node_actions: Optional[dict[str, QtWidgets.QAction]] = None,
+                 parent: Optional[QtCore.QObject] = None) -> None:
         super().__init__(parent)
 
         if node_actions is None:
@@ -61,3 +61,45 @@ class NodeActionModel(QtCore.QAbstractListModel):
     def add_action(self, row: int) -> QtWidgets.QAction:
         key: str = list(self._node_actions.keys())[row]
         return self._node_actions[key]
+
+
+class NodeListWidget(QtWidgets.QWidget):
+    def __init__(self, node_actions: dict[str, QtWidgets.QAction], parent: Optional[QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+
+        # Non persistent data model
+        self._node_list_model: NodeListModel = NodeListModel(node_actions)
+        self._filtered_node_list_model: QtCore.QSortFilterProxyModel = QtCore.QSortFilterProxyModel()
+        self._filtered_node_list_model.setDynamicSortFilter(True)
+        self._filtered_node_list_model.setSourceModel(self._node_list_model)
+        self._filtered_node_list_model.sort(0, QtCore.Qt.AscendingOrder)
+        self._filtered_node_list_model.setFilterKeyColumn(0)
+
+        # UI
+        self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        self.setLayout(self._layout)
+
+        # Pattern input
+        self._filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
+        self._layout.addWidget(self._filter_pattern_input)
+
+        # Node list output
+        self._filtered_node_list: QtWidgets.QListView = QtWidgets.QListView(self)
+        self._filtered_node_list.setModel(self._filtered_node_list_model)
+        self._layout.addWidget(self._filtered_node_list)
+
+        # Widget setup
+        self.setFixedWidth(200)
+        self.setFixedHeight(200)
+
+        # Listeners
+        self._filter_pattern_input.textChanged.connect(self.node_filter_changed)
+
+    # --------------- Callbacks ---------------
+
+    def node_filter_changed(self) -> None:
+        self._filtered_node_list_model.setFilterRegularExpression(
+            QtCore.QRegularExpression(
+                self._filter_pattern_input.text(),
+                QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
+        )
