@@ -58,10 +58,6 @@ class NodeListModel(QtCore.QAbstractListModel):
             key: str = list(self._node_actions.keys())[index.row()]
             return key
 
-    def add_action(self, row: int) -> QtWidgets.QAction:
-        key: str = list(self._node_actions.keys())[row]
-        return self._node_actions[key]
-
 
 class NodeListAction(QtWidgets.QWidgetAction):
     def __init__(self, node_actions: dict[str, QtWidgets.QAction], parent: Optional[QtWidgets.QWidget] = None) -> None:
@@ -78,6 +74,14 @@ class NodeListAction(QtWidgets.QWidgetAction):
     # --------------- Overwrites ---------------
 
     def createWidget(self, parent: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        # Reset filter
+        self._filtered_node_list_model.setFilterRegularExpression(
+            QtCore.QRegularExpression(
+                "",
+                QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
+        )
+
+        # Main widget
         node_list_widget: QtWidgets.QWidget = QtWidgets.QWidget(parent)
         layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         node_list_widget.setLayout(layout)
@@ -94,6 +98,7 @@ class NodeListAction(QtWidgets.QWidgetAction):
         filtered_node_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         filtered_node_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         filtered_node_list.setModel(self._filtered_node_list_model)
+        filtered_node_list.clicked.connect(self.on_clicked)
         layout.addWidget(filtered_node_list)
 
         return node_list_widget
@@ -106,3 +111,7 @@ class NodeListAction(QtWidgets.QWidgetAction):
                 text,
                 QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
         )
+
+    def on_clicked(self, model_index: QtCore.QModelIndex) -> None:
+        self.associatedWidgets()[-1].parent().close()
+        self._node_list_model.node_actions[self._filtered_node_list_model.data(model_index)].trigger()
