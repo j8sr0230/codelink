@@ -63,7 +63,7 @@ class NodeListModel(QtCore.QAbstractListModel):
         return self._node_actions[key]
 
 
-class NodeListWidget(QtWidgets.QWidget):
+class NodeListAction(QtWidgets.QWidgetAction):
     def __init__(self, node_actions: dict[str, QtWidgets.QAction], parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -75,31 +75,34 @@ class NodeListWidget(QtWidgets.QWidget):
         self._filtered_node_list_model.sort(0, QtCore.Qt.AscendingOrder)
         self._filtered_node_list_model.setFilterKeyColumn(0)
 
-        # UI
-        self._layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
-        self.setLayout(self._layout)
+    # --------------- Overwrites ---------------
+
+    def createWidget(self, parent: QtWidgets.QWidget) -> QtWidgets.QWidget:
+        node_list_widget: QtWidgets.QWidget = QtWidgets.QWidget(parent)
+        layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        node_list_widget.setLayout(layout)
+        node_list_widget.setFixedWidth(150)
+        node_list_widget.setFixedHeight(200)
 
         # Pattern input
-        self._filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
-        self._layout.addWidget(self._filter_pattern_input)
+        filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_list_widget)
+        filter_pattern_input.textChanged.connect(self.node_filter_changed)
+        layout.addWidget(filter_pattern_input)
 
         # Node list output
-        self._filtered_node_list: QtWidgets.QListView = QtWidgets.QListView(self)
-        self._filtered_node_list.setModel(self._filtered_node_list_model)
-        self._layout.addWidget(self._filtered_node_list)
+        filtered_node_list: QtWidgets.QListView = QtWidgets.QListView(node_list_widget)
+        filtered_node_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        filtered_node_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        filtered_node_list.setModel(self._filtered_node_list_model)
+        layout.addWidget(filtered_node_list)
 
-        # Widget setup
-        self.setFixedWidth(200)
-        self.setFixedHeight(200)
-
-        # Listeners
-        self._filter_pattern_input.textChanged.connect(self.node_filter_changed)
+        return node_list_widget
 
     # --------------- Callbacks ---------------
 
-    def node_filter_changed(self) -> None:
+    def node_filter_changed(self, text: str) -> None:
         self._filtered_node_list_model.setFilterRegularExpression(
             QtCore.QRegularExpression(
-                self._filter_pattern_input.text(),
+                text,
                 QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
         )

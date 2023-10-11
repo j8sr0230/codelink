@@ -34,7 +34,7 @@ from undo_commands import (
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
 )
 from node_reg import nodes_dict
-from node_list_widget import NodeListWidget
+from node_list_action import NodeListAction
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
@@ -184,8 +184,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             for node_name, node_action in self._node_actions[node_category].items():
                 flat_node_actions[node_name] = node_action
 
-        self._node_list_widget: NodeListWidget = NodeListWidget(flat_node_actions, self)
-        self._node_list_widget.show()
+        self._node_list_action: NodeListAction = NodeListAction(flat_node_actions, self)
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
@@ -477,9 +476,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         else:
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
 
-            # Search menu
-            context_menu.addAction("Search")
-
             # Add menu
             add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
             add_menu.setTitle("&Add")
@@ -502,28 +498,25 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 add_menu.addMenu(first_menu)
 
             context_menu.addMenu(add_menu)
+
+            # Search menu
+            search_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
+            search_menu.setTitle("&Search")
+            search_menu.addAction(self._node_list_action)
+            context_menu.addMenu(search_menu)
             context_menu.addSeparator()
 
             # Rest of context menu
             context_menu.addAction(self._open_action)
             context_menu.addAction(self._save_action)
-            context_menu.addSeparator()
-
-            # context_menu.addAction(self._undo_action)
-            # context_menu.addAction(self._redo_action)
+            context_menu.addAction(self._undo_action)
+            context_menu.addAction(self._redo_action)
             context_menu.addAction(self._fit_action)
+            context_menu.addSeparator()
 
             selected_items: list[Any] = self.scene().selectedItems()
             nodes_selected: bool = any(isinstance(item, NodeItem) for item in selected_items)
             frames_selected: bool = any(isinstance(item, FrameItem) for item in selected_items)
-
-            if nodes_selected or frames_selected:
-                self._delete_action.setEnabled(True)
-            else:
-                self._delete_action.setEnabled(False)
-            context_menu.addAction(self._delete_action)
-
-            context_menu.addSeparator()
 
             if nodes_selected:
                 self._add_frame_action.setEnabled(True)
@@ -548,6 +541,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
             else:
                 self._close_sub_action.setEnabled(False)
             context_menu.addAction(self._close_sub_action)
+
+            if nodes_selected or frames_selected:
+                self._delete_action.setEnabled(True)
+            else:
+                self._delete_action.setEnabled(False)
+            context_menu.addAction(self._delete_action)
 
             context_menu.exec_(self.mapToGlobal(position))
 
