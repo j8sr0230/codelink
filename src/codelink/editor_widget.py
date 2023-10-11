@@ -189,21 +189,15 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._node_action_proxy_model.setDynamicSortFilter(True)
         self._node_action_proxy_model.setSourceModel(self._node_action_model)
         self._node_action_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
-        self._node_action_proxy_model.setFilterRegularExpression(
-            QtCore.QRegularExpression(
-                "A", QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
-        )
         self._node_action_proxy_model.setFilterKeyColumn(0)
-        print(self._node_action_proxy_model.data(self._node_action_proxy_model.index(0, 0)))
 
         node_search_widget: QtWidgets.QDialog = QtWidgets.QDialog(self)
-        # node_search_widget.setFixedWidth(200)
-        # node_search_widget.setFixedHeight(200)
         node_search_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
         node_search_widget.setLayout(node_search_layout)
 
-        filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_search_widget)
-        node_search_layout.addWidget(filter_pattern_input)
+        self._filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_search_widget)
+        self._filter_pattern_input.textChanged.connect(self.node_filter_changed)
+        node_search_layout.addWidget(self._filter_pattern_input)
 
         search_result_list: QtWidgets.QListView = QtWidgets.QListView(node_search_widget)
         search_result_list.setModel(self._node_action_proxy_model)
@@ -617,7 +611,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     # --------------- Action callbacks ---------------
 
-    def add_node_from_action(self):
+    def node_filter_changed(self) -> None:
+        self._node_action_proxy_model.setFilterRegularExpression(
+            QtCore.QRegularExpression(
+                self._filter_pattern_input.text(),
+                QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
+        )
+
+    def add_node_from_action(self) -> None:
         node_cls: type = self.sender().data()
 
         # new_pos: QtCore.QPointF = self.mapToScene(self.mapFromParent(QtGui.QCursor.pos()))
@@ -634,7 +635,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._mode: str = "NODE_POSITIONING"
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
-    def open(self):
+    def open(self) -> None:
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
         # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
@@ -650,7 +651,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self.fit_content()
 
-    def save_as(self):
+    def save_as(self) -> None:
         file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
         # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
 
@@ -779,7 +780,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._undo_stack.push(RemoveNodeCommand(self.scene(), node))
         self._undo_stack.endMacro()
 
-    def add_grp_node(self):
+    def add_grp_node(self) -> None:
         sub_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         if len(sub_nodes) > 0:
@@ -849,7 +850,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
                 self._undo_stack.push(AddGrpNodeCommand(self.scene(), grp_node, sub_nodes))
 
-    def resolve_grp_node(self):
+    def resolve_grp_node(self) -> None:
         if len(self.scene().selected_nodes()) > 0 and self.scene().selected_nodes()[0].has_sub_scene():
             grp_node: NodeItem = self.scene().selected_nodes()[0]
             if grp_node.parent_frame is not None:
@@ -860,7 +861,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             self._undo_stack.push(ResolveGrpNodeCommand(self.scene(), grp_node))
 
-    def add_frame(self):
+    def add_frame(self) -> None:
         selected_nodes: list[NodeItem] = self.scene().selected_nodes()
         if len(selected_nodes) > 0:
             for node in selected_nodes:
@@ -875,14 +876,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 node.parent_frame = frame
             self._undo_stack.push(AddFrameCommand(self.scene(), frame))
 
-    def open_sub_graph(self):
+    def open_sub_graph(self) -> None:
         selected_nodes: list[NodeItem] = self.scene().selected_nodes()
 
         if len(selected_nodes) > 0 and selected_nodes[0].has_sub_scene():
             self._undo_stack.push(SwitchSceneDownCommand(self, self.scene(), selected_nodes[0]))
             self.fit_content()
 
-    def close_sub_graph(self):
+    def close_sub_graph(self) -> None:
         if self.scene().parent_node:
             self._undo_stack.push(SwitchSceneUpCommand(self, self.scene().parent_node.scene(), self.scene()))
             self.fit_content()
