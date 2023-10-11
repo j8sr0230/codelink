@@ -34,6 +34,7 @@ from undo_commands import (
     SwitchSceneDownCommand, SwitchSceneUpCommand, PasteClipboardCommand
 )
 from node_reg import nodes_dict
+from node_add_action_model import NodeActionModel
 from item_delegates import StringDelegate
 from property_widget import PropertyWidget
 from property_table import PropertyTable
@@ -177,6 +178,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 add_node_action.triggered.connect(self.add_node_from_action)
                 action_dict[node_name] = add_node_action
                 self._node_actions[node_category] = action_dict
+
+        node_action_list: dict[str, QtWidgets.QAction] = {}
+        for node_category in self._node_actions:
+            for node_name, node_action in self._node_actions[node_category].items():
+                node_action_list[node_name] = node_action
+
+        self._node_action_model: NodeActionModel = NodeActionModel(node_action_list)
+        print(self._node_action_model.rowCount())
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
