@@ -23,6 +23,7 @@
 from typing import Any, Optional
 
 import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
 
 
 class NodeActionModel(QtCore.QAbstractListModel):
@@ -55,4 +56,8 @@ class NodeActionModel(QtCore.QAbstractListModel):
 
         if role == QtCore.Qt.DisplayRole:
             key: str = list(self._node_actions.keys())[index.row()]
-            return self._node_actions[key]
+            return key
+
+    def add_action(self, row: int) -> QtWidgets.QAction:
+        key: str = list(self._node_actions.keys())[row]
+        return self._node_actions[key]

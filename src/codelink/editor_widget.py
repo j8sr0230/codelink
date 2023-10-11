@@ -185,7 +185,31 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 node_action_list[node_name] = node_action
 
         self._node_action_model: NodeActionModel = NodeActionModel(node_action_list)
-        print(self._node_action_model.rowCount())
+        self._node_action_proxy_model: QtCore.QSortFilterProxyModel = QtCore.QSortFilterProxyModel()
+        self._node_action_proxy_model.setDynamicSortFilter(True)
+        self._node_action_proxy_model.setSourceModel(self._node_action_model)
+        self._node_action_proxy_model.sort(0, QtCore.Qt.AscendingOrder)
+        self._node_action_proxy_model.setFilterRegularExpression(
+            QtCore.QRegularExpression(
+                "A", QtCore.QRegularExpression.CaseInsensitiveOption | QtCore.QRegularExpression.CaseInsensitiveOption)
+        )
+        self._node_action_proxy_model.setFilterKeyColumn(0)
+        print(self._node_action_proxy_model.data(self._node_action_proxy_model.index(0, 0)))
+
+        node_search_widget: QtWidgets.QDialog = QtWidgets.QDialog(self)
+        # node_search_widget.setFixedWidth(200)
+        # node_search_widget.setFixedHeight(200)
+        node_search_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        node_search_widget.setLayout(node_search_layout)
+
+        filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_search_widget)
+        node_search_layout.addWidget(filter_pattern_input)
+
+        search_result_list: QtWidgets.QListView = QtWidgets.QListView(node_search_widget)
+        search_result_list.setModel(self._node_action_proxy_model)
+        node_search_layout.addWidget(search_result_list)
+
+        node_search_widget.show()
 
         # Listeners
         cast(QtCore.SignalInstance, self.zoom_level_changed).connect(self.on_zoom_change)
