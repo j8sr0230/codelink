@@ -20,42 +20,97 @@
 # *                                                                         *
 # ***************************************************************************
 
-MAIN_STYLE: str = """
-	QMenu, QMenu::item, QMenu::item:selected, QMenu::item:pressed {
-	    font-family: Sans Serif;
-		font-size: 12px;
-		font-weight: Normal;
-	    background-color: black;
-	    selection-background-color: #545454;
-	    color: #E5E5E5;
-	    padding-left: 5px;
-	    padding-right: 15px;
-	    padding-top: 5px;
-	    padding-bottom: 5px;
+MAIN_STYLE: str = """	
+	QWidget {
+			font-family: Sans Serif;
+			font-size: 12px;
+			font-weight: Normal;
+		}
+		
+	QMenu {
+		background-color: #191919;
+		padding: 5px;
+		margin: 0px;
+		border: 1px solid #242424;
+		border-radius: 0px;
 	}
 	
-	QMenu::item:selected, QMenu::item:pressed { 
-	    background-color: #545454;
-	    color: #E5E5E5;
+	QMenu::item {
+		background-color: #191919;
+		selection-background-color: #545454;    
+		color: #E5E5E5;
+		padding-left: 5px;
+		padding-right: 15px;
+		padding-top: 5px;
+		padding-bottom: 5px;
+	}
+	
+	QMenu::item:selected, QMenu::item:pressed {
+		background-color: #545454;
+		color: #E5E5E5;
 	}
 	
 	QMenu::item:disabled { 
-	    color: grey;
+		color: grey;
 	}
 	
 	QMenu::right-arrow, QMenu::right-arrow:selected {
-        width: 10px;
-        height: 10px;
-        margin: 2px;
-        padding: 0px;
-        image:url(icon:images_dark-light/right_arrow_light.svg);
-    }
-	
+		width: 10px;
+		height: 10px;
+		margin: 2px;
+		padding: 0px;
+		image:url(icon:images_dark-light/right_arrow_light.svg);
+	}
+
 	QMenu::separator {
-	    background-color: #282828;
-	    height: 2px;
+		background-color: #282828;
+		height: 2px;
 	}
 	
+	QMenu QLineEdit {
+		color: #E5E5E5;
+		background-color: #191919;
+		min-height: 24px;
+		max-height: 24px;
+		margin: 0px;
+		padding: 0px;
+		border: 1px solid #545454;
+		border-radius: 0px;
+		outline: none;
+	}
+	
+	QMenu QLineEdit:focus {
+		color: #E5E5E5;
+		background-color: #191919;
+	}
+	
+	QMenu QLineEdit:selected {
+		color: #E5E5E5;
+		background-color: #191919;
+	}
+	
+	QMenu QListView {
+		color: #E5E5E5;
+		background-color: #191919;
+		margin: 0px;
+		padding: 0px;
+		border: none;
+		border-radius: 0px;
+		outline: none;
+	}
+	
+	QMenu QListView::item:hover {
+		color: #E5E5E5;
+		selection-color: #E5E5E5;
+		background-color: #545454;
+		selection-background-color: #545454;
+		margin: 0px;
+		padding: 0px;
+		border: none;
+		border-radius: 0px;
+		outline: none;
+	}
+
 	QGraphicsView {
 		selection-background-color: black;
 	}
@@ -68,9 +123,6 @@ MAIN_STYLE: str = """
 	}
 	
 	QTableView {
-		font-family: Sans Serif;
-		font-size: 12px;
-		font-weight: Normal;
 		color: #E5E5E5;
 		selection-color: #E5E5E5;
 		background-color: #282828;
@@ -121,7 +173,7 @@ MAIN_STYLE: str = """
 	QSpinBox {
 		color: #E5E5E5;
 		background-color: #545454;
-		selection-background-color: black;
+		selection-background-color: #191919;
 		padding-left: 1px;
 		padding-right: 0px;
 		padding-top: 0px;
@@ -223,7 +275,7 @@ MAIN_STYLE: str = """
 	QLineEdit {
 		color: #E5E5E5;
 		background-color: #545454;
-		selection-background-color: black;
+		selection-background-color: #191919;
 		padding-left: 1px;
 		padding-right: 0px;
 		padding-top: 0px;
@@ -274,7 +326,7 @@ NODE_STYLE: str = """
 	QLineEdit {
 		color: #E5E5E5;
 		background-color: #545454;
-		selection-background-color: black;
+		selection-background-color: #191919;
 		min-width: 5px;
 		min-height: 24px;
 		max-height: 24px;
@@ -334,7 +386,7 @@ NODE_STYLE: str = """
 		color: #E5E5E5;
 		selection-color: #E5E5E5;
 		background-color: #282828;
-		selection-background-color: black;
+		selection-background-color: #191919;
 		min-width: 20px;
 		min-height: 24px;
 		padding-left: 5px;
@@ -344,5 +396,6 @@ NODE_STYLE: str = """
 		margin: 0px;
 		border: 0px;
 		border-radius: 0px;
+		outline: none;
 	}
 """

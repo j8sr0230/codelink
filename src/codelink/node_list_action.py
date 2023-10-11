@@ -84,17 +84,21 @@ class NodeListAction(QtWidgets.QWidgetAction):
         # Main widget
         node_list_widget: QtWidgets.QWidget = QtWidgets.QWidget(parent)
         layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout()
+        layout.setMargin(0)
+        layout.setSpacing(0)
         node_list_widget.setLayout(layout)
-        node_list_widget.setFixedWidth(130)
-        node_list_widget.setFixedHeight(145)
+        node_list_widget.setFixedWidth(150)
+        node_list_widget.setFixedHeight(201)
 
         # Pattern input
         filter_pattern_input: QtWidgets.QLineEdit = QtWidgets.QLineEdit(node_list_widget)
+        filter_pattern_input.setPlaceholderText("...")
         filter_pattern_input.textChanged.connect(self.node_filter_changed)
         layout.addWidget(filter_pattern_input)
 
         # Node list output
         filtered_node_list: QtWidgets.QListView = QtWidgets.QListView(node_list_widget)
+        filtered_node_list.setSpacing(2)
         filtered_node_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         filtered_node_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         filtered_node_list.setModel(self._filtered_node_list_model)
