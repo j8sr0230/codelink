@@ -51,6 +51,10 @@ class ScalarTrigonometric(NodeItem):
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Sin", "Cos", "Tan", "ASin", "ACos", "ATan"])
+        for option_idx in range(self._option_box.count()):
+            self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
+                                             QtCore.Qt.SizeHintRole)
+
         item_list_view: QtWidgets.QListView = cast(QtWidgets.QListView, self._option_box.view())
         item_list_view.setSpacing(2)
         self._content_widget.hide()

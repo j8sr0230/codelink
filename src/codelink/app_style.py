@@ -63,7 +63,7 @@ MAIN_STYLE: str = """
 	}
 
 	QMenu::separator {
-		background-color: #282828;
+		background-color: #242424;
 		height: 2px;
 	}
 	
@@ -92,6 +92,20 @@ MAIN_STYLE: str = """
 	QMenu QListView {
 		color: #E5E5E5;
 		background-color: #191919;
+		margin: 0px;
+		padding: 0px;
+		border: none;
+		border-radius: 0px;
+		outline: none;
+	}
+	
+	QMenu QListView::item {
+		color: #E5E5E5;
+		selection-color: #E5E5E5;
+		background-color: #191919;
+		selection-background-color: #545454;
+		min-height: 24px;
+		max-height: 24px;
 		margin: 0px;
 		padding: 0px;
 		border: none;
@@ -357,7 +371,7 @@ NODE_STYLE: str = """
 		padding-top: 0px;
 		padding-bottom: 0px;
 		margin: 0px;
-		border: 0px;
+		border: 1px solid #242424;
 	}
 	
 	QComboBox::drop-down {
@@ -394,7 +408,7 @@ NODE_STYLE: str = """
 		padding-top: 0px;
 		padding-bottom: 0px;
 		margin: 0px;
-		border: 0px;
+		border: 1px solid #242424;
 		border-radius: 0px;
 		outline: none;
 	}
