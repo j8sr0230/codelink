@@ -529,7 +529,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mousePressEvent(event)
 
-        self.setZValue(3)
+        # self.setZValue(3)
+        for item in self.scene().items():
+            if item is not self and item.zValue() == 2:
+                # If item is another node
+                item.stackBefore(self)
 
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = True
@@ -574,12 +578,11 @@ class NodeItem(QtWidgets.QGraphicsItem):
     def mouseReleaseEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        self.setZValue(2)
-
-        intersection_items: list = self.scene().collidingItems(self)
-        for item in intersection_items:
-            if type(item) == self.__class__:
-                item.stackBefore(self)
+        # self.setZValue(2)
+        # intersection_items: list = self.scene().collidingItems(self)
+        # for item in intersection_items:
+        #     if type(item) == self.__class__:
+        #         item.stackBefore(self)
 
         self._mode = ""
         self._lm_pressed: bool = False
