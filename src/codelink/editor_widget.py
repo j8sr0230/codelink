@@ -470,11 +470,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
             pin: PinItem = self.itemAt(position)
             socket_actions: list[QtWidgets.QAction] = pin.socket_widget.socket_actions()
             socket_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+            socket_menu.setAttribute(QtCore.Qt.WA_DeleteOnClose)
             socket_menu.addActions(socket_actions)
             socket_menu.exec_(self.mapToGlobal(position))
 
         else:
             context_menu: QtWidgets.QMenu = QtWidgets.QMenu(self)
+            context_menu.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
             # Add menu
             add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
