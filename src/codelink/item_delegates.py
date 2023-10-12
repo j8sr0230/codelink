@@ -92,6 +92,9 @@ class BooleanDelegate(QtWidgets.QStyledItemDelegate):
 
         editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
         editor.addItems(self._items)
+        for item_idx in range(editor.count()):
+            editor.model().setData(editor.model().index(item_idx, 0), QtCore.QSize(160, 24), QtCore.Qt.SizeHintRole)
+
         editor.currentIndexChanged.connect(self.commit_editor)
         # editor.currentTextChanged.connect(self.commit_editor)
 
