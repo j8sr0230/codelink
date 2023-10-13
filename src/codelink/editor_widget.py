@@ -54,6 +54,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().__init__(scene, parent)
 
         # Non persistent data model
+        self._file_name: Optional[str] = None
+        self._dag_scene_changed: bool = False
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
         self._lm_pressed: bool = False
@@ -206,6 +208,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def setScene(self, scene: QtWidgets.QGraphicsScene) -> None:
         super().setScene(scene)
         scene.node_added.connect(lambda node: node.update_details(self._zoom_level))
+        scene.dag_changed.connect(self.on_dag_changed)
 
     def mouseDoubleClickEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseDoubleClickEvent(event)
@@ -464,6 +467,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().keyPressEvent(event)
 
     # --------------- Menus ---------------
+
     def context_menu(self, position: QtCore.QPoint):
         if type(self.itemAt(position)) == PinItem:
             # Socket menu
@@ -592,7 +596,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def on_zoom_change(self, zoom_level: int) -> None:
         self.scene().update_details(zoom_level)
 
-    # --------------- Action callbacks ---------------
+    # --------------- Callbacks ---------------
+
+    def on_dag_changed(self) -> None:
+        self._dag_scene_changed: bool = True
+        self.setWindowTitle("*")
+        print("DAG changed")
 
     def add_node_from_action(self) -> None:
         node_cls: type = self.sender().data()
