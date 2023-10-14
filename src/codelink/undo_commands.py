@@ -48,13 +48,13 @@ class AddNodeCommand(QtWidgets.QUndoCommand):
 	def undo(self) -> None:
 		self._scene.remove_node(self._node)
 		for node in self._scene.ends():
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 	def redo(self) -> None:
 		self._scene.clearSelection()
 		self._scene.add_node(self._node)
 		self._node.setSelected(True)
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node, "")
 
 
 class AddGrpNodeCommand(QtWidgets.QUndoCommand):
@@ -222,12 +222,12 @@ class RemoveNodeCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		self._scene.add_node(self._node)
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node, "")
 
 	def redo(self) -> None:
 		self._scene.remove_node(self._node)
 		for node in self._scene.ends():
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 
 class AddEdgeCommand(QtWidgets.QUndoCommand):
@@ -242,12 +242,12 @@ class AddEdgeCommand(QtWidgets.QUndoCommand):
 	def undo(self) -> None:
 		self._scene.remove_edge(self._edge)
 		for node in self._scene.ends():
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 	def redo(self) -> None:
 		if self._edge not in self._scene.edges:
 			self._scene.add_edge(self._edge)
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 
 class RerouteEdgeCommand(QtWidgets.QUndoCommand):
@@ -269,7 +269,7 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		self._edge.end_pin = self._undo_pin
 		self._edge.end_pin.add_edge(self._edge)
 		self._edge.end_pin.socket_widget.update_stylesheets()
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 	def redo(self) -> None:
 		self._edge.end_pin.remove_edge(self._edge)
@@ -278,7 +278,7 @@ class RerouteEdgeCommand(QtWidgets.QUndoCommand):
 		self._edge.end_pin = self._redo_pin
 		self._edge.end_pin.add_edge(self._edge)
 		self._edge.end_pin.socket_widget.update_stylesheets()
-		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
+		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 
 class RemoveEdgeCommand(QtWidgets.QUndoCommand):
@@ -295,13 +295,13 @@ class RemoveEdgeCommand(QtWidgets.QUndoCommand):
 	def undo(self) -> None:
 		self._scene.add_edge(self._edge)
 		if not self._is_silent:
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node)
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 	def redo(self) -> None:
 		self._scene.remove_edge(self._edge)
 		if not self._is_silent:
 			for node in self._scene.ends():
-				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
@@ -411,7 +411,7 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 			self._scene.remove_node(node)
 
 		for node in self._scene.ends():
-			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 	def redo(self) -> None:
 		for node in self._nodes:
@@ -428,7 +428,7 @@ class PasteClipboardCommand(QtWidgets.QUndoCommand):
 
 		for node in self._scene.ends():
 			if node in self._nodes:
-				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node)
+				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 
 class EditModelDataCommand(QtWidgets.QUndoCommand):
@@ -497,8 +497,10 @@ class ExecuteDagCommand(QtWidgets.QUndoCommand):
 
 	def undo(self) -> None:
 		if not self._on_redo:
-			self._scene.execute_dag(self._node)
+			# self._scene.execute_dag(self._node, "")
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node, "")
 
 	def redo(self) -> None:
 		if self._on_redo:
-			self._scene.execute_dag(self._node)
+			# self._scene.execute_dag(self._node, "")
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node, "")
