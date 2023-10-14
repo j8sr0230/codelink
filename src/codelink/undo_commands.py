@@ -484,7 +484,7 @@ class EditModelDataCommand(QtWidgets.QUndoCommand):
 		return True
 
 
-class ExecuteDagCommand(QtWidgets.QUndoCommand):
+class EmitDagChangedCommand(QtWidgets.QUndoCommand):
 	def __init__(
 			self, scene: DAGScene, node: NodeItem, on_redo: bool = False,
 			parent: Optional[QtWidgets.QUndoCommand] = None

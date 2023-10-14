@@ -88,7 +88,7 @@ class DistributePoints(NodeItem):
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
-        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ExecuteDagCommand")
+        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
 
         last_option_index: int = self._option_box.last_index
         current_option_index: int = self._option_box.currentIndex()

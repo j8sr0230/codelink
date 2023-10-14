@@ -155,14 +155,14 @@ class VectorFunctionsAk(NodeItem):
         remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
         remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
-        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "ExecuteDagCommand")
+        emit_dag_changed_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
 
         last_option_index: int = self._option_box.last_index
         current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
 
         self._undo_stack.beginMacro("Changes option box")
-        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
+        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
 
         if current_option_name == "Dot":
             if len(self.input_socket_widgets) == 2:
@@ -282,7 +282,7 @@ class VectorFunctionsAk(NodeItem):
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
-        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
+        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
