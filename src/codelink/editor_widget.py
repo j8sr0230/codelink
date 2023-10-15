@@ -648,17 +648,19 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
     def save(self) -> None:
         if self._file_path is None:
-            self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
+            self._file_path: str = os.path.normpath(
+                QtWidgets.QFileDialog.getSaveFileName(self, dir="untitled.json")[0]
+            )
 
         if self._file_path != ".":
             with open(self._file_path, "w", encoding="utf8") as json_file:
                 json.dump(self.scene().serialize(), json_file, indent=4)
 
-        self.setWindowTitle(self._file_path)
-        self._dag_scene_changed: bool = False
+            self.setWindowTitle(self._file_path)
+            self._dag_scene_changed: bool = False
 
     def save_as(self) -> None:
-        self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
+        self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self, dir="untitled.json")[0])
         self.save()
 
     def copy(self) -> None:
