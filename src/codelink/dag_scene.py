@@ -44,7 +44,7 @@ from edge_item import EdgeItem
 
 class DAGScene(QtWidgets.QGraphicsScene):
     node_added: QtCore.Signal = QtCore.Signal(NodeItem)
-    dag_changed: QtCore.Signal = QtCore.Signal(NodeItem, str)
+    dag_changed: QtCore.Signal = QtCore.Signal(QtWidgets.QGraphicsItem, str)
 
     def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtCore.QObject] = None):
         super().__init__(QtCore.QRectF(0, 0, 64000, 64000), parent)
@@ -122,6 +122,12 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def add_frame(self, frame: FrameItem) -> FrameItem:
         if frame.uuid == "":
             frame.uuid = QtCore.QUuid.createUuid().toString()
+
+        cast(QtCore.SignalInstance, frame.prop_model.dataChanged).connect(
+            lambda start_idx, end_idx: cast(QtCore.SignalInstance, self.dag_changed).emit(
+                frame, list(frame.prop_model.properties.keys())[start_idx.row()]
+            )
+        )
 
         self._frames.append(frame)
         self.addItem(frame)
@@ -505,13 +511,14 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def is_sub_scene(self) -> bool:
         return self._parent_node is not None
 
-    def execute_dag(self, node: NodeItem, prop_key: str = ""):
-        if prop_key not in ("Name", "Color", "Collapsed", "X", "Y", "Width"):
-            for end_node in self.path_ends(node):
-                dsk: dict = self.to_dsk(end_node, {})
-                for socket in end_node.output_socket_widgets:
-                    get(dsk, end_node.linked_lowest_socket(socket).pin)
-                    # print(get(dsk, end_node.linked_lowest_socket(socket).pin))
+    def execute_dag(self, item: Union[NodeItem, FrameItem], prop_key: str = ""):
+        if isinstance(item, NodeItem):
+            if prop_key not in ("Name", "Color", "Collapsed", "X", "Y", "Width"):
+                for end_node in self.path_ends(item):
+                    dsk: dict = self.to_dsk(end_node, {})
+                    for socket in end_node.output_socket_widgets:
+                        get(dsk, end_node.linked_lowest_socket(socket).pin)
+                        # print(get(dsk, end_node.linked_lowest_socket(socket).pin))
 
     # --------------- Background ---------------
 
