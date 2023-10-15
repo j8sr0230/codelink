@@ -54,7 +54,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         super().__init__(scene, parent)
 
         # Non persistent data model
-        self._file_name: Optional[str] = None
+        self._file_path: Optional[str] = None
         self._dag_scene_changed: bool = False
         self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
@@ -74,6 +74,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._scroll_border: int = 50
 
         # Widget layout and setup
+        self.setWindowTitle("codelink")
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -109,10 +110,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
         cast(QtCore.SignalInstance, self._open_action.triggered).connect(self.open)
         self.addAction(self._open_action)
 
-        self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save As", self)
+        self._save_action: QtWidgets.QAction = QtWidgets.QAction("Save", self)
         self._save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
-        cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save_as)
+        cast(QtCore.SignalInstance, self._save_action.triggered).connect(self.save)
         self.addAction(self._save_action)
+
+        self._save_as_action: QtWidgets.QAction = QtWidgets.QAction("Save As", self)
+        cast(QtCore.SignalInstance, self._save_as_action.triggered).connect(self.save_as)
+        self.addAction(self._save_as_action)
 
         self._undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
         self._undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
@@ -514,6 +519,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Rest of context menu
             context_menu.addAction(self._open_action)
+            context_menu.addAction(self._save_as_action)
             context_menu.addAction(self._save_action)
             context_menu.addAction(self._undo_action)
             context_menu.addAction(self._redo_action)
@@ -599,9 +605,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
     # --------------- Callbacks ---------------
 
     def on_dag_changed(self) -> None:
-        self._dag_scene_changed: bool = True
-        self.setWindowTitle("*")
-        print("DAG changed")
+        if not self._dag_scene_changed:
+            self._dag_scene_changed: bool = True
+            if self._file_path is None:
+                self.setWindowTitle("codelink *")
+            else:
+                self.setWindowTitle(self._file_path + " *")
 
     def add_node_from_action(self) -> None:
         node_cls: type = self.sender().data()
@@ -621,28 +630,36 @@ class EditorWidget(QtWidgets.QGraphicsView):
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
     def open(self) -> None:
-        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
-        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
+        self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getOpenFileName(self)[0])
 
-        if file_path != ".":
+        if self._file_path != ".":
             self.scene().clear_scene()
             self._undo_stack.clear()
             self._prop_scroller.hide()
             self.zoom_min()
 
-            with open(file_path, "r", encoding="utf8") as json_file:
+            with open(self._file_path, "r", encoding="utf8") as json_file:
                 data_dict: dict = json.load(json_file)
                 self.scene().deserialize(data_dict)
 
             self.fit_content()
+            self._dag_scene_changed: bool = False
+            self.setWindowTitle(self._file_path)
+
+    def save(self) -> None:
+        if self._file_path is None:
+            self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
+
+        if self._file_path != ".":
+            with open(self._file_path, "w", encoding="utf8") as json_file:
+                json.dump(self.scene().serialize(), json_file, indent=4)
+
+        self.setWindowTitle(self._file_path)
+        self._dag_scene_changed: bool = False
 
     def save_as(self) -> None:
-        file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
-        # file_path: str = os.path.join(os.path.abspath(os.path.dirname(__file__)), "graph.json")
-
-        if file_path != ".":
-            with open(file_path, "w", encoding="utf8") as json_file:
-                json.dump(self.scene().serialize(), json_file, indent=4)
+        self._file_path: str = os.path.normpath(QtWidgets.QFileDialog.getSaveFileName(self)[0])
+        self.save()
 
     def copy(self) -> None:
         if len(self.scene().selectedItems()) > 0:
