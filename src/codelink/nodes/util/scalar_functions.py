@@ -46,6 +46,9 @@ class ScalarFunctions(NodeItem):
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
 
+        # Data cache
+        self._cache: Optional[list] = None
+
         # Option combo box
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -116,52 +119,56 @@ class ScalarFunctions(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: ak.Array = ak.Array([0.])
+        if self._is_invalid or self._cache is None:
+            result: ak.Array = ak.Array([0.])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    a: list = self.input_data(0, args)
+                    try:
+                        a: list = self.input_data(0, args)
 
-                    if len(args) == 2:
-                        b: list = self.input_data(1, args)
+                        if len(args) == 2:
+                            b: list = self.input_data(1, args)
 
-                        if self._option_box.currentText() == "Add":
-                            result: ak.Array = ak.Array(a) + ak.Array(b)
+                            if self._option_box.currentText() == "Add":
+                                result: ak.Array = ak.Array(a) + ak.Array(b)
 
-                        elif self._option_box.currentText() == "Sub":
-                            result: ak.Array = ak.Array(a) - ak.Array(b)
+                            elif self._option_box.currentText() == "Sub":
+                                result: ak.Array = ak.Array(a) - ak.Array(b)
 
-                        elif self._option_box.currentText() == "Mul":
-                            result: ak.Array = ak.Array(a) * ak.Array(b)
+                            elif self._option_box.currentText() == "Mul":
+                                result: ak.Array = ak.Array(a) * ak.Array(b)
 
-                        elif self._option_box.currentText() == "Div":
-                            result: ak.Array = ak.Array(a) / ak.Array(b)
+                            elif self._option_box.currentText() == "Div":
+                                result: ak.Array = ak.Array(a) / ak.Array(b)
 
-                        elif self._option_box.currentText() == "Pow":
-                            result: ak.Array = ak.Array(a) ** ak.Array(b)
+                            elif self._option_box.currentText() == "Pow":
+                                result: ak.Array = ak.Array(a) ** ak.Array(b)
 
-                    if len(args) == 1:
-                        if self._option_box.currentText() == "Sqrt":
-                            result: np.ndarray = np.sqrt(ak.Array(a))
+                        if len(args) == 1:
+                            if self._option_box.currentText() == "Sqrt":
+                                result: np.ndarray = np.sqrt(ak.Array(a))
 
-                        elif self._option_box.currentText() == "Exp":
-                            result: np.ndarray = np.exp(ak.Array(a))
+                            elif self._option_box.currentText() == "Exp":
+                                result: np.ndarray = np.exp(ak.Array(a))
 
-                        elif self._option_box.currentText() == "Ln":
-                            result: np.ndarray = np.log(ak.Array(a))
+                            elif self._option_box.currentText() == "Ln":
+                                result: np.ndarray = np.log(ak.Array(a))
 
-                    self._is_dirty: bool = False
+                        self._is_dirty: bool = False
 
-                except Exception as e:
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result.tolist())
+            self._cache: list = self.output_data(0, result.tolist())
+            print("Exex")
+
+        return self._cache
 
 # --------------- Serialization ---------------
 
