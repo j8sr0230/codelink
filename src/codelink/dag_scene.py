@@ -469,6 +469,11 @@ class DAGScene(QtWidgets.QGraphicsScene):
         self._path_ends(node, result)
         return result
 
+    def mark_invalid(self, node: NodeItem) -> None:
+        node._is_invalid = True
+        for suc_node in node.successors():
+            self.mark_invalid(suc_node)
+
     def to_dsk(self, visited_node: NodeItem, graph_dict: dict) -> dict:
         for node in visited_node.predecessors():
             self.to_dsk(node, graph_dict)
@@ -514,6 +519,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
     def execute_dag(self, item: Union[NodeItem, FrameItem], prop_key: str = ""):
         if isinstance(item, NodeItem):
             if prop_key not in ("Name", "Color", "Collapsed", "X", "Y", "Width"):
+                self.mark_invalid(item)
+
                 for end_node in self.path_ends(item):
                     dsk: dict = self.to_dsk(end_node, {})
                     for socket in end_node.output_socket_widgets:
