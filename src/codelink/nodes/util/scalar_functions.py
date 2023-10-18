@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
+import inspect
 
 import awkward as ak
 import numpy as np
@@ -45,9 +46,6 @@ class ScalarFunctions(NodeItem):
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(pos, undo_stack, name, parent)
-
-        # Data cache
-        self._cache: Optional[list] = None
 
         # Option combo box
         self._option_box: OptionBoxWidget = OptionBoxWidget()
@@ -119,7 +117,9 @@ class ScalarFunctions(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        if self._is_invalid or self._cache is None:
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
+
+        if self._is_invalid or self._cache[cache_idx] is None:
             result: ak.Array = ak.Array([0.])
 
             with warnings.catch_warnings():
@@ -157,6 +157,9 @@ class ScalarFunctions(NodeItem):
                                 result: np.ndarray = np.log(ak.Array(a))
 
                         self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result.tolist())
+                        print("Executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -165,10 +168,7 @@ class ScalarFunctions(NodeItem):
                     self._is_dirty: bool = True
                     print(e)
 
-            self._cache: list = self.output_data(0, result.tolist())
-            print("Exex")
-
-        return self._cache
+        return self._cache[cache_idx]
 
 # --------------- Serialization ---------------
 

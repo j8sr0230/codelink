@@ -74,7 +74,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._sub_scene.parent_node = self
 
         self._socket_widgets: list[SocketWidget] = []
-        self._evals: list[object] = []
+        self._evals: list[Callable] = []
+        self._cache: list[Any] = []
 
         self._mode: str = ""
         self._lm_pressed: bool = False
@@ -298,6 +299,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             )
         ]
         self._evals: list[Callable] = eval_methods
+        self._cache: list[Any] = [None] * len(self._evals)
 
     def register_sockets(self):
         self._content_widget.hide()
@@ -763,7 +765,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
-            new_socket_widget.update_all()
+            # new_socket_widget.update_all()
 
         # Reset sub graph content_value
         self.sub_scene.deserialize(state["Subgraph"])
@@ -773,4 +775,4 @@ class NodeItem(QtWidgets.QGraphicsItem):
             for sub_node in self.sub_scene.nodes:
                 sub_node.scene().parent_node = self
 
-        self.update()
+        # self.update()
