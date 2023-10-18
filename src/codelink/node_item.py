@@ -765,7 +765,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
             new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
-            # new_socket_widget.update_all()
+            new_socket_widget.update_all()
 
         # Reset sub graph content_value
         self.sub_scene.deserialize(state["Subgraph"])
