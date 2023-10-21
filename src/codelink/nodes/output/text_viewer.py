@@ -21,8 +21,10 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 import warnings
+
+import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -57,12 +59,16 @@ class TextViewer(NodeItem):
             warnings.filterwarnings("error")
             try:
                 try:
-                    result: list = self.input_data(0, args)
-                    print(
-                        "Domain size: " + str(len(self.input_data(0, args))) + "->",
-                        [str(input_item) for input_item in self.input_data(0, args)]
-                    )
-                    self._is_dirty: bool = False
+                    result: Any = self.input_data(0, args)
+                    if isinstance(result, ak.Array):
+                        result.show(200, 100)
+                    else:
+                        # result: list = self.input_data(0, args)
+                        print(
+                            "Domain size: " + str(len(self.input_data(0, args))) + "->",
+                            [str(input_item) for input_item in self.input_data(0, args)]
+                        )
+                        self._is_dirty: bool = False
 
                 except Exception as e:
                     self._is_dirty: bool = True
