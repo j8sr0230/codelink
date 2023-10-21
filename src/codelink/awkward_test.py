@@ -77,8 +77,15 @@ v4 = ak.concatenate([v1, v3_1])
 res = v2 + v4
 res.show()
 
-k: ak.Array = ak.Array([99, [[3, 4, 87]], 6])
-l: ak.Array = ak.Array([99, [3, 4, 87], 6])
-print(k.layout.content)
 print()
-print(l.layout.content)
+k: ak.Array = ak.Array([99, [[[3, 4, 87]]], 6])
+print(k)
+
+# l: ak.Array = ak.Array([99, [3, 4, 87], 6])
+k: ak.Array = ak.Array(ak.contents.ListOffsetArray(
+    content=ak.to_layout(k), offsets=ak.index.Index64([0, 3])
+))
+
+print(k)
+# print(k.layout.minmax_depth)
+# print(l.layout.content)
