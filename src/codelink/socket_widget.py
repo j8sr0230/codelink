@@ -217,7 +217,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._prop_model.setData(
             self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
         )
-        cast(QtCore.SignalInstance, self.parent_node.scene().dag_changed).emit(self.parent_node)
+        cast(QtCore.SignalInstance, self.parent_node.scene().dag_changed).emit(self.parent_node, "")
 
     def update_pin_position(self, is_node_collapsed: bool) -> None:
         if not is_node_collapsed:

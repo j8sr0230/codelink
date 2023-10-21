@@ -76,3 +76,8 @@ print(f"Elapsed: {ms:.03f} milliseconds.")
 v4 = ak.concatenate([v1, v3_1])
 res = v2 + v4
 res.show()
+
+k: ak.Array = ak.Array([99, [[3, 4, 87]], 6])
+l: ak.Array = ak.Array([99, [3, 4, 87], 6])
+print(k.layout.content)
+print(l.layout.content)
