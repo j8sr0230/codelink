@@ -1,5 +1,6 @@
 PySide2>=5.15.8
 networkx>=3.1
 dask>=2023.7.1
-awkward>=2.3.1
+awkward>=2.4.2
 numpy>=1.25.2
+numba>=0.58.1
