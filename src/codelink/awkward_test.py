@@ -26,8 +26,6 @@ import awkward as ak
 import numpy as np
 from numba import jit
 
-from utils import simplify
-
 
 def vector_add(a, b):
     return ak.contents.RecordArray(
@@ -82,7 +80,7 @@ res.show()
 
 print()
 k: ak.Array = ak.Array([[99], [[[3, 4, 87]]], np.arange(0, 5)])
-print(simplify(k.to_list()))
+# print(simplify(k.to_list()))
 
 x = np.arange(100).reshape(10, 10)
 print(x)
@@ -107,3 +105,32 @@ start = time.time()
 go_fast(x)
 end = time.time()
 print("Elapsed (after compilation) = %s" % (end - start))
+
+
+@jit(nopython=True)
+def simplify(nested_list: list) -> list:
+    result: list = []
+
+    copy: list = nested_list[:]
+    while copy:
+        entry: list = copy[1]
+
+        if isinstance(entry, list):
+            contains_lists: bool = True
+            for i in entry:
+                if not isinstance(i, list):
+                    contains_lists: bool = False
+
+            if len(list(entry)) > 0 and not contains_lists:
+                result.append(entry)
+            else:
+                copy = entry
+                # copy.extend(entry)
+        else:
+            result.append(entry)
+
+    # result.reverse()
+    return result
+
+
+print(simplify(k.to_list()))
