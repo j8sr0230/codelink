@@ -24,7 +24,6 @@ import time
 
 import awkward as ak
 import numpy as np
-from numba import jit
 
 
 def vector_add(a, b):
@@ -79,58 +78,16 @@ res = v2 + v4
 res.show()
 
 print()
-k: ak.Array = ak.Array([[99], [[[3, 4, 87]]], np.arange(0, 5)])
-# print(simplify(k.to_list()))
-
-x = np.arange(100).reshape(10, 10)
-print(x)
+k: ak.Array = ak.Array([1, [2, 3], [9], 4])
+k.show()
+print(k.layout)
 
 
-@jit(nopython=True)
-def go_fast(a):  # Function is compiled and runs in machine code
-    trace = 0.0
-    for i in range(a.shape[0]):
-        trace += np.tanh(a[i, i])
-    return a + trace
+def crawl(layout, depth, **kwargs):
+    if layout.is_numpy:
+        print("Hello", type(layout).__name__, "at", depth, layout.data)
+    else:
+        print("Hello", type(layout).__name__, "at", depth)
 
 
-# DO NOT REPORT THIS... COMPILATION TIME IS INCLUDED IN THE EXECUTION TIME!
-start = time.time()
-go_fast(x)
-end = time.time()
-print("Elapsed (with compilation) = %s" % (end - start))
-
-# NOW THE FUNCTION IS COMPILED, RE-TIME IT EXECUTING FROM CACHE
-start = time.time()
-go_fast(x)
-end = time.time()
-print("Elapsed (after compilation) = %s" % (end - start))
-
-
-@jit(nopython=True)
-def simplify(nested_list: list) -> list:
-    result: list = []
-
-    copy: list = nested_list[:]
-    while copy:
-        entry: list = copy[1]
-
-        if isinstance(entry, list):
-            contains_lists: bool = True
-            for i in entry:
-                if not isinstance(i, list):
-                    contains_lists: bool = False
-
-            if len(list(entry)) > 0 and not contains_lists:
-                result.append(entry)
-            else:
-                copy = entry
-                # copy.extend(entry)
-        else:
-            result.append(entry)
-
-    # result.reverse()
-    return result
-
-
-print(simplify(k.to_list()))
+ak.transform(crawl, k, return_value="none")
