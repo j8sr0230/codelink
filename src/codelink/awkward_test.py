@@ -25,6 +25,8 @@ import time
 import awkward as ak
 import numpy as np
 
+from utils import simplify
+
 
 def vector_add(a, b):
     return ak.contents.RecordArray(
@@ -78,14 +80,5 @@ res = v2 + v4
 res.show()
 
 print()
-k: ak.Array = ak.Array([99, [[[3, 4, 87]]], 6])
-print(k)
-
-# l: ak.Array = ak.Array([99, [3, 4, 87], 6])
-k: ak.Array = ak.Array(ak.contents.ListOffsetArray(
-    content=ak.to_layout(k), offsets=ak.index.Index64([0, 3])
-))
-
-print(k)
-# print(k.layout.minmax_depth)
-# print(l.layout.content)
+k: ak.Array = ak.Array([[99], [[[3, 4, 87]]], np.arange(0, 5)])
+print(simplify(k.to_list()))
