@@ -93,22 +93,13 @@ class VectorNoneAk(SocketWidget):
 			# z = ak.flatten(input_data.z, axis=None)
 
 			min_depth_x: int = input_data.x.layout.minmax_depth[0]
-			min_depth_y: int = input_data.y.layout.minmax_depth[0]
-			min_depth_z: int = input_data.z.layout.minmax_depth[0]
-
 			if min_depth_x > 1:
 				x = ak.flatten(simplify_ak(input_data.x), axis=1)
-			else:
-				x = simplify_ak(input_data.x)
-
-			if min_depth_y > 1:
 				y = ak.flatten(simplify_ak(input_data.y), axis=1)
-			else:
-				y = simplify_ak(input_data.y)
-
-			if min_depth_z > 1:
 				z = ak.flatten(simplify_ak(input_data.z), axis=1)
 			else:
+				x = simplify_ak(input_data.x)
+				y = simplify_ak(input_data.y)
 				z = simplify_ak(input_data.z)
 
 			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})

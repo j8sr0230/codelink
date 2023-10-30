@@ -23,13 +23,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
 
 import numpy as np
 import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
 from node_item import NodeItem
 from sockets.value_line_ak import ValueLineAk
 
@@ -53,37 +53,45 @@ class RangeAk(NodeItem):
                         parent_node=self)
         ]
 
+        ak.behavior[np.absolute, "range_param"] = self.make_range
+
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_range(parameter_zip: tuple) -> list[float]:
-        start: float = parameter_zip[0]
-        stop: float = parameter_zip[1]
-        step: float = parameter_zip[2]
-        return list(np.arange(start, stop, step))
+    def make_range(range_params):
+        print(range_params.start)
+        rr = np.arange(range_params.start, range_params.stop, range_params.step)
+        print(rr)
+        return ak.to_layout(rr)
 
     def eval_socket_0(self, *args) -> list:
-        result: list = []
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            result: ak.Array = ak.Array([0.])
+
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    start: list = self.input_data(0, args)
-                    stop: list = self.input_data(1, args)
-                    step: list = self.input_data(2, args)
+                    try:
+                        start: ak.Array = self.input_data(0, args)
+                        stop: ak.Array = self.input_data(1, args)
+                        step: ak.Array = self.input_data(2, args)
 
-                    data_tree: list = ak.broadcast_arrays(start, stop, step)
-                    nested_parameter_zip = ak.zip(data_tree).to_list()
-                    result: list = list(map_objects(nested_parameter_zip, tuple, self.make_range))
+                        input_data: ak.Array = ak.zip({"start": start, "stop": stop, "step": step},
+                                                      with_name="range_param")
 
-                    self._is_dirty: bool = False
+                        result: ak.Array = np.absolute(input_data)
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, ak.Array(np.arange(0, 5)))  # self.output_data(0, result)
+        return self._cache[cache_idx]
