@@ -120,8 +120,6 @@ class ScalarFunctionsAk(NodeItem):
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
-            result: ak.Array = ak.Array([0.])
-
             with warnings.catch_warnings():
                 warnings.filterwarnings("error")
                 try:
@@ -159,7 +157,7 @@ class ScalarFunctionsAk(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Executed")
+                        print("Scalar functions executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True

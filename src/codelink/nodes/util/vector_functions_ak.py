@@ -82,7 +82,7 @@ class VectorFunctionsAk(NodeItem):
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
 
     @staticmethod
-    def vector_add(a, b):
+    def vector_add(a, b) -> ak.contents.RecordArray:
         return ak.contents.RecordArray(
             [
                 ak.to_layout(a.x + b.x),
@@ -94,7 +94,7 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def vector_sub(a, b):
+    def vector_sub(a, b) -> ak.contents.RecordArray:
         return ak.contents.RecordArray(
             [
                 ak.to_layout(a.x - b.x),
@@ -106,7 +106,7 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def vector_mul(a, b):
+    def vector_mul(a, b) -> ak.contents.RecordArray:
         return ak.contents.RecordArray(
             [
                 ak.to_layout(a.x * b.x),
@@ -118,7 +118,7 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def vector_div(a, b):
+    def vector_div(a, b) -> ak.contents.RecordArray:
         return ak.contents.RecordArray(
             [
                 ak.to_layout(a.x / b.x),
@@ -130,7 +130,7 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def vector_cross(a, b):
+    def vector_cross(a, b) -> ak.contents.RecordArray:
         return ak.contents.RecordArray(
             [
                 ak.to_layout(a.y * b.z - a.z * b.y),
@@ -142,11 +142,11 @@ class VectorFunctionsAk(NodeItem):
         )
 
     @staticmethod
-    def vector_dot(a, b):
+    def vector_dot(a, b) -> ak.Array:
         return ak.Array(a.x * b.x + a.y * b.y + a.z * b.z)
 
     @staticmethod
-    def vector_length(a):
+    def vector_length(a) -> np.ndarray:
         return np.sqrt(a.x**2 + a.y**2 + a.z**2)
 
     def update_socket_widgets(self) -> None:
