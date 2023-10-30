@@ -77,10 +77,10 @@ v4 = ak.concatenate([v1, v3_1])
 res = v2 + v4
 res.show()
 
-
-u: ak.Array = ak.Array([[0], [[[0, 0]]], [0]])
-v: ak.Array = ak.Array([[1], [[[1, 1]]], [1]])
-w: ak.Array = ak.Array([[2], [[[2, 2]]], [2]])
-
-res: ak.Array = ak.zip({"x": u, "y": v, "z": w})
-ak.Array([res]).show()
+print()
+u = ak.flatten(ak.Array([[1], [[[1, 1]]], [1]]), axis=1)
+v = ak.flatten(ak.Array([[2], [[[2, 2]]], [2]]), axis=1)
+w = ak.flatten(ak.Array([[3], [[[3, 3]]], [3]]), axis=1)
+u.show()
+res = ak.zip({"x": u, "y": v, "z": w})
+res.show()
