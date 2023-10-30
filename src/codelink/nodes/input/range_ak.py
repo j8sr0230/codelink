@@ -86,4 +86,4 @@ class RangeAk(NodeItem):
                 self._is_dirty: bool = True
                 print(e)
 
-        return self.output_data(0, ak.Array(np.arange(0, 1e6)))  # self.output_data(0, result)
+        return self.output_data(0, ak.Array(np.arange(0, 5)))  # self.output_data(0, result)

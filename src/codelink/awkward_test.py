@@ -84,3 +84,7 @@ w = ak.flatten(ak.Array([[3], [[[3, 3]]], [3]]), axis=1)
 u.show()
 res = ak.zip({"x": u, "y": v, "z": w})
 res.show()
+
+t: ak.Array = ak.Array([[[0], [1], [2], [3], [4]]])
+p: ak.Array = ak.Array([0])
+(t + p).show()

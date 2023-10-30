@@ -126,35 +126,35 @@ class ScalarFunctionsAk(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        a: list = self.input_data(0, args)
+                        a: ak.Array = self.input_data(0, args)
 
                         if len(args) == 2:
-                            b: list = self.input_data(1, args)
+                            b: ak.Array = self.input_data(1, args)
 
                             if self._option_box.currentText() == "Add":
-                                result: ak.Array = ak.Array(a) + ak.Array(b)
+                                result: ak.Array = a + b
 
                             elif self._option_box.currentText() == "Sub":
-                                result: ak.Array = ak.Array(a) - ak.Array(b)
+                                result: ak.Array = a - b
 
                             elif self._option_box.currentText() == "Mul":
-                                result: ak.Array = ak.Array(a) * ak.Array(b)
+                                result: ak.Array = a * b
 
                             elif self._option_box.currentText() == "Div":
-                                result: ak.Array = ak.Array(a) / ak.Array(b)
+                                result: ak.Array = a / b
 
                             elif self._option_box.currentText() == "Pow":
-                                result: ak.Array = ak.Array(a) ** ak.Array(b)
+                                result: ak.Array = a ** b
 
                         if len(args) == 1:
                             if self._option_box.currentText() == "Sqrt":
-                                result: np.ndarray = np.sqrt(ak.Array(a))
+                                result: np.ndarray = np.sqrt(a)
 
                             elif self._option_box.currentText() == "Exp":
-                                result: np.ndarray = np.exp(ak.Array(a))
+                                result: np.ndarray = np.exp(a)
 
                             elif self._option_box.currentText() == "Ln":
-                                result: np.ndarray = np.log(ak.Array(a))
+                                result: np.ndarray = np.log(a)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
