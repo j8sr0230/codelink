@@ -30,9 +30,9 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplify_ak
 from socket_widget import SocketWidget
 from input_widgets import NumberInputWidget
-from utils import simplify
 
 if TYPE_CHECKING:
 	from node_item import NodeItem
@@ -99,7 +99,7 @@ class ValueLineAk(SocketWidget):
 			input_data: ak.Array = ak.flatten(input_data, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			input_data: ak.Array = ak.Array(simplify(input_data.to_list()))
+			input_data: ak.Array = ak.Array(simplify_ak(input_data))
 
 		if self.socket_options_state()[2]:  # Graft
 			if input_data.layout.minmax_depth[0] == 1:

@@ -24,7 +24,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Callable, Union
 
-# import numpy as np
+import numpy as np
 import awkward as ak
 
 import PySide2.QtGui as QtGui
@@ -110,6 +110,15 @@ def simplify(nested_list: Iterable) -> Iterable:
 
     res.reverse()
     return res
+
+
+def simplify_ak(nested_array: ak.Array) -> ak.Array:
+    min_max_depth: tuple[int, int] = nested_array.layout.minmax_depth
+    if min_max_depth[0] > 0:
+        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
+        for nesting_axis in reversed_nesting_axes:
+            nested_array = ak.flatten(nested_array, axis=nesting_axis)
+    return nested_array
 
 
 def graft(nested_list: Iterable) -> Iterable:

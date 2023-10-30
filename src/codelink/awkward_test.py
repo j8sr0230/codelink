@@ -77,17 +77,10 @@ v4 = ak.concatenate([v1, v3_1])
 res = v2 + v4
 res.show()
 
-print()
-k: ak.Array = ak.Array([1, [2, 3], [9], 4])
-k.show()
-print(k.layout)
 
+u: ak.Array = ak.Array([[0], [[[0, 0]]], [0]])
+v: ak.Array = ak.Array([[1], [[[1, 1]]], [1]])
+w: ak.Array = ak.Array([[2], [[[2, 2]]], [2]])
 
-def crawl(layout, depth, **kwargs):
-    if layout.is_numpy:
-        print("Hello", type(layout).__name__, "at", depth, layout.data)
-    else:
-        print("Hello", type(layout).__name__, "at", depth)
-
-
-ak.transform(crawl, k, return_value="none")
+res: ak.Array = ak.zip({"x": u, "y": v, "z": w})
+ak.Array([res]).show()
