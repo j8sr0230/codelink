@@ -23,6 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
 
 import awkward as ak
 
@@ -53,21 +54,26 @@ class AwkwardViewer(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
-        result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    result: ak.Array = self.input_data(0, args)
-                    result.show(200, 100)
-                    self._is_dirty: bool = False
+                    try:
+                        result: ak.Array = self.input_data(0, args)
+                        result.show(200, 100)
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Awkward viewer executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]

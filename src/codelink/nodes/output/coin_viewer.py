@@ -23,6 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
 
 import FreeCADGui as Gui
 # noinspection PyPackageRequirements
@@ -58,41 +59,46 @@ class CoinViewer(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: list = [coin.SoSeparator()]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    coin_seps: list = self.input_data(0, args)
-                    flat_coin_seps: list = list(flatten(coin_seps))
+                    try:
+                        coin_seps: list = self.input_data(0, args)
+                        flat_coin_seps: list = list(flatten(coin_seps))
 
-                    if len(flat_coin_seps) > 0:
-                        if hasattr(Gui, "ActiveDocument"):
-                            sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
+                        if len(flat_coin_seps) > 0:
+                            if hasattr(Gui, "ActiveDocument"):
+                                sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
 
-                            if self._coin_sep is not None:
-                                sg.removeChild(self._coin_sep)
-                                self._coin_sep: Optional[coin.SoSeparator] = None
+                                if self._coin_sep is not None:
+                                    sg.removeChild(self._coin_sep)
+                                    self._coin_sep: Optional[coin.SoSeparator] = None
 
-                            self._coin_sep: coin.SoSeparator = coin.SoSeparator()
-                            for child in flat_coin_seps:
-                                self._coin_sep.addChild(child)
-                            sg.addChild(self._coin_sep)
-                    else:
-                        self.on_remove()
+                                self._coin_sep: coin.SoSeparator = coin.SoSeparator()
+                                for child in flat_coin_seps:
+                                    self._coin_sep.addChild(child)
+                                sg.addChild(self._coin_sep)
+                        else:
+                            self.on_remove()
 
-                    self._is_dirty: bool = False
-                    result: list = coin_seps
+                        result: list = coin_seps
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = result
+                        print("Coin viewer executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]
 
     def on_remove(self):
         if hasattr(Gui, "ActiveDocument") and self._coin_sep is not None:

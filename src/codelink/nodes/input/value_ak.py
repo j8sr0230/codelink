@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 class ValueAk(NodeItem):
-    REG_NAME: str = "ValueAk"
+    REG_NAME: str = "Value Ak"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -54,7 +54,6 @@ class ValueAk(NodeItem):
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
-
             with warnings.catch_warnings():
                 warnings.filterwarnings("error")
                 try:

@@ -39,7 +39,7 @@ if TYPE_CHECKING:
 
 
 class RangeAk(NodeItem):
-    REG_NAME: str = "RangeAk"
+    REG_NAME: str = "Range Ak"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:

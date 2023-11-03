@@ -23,6 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Any
 import warnings
+import inspect
 
 import awkward as ak
 
@@ -53,28 +54,33 @@ class TextViewer(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: list = []
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    result: Any = self.input_data(0, args)
-                    if isinstance(result, ak.Array):
-                        result.show(200, 100)
-                    else:
-                        # result: list = self.input_data(0, args)
-                        print(
-                            "Domain size: " + str(len(self.input_data(0, args))) + "->",
-                            [str(input_item) for input_item in self.input_data(0, args)]
-                        )
-                        self._is_dirty: bool = False
+                    try:
+                        result: Any = self.input_data(0, args)
+                        if isinstance(result, ak.Array):
+                            result.show(200, 100)
+                        else:
+                            # result: list = self.input_data(0, args)
+                            print(
+                                "Domain size: " + str(len(self.input_data(0, args))) + "->",
+                                [str(input_item) for input_item in self.input_data(0, args)]
+                            )
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Text viewer executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]

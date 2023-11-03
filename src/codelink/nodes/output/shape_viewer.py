@@ -23,6 +23,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
 
 # noinspection PyUnresolvedReferences
 import FreeCAD as App
@@ -67,42 +68,47 @@ class ShapeViewer(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    shapes: list = self.input_data(0, args)
-                    if hasattr(Gui, "ActiveDocument"):
-                        flat_shapes: list = [shape for shape in flatten(shapes) if len(shape.Vertexes) > 0]
-                        if len(flat_shapes) > 0:
-                            if self._compound_name == "":
-                                compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
-                                self._compound_name: str = compound_obj.Name
-                            else:
-                                if App.ActiveDocument.getObject(self._compound_name) is not None:
-                                    compound_obj = App.ActiveDocument.getObject(self._compound_name)
-                                else:
+                    try:
+                        shapes: list = self.input_data(0, args)
+                        if hasattr(Gui, "ActiveDocument"):
+                            flat_shapes: list = [shape for shape in flatten(shapes) if len(shape.Vertexes) > 0]
+                            if len(flat_shapes) > 0:
+                                if self._compound_name == "":
                                     compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
+                                    self._compound_name: str = compound_obj.Name
+                                else:
+                                    if App.ActiveDocument.getObject(self._compound_name) is not None:
+                                        compound_obj = App.ActiveDocument.getObject(self._compound_name)
+                                    else:
+                                        compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
 
-                            compound_obj.Shape = Part.makeCompound(flat_shapes)
-                            compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
-                            App.activeDocument().recompute()
-                        else:
-                            self.on_remove()
+                                compound_obj.Shape = Part.makeCompound(flat_shapes)
+                                compound_obj.setPropertyStatus("Shape", ["Transient", "Output"])
+                                App.activeDocument().recompute()
+                            else:
+                                self.on_remove()
 
-                    self._is_dirty: bool = False
-                    result: list = shapes
+                        result: list = shapes
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Shape viewer executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]
 
     def on_remove(self):
         if hasattr(Gui, "ActiveDocument") and self._compound_name != "":
