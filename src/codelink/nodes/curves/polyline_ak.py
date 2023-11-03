@@ -97,12 +97,7 @@ class PolylineAk(NodeItem):
         positions: list[FreeCAD.Vector] = [FreeCAD.Vector(pos) for pos in positions]
 
         if type(positions) == list and len(positions) > 1:
-            segments = []
-            for i in range(len(positions)):
-                if i + 1 < len(positions):
-                    segments.append(Part.LineSegment(positions[i], positions[i + 1]))
-
-            return Part.Wire(Part.Shape(segments).Edges)
+            return Part.makePolygon(positions)
         else:
             return Part.Shape()
 
