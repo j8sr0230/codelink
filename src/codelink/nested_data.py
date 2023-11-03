@@ -70,7 +70,7 @@ def main() -> None:
 	res: NestedData = NestedData(data=new_data, structure=new_struct)
 
 	print(res)
-	# res.structure.show()
+	res.structure.show()
 
 
 if __name__ == "__main__":
