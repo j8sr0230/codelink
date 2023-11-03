@@ -56,21 +56,21 @@ def main() -> None:
 	)
 
 	stop: NestedData = NestedData(
-		data=[1e6, 2e6],
+		data=[5, 10],
 		structure=ak.Array([0, 1])
 	)
 
 	step: NestedData = NestedData(
-		data=[1],
-		structure=ak.Array([0])
+		data=[1, 2],
+		structure=ak.Array([0, 1])
 	)
 
 	flat_params, new_struct = nd_zip(start, stop, step)
 	new_data: list[np.ndarray] = list(map(lambda param: np.arange(param[0], param[1], param[2]), flat_params))
 	res: NestedData = NestedData(data=new_data, structure=new_struct)
 
-	print(res.data)
-	res.structure.show()
+	print(res)
+	# res.structure.show()
 
 
 if __name__ == "__main__":
