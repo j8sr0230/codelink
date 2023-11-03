@@ -1,6 +1,7 @@
 from typing import Any, Optional
 
 import awkward as ak
+import numpy as np
 
 
 class NestedData:
@@ -31,53 +32,45 @@ class NestedData:
 		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
 
 
-def nd_zip(*args):
-	structure_dict: dict[Any] = {str(idx): item.structure for idx, item in enumerate(args)}
+def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
+	structure_dict: dict[str, Any] = {str(idx): item.structure for idx, item in enumerate(args)}
 	structure_zip: ak.Array = ak.zip(structure_dict)
-	structure_zip.show()
 
-	flat_structure_lists: list[ak.Array] = [ak.flatten(structure_zip[key], axis=None) for key in structure_dict]
-	flat_structure_tuples: list[tuple[int, int]] = ak.to_list(ak.zip(flat_structure_lists))
+	new_structure: ak.Array = structure_zip[structure_zip.fields[0]]
 
-	for structure_tuple in flat_structure_tuples:
-		print(
-			[structure_zip[str(key)][index] for key, index in enumerate(structure_tuple)]
-		)
+	flat_structure_lists: list[ak.Array] = [ak.flatten(structure_zip[key], axis=None) for key in structure_zip.fields]
+	flat_structure_zip: ak.Array = ak.zip(flat_structure_lists)
 
-	# (structure_zip[key][idx] for key, idx in enumerate(structure_tuple))
+	flat_param_list: list[list[Any, ...]] = [
+		[args[key].data[index] for key, index in enumerate(structure_tuple)]
+		for structure_tuple in flat_structure_zip.to_list()
+	]
+
+	return flat_param_list, new_structure
 
 
 def main() -> None:
-	a: NestedData = NestedData(
-		data=[100, "Apple", {"x": 1, "y": 2, "z": 3}],
+	start: NestedData = NestedData(
+		data=[0, 1, 2],
 		structure=ak.Array([0, [1, 2]])
 	)
 
-	b: NestedData = NestedData(
-		data=[200, "Test"],
+	stop: NestedData = NestedData(
+		data=[1e6, 2e6],
 		structure=ak.Array([0, 1])
 	)
 
-	print(a)
-	print(b)
-	print()
+	step: NestedData = NestedData(
+		data=[1],
+		structure=ak.Array([0])
+	)
 
-	res_structure: ak.Array = ak.zip({"a": a.structure, "b": b.structure})
-	res_structure.show()
-	print()
+	flat_params, new_struct = nd_zip(start, stop, step)
+	new_data: list[np.ndarray] = list(map(lambda param: np.arange(param[0], param[1], param[2]), flat_params))
+	res: NestedData = NestedData(data=new_data, structure=new_struct)
 
-	a_flat: ak.Array = ak.flatten(res_structure.a, axis=None)
-	b_flat: ak.Array = ak.flatten(res_structure.b, axis=None)
-
-	res_flat: ak.Array = ak.zip([a_flat, b_flat])
-	res_flat.show()
-	print()
-
-	params: list[tuple[Any, Any]] = [(a.data[ak.to_list(item)[0]], b.data[ak.to_list(item)[1]]) for item in res_flat]
-	print(params)
-	print()
-
-	nd_zip(a, b)
+	print(res.data)
+	res.structure.show()
 
 
 if __name__ == "__main__":
