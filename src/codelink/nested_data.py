@@ -31,6 +31,15 @@ class NestedData:
 		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
 
 
+def nd_zip(*args):
+	structure_dict: dict[Any] = {str(idx): item.structure for idx, item in enumerate(args)}
+	structure_zip: ak.Array = ak.zip(structure_dict)
+	print(structure_zip)
+
+	# a_flat: ak.Array = ak.flatten(res_structure.a, axis=None)
+	# b_flat: ak.Array = ak.flatten(res_structure.b, axis=None)
+
+
 def main() -> None:
 	a: NestedData = NestedData(
 		data=[100, "Apple", {"x": 1, "y": 2, "z": 3}],
@@ -60,6 +69,9 @@ def main() -> None:
 	params: list[tuple[Any, Any]] = [(a.data[ak.to_list(item)[0]], b.data[ak.to_list(item)[1]]) for item in res_flat]
 	print(params)
 
+	nd_zip(a, b)
+
 
 if __name__ == "__main__":
 	main()
+
