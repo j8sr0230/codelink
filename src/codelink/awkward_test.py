@@ -99,7 +99,7 @@ from utils import flatten, flatten_nested_list, simplify, simplify_nested_list, 
 # (t + p).show()
 
 print("Original")
-o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [17, [[np.arange(0, 1e7, 1).tolist()]]], 99, []]
+o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [17, [[np.arange(0, 1e1, 1).tolist()]]], 99, []]
 # print(o)
 print()
 

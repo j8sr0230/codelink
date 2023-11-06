@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 from collections.abc import Iterable
+from collections import deque
 from typing import Callable, Union, Any
 
 import numpy as np
@@ -83,18 +84,21 @@ def flatten(nested_list: Iterable) -> Iterable:
     return flattened
 
 
-def flatten_nested_list(nested_list: list[Any]) -> list[Any]:
-    result: list[Any] = []
-    stack: list[Any] = nested_list[:]
+def flatten_nested_list(nested_list):
+    result = []
+    stack = [iter(nested_list)]
 
     while stack:
-        current: Any = stack.pop()
-        if isinstance(current, list):
-            stack.extend(current)
-        else:
-            result.append(current)
+        for item in stack[-1]:
+            if isinstance(item, list):
+                stack.append(iter(item))
+                break
+            else:
+                result.append(item)
+        else:  # no break
+            stack.pop()
 
-    return result[::-1]
+    return result
 
 
 def simplify_nested_list(nested_list: list[Any]) -> list[Any]:
