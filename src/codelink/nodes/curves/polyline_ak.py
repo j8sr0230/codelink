@@ -35,6 +35,7 @@ import Part
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import map_last_level, map_objects, broadcast_data_tree, ListWrapper
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -93,11 +94,12 @@ class PolylineAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_polyline(positions: list[tuple[float, float, float]]) -> Part.Shape:
-        positions: list[FreeCAD.Vector] = [FreeCAD.Vector(pos) for pos in positions]
+    def make_polyline(parameter_zip: tuple) -> Part.Shape:
+        positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
+        is_cyclic: bool = parameter_zip[1]
 
         if type(positions) == list and len(positions) > 1:
-            return Part.makePolygon(positions)
+            return Part.makePolygon(positions, is_cyclic)
         else:
             return Part.Shape()
 
@@ -109,17 +111,18 @@ class PolylineAk(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        # cyclic: bool = False
-                        # if self._option_box.currentText() == "Cyclic":
-                        #     cyclic: bool = True
+                        cyclic: bool = False
+                        if self._option_box.currentText() == "Cyclic":
+                            cyclic: bool = True
 
                         positions: ak.Array = self.input_data(0, args)
+                        positions: list[tuple] = ak.zip([positions.x, positions.y, positions.z]).to_list()
+                        positions: list = list(map_objects(positions, tuple, FreeCAD.Vector))
+                        wrapped_positions: list = list(map_last_level([positions], FreeCAD.Vector, ListWrapper))
+                        print(wrapped_positions)
 
-                        flat_positions_lists: list[ak.Array] = [ak.flatten(positions[key], axis=None) for key in
-                                                                positions.fields]
-                        flat_positions_zip: ak.Array = ak.zip(flat_positions_lists)
-
-                        result: list[Part.Shape] = [self.make_polyline(flat_positions_zip.to_list())]
+                        data_tree: list = list(broadcast_data_tree(wrapped_positions, [cyclic]))
+                        result: list = list(map_objects(data_tree, tuple, self.make_polyline))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

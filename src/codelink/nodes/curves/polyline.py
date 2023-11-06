@@ -94,21 +94,16 @@ class Polyline(NodeItem):
         positions: list[FreeCAD.Vector] = parameter_zip[0].wrapped_data
         is_cyclic: bool = parameter_zip[1]
 
-        # if type(positions) == list and len(positions) > 1:
-        #     segments = []
-        #     for i in range(len(positions)):
-        #         if i + 1 < len(positions):
-        #             segments.append(Part.LineSegment(positions[i], positions[i + 1]))
-        #
-        #     if is_cyclic:
-        #         segments.append(Part.LineSegment(positions[-1], positions[0]))
-        #
-        #     return Part.Wire(Part.Shape(segments).Edges)
-        # else:
-        #     return Part.Shape()
-
         if type(positions) == list and len(positions) > 1:
-            return Part.makePolygon(positions, is_cyclic)
+            segments = []
+            for i in range(len(positions)):
+                if i + 1 < len(positions):
+                    segments.append(Part.LineSegment(positions[i], positions[i + 1]))
+
+            if is_cyclic:
+                segments.append(Part.LineSegment(positions[-1], positions[0]))
+
+            return Part.Wire(Part.Shape(segments).Edges)
         else:
             return Part.Shape()
 
