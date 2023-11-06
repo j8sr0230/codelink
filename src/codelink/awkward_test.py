@@ -99,7 +99,7 @@ from utils import flatten, flatten_nested_list, simplify, simplify_nested_list, 
 # (t + p).show()
 
 print("Original")
-o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [17, [[np.arange(0, 1e1, 1).tolist()]]], 99, []]
+o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [17, [[np.arange(0, 1e7, 1).tolist()]]], 99, []]
 # print(o)
 print()
 
@@ -161,14 +161,14 @@ res: list[Any] = map_nested_list(square, o)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-print(res)
+# print(res)
 
 start = time.perf_counter()
 res: list[Any] = map_objects(o, int | float, square)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-print(res)
+# print(res)
 print()
 
 print("Map last")
@@ -177,11 +177,11 @@ res: list[Any] = map_last_nesting_level(np.sum, o)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-print(res)
+# print(res)
 
 start = time.perf_counter()
 res: list[Any] = map_last_level(o, int | float, np.sum)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-print(res)
+# print(res)
