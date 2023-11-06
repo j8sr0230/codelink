@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 from collections.abc import Iterable
-from typing import Callable, Union
+from typing import Callable, Union, Any
 
 import numpy as np
 import awkward as ak
@@ -81,6 +81,37 @@ def flatten(nested_list: Iterable) -> Iterable:
         else:
             flattened.append(item)
     return flattened
+
+
+def flatten_it(nested_list: list[Any]) -> list[Any]:
+    result: list[Any] = []
+    stack: list[Any] = nested_list[:]
+
+    while stack:
+        current: Any = stack.pop()
+        if isinstance(current, list):
+            stack.extend(current)
+        else:
+            result.append(current)
+
+    return result[::-1]
+
+
+def simplify_it(nested_list: list[Any]) -> list[Any]:
+    result: list[Any] = []
+    stack: list[Any] = nested_list[:]
+
+    while stack:
+        current: Any = stack.pop()
+        if isinstance(current, list):
+            if not all([isinstance(i, list) for i in current]):
+                result.append(current)
+            else:
+                stack.extend(current)
+        else:
+            result.append(current)
+
+    return result[::-1]
 
 
 def simplify(nested_list: Iterable) -> Iterable:
