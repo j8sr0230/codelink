@@ -115,15 +115,7 @@ def simplify_nested_list(nested_list: list[Any]) -> list[Any]:
 
 
 def graft_nested_list(nested_list: list[Any]) -> list[Any]:
-    result: list[Any] = []
-    current_list: list[Any] = nested_list[:]
-
-    for item in current_list:
-        if isinstance(item, list):
-            result.append(graft_nested_list(item))
-        else:
-            result.append([item])
-    return result
+    return [graft_nested_list(item) if isinstance(item, list) else [item] for item in nested_list]
 
 
 def map_nested_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
