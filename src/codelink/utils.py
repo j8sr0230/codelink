@@ -83,7 +83,7 @@ def flatten(nested_list: Iterable) -> Iterable:
     return flattened
 
 
-def flatten_it(nested_list: list[Any]) -> list[Any]:
+def flatten_nested_list(nested_list: list[Any]) -> list[Any]:
     result: list[Any] = []
     stack: list[Any] = nested_list[:]
 
@@ -97,7 +97,7 @@ def flatten_it(nested_list: list[Any]) -> list[Any]:
     return result[::-1]
 
 
-def simplify_it(nested_list: list[Any]) -> list[Any]:
+def simplify_nested_list(nested_list: list[Any]) -> list[Any]:
     result: list[Any] = []
     stack: list[Any] = nested_list[:]
 
@@ -112,6 +112,35 @@ def simplify_it(nested_list: list[Any]) -> list[Any]:
             result.append(current)
 
     return result[::-1]
+
+
+def graft_nested_list(nested_list: list[Any]) -> list[Any]:
+    result: list[Any] = []
+    current_list: list[Any] = nested_list[:]
+
+    for item in current_list:
+        if isinstance(item, list):
+            result.append(graft_nested_list(item))
+        else:
+            result.append([item])
+    return result
+
+
+def map_nested_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
+    if isinstance(nested_list, list):
+        return [map_nested_list(callback, item) for item in nested_list]
+    else:
+        return callback(nested_list)
+
+
+def map_last_nesting_level(callback: Callable, nested_list: list[Any]) -> list[Any]:
+    if isinstance(nested_list, list):
+        if all(not isinstance(item, list) for item in nested_list):
+            return callback(nested_list)
+        else:
+            return [map_last_nesting_level(callback, sub_list) for sub_list in nested_list]
+    else:
+        return nested_list
 
 
 def simplify(nested_list: Iterable) -> Iterable:

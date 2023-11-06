@@ -31,7 +31,8 @@ import numpy as np
 import FreeCAD
 import Part
 
-from utils import flatten, flatten_it, simplify, simplify_it
+from utils import flatten, flatten_nested_list, simplify, simplify_nested_list, graft, graft_nested_list, \
+    map_nested_list, map_objects, map_last_nesting_level, map_last_level
 
 
 # def vector_add(a, b):
@@ -98,13 +99,13 @@ from utils import flatten, flatten_it, simplify, simplify_it
 # (t + p).show()
 
 print("Original")
-o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [Part.makeBox(10, 10, 10), [[np.arange(0, 1e6, 1).tolist()]]], 99, []]
+o: list = [0, [[[100, 200, 300]]], 300, [[[200]]], [17, [[np.arange(0, 1e6, 1).tolist()]]], 99, []]
 # print(o)
 print()
 
 print("Flatten")
 start = time.perf_counter()
-res_0: list[Any] = flatten_it(o)
+res_0: list[Any] = flatten_nested_list(o)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
@@ -120,7 +121,7 @@ print()
 
 print("Simplify")
 start = time.perf_counter()
-res: list[Any] = simplify_it(o)
+res: list[Any] = simplify_nested_list(o)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
@@ -133,3 +134,54 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 # print(res)
 print()
+
+print("Graft")
+start = time.perf_counter()
+res: list[Any] = graft_nested_list(o)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
+
+start = time.perf_counter()
+res: Iterable = graft(o)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
+print()
+
+
+def square(x):
+    return x * x
+
+
+print("Map")
+start = time.perf_counter()
+res: list[Any] = map_nested_list(square, o)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
+
+start = time.perf_counter()
+res: list[Any] = map_objects(o, int | float, square)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
+
+print("Map last")
+start = time.perf_counter()
+res: list[Any] = map_last_nesting_level(np.sum, o)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
+
+start = time.perf_counter()
+res: list[Any] = map_last_level(o, int | float, np.sum)
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+# print(res)
