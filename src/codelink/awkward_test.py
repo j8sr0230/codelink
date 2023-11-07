@@ -30,7 +30,7 @@ import FreeCAD
 import Part
 
 from utils import flatten, flatten_it, simplify, simplify_it, graft, graft_re, \
-    map_re, map_objects, map_last_re, map_last_level
+    map_re, map_objects, map_last_re, map_last_level, ListWrapper
 from nested_data import NestedData
 
 
@@ -177,6 +177,7 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 print()
 
+print("Map last level")
 # t: ak.Array = ak.Array(
 #     [
 #         [
@@ -193,12 +194,11 @@ print()
 #     ]
 # )
 
-x: np.ndarray = np.arange(0, 1e1)
-y: list = [[0, 10]]
+x: np.ndarray = np.arange(0, 1e2)
+y: list = [np.arange(0, 1e3)]
 z: list = [0]
 
 t = ak.zip({"x": x, "y": y, "z": z})
-
 # t.show()
 
 start = time.perf_counter()
@@ -225,3 +225,27 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
 print("Data length:", len(new_nested.data))
+print(new_nested.structure)
+Part.show(Part.makeCompound(new_nested.data))
+print()
+
+
+def make_polyline(data: ListWrapper) -> Part.Shape:
+    pos: list[FreeCAD.Vector] = data.wrapped_data
+    return Part.makePolygon(pos, False)
+
+
+positions: list = ak.zip([t.x, t.y, t.z]).to_list()
+
+positions: list = list(map_objects(positions, tuple, FreeCAD.Vector))
+# print(positions)
+
+start = time.perf_counter()
+
+wrapped_positions: list = list(map_last_level(positions, FreeCAD.Vector, ListWrapper))
+result: list = list(map_objects(wrapped_positions, ListWrapper, make_polyline))
+
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+print("Data length:", len(result))
