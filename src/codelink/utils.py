@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 from collections.abc import Iterable
-from collections import deque
 from typing import Callable, Union, Any
 
 import numpy as np
@@ -45,6 +44,70 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
         cropped_text: str = cropped_text[:len(text)]
 
     return cropped_text
+
+
+def flatten_it(nested_list):
+    result = []
+    stack = [iter(nested_list)]
+
+    while stack:
+        for item in stack[-1]:
+            if isinstance(item, list):
+                stack.append(iter(item))
+                break
+            else:
+                result.append(item)
+        else:  # no break
+            stack.pop()
+
+    return result
+
+
+def simplify_it(nested_list: list[Any]) -> list[Any]:
+    result: list[Any] = []
+    stack: list[Any] = nested_list[:]
+
+    while stack:
+        current: Any = stack.pop()
+        if isinstance(current, list):
+            if not all([isinstance(i, list) for i in current]):
+                result.append(current)
+            else:
+                stack.extend(current)
+        else:
+            result.append(current)
+
+    return result[::-1]
+
+
+def simplify_ak(nested_array: ak.Array) -> ak.Array:
+    min_max_depth: tuple[int, int] = nested_array.layout.minmax_depth
+    if min_max_depth[0] > 0:
+        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
+        for nesting_axis in reversed_nesting_axes:
+            nested_array = ak.flatten(nested_array, axis=nesting_axis)
+    return nested_array
+
+
+def graft_re(nested_list: list[Any]) -> list[Any]:
+    return [graft_re(item) if isinstance(item, list) else [item] for item in nested_list]
+
+
+def map_re(callback: Callable, nested_list: list[Any]) -> list[Any]:
+    if isinstance(nested_list, list):
+        return [map_re(callback, item) for item in nested_list]
+    else:
+        return callback(nested_list)
+
+
+def map_last_re(callback: Callable, nested_list: list[Any]) -> list[Any]:
+    if isinstance(nested_list, list):
+        if all(not isinstance(item, list) for item in nested_list):
+            return callback(nested_list)
+        else:
+            return [map_last_re(callback, sub_list) for sub_list in nested_list]
+    else:
+        return nested_list
 
 
 def _zip_nested(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
@@ -84,61 +147,6 @@ def flatten(nested_list: Iterable) -> Iterable:
     return flattened
 
 
-def flatten_nested_list(nested_list):
-    result = []
-    stack = [iter(nested_list)]
-
-    while stack:
-        for item in stack[-1]:
-            if isinstance(item, list):
-                stack.append(iter(item))
-                break
-            else:
-                result.append(item)
-        else:  # no break
-            stack.pop()
-
-    return result
-
-
-def simplify_nested_list(nested_list: list[Any]) -> list[Any]:
-    result: list[Any] = []
-    stack: list[Any] = nested_list[:]
-
-    while stack:
-        current: Any = stack.pop()
-        if isinstance(current, list):
-            if not all([isinstance(i, list) for i in current]):
-                result.append(current)
-            else:
-                stack.extend(current)
-        else:
-            result.append(current)
-
-    return result[::-1]
-
-
-def graft_nested_list(nested_list: list[Any]) -> list[Any]:
-    return [graft_nested_list(item) if isinstance(item, list) else [item] for item in nested_list]
-
-
-def map_nested_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
-    if isinstance(nested_list, list):
-        return [map_nested_list(callback, item) for item in nested_list]
-    else:
-        return callback(nested_list)
-
-
-def map_last_nesting_level(callback: Callable, nested_list: list[Any]) -> list[Any]:
-    if isinstance(nested_list, list):
-        if all(not isinstance(item, list) for item in nested_list):
-            return callback(nested_list)
-        else:
-            return [map_last_nesting_level(callback, sub_list) for sub_list in nested_list]
-    else:
-        return nested_list
-
-
 def simplify(nested_list: Iterable) -> Iterable:
     """Simplifies an arbitrary nested iterable to the minimal nesting level.
 
@@ -166,15 +174,6 @@ def simplify(nested_list: Iterable) -> Iterable:
 
     res.reverse()
     return res
-
-
-def simplify_ak(nested_array: ak.Array) -> ak.Array:
-    min_max_depth: tuple[int, int] = nested_array.layout.minmax_depth
-    if min_max_depth[0] > 0:
-        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
-        for nesting_axis in reversed_nesting_axes:
-            nested_array = ak.flatten(nested_array, axis=nesting_axis)
-    return nested_array
 
 
 def graft(nested_list: Iterable) -> Iterable:
