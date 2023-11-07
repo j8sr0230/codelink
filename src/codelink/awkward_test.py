@@ -192,17 +192,18 @@ print()
 #     ]
 # )
 
-x: np.ndarray = np.arange(0, 1e1)
+x: np.ndarray = np.arange(0, 1e6)
 y: list = [[0, 1]]
 z: list = [0]
 
 t = ak.zip({"x": x, "y": y, "z": z})
 
-t.show()
+# t.show()
 
 start = time.perf_counter()
 
 ones: ak.Array = ak.ones_like(t.x)
+
 # print("Depth", ones.layout.minmax_depth)
 # print("Num", ak.num(ones, axis=1))
 # print("Ndim", ones.ndim)
@@ -240,7 +241,7 @@ end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-print("Flat data:", polylines)
-print("Data length:", len(polylines))
-print("New structure:")
-ak.sum(ones).show()
+# print("Flat data:", polylines)
+# print("Data length:", len(polylines))
+# print("New structure:")
+# ak.firsts(ones).show()
