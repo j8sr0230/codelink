@@ -173,3 +173,46 @@ map_last_level(o, float, np.sum)
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
+print()
+
+t: ak.Array = ak.Array(
+    [
+        [
+            [
+                [[
+                    {"x": 0., "y": 0., "z": 0.}, {"x": 1., "y": 0., "z": 0.}
+                ]]
+            ],
+            [
+                {"x": 0., "y": 1., "z": 0.}, {"x": 1., "y": 1., "z": 0.}, {"x": 2., "y": 1., "z": 0.},
+
+            ]
+        ]
+    ]
+)
+
+t.show()
+
+ones: ak.Array = ak.ones_like(t.x)
+ones.show()
+print("Depth", ones.layout.minmax_depth)
+print("Num", ak.num(ones, axis=2))
+nums: ak.Array = ak.Array(map_last_re(sum, ones.to_list()))
+nums_int = ak.values_astype(nums, "int64")
+nums_int.show()
+
+template: ak.Array = ak.unflatten(ak.flatten(ones, axis=None), counts=ak.flatten(nums_int, axis=None))
+template.show()
+
+# num: ak.Array = ak.count(ones, axis=-1)
+# num.show()
+
+indizes: ak.Array = ak.local_index(ones)
+indizes.show()
+
+flat_indizes: ak.Array = ak.flatten(indizes, axis=None)
+flat_indizes.show()
+
+splitter: ak.Array = ak.Array(np.where(flat_indizes == 0)[0])
+splitter.show()
+splitter[1:].show()
