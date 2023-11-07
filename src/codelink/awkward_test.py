@@ -30,7 +30,7 @@ import FreeCAD
 import Part
 
 from utils import flatten, flatten_it, simplify, simplify_it, graft, graft_re, \
-    map_re, map_objects, map_last_re, map_last_level, ListWrapper
+    map_re, map_objects, map_last_re, map_last_level
 from nested_data import NestedData
 
 
@@ -230,22 +230,21 @@ Part.show(Part.makeCompound(new_nested.data))
 print()
 
 
-def make_polyline(data: ListWrapper) -> Part.Shape:
-    pos: list[FreeCAD.Vector] = data.wrapped_data
-    return Part.makePolygon(pos, False)
+def make_polyline(data: list[FreeCAD.Vector]) -> Part.Shape:
+    return Part.makePolygon(data, False)
 
 
 positions: list = ak.zip([t.x, t.y, t.z]).to_list()
 
-positions: list = list(map_objects(positions, tuple, FreeCAD.Vector))
+positions: list = map_re(FreeCAD.Vector, positions)
 # print(positions)
 
 start = time.perf_counter()
 
-wrapped_positions: list = list(map_last_level(positions, FreeCAD.Vector, ListWrapper))
-result: list = list(map_objects(wrapped_positions, ListWrapper, make_polyline))
+polyline: list = map_last_re(make_polyline, positions)
+# result: list = list(map_objects(wrapped_positions, ListWrapper, make_polyline))
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
-print("Data length:", len(result))
+print("Data length:", len(polyline))
