@@ -248,3 +248,4 @@ end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 print("Data length:", len(polyline))
+print(graft_re(polyline))
