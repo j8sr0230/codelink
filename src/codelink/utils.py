@@ -127,7 +127,7 @@ def zip_nested(nested_lists: list) -> list:
     return _zip_nested(nested_data_template, flat_data)
 
 
-def flatten(nested_list: Iterable) -> Iterable:
+def flatten(nested_list: list[Any]) -> list[Any]:
     """Flattens an arbitrary nested iterable.
 
     This function flattens an arbitrary nested list by concatenating all nested items.
@@ -140,14 +140,14 @@ def flatten(nested_list: Iterable) -> Iterable:
 
     flattened: list = []
     for item in nested_list:
-        if isinstance(item, Iterable):
+        if isinstance(item, list):
             flattened.extend(flatten(item))
         else:
             flattened.append(item)
     return flattened
 
 
-def simplify(nested_list: Iterable) -> Iterable:
+def simplify(nested_list: list[Any]) -> list[Any]:
     """Simplifies an arbitrary nested iterable to the minimal nesting level.
 
     Flattens an iterable, but it leaves a minimal nesting. This is i.e. for vector sockets, where one usually does
@@ -164,8 +164,8 @@ def simplify(nested_list: Iterable) -> Iterable:
     copy: list = nested_list[:]
     while copy:
         entry: list = copy.pop()
-        if isinstance(entry, Iterable):
-            if len(list(entry)) > 0 and not all([isinstance(i, Iterable) for i in entry]):
+        if isinstance(entry, list):
+            if len(list(entry)) > 0 and not all([isinstance(i, list) for i in entry]):
                 res.append(entry)
             else:
                 copy.extend(entry)
@@ -176,7 +176,7 @@ def simplify(nested_list: Iterable) -> Iterable:
     return res
 
 
-def graft(nested_list: Iterable) -> Iterable:
+def graft(nested_list: Iterable) -> list[Any]:
     """Grafts each atomic element into its own list.
 
     This function adds a level of nesting by inserting each atomic object of an iterable into its own list.
@@ -184,12 +184,12 @@ def graft(nested_list: Iterable) -> Iterable:
     iterable.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :return: Grafted list
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
-    if isinstance(nested_list, Iterable):
+    if isinstance(nested_list, list):
         if len(list(nested_list)) == 3 and all([isinstance(i, float) for i in nested_list]):
             # Vectors with three components
             return [nested_list]
@@ -203,19 +203,19 @@ def graft(nested_list: Iterable) -> Iterable:
         return [nested_list]
 
 
-def graft_topology(nested_list: Iterable) -> Iterable:
+def graft_topology(nested_list: list[Any]) -> list[Any]:
     """Grafts each atomic element (lists of nesting level 1) into its own list.
 
     This function basically performs a graft operation, that considers lists with a nesting level 1 as atomic objects.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :return: Grafted list
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
-    if isinstance(nested_list, Iterable):
-        if not all([isinstance(i, Iterable) for i in nested_list]):
+    if isinstance(nested_list, list):
+        if not all([isinstance(i, list) for i in nested_list]):
             # Nesting level 1
             return [nested_list]
         else:
@@ -228,47 +228,47 @@ def graft_topology(nested_list: Iterable) -> Iterable:
         return nested_list
 
 
-def unwrap(nested_list: Iterable) -> Iterable:
+def unwrap(nested_list: list[Any]) -> list[Any]:
     """Unwraps a nested iterable.
 
     This function removes one pair of square brackets from a nested list if possible.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :return: Unwrapped list
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
     return list(nested_list)[0] if len(list(nested_list)) == 1 else nested_list
 
 
-def wrap(nested_list: Iterable) -> Iterable:
+def wrap(nested_list: list[Any]) -> list[Any]:
     """Wraps a nested iterable.
 
     This function adds one pair of square brackets to a nested list.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :return: Unwrapped list
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
     return [nested_list]
 
 
-def map_objects(nested_list: Iterable, object_type: type, callback: Callable) -> Iterable:
+def map_objects(nested_list: list[Any], object_type: type, callback: Callable) -> list[Any]:
     """Applies a callback function to each data_type item of a nested input list.
 
     This function creates a list with evaluated data_type objects and the nested structure of the input list.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :param object_type: Only elements with this data type are evaluated by the callback function.
     :type object_type: type
     :param callback: Function that performs some action to each data_type element.
     :type callback: 'function'
     :return: Nested list with evaluated data_type objects.
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
     if isinstance(nested_list, list):
@@ -281,20 +281,20 @@ def map_objects(nested_list: Iterable, object_type: type, callback: Callable) ->
             return callback(nested_list)
 
 
-def map_last_level(nested_list: Iterable, object_type: type, callback: Callable) -> Iterable:
+def map_last_level(nested_list: list[Any], object_type: type, callback: Callable) -> list[Any]:
     """Applies a callback function to every penultimate level of a nested list.
 
     This function evaluates every penultimate level of a list containing only object_type elements with the specified
     callback function and returns a list with the nested structure of the input list.
 
     :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: Iterable
+    :type nested_list: list[Any]
     :param object_type: Only penultimate list levels contain object_type items are evaluated
     :type object_type: type
     :param callback: Function that performs some action to each penultimate list level
     :type callback: 'function'
     :return: Nested list with evaluated penultimate list levels
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
     if isinstance(nested_list, list):
@@ -307,7 +307,7 @@ def map_last_level(nested_list: Iterable, object_type: type, callback: Callable)
             return temp_list
 
 
-def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
+def broadcast_data_tree(*socket_inputs: list[Any]) -> list[Any]:
     """Broadcast any number of socket inputs against each other.
 
     Like NumPy's broadcast_arrays function, this function returns the socket inputs, duplicating elements if necessary
@@ -315,9 +315,9 @@ def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
     with element arrays and increases the dimension.
 
     :param socket_inputs: Arbitrary nested socket inputs
-    :type socket_inputs: Iterable
+    :type socket_inputs: list[Any]
     :return: Broadcasted zipped socket inputs as list of tuples
-    :rtype: Iterable
+    :rtype: list[Any]
     """
 
     # for socket_input in socket_inputs:
@@ -339,7 +339,7 @@ def broadcast_data_tree(*socket_inputs: Iterable) -> Iterable:
             [flatten_inputs[input_idx][input_elem.wrapped_data] for input_idx, input_elem in enumerate(idx_tuple)]
         )
 
-    broadcasted_input_zip: Iterable = map_objects(wrapped_idx_zip, tuple, index_to_obj)
+    broadcasted_input_zip: list[Any] = map_objects(wrapped_idx_zip, tuple, index_to_obj)
     return broadcasted_input_zip
 
 

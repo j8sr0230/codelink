@@ -94,36 +94,36 @@ class ValueLineAk(SocketWidget):
 
 		return result
 
-	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
-		if self.socket_options_state()[0]:  # Flatten
-			input_data: ak.Array = ak.flatten(input_data, axis=None)
-
-		if self.socket_options_state()[1]:  # Simplify
-			input_data: ak.Array = ak.Array(simplify_ak(input_data))
-
-		if self.socket_options_state()[2]:  # Graft
-			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
-			else:
-				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
-
-		if self.socket_options_state()[3]:  # Graft Topo
-			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
-			else:
-				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
-
-		if self.socket_options_state()[4]:  # Unwrap
-			min_depth: int = input_data.layout.minmax_depth[0]
-			if min_depth > 1:
-				input_data: ak.Array = ak.flatten(input_data, axis=1)
-
-		if self.socket_options_state()[5]:  # Wrap
-			input_data: ak.Array = ak.Array(ak.contents.ListOffsetArray(
-				content=ak.to_layout(input_data), offsets=ak.index.Index64([0, ak.num(input_data, axis=0)])
-			))
-
-		return input_data
+	# def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
+	# 	if self.socket_options_state()[0]:  # Flatten
+	# 		input_data: ak.Array = ak.flatten(input_data, axis=None)
+	#
+	# 	if self.socket_options_state()[1]:  # Simplify
+	# 		input_data: ak.Array = ak.Array(simplify_ak(input_data))
+	#
+	# 	if self.socket_options_state()[2]:  # Graft
+	# 		if input_data.layout.minmax_depth[0] == 1:
+	# 			input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
+	# 		else:
+	# 			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=ak.count(input_data, axis=-1))
+	#
+	# 	# if self.socket_options_state()[3]:  # Graft Topo
+	# 	# 	if input_data.layout.minmax_depth[0] == 1:
+	# 	# 		input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
+	# 	# 	else:
+	# 	# 		input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
+	#
+	# 	if self.socket_options_state()[3]:  # Unwrap
+	# 		min_depth: int = input_data.layout.minmax_depth[0]
+	# 		if min_depth > 1:
+	# 			input_data: ak.Array = ak.flatten(input_data, axis=1)
+	#
+	# 	if self.socket_options_state()[4]:  # Wrap
+	# 		input_data: ak.Array = ak.Array(ak.contents.ListOffsetArray(
+	# 			content=ak.to_layout(input_data), offsets=ak.index.Index64([0, ak.num(input_data, axis=0)])
+	# 		))
+	#
+	# 	return input_data
 
 	# --------------- Callbacks ---------------
 

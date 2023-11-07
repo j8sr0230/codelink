@@ -21,13 +21,12 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 import warnings
 import importlib
 import inspect
 
 import awkward as ak
-import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
@@ -36,8 +35,7 @@ import Part
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_last_level
-from nested_data import NestedData
+from utils import map_last_level, map_re
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -46,6 +44,7 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+    from collections.abc import Iterable
 
 
 class PolylineAk(NodeItem):
@@ -95,6 +94,10 @@ class PolylineAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
+    @staticmethod
+    def make_polyline(ctr_pts: list[FreeCAD.Vector]) -> Part.Shape:
+        return Part.makePolygon(ctr_pts, False)
+
     def eval_0(self, *args) -> list:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
@@ -107,27 +110,13 @@ class PolylineAk(NodeItem):
                         if self._option_box.currentText() == "Cyclic":
                             is_cyclic: bool = True
 
-                        positions: ak.Array = self.input_data(0, args)
+                        pos: ak.Array = self.input_data(0, args)
+                        pos: list[Any] = ak.zip([pos.x, pos.y, pos.z]).to_list()
 
-                        data_shape: ak.Array = ak.ones_like(positions.x)
-                        nested_indices: ak.Array = ak.local_index(data_shape)
-                        flat_indices: ak.Array = ak.flatten(nested_indices, axis=None)
-                        cutter: np.ndarray = np.where(np.append(flat_indices, 0) == 0)[0]
-                        list_offsets: np.ndarray = np.diff(cutter)
-
-                        x_data: ak.Array = ak.unflatten(ak.flatten(positions.x, axis=None), counts=list_offsets)
-                        y_data: ak.Array = ak.unflatten(ak.flatten(positions.y, axis=None), counts=list_offsets)
-                        z_data: ak.Array = ak.unflatten(ak.flatten(positions.z, axis=None), counts=list_offsets)
-
-                        last_level_zip: list[list[tuple]] = ak.zip([x_data, y_data, z_data]).to_list()
-                        last_level_vec: list[list[FreeCAD.Vector]] = [
-                            [FreeCAD.Vector(vec) for vec in last_level] for last_level in last_level_zip
-                        ]
-
-                        data: list[Part.Shape] = [Part.makePolygon(last_level, is_cyclic) for last_level in
-                                                  last_level_vec]
-                        structure: ak.Array = ak.Array(map_last_level(data_shape.to_list(), float, min))
-                        result: NestedData = NestedData(data, structure)
+                        ctrl_pts: list = map_re(FreeCAD.Vector, pos)
+                        result: Iterable = map_last_level(
+                            ctrl_pts, FreeCAD.Vector, lambda pts: Part.makePolygon(pts, is_cyclic)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

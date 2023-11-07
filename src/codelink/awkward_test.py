@@ -98,7 +98,7 @@ p: ak.Array = ak.Array([0])
 (t + p).show()
 
 print("Original")
-o: list = [0, [[[100., 200., 300.]]], 300., [[[200.]]], [17., [[np.arange(0., 1e5, 1.).tolist()]]], 99., []]
+o: list = [0, [[[100., 200., 300.]]], 300., [[[200.]]], [17., [[np.arange(0., 1e4, 1.).tolist()]]], 99., []]
 # print(o)
 print()
 
@@ -199,7 +199,7 @@ y = [0, 1]
 z = [0]
 
 t = ak.zip({"x": x, "y": y, "z": z})
-t.show()
+# t.show()
 
 start = time.perf_counter()
 
@@ -229,11 +229,10 @@ end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-print("Data length:", len(new_nested.data))
-print(new_nested.structure)
+# print("Data length:", len(new_nested.data))
+# print(new_nested.structure)
 
 Part.show(Part.makeCompound(new_nested.data))
-print()
 
 
 def make_polyline(data: list[FreeCAD.Vector]) -> Part.Shape:
@@ -253,5 +252,5 @@ end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-print("Data length:", len(polyline))
-print(polyline)
+# print("Data length:", len(polyline))
+# print(polyline)

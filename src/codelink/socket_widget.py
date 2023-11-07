@@ -27,7 +27,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from utils import flatten, simplify, graft, graft_topology, unwrap, wrap
+from utils import flatten_it, simplify_it, graft_re, unwrap, wrap
 from property_model import PropertyModel
 from pin_item import PinItem
 
@@ -103,10 +103,10 @@ class SocketWidget(QtWidgets.QWidget):
         self._graft_action.setChecked(False)
         cast(QtCore.SignalInstance, self._graft_action.triggered).connect(self.on_socket_action)
 
-        self._graft_topo_action: QtWidgets.QAction = QtWidgets.QAction("Graft Topo", self)
-        self._graft_topo_action.setCheckable(True)
-        self._graft_topo_action.setChecked(False)
-        cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(self.on_socket_action)
+        # self._graft_topo_action: QtWidgets.QAction = QtWidgets.QAction("Graft Topo", self)
+        # self._graft_topo_action.setCheckable(True)
+        # self._graft_topo_action.setChecked(False)
+        # cast(QtCore.SignalInstance, self._graft_topo_action.triggered).connect(self.on_socket_action)
 
         self._unwrap_action: QtWidgets.QAction = QtWidgets.QAction("Unwrap", self)
         self._unwrap_action.setCheckable(True)
@@ -168,8 +168,8 @@ class SocketWidget(QtWidgets.QWidget):
     # --------------- Socket data ---------------
 
     def socket_actions(self) -> list[QtWidgets.QAction]:
-        return [self._flatten_action, self._simplify_action, self._graft_action, self._graft_topo_action,
-                self._unwrap_action,  self._wrap_action]
+        return [self._flatten_action, self._simplify_action, self._graft_action, self._unwrap_action,
+                self._wrap_action]
 
     def socket_options_state(self) -> list[bool]:
         return [action.isChecked() for action in self.socket_actions()]
@@ -195,18 +195,21 @@ class SocketWidget(QtWidgets.QWidget):
 
     def perform_socket_operation(self, input_data: list) -> list:
         if self.socket_options_state()[0]:  # Flatten
-            input_data: list = list(flatten(input_data))
+            # input_data: list = list(flatten(input_data))
+            input_data: list = flatten_it(input_data)
         if self.socket_options_state()[1]:  # Simplify
-            input_data: list = list(simplify(input_data))
+            # input_data: list = list(simplify(input_data))
+            input_data: list = simplify_it(input_data)
         if self.socket_options_state()[2]:  # Graft
-            input_data: list = list(graft(input_data))
-        if self.socket_options_state()[3]:  # Graft Topo
-            input_data: list = list(graft_topology(input_data))
-        if self.socket_options_state()[4]:  # Unwrap
+            # input_data: list = list(graft(input_data))
+            input_data: list = graft_re(input_data)
+        # if self.socket_options_state()[3]:  # Graft Topo
+        #     input_data: list = graft_topology(input_data)
+        if self.socket_options_state()[3]:  # Unwrap
             if type(unwrap(input_data)) == list:
-                input_data: list = list(unwrap(input_data))
-        if self.socket_options_state()[5]:  # Wrap
-            input_data: list = list(wrap(input_data))
+                input_data: list = unwrap(input_data)
+        if self.socket_options_state()[4]:  # Wrap
+            input_data: list = wrap(input_data)
         return input_data
 
     # --------------- Callbacks ---------------
@@ -249,7 +252,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._flatten_action.setChecked(bool(self._prop_model.properties["Flatten"]))
         self._simplify_action.setChecked(bool(self._prop_model.properties["Simplify"]))
         self._graft_action.setChecked(bool(self._prop_model.properties["Graft"]))
-        self._graft_topo_action.setChecked(bool(self._prop_model.properties["Graft Topo"]))
+        # self._graft_topo_action.setChecked(bool(self._prop_model.properties["Graft Topo"]))
         self._unwrap_action.setChecked(bool(self._prop_model.properties["Unwrap"]))
         self._wrap_action.setChecked(bool(self._prop_model.properties["Wrap"]))
 
