@@ -192,7 +192,7 @@ print()
 #     ]
 # )
 
-x: np.ndarray = np.arange(0, 1e6)
+x: np.ndarray = np.arange(0, 1e4)
 y: list = [[0, 1]]
 z: list = [0]
 
@@ -228,6 +228,7 @@ y_data: ak.Array = ak.unflatten(ak.flatten(t.y, axis=None), counts=last_level_le
 z_data: ak.Array = ak.unflatten(ak.flatten(t.z, axis=None), counts=last_level_length)
 
 last_level_zip: list[list[tuple[float, float, float]]] = ak.to_list(ak.zip([x_data, y_data, z_data]))
+# last_level_zip[0]
 # print(last_level_zip)
 
 last_level_vectors: list[list[FreeCAD.Vector]] = [
