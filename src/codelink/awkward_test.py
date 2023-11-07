@@ -178,32 +178,33 @@ print(f"Elapsed: {ms:.03f} milliseconds.")
 print()
 
 print("Map last level")
-# t: ak.Array = ak.Array(
-#     [
-#         [
-#             [
-#                 [[
-#                     [{"x": 0., "y": 0., "z": 0.}, {"x": 1., "y": 0., "z": 0.}]
-#                 ]]
-#             ],
-#             [
-#                 {"x": 0., "y": 1., "z": 0.}, {"x": 1., "y": 1., "z": 0.}, {"x": 2., "y": 1., "z": 0.},
+t: ak.Array = ak.Array(
+    [
+        [
+            [
+                [[
+                    [{"x": 0., "y": 0., "z": 0.}, {"x": 1., "y": 0., "z": 0.}]
+                ]]
+            ],
+            [
+                {"x": 0., "y": 1., "z": 0.}, {"x": 1., "y": 1., "z": 0.}, {"x": 2., "y": 1., "z": 0.},
+
+            ]
+        ]
+    ]
+)
+
+# x: np.ndarray = [[np.arange(0, 1e2)]]
+# y: list = [0, 1]
+# z: list = [0]
 #
-#             ]
-#         ]
-#     ]
-# )
-
-x: np.ndarray = np.arange(0, 1e2)
-y: list = [np.arange(0, 1e3)]
-z: list = [0]
-
-t = ak.zip({"x": x, "y": y, "z": z})
+# t = ak.zip({"x": x, "y": y, "z": z})
 # t.show()
 
 start = time.perf_counter()
 
 ones: ak.Array = ak.ones_like(t.x)
+ones.show()
 indices: ak.Array = ak.local_index(ones)
 flat_indices: ak.Array = ak.flatten(indices, axis=None)
 splitter: np.ndarray = np.where(np.append(flat_indices, 0) == 0)[0]
@@ -213,39 +214,42 @@ x_data: ak.Array = ak.unflatten(ak.flatten(t.x, axis=None), counts=last_level_le
 y_data: ak.Array = ak.unflatten(ak.flatten(t.y, axis=None), counts=last_level_length)
 z_data: ak.Array = ak.unflatten(ak.flatten(t.z, axis=None), counts=last_level_length)
 
-last_level_zip: list[list[tuple[float, float, float]]] = ak.to_list(ak.zip([x_data, y_data, z_data]))
+last_level_zip: list[list[tuple[float, float, float]]] = ak.zip([x_data, y_data, z_data]).to_list()
+
 last_level_vectors: list[list[FreeCAD.Vector]] = [
     [FreeCAD.Vector(vec) for vec in last_level] for last_level in last_level_zip
 ]
-polylines: list[Part.Shape] = [Part.makePolygon(last_level, False) for last_level in last_level_vectors]
-new_nested: NestedData = NestedData(polylines, ak.firsts(ones))
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
+
+polylines: list[Part.Shape] = [Part.makePolygon(last_level, False) for last_level in last_level_vectors]
+new_nested: NestedData = NestedData(polylines, ak.firsts(ones))
+# ak.firsts(ones, axis=-1).show()
 
 print("Data length:", len(new_nested.data))
 print(new_nested.structure)
-Part.show(Part.makeCompound(new_nested.data))
-print()
+# Part.show(Part.makeCompound(new_nested.data))
+# print()
 
 
-def make_polyline(data: list[FreeCAD.Vector]) -> Part.Shape:
-    return Part.makePolygon(data, False)
-
-
-positions: list = ak.zip([t.x, t.y, t.z]).to_list()
-
-positions: list = map_re(FreeCAD.Vector, positions)
-# print(positions)
-
-start = time.perf_counter()
-
-polyline: list = map_last_re(make_polyline, positions)
-# result: list = list(map_objects(wrapped_positions, ListWrapper, make_polyline))
-
-end = time.perf_counter()
-ms = (end - start) * 10 ** 3
-print(f"Elapsed: {ms:.03f} milliseconds.")
-print("Data length:", len(polyline))
-print(graft_re(polyline))
+# def make_polyline(data: list[FreeCAD.Vector]) -> Part.Shape:
+#     return Part.makePolygon(data, False)
+#
+#
+# start = time.perf_counter()
+#
+# positions: ak.Array = ak.zip([t.x, t.y, t.z])
+# positions: list = map_re(FreeCAD.Vector, positions.to_list())
+# # print(positions)
+#
+# polyline: list = map_last_re(make_polyline, positions)
+# # result: list = list(map_objects(wrapped_positions, ListWrapper, make_polyline))
+#
+# end = time.perf_counter()
+# ms = (end - start) * 10 ** 3
+# print(f"Elapsed: {ms:.03f} milliseconds.")
+#
+# print("Data length:", len(polyline))
+# print(graft_re(polyline))
