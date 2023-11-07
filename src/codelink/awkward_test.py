@@ -27,6 +27,7 @@ import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
+import Part
 
 from utils import flatten, flatten_it, simplify, simplify_it, graft, graft_re, \
     map_re, map_objects, map_last_re, map_last_level
@@ -175,44 +176,69 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 print()
 
-t: ak.Array = ak.Array(
-    [
-        [
-            [
-                [[
-                    {"x": 0., "y": 0., "z": 0.}, {"x": 1., "y": 0., "z": 0.}
-                ]]
-            ],
-            [
-                {"x": 0., "y": 1., "z": 0.}, {"x": 1., "y": 1., "z": 0.}, {"x": 2., "y": 1., "z": 0.},
+# t: ak.Array = ak.Array(
+#     [
+#         [
+#             [
+#                 [[
+#                     [{"x": 0., "y": 0., "z": 0.}, {"x": 1., "y": 0., "z": 0.}]
+#                 ]]
+#             ],
+#             [
+#                 {"x": 0., "y": 1., "z": 0.}, {"x": 1., "y": 1., "z": 0.}, {"x": 2., "y": 1., "z": 0.},
+#
+#             ]
+#         ]
+#     ]
+# )
 
-            ]
-        ]
-    ]
-)
+x: np.ndarray = np.arange(0, 10)
+y: list = [0]
+z: list = [0]
 
-t.show()
+t = ak.zip({"x": x, "y": y, "z": z})
+
+# t.show()
+
+start = time.perf_counter()
 
 ones: ak.Array = ak.ones_like(t.x)
-ones.show()
-print("Depth", ones.layout.minmax_depth)
-print("Num", ak.num(ones, axis=2))
-nums: ak.Array = ak.Array(map_last_re(sum, ones.to_list()))
-nums_int = ak.values_astype(nums, "int64")
-nums_int.show()
+# print("Depth", ones.layout.minmax_depth)
+# print("Num", ak.num(ones, axis=1))
+# print("Ndim", ones.ndim)
+# print("Form type", ones.layout.form.type)
+# ones.show()
+# print()
 
-template: ak.Array = ak.unflatten(ak.flatten(ones, axis=None), counts=ak.flatten(nums_int, axis=None))
-template.show()
+indices: ak.Array = ak.local_index(ones)
+# indices.show()
 
-# num: ak.Array = ak.count(ones, axis=-1)
-# num.show()
+flat_indices: ak.Array = ak.flatten(indices, axis=None)
+# flat_indices.show()
 
-indizes: ak.Array = ak.local_index(ones)
-indizes.show()
+splitter: np.ndarray = np.where(np.append(flat_indices, 0) == 0)[0]
+# print("Splitter", splitter)
 
-flat_indizes: ak.Array = ak.flatten(indizes, axis=None)
-flat_indizes.show()
+last_level_length: np.ndarray = np.diff(splitter)
+# print("Lengths", last_level_length)
 
-splitter: ak.Array = ak.Array(np.where(flat_indizes == 0)[0])
-splitter.show()
-splitter[1:].show()
+x_data: ak.Array = ak.unflatten(ak.flatten(t.x, axis=None), counts=last_level_length)
+y_data: ak.Array = ak.unflatten(ak.flatten(t.y, axis=None), counts=last_level_length)
+z_data: ak.Array = ak.unflatten(ak.flatten(t.z, axis=None), counts=last_level_length)
+
+last_level_zip: list[list[tuple[float, float, float]]] = ak.to_list(ak.zip([x_data, y_data, z_data]))
+# print(last_level_zip)
+
+last_level_vectors: list[list[FreeCAD.Vector]] = [
+    [FreeCAD.Vector(vec) for vec in last_level] for last_level in last_level_zip
+]
+# print(last_level_vectors)
+
+polylines: list[Part.Shape] = [Part.makePolygon(last_level, False) for last_level in last_level_vectors]
+
+end = time.perf_counter()
+ms = (end - start) * 10 ** 3
+print(f"Elapsed: {ms:.03f} milliseconds.")
+
+print("Flat data:", polylines)
+print("New structure:", ones.tolist())
