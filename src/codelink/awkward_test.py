@@ -192,13 +192,13 @@ print()
 #     ]
 # )
 
-x: np.ndarray = np.arange(0, 10)
-y: list = [0]
+x: np.ndarray = np.arange(0, 1e1)
+y: list = [[0, 1]]
 z: list = [0]
 
 t = ak.zip({"x": x, "y": y, "z": z})
 
-# t.show()
+t.show()
 
 start = time.perf_counter()
 
@@ -241,4 +241,6 @@ ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
 print("Flat data:", polylines)
-print("New structure:", ones.tolist())
+print("Data length:", len(polylines))
+print("New structure:")
+ak.sum(ones).show()
