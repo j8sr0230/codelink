@@ -31,6 +31,7 @@ import Part
 
 from utils import flatten, flatten_it, simplify, simplify_it, graft, graft_re, \
     map_re, map_objects, map_last_re, map_last_level
+from nested_data import NestedData
 
 
 def vector_add(a, b):
@@ -192,8 +193,8 @@ print()
 #     ]
 # )
 
-x: np.ndarray = np.arange(0, 1e4)
-y: list = [[0, 1]]
+x: np.ndarray = np.arange(0, 1e1)
+y: list = [[0, 10]]
 z: list = [0]
 
 t = ak.zip({"x": x, "y": y, "z": z})
@@ -203,46 +204,24 @@ t = ak.zip({"x": x, "y": y, "z": z})
 start = time.perf_counter()
 
 ones: ak.Array = ak.ones_like(t.x)
-
-# print("Depth", ones.layout.minmax_depth)
-# print("Num", ak.num(ones, axis=1))
-# print("Ndim", ones.ndim)
-# print("Form type", ones.layout.form.type)
-# ones.show()
-# print()
-
 indices: ak.Array = ak.local_index(ones)
-# indices.show()
-
 flat_indices: ak.Array = ak.flatten(indices, axis=None)
-# flat_indices.show()
-
 splitter: np.ndarray = np.where(np.append(flat_indices, 0) == 0)[0]
-# print("Splitter", splitter)
-
 last_level_length: np.ndarray = np.diff(splitter)
-# print("Lengths", last_level_length)
 
 x_data: ak.Array = ak.unflatten(ak.flatten(t.x, axis=None), counts=last_level_length)
 y_data: ak.Array = ak.unflatten(ak.flatten(t.y, axis=None), counts=last_level_length)
 z_data: ak.Array = ak.unflatten(ak.flatten(t.z, axis=None), counts=last_level_length)
 
 last_level_zip: list[list[tuple[float, float, float]]] = ak.to_list(ak.zip([x_data, y_data, z_data]))
-# last_level_zip[0]
-# print(last_level_zip)
-
 last_level_vectors: list[list[FreeCAD.Vector]] = [
     [FreeCAD.Vector(vec) for vec in last_level] for last_level in last_level_zip
 ]
-# print(last_level_vectors)
-
 polylines: list[Part.Shape] = [Part.makePolygon(last_level, False) for last_level in last_level_vectors]
+new_nested: NestedData = NestedData(polylines, ak.firsts(ones))
 
 end = time.perf_counter()
 ms = (end - start) * 10 ** 3
 print(f"Elapsed: {ms:.03f} milliseconds.")
 
-# print("Flat data:", polylines)
-# print("Data length:", len(polylines))
-# print("New structure:")
-# ak.firsts(ones).show()
+print("Data length:", len(new_nested.data))
