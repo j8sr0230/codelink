@@ -36,6 +36,7 @@ import Part
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import map_last_level
 from nested_data import NestedData
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -125,7 +126,7 @@ class PolylineAk(NodeItem):
 
                         data: list[Part.Shape] = [Part.makePolygon(last_level, is_cyclic) for last_level in
                                                   last_level_vec]
-                        structure: ak.Array = ak.firsts(data_shape)
+                        structure: ak.Array = ak.Array(map_last_level(data_shape.to_list(), float, min))
                         result: NestedData = NestedData(data, structure)
 
                         self._is_dirty: bool = False
