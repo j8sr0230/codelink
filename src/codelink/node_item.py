@@ -756,9 +756,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 is_flatten=socket_widget_dict["Properties"]["Flatten"],
                 is_simplify=socket_widget_dict["Properties"]["Simplify"],
                 is_graft=socket_widget_dict["Properties"]["Graft"],
-                is_graft_topo=socket_widget_dict["Properties"]["Graft Topo"],
-                is_unwrap=socket_widget_dict["Properties"]["Unwrap"],
-                is_wrap=socket_widget_dict["Properties"]["Wrap"],
                 parent_node=self
             )
             new_socket_widget.is_input = bool(socket_widget_dict["Is Input"])

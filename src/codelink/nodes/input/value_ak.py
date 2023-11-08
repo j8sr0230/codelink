@@ -25,6 +25,8 @@ from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
 
+import awkward as ak
+
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
@@ -58,8 +60,7 @@ class ValueAk(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        value_in: list = self.input_data(0, args)
-                        result: list = value_in
+                        result: ak.Array = self.input_data(0, args)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

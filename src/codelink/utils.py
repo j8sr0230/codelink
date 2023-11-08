@@ -203,31 +203,6 @@ def graft(nested_list: Iterable) -> list[Any]:
         return [nested_list]
 
 
-def graft_topology(nested_list: list[Any]) -> list[Any]:
-    """Grafts each atomic element (lists of nesting level 1) into its own list.
-
-    This function basically performs a graft operation, that considers lists with a nesting level 1 as atomic objects.
-
-    :param nested_list: Arbitrary nested input (data structure)
-    :type nested_list: list[Any]
-    :return: Grafted list
-    :rtype: list[Any]
-    """
-
-    if isinstance(nested_list, list):
-        if not all([isinstance(i, list) for i in nested_list]):
-            # Nesting level 1
-            return [nested_list]
-        else:
-            temp_list: list = []
-            for sub_list in nested_list:
-                temp_list.append(graft_topology(sub_list))
-            return temp_list
-    else:
-        # Default atomic item, i.e. int, float, str, ...
-        return nested_list
-
-
 def unwrap(nested_list: list[Any]) -> list[Any]:
     """Unwraps a nested iterable.
 

@@ -29,8 +29,8 @@ import numpy as np
 import FreeCAD
 import Part
 
-from utils import flatten, flatten_it, simplify, simplify_it, graft, graft_re, \
-    map_re, map_objects, map_last_re, map_last_level
+from utils import (flatten, flatten_it, simplify, simplify_it, graft, graft_re, map_re, map_objects, map_last_re,
+                   map_last_level)
 from nested_data import NestedData
 
 
