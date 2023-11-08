@@ -474,6 +474,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
             if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
+                nesting_levels: list[int] = [item.layout.minmax_depth[0] for item in args[socket_index]]
+                print(nesting_levels)
+
                 socket_data: ak.Array = ak.concatenate(args[socket_index])
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
