@@ -24,7 +24,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 import awkward as ak
-import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
