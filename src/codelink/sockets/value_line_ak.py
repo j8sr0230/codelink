@@ -100,10 +100,7 @@ class ValueLineAk(SocketWidget):
 			input_data: ak.Array = ak.Array(simplify_ak(input_data))
 
 		if self.socket_options_state()[2]:  # Graft
-			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
-			else:
-				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=ak.count(input_data, axis=-1))
+			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
 		return input_data
 
