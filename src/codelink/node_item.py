@@ -469,15 +469,24 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Data processing methods ---------------
 
-    def input_data(self, socket_index: int, args) -> Union[list, ak.Array]:
+    def input_data(self, socket_index: int, args: tuple[Any, ...]) -> Union[list, ak.Array]:
         socket_data: Union[list, ak.Array] = []
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
             if len(args[socket_index]) > 1 and all([type(item) == ak.Array for item in args[socket_index]]):
-                nesting_levels: list[int] = [item.layout.minmax_depth[0] for item in args[socket_index]]
-                print(nesting_levels)
+                nesting_depths: list[int] = [item.layout.minmax_depth[1] for item in args[socket_index]]
+                max_depth: int = max(nesting_depths)
 
-                socket_data: ak.Array = ak.concatenate(args[socket_index])
+                regular_inputs: list[ak.Array] = []
+                for item in args[socket_index]:
+                    while item.layout.minmax_depth[1] < max_depth:
+                        item: ak.Array = ak.Array(ak.contents.ListOffsetArray(
+                            content=ak.to_layout(item), offsets=ak.index.Index64([0, ak.num(item, axis=0)])
+                        ))
+                        item: ak.Array = ak.to_regular(item)
+                    regular_inputs.append(item)
+                socket_data: ak.Array = ak.concatenate(regular_inputs)
+
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
 

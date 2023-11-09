@@ -30,7 +30,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
+from utils import map_re
 from node_item import NodeItem
 from sockets.value_line_ak import ValueLineAk
 
@@ -63,7 +63,7 @@ class RangeAk(NodeItem):
         step: float = parameter_zip[2]
         return np.arange(start, stop, step)
 
-    def eval_socket_0(self, *args) -> list:
+    def eval_socket_0(self, *args) -> ak.Array:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -71,16 +71,17 @@ class RangeAk(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        start: ak.Array = ak.Array(self.input_data(0, args))
-                        stop: ak.Array = ak.Array(self.input_data(1, args))
-                        step: ak.Array = ak.Array(self.input_data(2, args))
+                        start: ak.Array = self.input_data(0, args)
+                        stop: ak.Array = self.input_data(1, args)
+                        step: ak.Array = self.input_data(2, args)
 
                         param_zip: list[tuple[float, float, float]] = ak.to_list(ak.zip([start, stop, step]))
-                        result: ak.Array = ak.Array(map_objects(param_zip, tuple, self.make_range))
+                        result: ak.Array = ak.Array(map_re(self.make_range, param_zip))
+                        result: ak.Array = ak.flatten(result, axis=-1)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        self._cache[cache_idx] = self.output_data(0, result.to_list())
+                        self._cache[cache_idx] = self.output_data(0, result)
                         print("Range executed")
 
                     except Exception as e:
