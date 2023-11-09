@@ -78,30 +78,18 @@ class VectorNoneAk(SocketWidget):
 
 	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
 		if self.socket_options_state()[0]:  # Flatten
-			# input_data: ak.Array = input_data
-
-			x = ak.flatten(input_data.x, axis=None)
-			y = ak.flatten(input_data.y, axis=None)
-			z = ak.flatten(input_data.z, axis=None)
+			x: ak.Array = ak.flatten(input_data.x, axis=None)
+			y: ak.Array = ak.flatten(input_data.y, axis=None)
+			z: ak.Array = ak.flatten(input_data.z, axis=None)
 			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
 		if self.socket_options_state()[1]:  # Simplify
-			min_depth_x: int = input_data.x.layout.minmax_depth[0]
-			if min_depth_x > 1:
-				x = ak.flatten(simplify_ak(input_data.x), axis=1)
-				y = ak.flatten(simplify_ak(input_data.y), axis=1)
-				z = ak.flatten(simplify_ak(input_data.z), axis=1)
-			else:
-				x = simplify_ak(input_data.x)
-				y = simplify_ak(input_data.y)
-				z = simplify_ak(input_data.z)
-
+			x: ak.Array = simplify_ak(input_data.x)
+			y: ak.Array = simplify_ak(input_data.y)
+			z: ak.Array = simplify_ak(input_data.z)
 			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
 		if self.socket_options_state()[2]:  # Graft
-			if input_data.layout.minmax_depth[0] == 1:
-				input_data: ak.Array = ak.Array(input_data[:, np.newaxis])
-			else:
-				input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
+			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
 		return input_data

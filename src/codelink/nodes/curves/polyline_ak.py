@@ -31,11 +31,11 @@ import awkward as ak
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
+import Points
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_last_level, map_re
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -44,7 +44,6 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
-    from collections.abc import Iterable
 
 
 class PolylineAk(NodeItem):
@@ -94,10 +93,6 @@ class PolylineAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def make_polyline(ctr_pts: list[FreeCAD.Vector]) -> Part.Shape:
-        return Part.makePolygon(ctr_pts, False)
-
     def eval_0(self, *args) -> list:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
@@ -111,12 +106,16 @@ class PolylineAk(NodeItem):
                             is_cyclic: bool = True
 
                         pos: ak.Array = self.input_data(0, args)
-                        pos: list[Any] = ak.zip([pos.x, pos.y, pos.z]).to_list()
+                        pos: list[Any] = ak.zip([
+                            ak.flatten(pos.x, axis=None),
+                            ak.flatten(pos.y, axis=None),
+                            ak.flatten(pos.z, axis=None)
+                        ]).to_list()
 
-                        ctrl_pts: list = map_re(FreeCAD.Vector, pos)
-                        result: Iterable = map_last_level(
-                            ctrl_pts, FreeCAD.Vector, lambda pts: Part.makePolygon(pts, is_cyclic)
-                        )
+                        ctrl_pts: Points.Points = Points.Points()
+                        ctrl_pts.addPoints(pos)
+
+                        result = Part.makePolygon(ctrl_pts.Points, is_cyclic)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

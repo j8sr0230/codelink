@@ -96,7 +96,7 @@ class ValueLineAk(SocketWidget):
 			input_data: ak.Array = ak.flatten(input_data, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			input_data: ak.Array = ak.Array(simplify_ak(input_data))
+			input_data: ak.Array = simplify_ak(input_data)
 
 		if self.socket_options_state()[2]:  # Graft
 			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)

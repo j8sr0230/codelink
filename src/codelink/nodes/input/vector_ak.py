@@ -30,7 +30,7 @@ import awkward as ak
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from sockets.value_line import ValueLine
+from sockets.value_line_ak import ValueLineAk
 from sockets.vector_none_ak import VectorNoneAk
 
 if TYPE_CHECKING:
@@ -46,9 +46,9 @@ class VectorAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
             VectorNoneAk(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
                          parent_node=self)
         ]
@@ -70,16 +70,7 @@ class VectorAk(NodeItem):
                         zipped_input: ak.Array = ak.zip({"x": x, "y": y, "z": z})
                         result: ak.Array = ak.Array(zipped_input)
 
-                        x_num: int = ak.num(ak.flatten(result.x, axis=None), axis=0)
-                        y_num: int = ak.num(ak.flatten(result.y, axis=None), axis=0)
-                        z_num: int = ak.num(ak.flatten(result.z, axis=None), axis=0)
-
-                        if not (x_num == y_num == z_num):
-                            self._is_dirty: bool = True
-                            result: ak.Array = ak.Array([{"x": 0, "y": 0, "z": 0}])
-                        else:
-                            self._is_dirty: bool = False
-
+                        self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
                         print("Vector executed")
