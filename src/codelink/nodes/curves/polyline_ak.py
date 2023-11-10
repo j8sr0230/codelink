@@ -21,17 +21,18 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 import warnings
 import importlib
 import inspect
 
 import awkward as ak
+import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
-import Points
+import Points  # noqa
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -106,16 +107,26 @@ class PolylineAk(NodeItem):
                             is_cyclic: bool = True
 
                         pos: ak.Array = self.input_data(0, args)
-                        pos: list[Any] = ak.zip([
-                            ak.flatten(pos.x, axis=None),
-                            ak.flatten(pos.y, axis=None),
-                            ak.flatten(pos.z, axis=None)
-                        ]).to_list()
 
-                        ctrl_pts: Points.Points = Points.Points()
-                        ctrl_pts.addPoints(pos)
+                        min_max_depth: tuple[int, int] = pos.layout.minmax_depth
+                        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
+                        for nesting_axis in reversed_nesting_axes:
+                            pos: ak.Array = ak.flatten(pos, axis=nesting_axis)
 
-                        result = Part.makePolygon(ctrl_pts.Points, is_cyclic)
+                        pos: ak.Array = ak.zip([pos.x, pos.y, pos.z])
+                        min_max_depth: tuple[int, int] = pos.layout.minmax_depth
+                        pos: list = ak.to_list(pos)
+
+                        result: list[Part.Shape] = []
+                        if min_max_depth[0] == 1:
+                            ctrl_pts: Points.Points = Points.Points()
+                            ctrl_pts.addPoints(pos)
+                            result.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
+                        else:
+                            for ctrl_pts_list in pos:
+                                ctrl_pts: Points.Points = Points.Points()
+                                ctrl_pts.addPoints(ctrl_pts_list)
+                                result.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
