@@ -67,7 +67,7 @@ class ShapeViewer(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> NestedData:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -75,12 +75,12 @@ class ShapeViewer(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        nested_data: list[NestedData] = self.input_data(0, args)
+                        nested_data: NestedData = self.input_data(0, args)
 
                         if hasattr(Gui, "ActiveDocument"):
-                            flat_shapes: list[Part.Shape] = []
-                            for item in nested_data:
-                                flat_shapes.extend(item.data)
+                            flat_shapes: list[Part.Shape] = nested_data.data  # []
+                            # for item in nested_data:
+                            #     flat_shapes.extend(item.data)
 
                             if len(flat_shapes) > 0 and len(flat_shapes[0].Vertexes) > 0:
                                 if self._compound_name == "":
@@ -98,7 +98,7 @@ class ShapeViewer(NodeItem):
                             else:
                                 self.on_remove()
 
-                        result: list[NestedData] = nested_data
+                        result: NestedData = nested_data
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

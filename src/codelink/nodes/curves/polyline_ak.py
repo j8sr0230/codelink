@@ -95,7 +95,7 @@ class PolylineAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list[NestedData]:
+    def eval_0(self, *args) -> NestedData:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -126,7 +126,7 @@ class PolylineAk(NodeItem):
                                 ctrl_pts.addPoints(ctrl_pts_list)
                                 flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
 
-                        result: list[NestedData] = [NestedData(data=flat_data, structure=data_structure)]
+                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

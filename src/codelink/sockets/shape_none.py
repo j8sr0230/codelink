@@ -59,8 +59,8 @@ class ShapeNone(SocketWidget):
 
 	# --------------- Socket data ---------------
 
-	def input_data(self) -> list[NestedData]:
-		result: list[NestedData] = []
+	def input_data(self) -> list:
+		result: list = []
 		if self._pin_item.has_edges():
 			for edge in self._pin_item.edges:
 				pre_node: NodeItem = edge.start_pin.parent_node
@@ -78,17 +78,14 @@ class ShapeNone(SocketWidget):
 
 		return result
 
-	def perform_socket_operation(self, input_data: list[NestedData]) -> list[NestedData]:
+	def perform_socket_operation(self, input_data: NestedData) -> NestedData:
 		if self.socket_options_state()[0]:  # Flatten
-			for item in input_data:
-				item.structure = ak.flatten(item.structure, axis=None)
+			input_data.structure = ak.flatten(input_data.structure, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			for item in input_data:
-				item.structure = simplify_ak(item.structure)
+			input_data.structure = simplify_ak(input_data.structure)
 
 		if self.socket_options_state()[2]:  # Graft
-			for item in input_data:
-				item.structure = ak.unflatten(item.structure, axis=-1, counts=1)
+			input_data.structure = ak.unflatten(input_data.structure, axis=-1, counts=1)
 
 		return input_data

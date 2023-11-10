@@ -34,6 +34,7 @@ import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
 from utils import crop_text, unwrap
+from nested_data import NestedData
 from property_model import PropertyModel
 from frame_item import FrameItem
 from sockets import *
@@ -469,7 +470,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
     # --------------- Data processing methods ---------------
 
-    def input_data(self, socket_index: int, args: tuple[Any, ...]) -> Union[list, ak.Array]:
+    def input_data(self, socket_index: int, args: tuple[Any, ...]) -> Union[list, ak.Array, NestedData]:
+        print(args[socket_index])
         socket_data: Union[list, ak.Array] = []
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
@@ -490,7 +492,27 @@ class NodeItem(QtWidgets.QGraphicsItem):
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
 
-            # Todo: List[NestedData] handling
+            # NestedData handling
+            elif len(args[socket_index]) > 1 and all([type(item) == NestedData for item in args[socket_index]]):
+                nesting_depths: list[int] = [item.structure.layout.minmax_depth[1] for item in args[socket_index]]
+                max_depth: int = max(nesting_depths)
+
+                regular_inputs: list[ak.Array] = []
+                for item in args[socket_index]:
+                    while item.structure.layout.minmax_depth[1] < max_depth:
+                        item.structure = ak.Array(ak.contents.ListOffsetArray(
+                            content=ak.to_layout(item.structure),
+                            offsets=ak.index.Index64([0, ak.num(item.structure, axis=0)])
+                        ))
+                        item.structure = ak.to_regular(item)
+                    regular_inputs.append(item.structure)
+                socket_data: NestedData = NestedData(
+                    data=[item.data for item in args[socket_index].data],
+                    structure=ak.concatenate(regular_inputs)
+                )
+
+            elif type(unwrap(args[socket_index])) == ak.Array:
+                socket_data: ak.Array = args[socket_index][0]
 
             # List handling
             elif len(args[socket_index]) > 1 and all([type(item) == list for item in args[socket_index]]):
