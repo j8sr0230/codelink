@@ -82,10 +82,9 @@ def simplify_it(nested_list: list[Any]) -> list[Any]:
 
 def simplify_ak(nested_array: ak.Array) -> ak.Array:
     min_max_depth: tuple[int, int] = nested_array.layout.minmax_depth
-    if min_max_depth[0] > 0:
-        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
-        for nesting_axis in reversed_nesting_axes:
-            nested_array = ak.flatten(nested_array, axis=nesting_axis)
+    reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
+    for nesting_axis in reversed_nesting_axes:
+        nested_array = ak.flatten(nested_array, axis=nesting_axis)
     return nested_array
 
 

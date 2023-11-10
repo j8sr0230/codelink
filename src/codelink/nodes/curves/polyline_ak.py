@@ -27,7 +27,6 @@ import importlib
 import inspect
 
 import awkward as ak
-import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
@@ -37,6 +36,7 @@ import Points  # noqa
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplify_ak
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -106,13 +106,7 @@ class PolylineAk(NodeItem):
                         if self._option_box.currentText() == "Cyclic":
                             is_cyclic: bool = True
 
-                        pos: ak.Array = self.input_data(0, args)
-
-                        min_max_depth: tuple[int, int] = pos.layout.minmax_depth
-                        reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
-                        for nesting_axis in reversed_nesting_axes:
-                            pos: ak.Array = ak.flatten(pos, axis=nesting_axis)
-
+                        pos: ak.Array = simplify_ak(self.input_data(0, args))
                         pos: ak.Array = ak.zip([pos.x, pos.y, pos.z])
                         min_max_depth: tuple[int, int] = pos.layout.minmax_depth
                         pos: list = ak.to_list(pos)
