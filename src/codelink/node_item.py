@@ -490,6 +490,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
             elif type(unwrap(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
 
+            # Todo: List[NestedData] handling
+
             # List handling
             elif len(args[socket_index]) > 1 and all([type(item) == list for item in args[socket_index]]):
                 socket_data: list = []

@@ -32,7 +32,7 @@ import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import flatten
+from nested_data import NestedData
 from node_item import NodeItem
 from sockets.shape_none import ShapeNone
 
@@ -75,10 +75,14 @@ class ShapeViewer(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        shapes: list = self.input_data(0, args)
+                        nested_data: list[NestedData] = self.input_data(0, args)
+
                         if hasattr(Gui, "ActiveDocument"):
-                            flat_shapes: list = [shape for shape in flatten(shapes) if len(shape.Vertexes) > 0]
-                            if len(flat_shapes) > 0:
+                            flat_shapes: list[Part.Shape] = []
+                            for item in nested_data:
+                                flat_shapes.extend(item.data)
+
+                            if len(flat_shapes) > 0 and len(flat_shapes[0].Vertexes) > 0:
                                 if self._compound_name == "":
                                     compound_obj = App.ActiveDocument.addObject("Part::Feature", "CViewer")
                                     self._compound_name: str = compound_obj.Name
@@ -94,7 +98,7 @@ class ShapeViewer(NodeItem):
                             else:
                                 self.on_remove()
 
-                        result: list = shapes
+                        result: list[NestedData] = nested_data
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

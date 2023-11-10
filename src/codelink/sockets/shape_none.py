@@ -23,6 +23,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 
+import awkward as ak
+
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
@@ -30,6 +32,8 @@ import Part
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from nested_data import NestedData
+from utils import simplify_ak
 from socket_widget import SocketWidget
 
 if TYPE_CHECKING:
@@ -55,8 +59,8 @@ class ShapeNone(SocketWidget):
 
 	# --------------- Socket data ---------------
 
-	def input_data(self) -> list:
-		result: list = []
+	def input_data(self) -> list[NestedData]:
+		result: list[NestedData] = []
 		if self._pin_item.has_edges():
 			for edge in self._pin_item.edges:
 				pre_node: NodeItem = edge.start_pin.parent_node
@@ -70,6 +74,21 @@ class ShapeNone(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(Part.Shape())
+			result.append(NestedData(data=[Part.Shape()], structure=ak.Array([1])))
 
 		return result
+
+	def perform_socket_operation(self, input_data: list[NestedData]) -> list[NestedData]:
+		if self.socket_options_state()[0]:  # Flatten
+			for item in input_data:
+				item.structure = ak.flatten(item.structure, axis=None)
+
+		if self.socket_options_state()[1]:  # Simplify
+			for item in input_data:
+				item.structure = simplify_ak(item.structure)
+
+		if self.socket_options_state()[2]:  # Graft
+			for item in input_data:
+				item.structure = ak.unflatten(item.structure, axis=-1, counts=1)
+
+		return input_data

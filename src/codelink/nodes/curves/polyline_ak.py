@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 import warnings
 import importlib
 import inspect
@@ -36,6 +36,7 @@ import Points  # noqa
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from nested_data import NestedData
 from utils import simplify_ak
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -94,7 +95,7 @@ class PolylineAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> list[NestedData]:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -106,21 +107,26 @@ class PolylineAk(NodeItem):
                         if self._option_box.currentText() == "Cyclic":
                             is_cyclic: bool = True
 
-                        pos: ak.Array = simplify_ak(self.input_data(0, args))
-                        pos: ak.Array = ak.zip([pos.x, pos.y, pos.z])
-                        min_max_depth: tuple[int, int] = pos.layout.minmax_depth
-                        pos: list = ak.to_list(pos)
+                        nested_vectors:  ak.Array = self.input_data(0, args)
+                        simple_vectors: ak.Array = simplify_ak(nested_vectors)
+                        simple_tuples: ak.Array = ak.zip([simple_vectors.x, simple_vectors.y, simple_vectors.z])
+                        simple_depth: tuple[int, int] = simple_tuples.layout.minmax_depth
+                        simple_list: list[Any] = ak.to_list(simple_tuples)
 
-                        result: list[Part.Shape] = []
-                        if min_max_depth[0] == 1:
+                        flat_data: list[Part.Shape] = []
+                        if simple_depth[0] == 1:
+                            data_structure: ak.Array = ak.Array([1])
                             ctrl_pts: Points.Points = Points.Points()
-                            ctrl_pts.addPoints(pos)
-                            result.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
+                            ctrl_pts.addPoints(simple_list)
+                            flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
                         else:
-                            for ctrl_pts_list in pos:
+                            data_structure: ak.Array = ak.max(ak.ones_like(nested_vectors.x), axis=-1)
+                            for ctrl_pts_list in simple_list:
                                 ctrl_pts: Points.Points = Points.Points()
                                 ctrl_pts.addPoints(ctrl_pts_list)
-                                result.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
+                                flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
+
+                        result: list[NestedData] = [NestedData(data=flat_data, structure=data_structure)]
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
