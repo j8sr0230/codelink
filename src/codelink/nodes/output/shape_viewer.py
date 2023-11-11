@@ -78,9 +78,7 @@ class ShapeViewer(NodeItem):
                         nested_data: NestedData = self.input_data(0, args)
 
                         if hasattr(Gui, "ActiveDocument"):
-                            flat_shapes: list[Part.Shape] = nested_data.data  # []
-                            # for item in nested_data:
-                            #     flat_shapes.extend(item.data)
+                            flat_shapes: list[Part.Shape] = nested_data.data
 
                             if len(flat_shapes) > 0 and len(flat_shapes[0].Vertexes) > 0:
                                 if self._compound_name == "":

@@ -31,7 +31,7 @@ from pivy import coin
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import flatten
+from nested_data import NestedData
 from node_item import NodeItem
 from sockets.coin_none import CoinNone
 
@@ -58,7 +58,7 @@ class CoinViewer(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> NestedData:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -66,25 +66,25 @@ class CoinViewer(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        coin_seps: list = self.input_data(0, args)
-                        flat_coin_seps: list = list(flatten(coin_seps))
+                        nested_data: NestedData = self.input_data(0, args)
 
-                        if len(flat_coin_seps) > 0:
-                            if hasattr(Gui, "ActiveDocument"):
-                                sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
+                        if hasattr(Gui, "ActiveDocument"):
+                            flat_coin_seps: list[coin.SoSeparator] = nested_data.data
+                            sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
 
-                                if self._coin_sep is not None:
-                                    sg.removeChild(self._coin_sep)
-                                    self._coin_sep: Optional[coin.SoSeparator] = None
+                            if self._coin_sep is not None:
+                                sg.removeChild(self._coin_sep)
+                                # self._coin_sep: Optional[coin.SoSeparator] = None
 
-                                self._coin_sep: coin.SoSeparator = coin.SoSeparator()
-                                for child in flat_coin_seps:
-                                    self._coin_sep.addChild(child)
-                                sg.addChild(self._coin_sep)
+                            self._coin_sep: coin.SoSeparator = coin.SoSeparator()
+                            for child in flat_coin_seps:
+                                self._coin_sep.addChild(child)
+
+                            sg.addChild(self._coin_sep)
                         else:
                             self.on_remove()
 
-                        result: list = coin_seps
+                        result: NestedData = nested_data
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
