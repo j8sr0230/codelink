@@ -23,12 +23,16 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 
+import awkward as ak
+
 # noinspection PyPackageRequirements
 from pivy import coin
 
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplify_ak
+from nested_data import NestedData
 from socket_widget import SocketWidget
 
 if TYPE_CHECKING:
@@ -69,6 +73,18 @@ class CoinNone(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(coin.SoSeparator())
+			result.append(NestedData(data=[coin.SoSeparator()], structure=ak.Array([1])))
 
 		return result
+
+	def perform_socket_operation(self, input_data: NestedData) -> NestedData:
+		if self.socket_options_state()[0]:  # Flatten
+			input_data.structure = ak.flatten(input_data.structure, axis=None)
+
+		if self.socket_options_state()[1]:  # Simplify
+			input_data.structure = simplify_ak(input_data.structure)
+
+		if self.socket_options_state()[2]:  # Graft
+			input_data.structure = ak.unflatten(input_data.structure, axis=-1, counts=1)
+
+		return input_data

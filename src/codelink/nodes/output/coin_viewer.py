@@ -88,7 +88,7 @@ class CoinViewer(NodeItem):
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        self._cache[cache_idx] = result
+                        self._cache[cache_idx] = self.output_data(0, result)
                         print("Coin viewer executed")
 
                     except Exception as e:
