@@ -497,19 +497,20 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 nesting_depths: list[int] = [item.structure.layout.minmax_depth[1] for item in args[socket_index]]
                 max_depth: int = max(nesting_depths)
 
-                regular_inputs: list[ak.Array] = []
-                for item in args[socket_index]:
-                    while item.structure.layout.minmax_depth[1] < max_depth:
-                        item.structure = ak.Array(ak.contents.ListOffsetArray(
-                            content=ak.to_layout(item.structure),
-                            offsets=ak.index.Index64([0, ak.num(item.structure, axis=0)])
+                irregular_structure: list[ak.Array] = [ak.copy(item.structure) for item in args[socket_index]]
+                regular_structure: list[ak.Array] = []
+                for item in irregular_structure:
+                    while item.layout.minmax_depth[1] < max_depth:
+                        item = ak.Array(ak.contents.ListOffsetArray(
+                            content=ak.to_layout(item),
+                            offsets=ak.index.Index64([0, ak.num(item, axis=0)])
                         ))
-                        item.structure = ak.to_regular(item.structure)
-                    regular_inputs.append(item.structure)
+                        item = ak.to_regular(item)
+                    regular_structure.append(item)
 
-                semi_flat_data: list[list] = [item.data for item in args[socket_index]]
-                flat_data: list = list(chain(*semi_flat_data))
-                nested_structure: ak.Array = ak.concatenate(regular_inputs)
+                semi_flat_data: list[list[Any]] = [item.data for item in args[socket_index]]
+                flat_data: list[Any] = list(chain(*semi_flat_data))
+                nested_structure: ak.Array = ak.concatenate(regular_structure)
                 socket_data: NestedData = NestedData(data=flat_data, structure=nested_structure)
 
             elif type(unwrap(args[socket_index])) == NestedData:
