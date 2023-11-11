@@ -21,9 +21,10 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional, Any, cast
 import warnings
 import importlib
+import inspect
 
 import awkward as ak
 
@@ -35,6 +36,8 @@ from pivy import coin
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplify_ak
+from nested_data import NestedData
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -94,63 +97,72 @@ class PolylineCoinAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_polyline_sep(positions: ak.Array) -> list[coin.SoSeparator]:
-        flat_pos_array: ak.Array = ak.zip([
-            ak.flatten(positions.x, axis=None),
-            ak.flatten(positions.y, axis=None),
-            ak.flatten(positions.z, axis=None)
-        ])
+    def make_polyline_sep(ctr_pts: list[tuple], is_cyclic: bool = False) -> coin.SoSeparator:
+        if is_cyclic:
+            ctr_pts.append(ctr_pts[0])
 
-        pos_tuple: tuple = tuple(flat_pos_array.to_list())
+        polyline_sep: coin.SoSeparator = coin.SoSeparator()
 
-        if type(pos_tuple) == tuple and len(pos_tuple) > 1:
-            polyline_sep: coin.SoSeparator = coin.SoSeparator()
+        color: coin.SoBaseColor = coin.SoBaseColor()
+        color.rgb = (0, 0, 0)
+        polyline_sep.addChild(color)
 
-            color: coin.SoBaseColor = coin.SoBaseColor()
-            color.rgb = (0, 0, 0)
-            polyline_sep.addChild(color)
+        draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
+        draw_style.lineWidth = 1
+        polyline_sep.addChild(draw_style)
 
-            draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
-            draw_style.lineWidth = 1
-            polyline_sep.addChild(draw_style)
+        control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
+        control_pts.point.setValues(0, len(ctr_pts), ctr_pts)
+        polyline_sep.addChild(control_pts)
 
-            control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
-            control_pts.point.setValues(0, len(pos_tuple), pos_tuple)
-            polyline_sep.addChild(control_pts)
+        polyline: coin.SoLineSet = coin.SoLineSet()
+        polyline.numVertices = len(ctr_pts)
+        polyline_sep.addChild(polyline)
 
-            polyline: coin.SoLineSet = coin.SoLineSet()
-            polyline.numVertices = len(pos_tuple)
-            polyline_sep.addChild(polyline)
-
-            return [polyline_sep]
-
-        else:
-            return [coin.SoSeparator()]
+        return polyline_sep
 
     def eval_0(self, *args) -> list:
-        result: list = [coin.SoSeparator()]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    # cyclic: bool = False
-                    # if self._option_box.currentText() == "Cyclic":
-                    #     cyclic: bool = True
+                    try:
+                        is_cyclic: bool = False
+                        if self._option_box.currentText() == "Cyclic":
+                            is_cyclic: bool = True
 
-                    positions: ak.Array = self.input_data(0, args)
-                    result: list = self.make_polyline_sep(positions)
+                        nested_vectors: ak.Array = self.input_data(0, args)
+                        simple_vectors: ak.Array = simplify_ak(nested_vectors)
+                        simple_tuples: ak.Array = ak.zip([simple_vectors.x, simple_vectors.y, simple_vectors.z])
+                        simple_depth: tuple[int, int] = simple_tuples.layout.minmax_depth
+                        simple_list: list[Any] = ak.to_list(simple_tuples)
 
-                    self._is_dirty: bool = False
+                        flat_data: list[coin.SoSeparator] = []
+                        if simple_depth[0] == 1:
+                            data_structure: ak.Array = ak.Array([1])
+                            flat_data.append(self.make_polyline_sep(simple_list, is_cyclic))
+                        else:
+                            data_structure: ak.Array = ak.max(ak.ones_like(nested_vectors.x), axis=-1)
+                            for ctrl_pts_list in simple_list:
+                                flat_data.append(self.make_polyline_sep(ctrl_pts_list, is_cyclic))
 
-                except Exception as e:
+                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Polyline executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]
 
 # --------------- Serialization ---------------
 
