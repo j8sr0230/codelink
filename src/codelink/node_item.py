@@ -471,7 +471,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Data processing methods ---------------
 
     def input_data(self, socket_index: int, args: tuple[Any, ...]) -> Union[list, ak.Array, NestedData]:
-        print(args[socket_index])
+
         socket_data: Union[list, ak.Array] = []
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
@@ -511,8 +511,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     structure=ak.concatenate(regular_inputs)
                 )
 
-            elif type(unwrap(args[socket_index])) == ak.Array:
-                socket_data: ak.Array = args[socket_index][0]
+            elif type(unwrap(args[socket_index])) == NestedData:
+                socket_data: NestedData = args[socket_index][0]
 
             # List handling
             elif len(args[socket_index]) > 1 and all([type(item) == list for item in args[socket_index]]):
