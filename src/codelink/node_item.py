@@ -25,6 +25,7 @@ from typing import Optional, Union, Callable, cast
 import sys
 import importlib
 import inspect
+from itertools import chain
 
 import awkward as ak
 
@@ -471,7 +472,6 @@ class NodeItem(QtWidgets.QGraphicsItem):
     # --------------- Data processing methods ---------------
 
     def input_data(self, socket_index: int, args: tuple[Any, ...]) -> Union[list, ak.Array, NestedData]:
-
         socket_data: Union[list, ak.Array] = []
         if 0 <= socket_index < len(self.input_socket_widgets):
             # Awkward array handling
@@ -504,12 +504,13 @@ class NodeItem(QtWidgets.QGraphicsItem):
                             content=ak.to_layout(item.structure),
                             offsets=ak.index.Index64([0, ak.num(item.structure, axis=0)])
                         ))
-                        item.structure = ak.to_regular(item)
+                        item.structure = ak.to_regular(item.structure)
                     regular_inputs.append(item.structure)
-                socket_data: NestedData = NestedData(
-                    data=[item.data for item in args[socket_index].data],
-                    structure=ak.concatenate(regular_inputs)
-                )
+
+                semi_flat_data: list[list] = [item.data for item in args[socket_index]]
+                flat_data: list = list(chain(*semi_flat_data))
+                nested_structure: ak.Array = ak.concatenate(regular_inputs)
+                socket_data: NestedData = NestedData(data=flat_data, structure=nested_structure)
 
             elif type(unwrap(args[socket_index])) == NestedData:
                 socket_data: NestedData = args[socket_index][0]

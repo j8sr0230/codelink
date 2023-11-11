@@ -29,6 +29,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
+from nested_data import NestedData
 from node_item import NodeItem
 from sockets.any_none import AnyNone
 
@@ -64,8 +65,9 @@ class TextViewer(NodeItem):
                         result: Any = self.input_data(0, args)
                         if isinstance(result, ak.Array):
                             result.show(200, 100)
+                        elif isinstance(result, NestedData):
+                            print("Nested data:", result)
                         else:
-                            # result: list = self.input_data(0, args)
                             print(
                                 "Domain size: " + str(len(self.input_data(0, args))) + "->",
                                 [str(input_item) for input_item in self.input_data(0, args)]
