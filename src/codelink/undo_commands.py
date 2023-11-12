@@ -225,8 +225,12 @@ class RemoveNodeCommand(QtWidgets.QUndoCommand):
 		cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._node, "")
 
 	def redo(self) -> None:
+		survivor_nodes: list[NodeItem] = self._node.predecessors() + self._node.successors()
+
 		self._scene.remove_node(self._node)
-		for node in self._scene.ends():
+		# for node in self._scene.ends():
+		# 	cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
+		for node in survivor_nodes:
 			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
 
 
@@ -295,13 +299,16 @@ class RemoveEdgeCommand(QtWidgets.QUndoCommand):
 	def undo(self) -> None:
 		self._scene.add_edge(self._edge)
 		if not self._is_silent:
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.start_pin.parent_node, "")
 			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 	def redo(self) -> None:
 		self._scene.remove_edge(self._edge)
 		if not self._is_silent:
-			for node in self._scene.ends():
-				cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
+			# for node in self._scene.ends():
+			# 	cast(QtCore.SignalInstance, self._scene.dag_changed).emit(node, "")
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.start_pin.parent_node, "")
+			cast(QtCore.SignalInstance, self._scene.dag_changed).emit(self._edge.end_pin.parent_node, "")
 
 
 class AddFrameCommand(QtWidgets.QUndoCommand):
