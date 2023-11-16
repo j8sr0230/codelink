@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_ak
+from utils import simplify_ak, global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
@@ -115,7 +115,7 @@ class PolylineAk(NodeItem):
 
                         flat_data: list[Part.Shape] = []
                         if simple_depth[0] == 1:
-                            data_structure: ak.Array = ak.Array([1])
+                            data_structure: ak.Array = ak.Array([0])
                             ctrl_pts: Points.Points = Points.Points()
                             ctrl_pts.addPoints(simple_list)
                             flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
@@ -126,7 +126,10 @@ class PolylineAk(NodeItem):
                                 ctrl_pts.addPoints(ctrl_pts_list)
                                 flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
 
-                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=ak.transform(global_index, data_structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

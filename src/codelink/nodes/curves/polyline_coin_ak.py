@@ -36,7 +36,7 @@ from pivy import coin
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak
+from utils import simplify_ak, global_index
 from nested_data import NestedData
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -141,14 +141,17 @@ class PolylineCoinAk(NodeItem):
 
                         flat_data: list[coin.SoSeparator] = []
                         if simple_depth[0] == 1:
-                            data_structure: ak.Array = ak.Array([1])
+                            data_structure: ak.Array = ak.Array([0])
                             flat_data.append(self.make_polyline_sep(simple_list, is_cyclic))
                         else:
                             data_structure: ak.Array = ak.max(ak.ones_like(nested_vectors.x), axis=-1)
                             for ctrl_pts_list in simple_list:
                                 flat_data.append(self.make_polyline_sep(ctrl_pts_list, is_cyclic))
 
-                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=ak.transform(global_index, data_structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

@@ -22,7 +22,7 @@
 
 from __future__ import annotations
 from collections.abc import Iterable
-from typing import Callable, Union, Any
+from typing import Callable, Union, Any, cast
 
 import numpy as np
 import awkward as ak
@@ -107,6 +107,16 @@ def map_last_re(callback: Callable, nested_list: list[Any]) -> list[Any]:
             return [map_last_re(callback, sub_list) for sub_list in nested_list]
     else:
         return nested_list
+
+
+# noinspection PyUnusedLocal
+def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
+    if layout.is_numpy:
+        layout: np.ndarray = cast(np.ndarray, layout)
+        # noinspection PyTypeChecker
+        return ak.contents.NumpyArray(
+            np.arange(0, layout.data.size)
+        )
 
 
 def _zip_nested(nested_data_template: list, flat_data: list) -> Union[list, tuple]:
