@@ -44,8 +44,8 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class TransformShape(NodeItem):
-    REG_NAME: str = "Transform Shape"
+class TranslateShape(NodeItem):
+    REG_NAME: str = "Translate Shape"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -77,17 +77,17 @@ class TransformShape(NodeItem):
                         flat_translations: ak.Array = ak.zip([ak.flatten(translation.x, axis=None),
                                                               ak.flatten(translation.y, axis=None),
                                                               ak.flatten(translation.z, axis=None)])
-                        flat_translations_list: list[tuple[float, float, float]] = ak.to_list(flat_translations)
+                        flat_translation_list: list[tuple[float, float, float]] = ak.to_list(flat_translations)
                         pts: Points.Points = Points.Points()
-                        pts.addPoints(flat_translations_list)
-                        nested_translations: NestedData = NestedData(
+                        pts.addPoints(flat_translation_list)
+                        nested_translation: NestedData = NestedData(
                             data=pts.Points,
                             structure=ak.transform(global_index, ak.ones_like(translation.x))
                         )
 
                         nested_params: ak.Array = ak.zip({
                             "shape": shape.structure,
-                            "translation": nested_translations.structure
+                            "translation": nested_translation.structure
                         })
                         flat_params: ak.Array = ak.zip([
                             ak.flatten(nested_params.shape, axis=None),
@@ -99,7 +99,7 @@ class TransformShape(NodeItem):
                         flat_data: list[Part.Shape] = []
                         for param in flat_params_list:
                             copy: Part.Shape = Part.Shape(shape.data[param[0]])
-                            copy.translate(nested_translations.data[param[1]])
+                            copy.translate(nested_translation.data[param[1]])
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
@@ -110,7 +110,7 @@ class TransformShape(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Transform executed")
+                        print("Translation executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
