@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
+import inspect
 
 import numpy as np
 import awkward as ak
@@ -33,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from sockets.value_line import ValueLine
+from sockets.value_line_ak import ValueLineAk
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -63,9 +64,9 @@ class ScalarTrigonometric(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
-                      parent_node=self)
+            ValueLineAk(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                        parent_node=self)
         ]
 
         # Listeners
@@ -90,42 +91,46 @@ class ScalarTrigonometric(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: np.ndarray = np.array([0])
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    a: list = self.input_data(0, args)
+                    try:
+                        a: list = self.input_data(0, args)
 
-                    if self._option_box.currentText() == "Sin":
-                        result: np.ndarray = np.sin(ak.Array(a))
+                        if self._option_box.currentText() == "Sin":
+                            result: np.ndarray = np.sin(ak.Array(a))
 
-                    elif self._option_box.currentText() == "Cos":
-                        result: np.ndarray = np.cos(ak.Array(a))
+                        elif self._option_box.currentText() == "Cos":
+                            result: np.ndarray = np.cos(ak.Array(a))
 
-                    elif self._option_box.currentText() == "Tan":
-                        result: np.ndarray = np.tan(ak.Array(a))
+                        elif self._option_box.currentText() == "Tan":
+                            result: np.ndarray = np.tan(ak.Array(a))
 
-                    elif self._option_box.currentText() == "ASin":
-                        result: np.ndarray = np.arcsin(ak.Array(a))
+                        elif self._option_box.currentText() == "ASin":
+                            result: np.ndarray = np.arcsin(ak.Array(a))
 
-                    elif self._option_box.currentText() == "ACos":
-                        result: np.ndarray = np.arcsin(ak.Array(a))
+                        elif self._option_box.currentText() == "ACos":
+                            result: np.ndarray = np.arcsin(ak.Array(a))
 
-                    elif self._option_box.currentText() == "ATan":
-                        result: np.ndarray = np.arctan(ak.Array(a))
+                        elif self._option_box.currentText() == "ATan":
+                            result: np.ndarray = np.arctan(ak.Array(a))
 
-                    self._is_dirty: bool = False
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Scalar trig executed")
 
-                except Exception as e:
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result.tolist())
+        return self._cache[cache_idx]
 
 # --------------- Serialization ---------------
 

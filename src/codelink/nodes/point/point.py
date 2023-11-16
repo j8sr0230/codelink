@@ -32,7 +32,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import map_objects
 from node_item import NodeItem
-from sockets.vector_none import VectorNone
+from sockets.vector_none_ak import VectorNoneAk
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -48,8 +48,8 @@ class Point(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
-                       parent_node=self),
+            VectorNoneAk(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
+                         parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Point", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]

@@ -73,7 +73,7 @@ class CoinNone(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(NestedData(data=[coin.SoSeparator()], structure=ak.Array([1])))
+			result.append(NestedData(data=[coin.SoSeparator()], structure=ak.Array([0])))
 
 		return result
 

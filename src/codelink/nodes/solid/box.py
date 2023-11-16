@@ -32,7 +32,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import map_objects, broadcast_data_tree
 from node_item import NodeItem
-from sockets.value_line import ValueLine
+from sockets.value_line_ak import ValueLineAk
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -48,9 +48,9 @@ class Box(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="H", content_value=10., is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Box", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]

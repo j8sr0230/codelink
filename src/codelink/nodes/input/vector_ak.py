@@ -67,8 +67,7 @@ class VectorAk(NodeItem):
                         y: list = self.input_data(1, args)
                         z: list = self.input_data(2, args)
 
-                        zipped_input: ak.Array = ak.zip({"x": x, "y": y, "z": z})
-                        result: ak.Array = ak.Array(zipped_input)
+                        result: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

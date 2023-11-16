@@ -23,11 +23,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
+
+import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from sockets.value_line import ValueLine
+from sockets.value_line_ak import ValueLineAk
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -42,29 +45,33 @@ class TestNode(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Value", content_value="<No Input>", is_input=False,
-                      parent_node=self)
+            ValueLineAk(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="Value", content_value="<No Input>", is_input=False,
+                        parent_node=self)
         ]
 
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> list:
-        result: list = [0]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    value_in: list = self.input_data(0, args)
-                    result: list = value_in
-                    self._is_dirty: bool = False
+                    try:
+                        result: ak.Array = self.input_data(0, args)
 
-                except Exception as e:
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Test executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]

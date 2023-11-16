@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
+import inspect
 
 import numpy as np
 import awkward as ak
@@ -34,7 +35,7 @@ import PySide2.QtWidgets as QtWidgets
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none_ak import VectorNoneAk
-from sockets.value_line import ValueLine
+from sockets.value_line_ak import ValueLineAk
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -184,13 +185,13 @@ class VectorFunctionsAk(NodeItem):
                 )
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
 
-            if type(self._socket_widgets[2]) != ValueLine:
+            if type(self._socket_widgets[2]) != ValueLineAk:
                 remove_socket: SocketWidget = self._socket_widgets[2]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 2))
 
-                new_socket_widget: ValueLine = ValueLine(
+                new_socket_widget: ValueLineAk = ValueLineAk(
                     undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
                     parent_node=self
                 )
@@ -198,19 +199,19 @@ class VectorFunctionsAk(NodeItem):
 
         elif current_option_name == "Scale":
             if len(self.input_socket_widgets) == 2:
-                if type(self._socket_widgets[1]) != ValueLine:
+                if type(self._socket_widgets[1]) != ValueLineAk:
                     remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                     self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
-                    new_socket_widget: ValueLine = ValueLine(
+                    new_socket_widget: ValueLineAk = ValueLineAk(
                         undo_stack=self._undo_stack, name="B", content_value=1., is_input=True,
                         parent_node=self
                     )
                     self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
             else:
-                new_socket_widget: ValueLine = ValueLine(
+                new_socket_widget: ValueLineAk = ValueLineAk(
                     undo_stack=self._undo_stack, name="B", content_value=1., is_input=True,
                     parent_node=self
                 )
@@ -235,13 +236,13 @@ class VectorFunctionsAk(NodeItem):
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
-            if type(self._socket_widgets[1]) != ValueLine:
+            if type(self._socket_widgets[1]) != ValueLineAk:
                 remove_socket: SocketWidget = self._socket_widgets[1]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
                 self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
-                new_socket_widget: ValueLine = ValueLine(
+                new_socket_widget: ValueLineAk = ValueLineAk(
                     undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
                     parent_node=self
                 )
@@ -288,61 +289,65 @@ class VectorFunctionsAk(NodeItem):
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
-        result: ak.Array = ak.Array([{"x": 0., "y": 0., "z": 0.}], with_name="Vector3D")
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
+                    try:
+                        a: ak.Array = ak.Array(self.input_data(0, args), with_name="Vector3D")
 
-                    if len(args) == 1:
-                        if self._option_box.currentText() == "Length":
-                            result: ak.Array = np.absolute(a)
+                        if len(args) == 1:
+                            if self._option_box.currentText() == "Length":
+                                result: ak.Array = np.absolute(a)
 
-                    if len(args) == 2:
-                        if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
-                            b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
+                        if len(args) == 2:
+                            if self._option_box.currentText() in ("Add", "Sub", "Mul", "Div", "Cross", "Dot", ):
+                                b: ak.Array = ak.Array(self.input_data(1, args), with_name="Vector3D")
 
-                            if self._option_box.currentText() == "Add":
-                                result: ak.Array = a + b
+                                if self._option_box.currentText() == "Add":
+                                    result: ak.Array = a + b
 
-                            elif self._option_box.currentText() == "Sub":
-                                result: ak.Array = a - b
+                                elif self._option_box.currentText() == "Sub":
+                                    result: ak.Array = a - b
 
-                            elif self._option_box.currentText() == "Mul":
-                                result: ak.Array = a * b
+                                elif self._option_box.currentText() == "Mul":
+                                    result: ak.Array = a * b
 
-                            elif self._option_box.currentText() == "Div":
-                                result: ak.Array = a / b
+                                elif self._option_box.currentText() == "Div":
+                                    result: ak.Array = a / b
 
-                            elif self._option_box.currentText() == "Cross":
-                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_cross
-                                result: ak.Array = a * b
-                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
+                                elif self._option_box.currentText() == "Cross":
+                                    ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_cross
+                                    result: ak.Array = a * b
+                                    ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
 
-                            elif self._option_box.currentText() == "Dot":
-                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_dot
-                                result: ak.Array = a * b
-                                ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
+                                elif self._option_box.currentText() == "Dot":
+                                    ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_dot
+                                    result: ak.Array = a * b
+                                    ak.behavior[np.multiply, "Vector3D", "Vector3D"] = self.vector_mul
 
-                        elif self._option_box.currentText() == "Scale":
-                            b: list = self.input_data(1, args)
+                            elif self._option_box.currentText() == "Scale":
+                                b: ak.Array = self.input_data(1, args)
 
-                            b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
-                            b_vec: ak.Array = ak.Array(b_vec, with_name="Vector3D")
-                            result: ak.Array = a * b_vec
+                                b_vec: ak.Array = ak.zip({"x": b, "y": b, "z": b})
+                                b_vec: ak.Array = ak.Array(b_vec, with_name="Vector3D")
+                                result: ak.Array = a * b_vec
 
-                    self._is_dirty: bool = False
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Vector functions executed")
 
-                except Exception as e:
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]
 
     # --------------- Serialization ---------------
 

@@ -29,7 +29,7 @@ from path_loader import *
 from app_style import MAIN_STYLE
 from editor_widget import EditorWidget
 from dag_scene import DAGScene
-from nodes.util.scalar_functions import ScalarFunctions
+# from nodes.util.scalar_functions import ScalarFunctions
 
 
 def main() -> None:
@@ -52,12 +52,12 @@ def main() -> None:
     fc_wnd.node_editor.show()
     editor_widget.show()
 
-    for i in range(2):
-        for j in range(2):
-            node = ScalarFunctions((32000. + i * 200, 32000. + j * 200), undo_stack)
-            editor_scene.add_node(node)
-
-    editor_widget.fit_content()
+    # for i in range(2):
+    #     for j in range(2):
+    #         node = ScalarFunctions((32000. + i * 200, 32000. + j * 200), undo_stack)
+    #         editor_scene.add_node(node)
+    #
+    # editor_widget.fit_content()
 
 
 if __name__ == "__main__":
