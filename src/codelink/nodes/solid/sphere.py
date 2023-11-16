@@ -23,6 +23,9 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
+
+import awkward as ak
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
@@ -30,7 +33,8 @@ import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects
+from nested_data import NestedData
+from utils import global_index
 from node_item import NodeItem
 from sockets.value_line_ak import ValueLineAk
 from sockets.shape_none import ShapeNone
@@ -55,27 +59,38 @@ class Sphere(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def make_sphere(radius: float) -> Part.Shape:
-        return Part.makeSphere(radius)
-
     def eval_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    radius: list = self.input_data(0, args)
-                    result: list = list(map_objects(radius, float, self.make_sphere))
+                    try:
+                        radius: ak.Array = self.input_data(0, args)
+                        flat_params: ak.Array = ak.flatten(radius, axis=None)
+                        flat_param_list: list[float] = ak.to_list(flat_params)
 
-                    self._is_dirty: bool = False
+                        data_structure: ak.Array = ak.ones_like(radius)
+                        flat_data: list[Part.Shape] = []
+                        for param in flat_param_list:
+                            flat_data.append(Part.makeSphere(param))
 
-                except Exception as e:
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=ak.transform(global_index, data_structure)
+                        )
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Sphere executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]
