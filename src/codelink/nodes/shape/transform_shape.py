@@ -23,13 +23,19 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
+import inspect
 
+import awkward as ak
+import numpy as np
+
+# noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_objects, broadcast_data_tree
+from utils import global_index
+from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none_ak import VectorNoneAk
 from sockets.shape_none import ShapeNone
@@ -57,34 +63,51 @@ class TransformShape(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def make_translation(parameter_zip: tuple) -> Part.Shape:
-        shape: Part.Shape = parameter_zip[0]
-        translation: FreeCAD.Vector = parameter_zip[1]
-
-        copy: Part.Shape = Part.Shape(shape)
-        return copy.translate(translation)
-
     def eval_0(self, *args) -> list:
-        result: list = [Part.Shape()]
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("error")
-            try:
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
                 try:
-                    shape: list = self.input_data(0, args)
-                    translation: list = self.input_data(1, args)
+                    try:
+                        shape: NestedData = self.input_data(0, args)
+                        translation: ak.Array = self.input_data(1, args)
 
-                    data_tree: list = list(broadcast_data_tree(shape, translation))
-                    result: list = list(map_objects(data_tree, tuple, self.make_translation))
+                        nested_params: ak.Array = ak.zip({"shape": shape.structure, "translation": translation})
 
-                    self._is_dirty: bool = False
+                        flat_params: ak.Array = ak.copy(nested_params)
+                        for i in np.arange(nested_params.layout.minmax_depth[0], 1, -1):
+                            flat_params: ak.Array = ak.flatten(flat_params, axis=i)
 
-                except Exception as e:
+                        flat_param_list: list[dict] = ak.to_list(flat_params)
+                        print(flat_param_list)
+
+                        data_structure: ak.Array = ak.ones_like(nested_params.shape)
+                        flat_data: list[Part.Shape] = []
+                        for param in flat_param_list:
+                            copy: Part.Shape = Part.Shape(shape.data[param["shape"]])
+                            copy.translate(FreeCAD.Vector(
+                                param["translation"]["x"],
+                                param["translation"]["y"],
+                                param["translation"]["z"]))
+                            flat_data.append(copy)
+
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=ak.transform(global_index, data_structure)
+                        )
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(0, result)
+                        print("Transform executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-            except Warning as e:
-                self._is_dirty: bool = True
-                print(e)
 
-        return self.output_data(0, result)
+        return self._cache[cache_idx]

@@ -72,8 +72,8 @@ class Plane(NodeItem):
                         width: ak.Array = self.input_data(1, args)
 
                         nested_params: ak.Array = ak.zip({"length": length, "width": width})
-                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(length, axis=None),
-                                                              ak.flatten(width, axis=None)])
+                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.length, axis=None),
+                                                              ak.flatten(nested_params.width, axis=None)])
                         flat_param_list: list[tuple[float, float]] = ak.to_list(flat_param_tuples)
 
                         data_structure: ak.Array = ak.ones_like(nested_params.length)

@@ -74,9 +74,9 @@ class Box(NodeItem):
                         height: ak.Array = self.input_data(2, args)
 
                         nested_params: ak.Array = ak.zip({"length": length, "width": width, "height": height})
-                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(length, axis=None),
-                                                              ak.flatten(width, axis=None),
-                                                              ak.flatten(height, axis=None)])
+                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.length, axis=None),
+                                                              ak.flatten(nested_params.width, axis=None),
+                                                              ak.flatten(nested_params.height, axis=None)])
                         flat_param_list: list[tuple[float, float, float]] = ak.to_list(flat_param_tuples)
 
                         data_structure: ak.Array = ak.ones_like(nested_params.length)
