@@ -26,11 +26,11 @@ import warnings
 import inspect
 
 import awkward as ak
-import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
+import Points  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -74,23 +74,32 @@ class TransformShape(NodeItem):
                         shape: NestedData = self.input_data(0, args)
                         translation: ak.Array = self.input_data(1, args)
 
-                        nested_params: ak.Array = ak.zip({"shape": shape.structure, "translation": translation})
+                        flat_translations: ak.Array = ak.zip([ak.flatten(translation.x, axis=None),
+                                                              ak.flatten(translation.y, axis=None),
+                                                              ak.flatten(translation.z, axis=None)])
+                        flat_translations_list: list[tuple[float, float, float]] = ak.to_list(flat_translations)
+                        pts: Points.Points = Points.Points()
+                        pts.addPoints(flat_translations_list)
+                        nested_translations: NestedData = NestedData(
+                            data=pts.Points,
+                            structure=ak.transform(global_index, ak.ones_like(translation.x))
+                        )
 
-                        flat_params: ak.Array = ak.copy(nested_params)
-                        for i in np.arange(nested_params.layout.minmax_depth[0], 1, -1):
-                            flat_params: ak.Array = ak.flatten(flat_params, axis=i)
+                        nested_params: ak.Array = ak.zip({
+                            "shape": shape.structure,
+                            "translation": nested_translations.structure
+                        })
+                        flat_params: ak.Array = ak.zip([
+                            ak.flatten(nested_params.shape, axis=None),
+                            ak.flatten(nested_params.translation, axis=None)
+                        ])
+                        flat_params_list: list[tuple[int, int]] = ak.to_list(flat_params)
 
-                        flat_param_list: list[dict] = ak.to_list(flat_params)
-                        print(flat_param_list)
-
-                        data_structure: ak.Array = ak.ones_like(nested_params.shape)
+                        data_structure: ak.Array = ak.transform(global_index, ak.ones_like(nested_params.shape))
                         flat_data: list[Part.Shape] = []
-                        for param in flat_param_list:
-                            copy: Part.Shape = Part.Shape(shape.data[param["shape"]])
-                            copy.translate(FreeCAD.Vector(
-                                param["translation"]["x"],
-                                param["translation"]["y"],
-                                param["translation"]["z"]))
+                        for param in flat_params_list:
+                            copy: Part.Shape = Part.Shape(shape.data[param[0]])
+                            copy.translate(nested_translations.data[param[1]])
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
