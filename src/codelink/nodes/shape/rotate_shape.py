@@ -38,6 +38,7 @@ from utils import global_index
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none_ak import VectorNoneAk
+from sockets.value_line_ak import ValueLineAk
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -55,8 +56,9 @@ class RotateShape(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            VectorNoneAk(undo_stack=self._undo_stack, name="Rotation", content_value="<No Input>", is_input=True,
+            VectorNoneAk(undo_stack=self._undo_stack, name="Axis", content_value="<No Input>", is_input=True,
                          parent_node=self),
+            ValueLineAk(undo_stack=self._undo_stack, name="Angle", content_value=0., is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
@@ -72,34 +74,37 @@ class RotateShape(NodeItem):
                 try:
                     try:
                         shape: NestedData = self.input_data(0, args)
-                        rotation: ak.Array = self.input_data(1, args)
+                        rot_axis: ak.Array = self.input_data(1, args)
+                        rot_angle: ak.Array = self.input_data(2, args)
 
-                        flat_rotation: ak.Array = ak.zip([ak.flatten(rotation.x, axis=None),
-                                                          ak.flatten(rotation.y, axis=None),
-                                                          ak.flatten(rotation.z, axis=None)])
-                        flat_rotation_list: list[tuple[float, float, float]] = ak.to_list(flat_rotation)
-                        axis: Points.Points = Points.Points()
-                        axis.addPoints(flat_rotation_list)
-                        nested_rotation: NestedData = NestedData(
-                            data=axis.Points,
-                            structure=ak.transform(global_index, ak.ones_like(rotation.x))
+                        flat_rot_axis: ak.Array = ak.zip([ak.flatten(rot_axis.x, axis=None),
+                                                          ak.flatten(rot_axis.y, axis=None),
+                                                          ak.flatten(rot_axis.z, axis=None)])
+                        flat_rot_axis_list: list[tuple[float, float, float]] = ak.to_list(flat_rot_axis)
+                        axis_kernel: Points.Points = Points.Points()
+                        axis_kernel.addPoints(flat_rot_axis_list)
+                        nested_rot_axis: NestedData = NestedData(
+                            data=axis_kernel.Points,
+                            structure=ak.transform(global_index, ak.ones_like(rot_axis.x))
                         )
 
                         nested_params: ak.Array = ak.zip({
                             "shape": shape.structure,
-                            "rotation": nested_rotation.structure
+                            "rot_axis": nested_rot_axis.structure,
+                            "rot_angle": rot_angle
                         })
                         flat_params: ak.Array = ak.zip([
                             ak.flatten(nested_params.shape, axis=None),
-                            ak.flatten(nested_params.rotation, axis=None)
+                            ak.flatten(nested_params.rot_axis, axis=None),
+                            ak.flatten(nested_params.rot_angle, axis=None)
                         ])
-                        flat_params_list: list[tuple[int, int]] = ak.to_list(flat_params)
+                        flat_params_list: list[tuple[int, int, float]] = ak.to_list(flat_params)
 
                         data_structure: ak.Array = ak.transform(global_index, ak.ones_like(nested_params.shape))
                         flat_data: list[Part.Shape] = []
                         for param in flat_params_list:
                             copy: Part.Shape = Part.Shape(shape.data[param[0]])
-                            copy.rotate(copy.CenterOfGravity, nested_rotation.data[param[1]], 45)
+                            copy.rotate(copy.CenterOfGravity, nested_rot_axis.data[param[1]], param[2])
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
