@@ -48,9 +48,9 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-DEBUG = False
-BATCH_SIZE = 100
-MAX_ITERATIONS = 1000
+DEBUG: bool = False
+BATCH_SIZE: int = 100
+MAX_ITERATIONS: int = 1000
 
 
 class DistributePoints(NodeItem):
@@ -107,74 +107,65 @@ class DistributePoints(NodeItem):
         self._undo_stack.endMacro()
 
     # Based on https://github.com/nortikin/sverchok/blob/master/utils/field/probe.py
-    # @staticmethod
-    # def check_min_radius(new_position: list, old_positions: list, min_radius: float) -> bool:
-    #     if not old_positions:
-    #         return True
-    #
-    #     new_position: np.array = np.array(new_position)
-    #     old_positions: np.array = np.array(old_positions)
-    #     distances: np.array = np.linalg.norm(old_positions - new_position, axis=1)
-    #     ok: bool = (min_radius < distances).all()
-    #
-    #     return ok
-
     @staticmethod
-    def populate_positions_solid(target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
+    def check_min_radius(new_position: tuple[float, float, float], old_positions: list[tuple[float, float, float]],
+                         min_radius: float) -> bool:
+        if not old_positions:
+            return True
+
+        new_position: np.array = np.array(new_position)
+        old_positions: np.array = np.array(old_positions)
+        distances: np.array = np.linalg.norm(old_positions - new_position, axis=1)
+        ok: bool = (min_radius < distances).all()
+
+        return ok
+
+    def populate_positions_solid(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
         if isinstance(target, Part.Solid):
-            box = target.BoundBox
-            bbox = ((box.XMin, box.YMin, box.ZMin), (box.XMax, box.YMax, box.ZMax))
-            b1, b2 = bbox
-            x_min, y_min, z_min = b1
-            x_max, y_max, z_max = b2
+            bound_box = target.BoundBox
+            x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
+            x_max, y_max, z_max = (bound_box.XMax, bound_box.YMax, bound_box.ZMax)
 
-            # done: int = 0
-            # iterations: int = 0
-            # generated_positions: list = []
+            done: int = 0
+            iterations: int = 0
+            generated_positions: list = []
 
-            # while done < count:
-            # iterations += 1
+            while done < count:
+                iterations += 1
 
-            # if DEBUG:
-            #     print("Iteration no.:", iterations)
-            #
-            # if iterations > MAX_ITERATIONS:
-            #     raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
-            #
-            # left: int = count - done
-            # batch_size: int = min(BATCH_SIZE, left)
+                if DEBUG:
+                    print("Iteration no.:", iterations)
 
-            # batch_x: np.ndarray = np.random.uniform(low=x_min, high=x_max, size=batch_size)
-            # batch_y: np.ndarray = np.random.uniform(low=y_min, high=y_max, size=batch_size)
-            # batch_z: np.ndarray = np.random.uniform(low=z_min, high=z_max, size=batch_size)
-            # batch: ak.Array = ak.Array({"x": batch_x, "y": batch_y, "z": batch_z})
-            # batch_list: list[tuple[float, float, float]] = ak.to_list(ak.zip([batch_x, batch_y, batch_z]))
+                if iterations > MAX_ITERATIONS:
+                    raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
 
-            # candidates: list = [
-            #     coordinate for coordinate in batch if target.isInside(FreeCAD.Vector(coordinate), 0.1, True)
-            # ]
+                left: int = count - done
+                batch_size: int = min(BATCH_SIZE, left)
 
-            # if len(candidates) > 0:
-            #     if distance == 0:
-            #         good_positions: list = candidates
-            #     else:
-            #         good_positions: list = []
-            #         for candidate in candidates:
-            #             if self.check_min_radius(candidate, generated_positions + good_positions, distance):
-            #                 good_positions.append(candidate)
-            #
-            #     generated_positions.extend(good_positions)
-            #     done += len(good_positions)
-            # generated_positions: ak.Array = batch
+                batch_x: np.ndarray = np.random.uniform(low=x_min, high=x_max, size=batch_size)
+                batch_y: np.ndarray = np.random.uniform(low=y_min, high=y_max, size=batch_size)
+                batch_z: np.ndarray = np.random.uniform(low=z_min, high=z_max, size=batch_size)
+                batch_list: list[tuple[float, float, float]] = ak.to_list(ak.zip([batch_x, batch_y, batch_z]))
 
-            batch_x: np.ndarray = np.random.uniform(low=x_min, high=x_max, size=count)
-            batch_y: np.ndarray = np.random.uniform(low=y_min, high=y_max, size=count)
-            batch_z: np.ndarray = np.random.uniform(low=z_min, high=z_max, size=count)
-            batch: ak.Array = ak.Array({"x": batch_x, "y": batch_y, "z": batch_z})
-            generated_positions: ak.Array = batch
+                candidates: list[tuple[float, float, float]] = [
+                    coordinate for coordinate in batch_list if target.isInside(FreeCAD.Vector(coordinate), 0.1, True)
+                ]
 
-            return generated_positions  # ak.to_list(generated_positions)
+                if len(candidates) > 0:
+                    if distance == 0:
+                        good_positions: list[tuple[float, float, float]] = candidates
+                    else:
+                        good_positions: list[tuple[float, float, float]] = []
+                        for candidate in candidates:
+                            if self.check_min_radius(candidate, generated_positions + good_positions, distance):
+                                good_positions.append(candidate)
 
+                    generated_positions.extend(good_positions)
+                    done += len(good_positions)
+
+            return ak.zip({"x": np.array(generated_positions)[:, 0],
+                           "y": np.array(generated_positions)[:, 1],
+                           "z": np.array(generated_positions)[:, 2]})
         else:
             return ak.Array({"x": 0, "y": 0, "z": 0})
 
@@ -243,6 +234,9 @@ class DistributePoints(NodeItem):
                         count: ak.Array = self.input_data(1, args)
                         distance: ak.Array = self.input_data(2, args)
 
+                        seed: ak.Array = self.input_data(3, args)
+                        np.random.seed(int(ak.flatten(seed, axis=None)[0]))
+
                         nested_params: ak.Array = ak.zip({"shape": shape.structure,
                                                           "count": count,
                                                           "distance": distance})
@@ -251,27 +245,9 @@ class DistributePoints(NodeItem):
                                                               ak.flatten(nested_params.distance, axis=None)])
                         flat_param_list: list[tuple[int, int, float]] = ak.to_list(flat_param_tuples)
 
-                        data_structure: ak.Array = ak.ones_like(nested_params.shape)
                         flat_data: list[ak.Array] = []
-                        for param in flat_param_list:
-                            flat_data.append(
-                                self.populate_positions_solid(shape.data[param[0]], int(param[1]), param[2])
-                            )
-
-                        result: NestedData = NestedData(
-                            data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
-                        )
-
-                        zipped_content: ak.Array = ak.zip({"data": result.data, "structure": result.structure})
-                        result: ak.Array = zipped_content.data
-
-                        # result: ak.Array = ak.concatenate(flat_data)
-
-                        # seed: ak.Array = self.input_data(3, args)
-                        # np.random.seed(seed)
-
-                        # if self._option_box.currentText() == "Face":
+                        if self._option_box.currentText() == "Face":
+                            pass
                         #     result: list = list(
                         #         map_objects(
                         #             shape, Part.Shape, lambda target: self.populate_positions_face(target,
@@ -279,13 +255,21 @@ class DistributePoints(NodeItem):
                         #         )
                         #     )
 
-                        # elif self._option_box.currentText() == "Solid":
-                        #     result: list = list(
-                        #         map_objects(
-                        #             shape, Part.Shape, lambda target: self.populate_positions_solid(target, count,
-                        #             distance)
-                        #         )
-                        #     )
+                        elif self._option_box.currentText() == "Solid":
+                            for param in flat_param_list:
+                                flat_data.append(
+                                    self.populate_positions_solid(shape.data[param[0]], int(param[1]), param[2])
+                                )
+
+                        data_structure: ak.Array = ak.ones_like(nested_params.shape)
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=ak.transform(global_index, data_structure)
+                        )
+
+                        zipped_content: ak.Array = ak.zip({"data": result.data, "structure": result.structure})
+                        result: ak.Array = zipped_content.data
+                        # result: ak.Array = ak.concatenate(flat_data)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
