@@ -121,7 +121,7 @@ class DistributePoints(NodeItem):
         return ok
 
     def populate_positions_solid(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
-        if isinstance(target, Part.Solid):
+        if isinstance(target, Part.Solid) and len(target.Vertexes) > 0:
             bound_box = target.BoundBox
             x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
             x_max, y_max, z_max = (bound_box.XMax, bound_box.YMax, bound_box.ZMax)
@@ -167,58 +167,55 @@ class DistributePoints(NodeItem):
                            "y": np.array(generated_positions)[:, 1],
                            "z": np.array(generated_positions)[:, 2]})
         else:
-            return ak.Array({"x": 0, "y": 0, "z": 0})
+            return ak.Array([{"x": 0, "y": 0, "z": 0}])
 
-    # def populate_positions_face(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> list:
-    #     if isinstance(target, Part.Face):
-    #         done: int = 0
-    #         iterations: int = 0
-    #         generated_positions: list = []
-    #
-    #         u_range: list = np.array(target.ParameterRange)[:2]
-    #         v_range: list = np.array(target.ParameterRange)[2:]
-    #
-    #         while done < count:
-    #             iterations += 1
-    #
-    #             if DEBUG:
-    #                 print("Iteration no.:", iterations)
-    #
-    #             if iterations > MAX_ITERATIONS:
-    #                 raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
-    #
-    #             left: int = count - done
-    #             batch_size: int = min(BATCH_SIZE, left)
-    #
-    #             batch_us: list = list(np.random.uniform(low=u_range[0], high=u_range[1], size=batch_size))
-    #             batch_vs: list = list(np.random.uniform(low=v_range[0], high=v_range[1], size=batch_size))
-    #             batch_uvs: list = list(zip(batch_us, batch_vs))
-    #
-    #             batch_positions: list = [target.valueAt(uv[0], uv[1]) for uv in batch_uvs if
-    #                                      target.isInside(target.valueAt(uv[0], uv[1]), 0.1, True)]
-    #             candidates: list = [[v[0], v[1], v[2]] for v in batch_positions]
-    #
-    #             if len(candidates) > 0:
-    #                 if distance == 0:
-    #                     good_positions: list = candidates
-    #                 else:
-    #                     good_positions: list = []
-    #                     for candidate in candidates:
-    #                         if self.check_min_radius(candidate, generated_positions + good_positions, distance):
-    #                             good_positions.append(candidate)
-    #
-    #                 generated_positions.extend(good_positions)
-    #                 done += len(good_positions)
-    #
-    #         return [FreeCAD.Vector(coordinates) for coordinates in generated_positions]
-    #
-    #     elif isinstance(target, Part.Solid):
-    #         result: list = []
-    #         for target in target.Faces:
-    #             result.append(self.populate_positions_face(target, count, distance))
-    #         return result
-    #     else:
-    #         return [FreeCAD.Vector(0, 0, 0)]
+    def populate_positions_face(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
+        if isinstance(target, Part.Face) and len(target.Vertexes) > 0:
+            done: int = 0
+            iterations: int = 0
+            generated_positions: list = []
+
+            u_range: list = np.array(target.ParameterRange)[:2]
+            v_range: list = np.array(target.ParameterRange)[2:]
+
+            while done < count:
+                iterations += 1
+
+                if DEBUG:
+                    print("Iteration no.:", iterations)
+
+                if iterations > MAX_ITERATIONS:
+                    raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
+
+                left: int = count - done
+                batch_size: int = min(BATCH_SIZE, left)
+
+                batch_u: np.ndarray = np.random.uniform(low=u_range[0], high=u_range[1], size=batch_size)
+                batch_v: np.ndarray = np.random.uniform(low=v_range[0], high=v_range[1], size=batch_size)
+                batch_list: list[tuple[float, float]] = ak.to_list(ak.zip([batch_u, batch_v]))
+
+                candidates: list[tuple[float, float, float]] = [
+                    target.valueAt(uv[0], uv[1]) for uv in batch_list if
+                    target.isInside(target.valueAt(uv[0], uv[1]), 0.1, True)
+                ]
+
+                if len(candidates) > 0:
+                    if distance == 0:
+                        good_positions: list[tuple[float, float, float]] = candidates
+                    else:
+                        good_positions: list[tuple[float, float, float]] = []
+                        for candidate in candidates:
+                            if self.check_min_radius(candidate, generated_positions + good_positions, distance):
+                                good_positions.append(candidate)
+
+                    generated_positions.extend(good_positions)
+                    done += len(good_positions)
+
+            return ak.zip({"x": np.array(generated_positions)[:, 0],
+                           "y": np.array(generated_positions)[:, 1],
+                           "z": np.array(generated_positions)[:, 2]})
+        else:
+            return ak.Array([{"x": 0, "y": 0, "z": 0}])
 
     # --------------- Node eval methods ---------------
 
@@ -247,29 +244,29 @@ class DistributePoints(NodeItem):
 
                         flat_data: list[ak.Array] = []
                         if self._option_box.currentText() == "Face":
-                            pass
-                        #     result: list = list(
-                        #         map_objects(
-                        #             shape, Part.Shape, lambda target: self.populate_positions_face(target,
-                        #             count, distance)
-                        #         )
-                        #     )
+                            for param in flat_param_list:
+                                flat_data.append(
+                                    self.populate_positions_face(shape.data[param[0]], int(param[1]), param[2])
+                                )
 
                         elif self._option_box.currentText() == "Solid":
                             for param in flat_param_list:
                                 flat_data.append(
                                     self.populate_positions_solid(shape.data[param[0]], int(param[1]), param[2])
                                 )
-
                         data_structure: ak.Array = ak.ones_like(nested_params.shape)
-                        result: NestedData = NestedData(
+                        nested_data: NestedData = NestedData(
                             data=flat_data,
                             structure=ak.transform(global_index, data_structure)
                         )
 
-                        zipped_content: ak.Array = ak.zip({"data": result.data, "structure": result.structure})
-                        result: ak.Array = zipped_content.data
-                        # result: ak.Array = ak.concatenate(flat_data)
+                        zipped_content: ak.Array = ak.zip({"data": nested_data.data,
+                                                           "structure": nested_data.structure})
+
+                        if nested_data.structure.layout.minmax_depth[0] == 1:
+                            result: ak.Array = ak.flatten(zipped_content.data, axis=-1)
+                        else:
+                            result: ak.Array = zipped_content.data
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

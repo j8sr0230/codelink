@@ -34,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
-from utils import crop_text, unwrap
+from utils import crop_text, global_index, unwrap
 from nested_data import NestedData
 from property_model import PropertyModel
 from frame_item import FrameItem
@@ -511,7 +511,9 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 semi_flat_data: list[list[Any]] = [item.data for item in args[socket_index]]
                 flat_data: list[Any] = list(chain(*semi_flat_data))
                 nested_structure: ak.Array = ak.concatenate(regular_structure)
-                socket_data: NestedData = NestedData(data=flat_data, structure=nested_structure)
+                socket_data: NestedData = NestedData(
+                    data=flat_data, structure=ak.transform(global_index, nested_structure)
+                )
 
             elif type(unwrap(args[socket_index])) == NestedData:
                 socket_data: NestedData = args[socket_index][0]
