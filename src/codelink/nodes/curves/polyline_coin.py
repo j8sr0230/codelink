@@ -48,7 +48,7 @@ if TYPE_CHECKING:
 
 
 class PolylineCoin(NodeItem):
-    REG_NAME: str = "Polyline Coin"
+    REG_NAME: str = "Polyline (Coin)"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
