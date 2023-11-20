@@ -48,9 +48,9 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-DEBUG: bool = False
+DEBUG: bool = True
 BATCH_SIZE: int = 100
-MAX_ITERATIONS: int = 1000
+MAX_ITERATIONS: int = 100
 
 
 class DistributePoints(NodeItem):
