@@ -37,8 +37,8 @@ import PySide2.QtWidgets as QtWidgets
 from utils import global_index
 from nested_data import NestedData
 from node_item import NodeItem
-from sockets.vector_none_ak import VectorNoneAk
-from sockets.value_line_ak import ValueLineAk
+from sockets.vector_none import VectorNone
+from sockets.value_line import ValueLine
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -56,9 +56,9 @@ class RotateShape(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            VectorNoneAk(undo_stack=self._undo_stack, name="Axis", content_value="<No Input>", is_input=True,
-                         parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Angle", content_value=0., is_input=True, parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Axis", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Angle", content_value=0., is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]

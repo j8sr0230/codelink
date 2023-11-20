@@ -30,7 +30,7 @@ import awkward as ak
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from sockets.value_line_ak import ValueLineAk
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -45,9 +45,9 @@ class TestNode(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLineAk(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Value", content_value="<No Input>", is_input=False,
-                        parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="Value", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Value", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
 
     # --------------- Node eval methods ---------------

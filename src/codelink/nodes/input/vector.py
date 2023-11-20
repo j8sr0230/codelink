@@ -30,15 +30,15 @@ import awkward as ak
 import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
-from sockets.value_line_ak import ValueLineAk
-from sockets.vector_none_ak import VectorNoneAk
+from sockets.value_line import ValueLine
+from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class VectorAk(NodeItem):
-    REG_NAME: str = "Vector Ak"
+class Vector(NodeItem):
+    REG_NAME: str = "Vector"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -46,11 +46,11 @@ class VectorAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLineAk(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
-            VectorNoneAk(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
-                         parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
+                       parent_node=self)
         ]
 
     # --------------- Node eval methods ---------------

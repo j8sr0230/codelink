@@ -36,7 +36,7 @@ import PySide2.QtWidgets as QtWidgets
 from nested_data import NestedData
 from utils import global_index
 from node_item import NodeItem
-from sockets.value_line_ak import ValueLineAk
+from sockets.value_line import ValueLine
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -52,8 +52,8 @@ class Plane(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLineAk(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="L", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="W", content_value=10., is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Plane", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]

@@ -21,26 +21,25 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 import awkward as ak
-import numpy as np
 
-import FreeCAD
-
+import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from utils import simplify_ak
 from socket_widget import SocketWidget
+from input_widgets import NumberInputWidget
 
 if TYPE_CHECKING:
 	from node_item import NodeItem
 
 
-class VectorNoneAk(SocketWidget):
+class ValueLine(SocketWidget):
 	def __init__(
-			self, undo_stack: QtWidgets.QUndoStack, name: str = "Vector", content_value: Any = "<No Input>",
+			self, undo_stack: QtWidgets.QUndoStack, name: str = "A", content_value: Any = 0.0,
 			is_flatten: bool = False, is_simplify: bool = False, is_graft: bool = False, is_input: bool = True,
 			parent_node: Optional[NodeItem] = None, parent_widget: Optional[QtWidgets.QWidget] = None
 	) -> None:
@@ -50,10 +49,22 @@ class VectorNoneAk(SocketWidget):
 		)
 
 		# Pin setup
-		self._pin_item.color = QtGui.QColor("#6363C7")
-		self._pin_item.pin_type = FreeCAD.Vector
+		self._pin_item.color = QtGui.QColor("#A1A1A1")
+		self._pin_item.pin_type = float
+
+		# Input widget setup
+		self._input_widget: NumberInputWidget = NumberInputWidget()
+		self._input_widget.setMinimumWidth(5)
+		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+		self._input_widget.setText(str(self._prop_model.properties["Value"]))
+		self._content_layout.addWidget(self._input_widget)
+		self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+		self.setFocusProxy(self._input_widget)
 
 		self.update_stylesheets()
+
+		# Listeners
+		cast(QtCore.SignalInstance, self._input_widget.editingFinished).connect(self.editing_finished)
 
 	# --------------- Socket data ---------------
 
@@ -72,24 +83,59 @@ class VectorNoneAk(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			result.append(ak.Array([{"x": 0., "y": 0., "z": 0.}]))
+			if self._input_widget.text() != "":
+				result.append(ak.Array([float(self._input_widget.text())]))
+			else:
+				result.append(ak.Array([0]))
+				# result.append(0.)
 
 		return result
 
 	def perform_socket_operation(self, input_data: ak.Array) -> ak.Array:
 		if self.socket_options_state()[0]:  # Flatten
-			x: ak.Array = ak.flatten(input_data.x, axis=None)
-			y: ak.Array = ak.flatten(input_data.y, axis=None)
-			z: ak.Array = ak.flatten(input_data.z, axis=None)
-			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
+			input_data: ak.Array = ak.flatten(input_data, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			x: ak.Array = simplify_ak(input_data.x)
-			y: ak.Array = simplify_ak(input_data.y)
-			z: ak.Array = simplify_ak(input_data.z)
-			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
+			input_data: ak.Array = simplify_ak(input_data)
 
 		if self.socket_options_state()[2]:  # Graft
 			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
 		return input_data
+
+	# --------------- Callbacks ---------------
+
+	def update_stylesheets(self) -> None:
+		super().update_stylesheets()
+
+		if self._is_input:
+			if self._pin_item.has_edges() or self.link != ("", -1):
+				self._label_widget.setStyleSheet("background-color: transparent")
+				self._input_widget.hide()
+				self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
+			else:
+				self._label_widget.setStyleSheet("background-color: #545454")
+				self._input_widget.show()
+				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+		else:
+			self._input_widget.hide()
+
+	def update_all(self):
+		super().update_all()
+		self._input_widget.setText(str(self._prop_model.properties["Value"]))
+		self.clearFocus()
+
+	def validate_input(self):
+		last_value: float = self.prop_model.properties["Value"]
+		input_txt: str = self._input_widget.text()
+
+		try:
+			input_number: float = float(input_txt)
+			self._prop_model.setData(self._prop_model.index(1, 1, QtCore.QModelIndex()), input_number, 2)
+		except ValueError:
+			self._input_widget.setText(str(last_value))
+			print("Wrong input format")
+
+	def editing_finished(self) -> None:
+		self.validate_input()
+		self.clearFocus()

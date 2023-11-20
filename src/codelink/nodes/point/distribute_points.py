@@ -41,8 +41,8 @@ from utils import global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
-from sockets.value_line_ak import ValueLineAk
-from sockets.vector_none_ak import VectorNoneAk
+from sockets.value_line import ValueLine
+from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -79,12 +79,12 @@ class DistributePoints(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Count", content_value=10., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Distance", content_value=1., is_input=True,
-                        parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Seed", content_value=0., is_input=True, parent_node=self),
-            VectorNoneAk(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=False,
-                         parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="Count", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Distance", content_value=1., is_input=True,
+                      parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Seed", content_value=0., is_input=True, parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=False,
+                       parent_node=self)
         ]
 
         # Listeners

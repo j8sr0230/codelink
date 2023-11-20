@@ -32,14 +32,14 @@ import PySide2.QtWidgets as QtWidgets
 
 from utils import map_re
 from node_item import NodeItem
-from sockets.value_line_ak import ValueLineAk
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class RangeAk(NodeItem):
-    REG_NAME: str = "Range Ak"
+class Range(NodeItem):
+    REG_NAME: str = "Range"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -47,11 +47,11 @@ class RangeAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLineAk(undo_stack=self._undo_stack, name="Start", content_value=0., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Stop", content_value=10., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Step", content_value=1., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Range", content_value="<No Input>", is_input=False,
-                        parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="Start", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Stop", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Step", content_value=1., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Range", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
 
     # --------------- Node eval methods ---------------

@@ -34,14 +34,14 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from sockets.value_line_ak import ValueLineAk
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
 class ScalarFunctionsAk(NodeItem):
-    REG_NAME: str = "Scalar Functions Ak"
+    REG_NAME: str = "Scalar Functions"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -64,10 +64,10 @@ class ScalarFunctionsAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLineAk(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
-            ValueLineAk(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
-                        parent_node=self)
+            ValueLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
 
         # Listeners
@@ -101,7 +101,7 @@ class ScalarFunctionsAk(NodeItem):
 
         else:
             while input_widget_count < 2:
-                new_socket_widget: ValueLineAk = ValueLineAk(
+                new_socket_widget: ValueLine = ValueLine(
                     undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
                 )
                 insert_idx: int = len(self.input_socket_widgets)

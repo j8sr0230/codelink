@@ -37,7 +37,7 @@ import PySide2.QtWidgets as QtWidgets
 from nested_data import NestedData
 from utils import global_index
 from node_item import NodeItem
-from sockets.vector_none_ak import VectorNoneAk
+from sockets.vector_none import VectorNone
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
@@ -53,8 +53,8 @@ class Point(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNoneAk(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
-                         parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
+                       parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Point", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]

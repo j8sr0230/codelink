@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 import warnings
 import importlib
 import inspect
@@ -30,25 +30,26 @@ import awkward as ak
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
-# noinspection PyPackageRequirements
-from pivy import coin
+import Part
+import Points  # noqa
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak, global_index
 from nested_data import NestedData
+from utils import simplify_ak, global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
-from sockets.vector_none_ak import VectorNoneAk
-from sockets.coin_none import CoinNone
+from sockets.vector_none import VectorNone
+from sockets.shape_none import ShapeNone
+
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class PolylineCoinAk(NodeItem):
-    REG_NAME: str = "Polyline Coin Ak"
+class Polyline(NodeItem):
+    REG_NAME: str = "Polyline"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -67,13 +68,11 @@ class PolylineCoinAk(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNoneAk(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
-                         parent_node=self),
-            CoinNone(undo_stack=self._undo_stack, name="Polyline Coin", content_value="<No Input>", is_input=False,
-                     parent_node=self)
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            ShapeNone(undo_stack=self._undo_stack, name="Polyline", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
-
-        self._polyline_sep: Optional[coin.SoSeparator] = None
 
         # Listeners
         cast(QtCore.SignalInstance, self._option_box.currentIndexChanged).connect(self.update_socket_widgets)
@@ -96,32 +95,7 @@ class PolylineCoinAk(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    @staticmethod
-    def make_polyline_sep(ctr_pts: list[tuple], is_cyclic: bool = False) -> coin.SoSeparator:
-        if is_cyclic:
-            ctr_pts.append(ctr_pts[0])
-
-        polyline_sep: coin.SoSeparator = coin.SoSeparator()
-
-        color: coin.SoBaseColor = coin.SoBaseColor()
-        color.rgb = (0, 0, 0)
-        polyline_sep.addChild(color)
-
-        draw_style: coin.SoDrawStyle = coin.SoDrawStyle()
-        draw_style.lineWidth = 1
-        polyline_sep.addChild(draw_style)
-
-        control_pts: coin.SoCoordinate3 = coin.SoCoordinate3()
-        control_pts.point.setValues(0, len(ctr_pts), ctr_pts)
-        polyline_sep.addChild(control_pts)
-
-        polyline: coin.SoLineSet = coin.SoLineSet()
-        polyline.numVertices = len(ctr_pts)
-        polyline_sep.addChild(polyline)
-
-        return polyline_sep
-
-    def eval_0(self, *args) -> list:
+    def eval_0(self, *args) -> NestedData:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -133,20 +107,24 @@ class PolylineCoinAk(NodeItem):
                         if self._option_box.currentText() == "Cyclic":
                             is_cyclic: bool = True
 
-                        nested_vectors: ak.Array = self.input_data(0, args)
+                        nested_vectors:  ak.Array = self.input_data(0, args)
                         simple_vectors: ak.Array = simplify_ak(nested_vectors)
                         simple_tuples: ak.Array = ak.zip([simple_vectors.x, simple_vectors.y, simple_vectors.z])
                         simple_depth: tuple[int, int] = simple_tuples.layout.minmax_depth
                         simple_list: list[Any] = ak.to_list(simple_tuples)
 
-                        flat_data: list[coin.SoSeparator] = []
+                        flat_data: list[Part.Shape] = []
                         if simple_depth[0] == 1:
                             data_structure: ak.Array = ak.Array([0])
-                            flat_data.append(self.make_polyline_sep(simple_list, is_cyclic))
+                            ctrl_pts: Points.Points = Points.Points()
+                            ctrl_pts.addPoints(simple_list)
+                            flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
                         else:
                             data_structure: ak.Array = ak.max(ak.ones_like(nested_vectors.x), axis=-1)
                             for ctrl_pts_list in simple_list:
-                                flat_data.append(self.make_polyline_sep(ctrl_pts_list, is_cyclic))
+                                ctrl_pts: Points.Points = Points.Points()
+                                ctrl_pts.addPoints(ctrl_pts_list)
+                                flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
 
                         result: NestedData = NestedData(
                             data=flat_data,
