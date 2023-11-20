@@ -151,6 +151,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         )
 
         for socket_widget in node.input_socket_widgets + node.output_socket_widgets:
+            # TODO: Pin's scene is different after undo/redo
+            print(socket_widget.pin)
             cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
                 lambda start_idx, end_idx: cast(QtCore.SignalInstance, self.dag_changed).emit(
                     socket_widget.parent_node, list(socket_widget.prop_model.properties.keys())[start_idx.row()]
