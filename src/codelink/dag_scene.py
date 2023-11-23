@@ -150,16 +150,6 @@ class DAGScene(QtWidgets.QGraphicsScene):
             )
         )
 
-        for socket_widget in node.input_socket_widgets + node.output_socket_widgets:
-            # TODO: Pin's scene is different after undo/redo
-            print(socket_widget.pin.scene(), self)
-            cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
-                lambda start_idx, end_idx: cast(QtCore.SignalInstance, self.dag_changed).emit(
-                    socket_widget.parent_node, list(socket_widget.prop_model.properties.keys())[start_idx.row()]
-                )
-                # self.execute_dag(socket_widget.parent_node)
-            )
-
         registered_widgets: list[SocketWidget] = [
             child for child in node.content_widget.children() if isinstance(child, SocketWidget)
         ]
@@ -170,8 +160,16 @@ class DAGScene(QtWidgets.QGraphicsScene):
 
         self._nodes.append(node)
         self.addItem(node)
-
         cast(QtCore.SignalInstance, self.node_added).emit(node)
+
+        for socket_widget in node.input_socket_widgets + node.output_socket_widgets:
+            socket_widget.pin.setParentItem(node)
+            cast(QtCore.SignalInstance, socket_widget.prop_model.dataChanged).connect(
+                lambda start_idx, end_idx: cast(QtCore.SignalInstance, self.dag_changed).emit(
+                    socket_widget.parent_node, list(socket_widget.prop_model.properties.keys())[start_idx.row()]
+                )
+            )
+
         return node
 
     def populate_sub_scene(self, grp_node: NodeItem, nodes: list[NodeItem]) -> NodeItem:
@@ -289,6 +287,9 @@ class DAGScene(QtWidgets.QGraphicsScene):
             for sub_node in node.sub_scene.nodes:
                 sub_node.on_remove()
         node.on_remove()
+
+        for socket_widget in node.input_socket_widgets + node.output_socket_widgets:
+            self.removeItem(socket_widget.pin)
 
         # noinspection PyTypeChecker
         node.content_widget.setParent(None)
