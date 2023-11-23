@@ -74,12 +74,13 @@ class Voronoi(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Count", content_value=10., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Distance", content_value=1., is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Mode", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Scale", content_value=1., is_input=True,
                       parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Seed", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=False,
-                       parent_node=self)
+            ShapeNone(undo_stack=self._undo_stack, name="Voronoi", content_value="<No Input>", is_input=False,
+                      parent_node=self)
         ]
 
         # Listeners
@@ -101,61 +102,6 @@ class Voronoi(NodeItem):
         self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
-    def populate_positions_solid(self, parameter_zip: tuple[Part.Shape, float, float]) -> ak.Array:
-        target: Part.Shape = parameter_zip[0]
-        count: int = int(parameter_zip[1])
-        distance: float = parameter_zip[2]
-
-        if len(target.Solids) > 0 and len(target.Vertexes) > 0:
-            target: Part.Solid = Part.Solid(target.Solids[0])
-
-            bound_box = target.BoundBox
-            x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
-            x_max, y_max, z_max = (bound_box.XMax, bound_box.YMax, bound_box.ZMax)
-
-            done: int = 0
-            iterations: int = 0
-            generated_positions: list = []
-
-            while done < count:
-                iterations += 1
-
-                if DEBUG:
-                    print("Iteration no.:", iterations)
-
-                if iterations > MAX_ITERATIONS:
-                    raise ValueError("Maximum number of iterations reached.", MAX_ITERATIONS)
-
-                left: int = count - done
-                batch_size: int = min(BATCH_SIZE, left)
-
-                batch_x: np.ndarray = np.random.uniform(low=x_min, high=x_max, size=batch_size)
-                batch_y: np.ndarray = np.random.uniform(low=y_min, high=y_max, size=batch_size)
-                batch_z: np.ndarray = np.random.uniform(low=z_min, high=z_max, size=batch_size)
-                batch_list: list[tuple[float, float, float]] = ak.to_list(ak.zip([batch_x, batch_y, batch_z]))
-
-                candidates: list[tuple[float, float, float]] = [
-                    coordinate for coordinate in batch_list if target.isInside(FreeCAD.Vector(coordinate), 0.1, True)
-                ]
-
-                if len(candidates) > 0:
-                    if distance == 0:
-                        good_positions: list[tuple[float, float, float]] = candidates
-                    else:
-                        good_positions: list[tuple[float, float, float]] = []
-                        for candidate in candidates:
-                            if self.check_min_radius(candidate, generated_positions + good_positions, distance):
-                                good_positions.append(candidate)
-
-                    generated_positions.extend(good_positions)
-                    done += len(good_positions)
-
-            return ak.zip({"x": np.array(generated_positions)[:, 0],
-                           "y": np.array(generated_positions)[:, 1],
-                           "z": np.array(generated_positions)[:, 2]})
-        else:
-            return ak.Array([{"x": 0, "y": 0, "z": 0}])
-
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
@@ -167,32 +113,34 @@ class Voronoi(NodeItem):
                 try:
                     try:
                         shape: NestedData = self.input_data(0, args)
-                        count: ak.Array = self.input_data(1, args)
-                        distance: ak.Array = self.input_data(2, args)
+                        position: ak.Array = self.input_data(1, args)
+                        mode: ak.Array = self.input_data(2, args)
+                        scale: ak.Array = self.input_data(3, args)
 
-                        seed: ak.Array = self.input_data(3, args)
-                        np.random.seed(int(ak.flatten(seed, axis=None)[0]))
+                        data_structure: ak.Array = ak.max(ak.ones_like(position.x), axis=-1)
+                        data_structure.show()
 
                         nested_params: list[tuple[float, float, float]] = ak.to_list(
-                            ak.zip([shape.structure, count, distance], right_broadcast=True)
+                            ak.zip([shape.structure, position.x, mode, scale], right_broadcast=True)
                         )
 
                         nested_params: list[tuple[float, float, float]] = map_re(
-                            lambda t: (shape.data[t[0]], t[1], t[2]), nested_params
+                            lambda t: (shape.data[t[0]], t[1], t[2], t[3]), nested_params
                         )
+                        print(nested_params)
 
-                        if self._option_box.currentText() == "Face":
-                            result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
-
-                        elif self._option_box.currentText() == "Solid":
-                            result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
-
-                        result: ak.Array = ak.flatten(result, axis=-1)
+                        # if self._option_box.currentText() == "Face":
+                        #     result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
+                        #
+                        # elif self._option_box.currentText() == "Solid":
+                        #     result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
+                        #
+                        # result: ak.Array = ak.flatten(result, axis=-1)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        self._cache[cache_idx] = self.output_data(0, result)
-                        print("Point dist executed")
+                        # self._cache[cache_idx] = self.output_data(0, result)
+                        print("Voronoi executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True

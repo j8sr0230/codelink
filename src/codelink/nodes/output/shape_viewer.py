@@ -49,9 +49,9 @@ class ShapeViewer(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=True,
+            ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            ShapeNone(undo_stack=self._undo_stack, name="Shp", content_value="<No Input>", is_input=False,
+            ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
 
