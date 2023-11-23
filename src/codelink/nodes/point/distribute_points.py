@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index
+from utils import map_re
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -120,7 +120,11 @@ class DistributePoints(NodeItem):
 
         return ok
 
-    def populate_positions_solid(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
+    def populate_positions_solid(self, parameter_zip: tuple[Part.Shape, int, float]) -> ak.Array:
+        target: Part.Shape = parameter_zip[0]
+        count: int = int(parameter_zip[1])
+        distance: float = parameter_zip[2]
+
         if isinstance(target, Part.Solid) and len(target.Vertexes) > 0:
             bound_box = target.BoundBox
             x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
@@ -169,7 +173,11 @@ class DistributePoints(NodeItem):
         else:
             return ak.Array([{"x": 0, "y": 0, "z": 0}])
 
-    def populate_positions_face(self, target: Part.Shape, count: int = 10, distance: float = 10.) -> ak.Array:
+    def populate_positions_face(self, parameter_zip: tuple[Part.Shape, int, float]) -> ak.Array:
+        target: Part.Shape = parameter_zip[0]
+        count: int = int(parameter_zip[1])
+        distance: float = parameter_zip[2]
+
         if isinstance(target, Part.Face) and len(target.Vertexes) > 0:
             done: int = 0
             iterations: int = 0
@@ -234,39 +242,21 @@ class DistributePoints(NodeItem):
                         seed: ak.Array = self.input_data(3, args)
                         np.random.seed(int(ak.flatten(seed, axis=None)[0]))
 
-                        nested_params: ak.Array = ak.zip({"shape": shape.structure,
-                                                          "count": count,
-                                                          "distance": distance})
-                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.shape, axis=None),
-                                                              ak.flatten(nested_params.count, axis=None),
-                                                              ak.flatten(nested_params.distance, axis=None)])
-                        flat_param_list: list[tuple[int, int, float]] = ak.to_list(flat_param_tuples)
-
-                        flat_data: list[ak.Array] = []
-                        if self._option_box.currentText() == "Face":
-                            for param in flat_param_list:
-                                flat_data.append(
-                                    self.populate_positions_face(shape.data[param[0]], int(param[1]), param[2])
-                                )
-
-                        elif self._option_box.currentText() == "Solid":
-                            for param in flat_param_list:
-                                flat_data.append(
-                                    self.populate_positions_solid(shape.data[param[0]], int(param[1]), param[2])
-                                )
-                        data_structure: ak.Array = ak.ones_like(nested_params.shape)
-                        nested_data: NestedData = NestedData(
-                            data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                        nested_params: list[tuple[float, float, float]] = ak.to_list(
+                            ak.zip([shape.structure, count, distance], right_broadcast=True)
                         )
 
-                        zipped_content: ak.Array = ak.zip({"data": nested_data.data,
-                                                           "structure": nested_data.structure})
+                        nested_params: list[tuple[float, float, float]] = map_re(
+                            lambda t: (shape.data[t[0]], t[1], t[2]), nested_params
+                        )
 
-                        if nested_data.structure.layout.minmax_depth[0] == 1:
-                            result: ak.Array = ak.flatten(zipped_content.data, axis=-1)
-                        else:
-                            result: ak.Array = zipped_content.data
+                        if self._option_box.currentText() == "Face":
+                            result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
+
+                        elif self._option_box.currentText() == "Solid":
+                            result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
+
+                        result: ak.Array = ak.flatten(result, axis=-1)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
