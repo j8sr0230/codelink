@@ -126,6 +126,8 @@ class DistributePoints(NodeItem):
         distance: float = parameter_zip[2]
 
         if len(target.Solids) > 0 and len(target.Vertexes) > 0:
+            target: Part.Solid = Part.Solid(target.Solids[0])
+
             bound_box = target.BoundBox
             x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
             x_max, y_max, z_max = (bound_box.XMax, bound_box.YMax, bound_box.ZMax)
@@ -179,7 +181,7 @@ class DistributePoints(NodeItem):
         distance: float = parameter_zip[2]
 
         if len(target.Faces) > 0 and len(target.Vertexes) > 0:
-            target: Part.Face = Part.Face(target)
+            target: Part.Face = Part.Face(target.Faces[0])
 
             done: int = 0
             iterations: int = 0
