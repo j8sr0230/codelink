@@ -120,12 +120,12 @@ class DistributePoints(NodeItem):
 
         return ok
 
-    def populate_positions_solid(self, parameter_zip: tuple[Part.Shape, int, float]) -> ak.Array:
+    def populate_positions_solid(self, parameter_zip: tuple[Part.Shape, float, float]) -> ak.Array:
         target: Part.Shape = parameter_zip[0]
         count: int = int(parameter_zip[1])
         distance: float = parameter_zip[2]
 
-        if isinstance(target, Part.Solid) and len(target.Vertexes) > 0:
+        if len(target.Solids) > 0 and len(target.Vertexes) > 0:
             bound_box = target.BoundBox
             x_min, y_min, z_min = (bound_box.XMin, bound_box.YMin, bound_box.ZMin)
             x_max, y_max, z_max = (bound_box.XMax, bound_box.YMax, bound_box.ZMax)
@@ -173,12 +173,14 @@ class DistributePoints(NodeItem):
         else:
             return ak.Array([{"x": 0, "y": 0, "z": 0}])
 
-    def populate_positions_face(self, parameter_zip: tuple[Part.Shape, int, float]) -> ak.Array:
+    def populate_positions_face(self, parameter_zip: tuple[Part.Shape, float, float]) -> ak.Array:
         target: Part.Shape = parameter_zip[0]
         count: int = int(parameter_zip[1])
         distance: float = parameter_zip[2]
 
-        if isinstance(target, Part.Face) and len(target.Vertexes) > 0:
+        if len(target.Faces) > 0 and len(target.Vertexes) > 0:
+            target: Part.Face = Part.Face(target)
+
             done: int = 0
             iterations: int = 0
             generated_positions: list = []
