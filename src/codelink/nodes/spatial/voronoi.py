@@ -109,6 +109,34 @@ class VoronoiNode(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
+    def voronoi_on_surface(parameter_zip: tuple) -> Part.Shape:
+        target: Part.Face = parameter_zip[0]
+        points: list = parameter_zip[1]
+        scale: float = parameter_zip[2]
+
+        if len(target.Faces) > 0 and len(target.Vertexes) > 0:
+            target: Part.Face = Part.Face(target.Faces[0])
+
+            uvs: np.array = np.array([target.Surface.parameter(FreeCAD.Vector(v[0], v[1], v[2])) for v in points])
+            uv_vor: Voronoi = Voronoi(uvs)
+
+            # Filter region for valid vectors
+            vor_vertices_uv = np.array([target.valueAt(uv[0], uv[1]) for uv in uv_vor.vertices])
+            vor_regions_uv = [vor_vertices_uv[region].tolist() for region in uv_vor.regions
+                              if all([-1 not in region]) and len(region) > 0]
+            vor_regions_vector = map_last_level(vor_regions_uv, float, lambda v: FreeCAD.Vector(v[0], v[1], v[2]))
+
+            valid_vector_regions: list = [[region] for region in vor_regions_vector
+                                          if all([target.isInside(vector, 1, True) for vector in region])]
+
+            vor_faces: list[Part.Shape] = [Part.makePolygon(region[0], True) for region in valid_vector_regions]
+            vor_faces: list[Part.Shape] = [Part.Face(wire) for wire in vor_faces]
+            return Part.makeCompound(vor_faces)
+
+        else:
+            return Part.Shape()
+
+    @staticmethod
     def voronoi_on_solid(parameter_zip: tuple) -> Part.Shape:
         target: Part.Shape = parameter_zip[0]
         points: list[tuple[float, float, float]] = parameter_zip[1]
@@ -207,8 +235,7 @@ class VoronoiNode(NodeItem):
                                     param: tuple = (shape.data[param[0]], simple_pos_list, param[2])
                                 else:
                                     param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2])
-                                print(param)
-                                # TODO: Calculate voronoi on surface
+                                flat_data.append(self.voronoi_on_surface(param))
 
                         elif self._option_box.currentText() == "Solid":
                             for param in simple_params_list:
