@@ -22,16 +22,21 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Union, cast
+from collections import defaultdict
+from math import fabs
 import importlib
 import warnings
 import inspect
+import itertools
 
 import numpy as np
+from scipy.spatial import Voronoi
 import awkward as ak
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
+import Points  # noqa
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -48,7 +53,7 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class Voronoi(NodeItem):
+class VoronoiNode(NodeItem):
     REG_NAME: str = "Voronoi"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
@@ -104,6 +109,101 @@ class Voronoi(NodeItem):
 
     # --------------- Node eval methods ---------------
 
+    @staticmethod
+    def voronoi_on_solid(parameter_zip: tuple) -> Part.Shape:
+        target: Part.Shape = parameter_zip[0]
+        points: list[tuple[float, float, float]] = parameter_zip[1]
+        mode: int = parameter_zip[2]
+        scale: float = parameter_zip[3]
+
+        if len(target.Solids) > 0 and len(target.Vertexes) > 0:
+            target: Part.Solid = Part.Solid(target.Solids[0])
+
+            ###################################################################################
+            # Based on https://github.com/nortikin/sverchok/blob/master/utils/voronoi3d.py
+            box = target.BoundBox
+            x_min, x_max = box.XMin, box.XMax
+            y_min, y_max = box.YMin, box.YMax
+            z_min, z_max = box.ZMin, box.ZMax
+            x_offset, y_offset, z_offset = fabs(x_max - x_min), fabs(y_max - y_min), fabs(z_max - z_min)
+            bounds = list(itertools.product([x_min - x_offset, x_max + x_offset], [y_min - y_offset, y_max + y_offset],
+                                            [z_min - z_offset, z_max + z_offset]))
+
+            all_points: np.ndarray = np.vstack((points, bounds))
+            vor: Voronoi = Voronoi(all_points)
+
+            # Generate voronoi solids from scipy.spatial.Voronoi data
+            faces_per_solid = defaultdict(list)
+            n_ridges = len(vor.ridge_points)
+
+            for ridge_idx in range(n_ridges):
+                site_idx_1, site_idx_2 = vor.ridge_points[ridge_idx]
+                face = vor.ridge_vertices[ridge_idx]
+                if -1 not in face:
+                    faces_per_solid[site_idx_1].append(face)
+                    faces_per_solid[site_idx_2].append(face)
+
+            vor_solids: list = []
+            for solid_idx in sorted(faces_per_solid.keys()):
+                vor_faces: list = []
+                for face in faces_per_solid[solid_idx]:
+                    face_vertices: list = vor.vertices[face].tolist()
+                    face_vertices: list = [tuple(item) for item in face_vertices]
+                    pts_kernel: Points.Points = Points.Points()
+                    pts_kernel.addPoints(face_vertices)
+                    face_vectors: list[FreeCAD.Vector] = pts_kernel.Points
+                    ###################################################################################
+
+                    segments = []
+                    for i in range(len(face_vectors)):
+                        if i + 1 < len(face_vectors):
+                            segments.append(Part.LineSegment(face_vectors[i], face_vectors[i + 1]))
+                    segments.append(Part.LineSegment(face_vectors[-1], face_vectors[0]))
+                    vor_faces.append(Part.Face(Part.Wire(Part.Shape(segments).Edges)))
+
+                vor_solid: Part.Shape = Part.Solid(Part.Shell(vor_faces))
+                if vor_solid.isValid():
+                    vor_solids.append(vor_solid)
+
+            # Inner voronoi solids
+            common: Part.Shape = target.common(Part.makeCompound(vor_solids))
+            difference: Part.Shape = target.cut(common)
+            inner_voronoi_solids: list = common.Solids + difference.Solids
+            scaled_voronoi_solids: list = [solid.scale(scale, solid.CenterOfGravity)
+                                           for solid in inner_voronoi_solids]
+
+            if mode == 0:
+                # Inner voronoi solids
+                # result: list = scaled_voronoi_solids
+                result: Part.Shape = Part.makeCompound(scaled_voronoi_solids)
+            elif mode == 1:
+                # Inverse of inner voronoi solids
+                base: Part.Shape = Part.Solid(target)
+                base.scale(scale, base.CenterOfGravity)
+                cutter: Part.Shape = Part.makeCompound(scaled_voronoi_solids)
+                # result: list = base.cut(cutter).SubShapes
+                result: Part.Shape = base.cut(cutter)
+            elif mode == 2:
+                # Inner voronoi faces
+                base: Part.Shape = Part.Solid(target).Shells[0]
+                base.scale(scale, base.CenterOfGravity)
+                cutter: Part.Shape = Part.makeCompound(scaled_voronoi_solids)
+                # result: list = base.common(cutter).SubShapes
+                result: Part.Shape = base.common(cutter)
+
+            else:
+                # Inverse of inner voronoi faces
+                base: Part.Shape = Part.Solid(target).Shells[0]
+                base.scale(scale, base.CenterOfGravity)
+                cutter: Part.Shape = Part.makeCompound(scaled_voronoi_solids)
+                # result: list = base.cut(cutter).SubShapes
+                result: Part.Shape = base.cut(cutter)
+
+            return result
+
+        else:
+            return Part.Shape()
+
     def eval_0(self, *args) -> ak.Array:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
@@ -134,7 +234,6 @@ class Voronoi(NodeItem):
                         simple_pos_tuple: ak.Array = simplify_ak(ak.zip([position.x, position.y, position.z]))
                         simple_pos_depth: tuple[int, int] = simple_pos_tuple.layout.minmax_depth
                         simple_pos_list: list[tuple[float, float, float]] = ak.to_list(simple_pos_tuple)
-                        print(simple_pos_list)
 
                         flat_data: list[Part.Shape] = []
                         if self._option_box.currentText() == "Face":
@@ -152,8 +251,7 @@ class Voronoi(NodeItem):
                                     param: tuple = (shape.data[param[0]], simple_pos_list, param[2], param[3])
                                 else:
                                     param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2], param[3])
-                                print(param)
-                                # TODO: Calculate voronoi on solid
+                                flat_data.append(self.voronoi_on_solid(param))
 
                         data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
                         result: NestedData = NestedData(
