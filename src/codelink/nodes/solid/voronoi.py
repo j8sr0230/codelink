@@ -130,16 +130,16 @@ class Voronoi(NodeItem):
                             ak.flatten(nested_params.scale, axis=None)
                         ])
                         simple_params_list: ak.Array = ak.to_list(simple_params)
-                        print(simple_params_list)
 
+                        flat_data: list[Part.Shape] = []
                         data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
-
 
                         if self._option_box.currentText() == "Face":
                             pass
 
                         elif self._option_box.currentText() == "Solid":
-                            pass
+                            for param in simple_params_list:
+                                print(param)
 
                         result: NestedData = NestedData(
                             data=[],
