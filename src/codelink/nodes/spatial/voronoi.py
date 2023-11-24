@@ -123,16 +123,18 @@ class VoronoiNode(NodeItem):
             # Filter region for valid vectors
             vor_vertices_uv = np.array([target.valueAt(uv[0], uv[1]) for uv in uv_vor.vertices])
             vor_regions_uv = [vor_vertices_uv[region].tolist() for region in uv_vor.regions
-                              if all([-1 not in region]) and len(region) > 0]
+                              if all([-1 not in region]) and len(region) > 2]
             vor_regions_vector = map_last_level(vor_regions_uv, float, lambda v: FreeCAD.Vector(v[0], v[1], v[2]))
 
-            valid_vector_regions: list = [[region] for region in vor_regions_vector
-                                          if all([target.isInside(vector, 1, True) for vector in region])]
+            # valid_vector_regions: list = [[region] for region in vor_regions_vector
+            #                               if all([target.isInside(vector, 1, True) for vector in region])]
 
-            vor_faces: list[Part.Shape] = [Part.makePolygon(region[0], True) for region in valid_vector_regions]
-            vor_faces: list[Part.Shape] = [Part.Face(wire) for wire in vor_faces]
-            return Part.makeCompound(vor_faces)
+            vor_wires: list[Part.Shape] = [Part.makePolygon(region, True) for region in vor_regions_vector]
+            vor_faces: list[Part.Shape] = [Part.Face(wire) for wire in vor_wires]
+            vor_scaled_faces: list[Part.Shape] = [face.scale(scale, face.CenterOfGravity) for face in vor_faces]
 
+            result: Part.Shape = target.common(Part.makeCompound(vor_scaled_faces))
+            return result
         else:
             return Part.Shape()
 
