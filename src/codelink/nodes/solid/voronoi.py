@@ -130,10 +130,10 @@ class Voronoi(NodeItem):
                             ak.flatten(nested_params.scale, axis=None)
                         ])
                         simple_params_list: ak.Array = ak.to_list(simple_params)
+                        print(simple_params_list)
 
-                        data_structure: Union[ak.Array, float] = ak.max(ak.ones_like(nested_params.shape), axis=-1)
-                        data_structure: ak.Array = (ak.transform(global_index, data_structure)
-                                                    if type(data_structure) == ak.Array else ak.Array([0]))
+                        data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
+
 
                         if self._option_box.currentText() == "Face":
                             pass
