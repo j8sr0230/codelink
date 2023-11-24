@@ -131,18 +131,33 @@ class Voronoi(NodeItem):
                         ])
                         simple_params_list: ak.Array = ak.to_list(simple_params)
 
-                        flat_data: list[Part.Shape] = []
-                        data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
+                        simple_pos_tuple: ak.Array = simplify_ak(ak.zip([position.x, position.y, position.z]))
+                        simple_pos_depth: tuple[int, int] = simple_pos_tuple.layout.minmax_depth
+                        simple_pos_list: list[tuple[float, float, float]] = ak.to_list(simple_pos_tuple)
+                        print(simple_pos_list)
 
+                        flat_data: list[Part.Shape] = []
                         if self._option_box.currentText() == "Face":
-                            pass
+                            for param in simple_params_list:
+                                if simple_pos_depth[0] == 1:
+                                    param: tuple = (shape.data[param[0]], simple_pos_list, param[2], param[3])
+                                else:
+                                    param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2], param[3])
+                                print(param)
+                                # TODO: Calculate voronoi on surface
 
                         elif self._option_box.currentText() == "Solid":
                             for param in simple_params_list:
+                                if simple_pos_depth[0] == 1:
+                                    param: tuple = (shape.data[param[0]], simple_pos_list, param[2], param[3])
+                                else:
+                                    param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2], param[3])
                                 print(param)
+                                # TODO: Calculate voronoi on solid
 
+                        data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
                         result: NestedData = NestedData(
-                            data=[],
+                            data=flat_data,
                             structure=data_structure
                         )
 
