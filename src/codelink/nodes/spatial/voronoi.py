@@ -120,20 +120,16 @@ class VoronoiNode(NodeItem):
             uvs: np.array = np.array([target.Surface.parameter(FreeCAD.Vector(v[0], v[1], v[2])) for v in points])
             uv_vor: Voronoi = Voronoi(uvs)
 
-            # Filter region for valid vectors
             vor_vertices_uv = np.array([target.valueAt(uv[0], uv[1]) for uv in uv_vor.vertices])
             vor_regions_uv = [vor_vertices_uv[region].tolist() for region in uv_vor.regions
                               if all([-1 not in region]) and len(region) > 2]
             vor_regions_vector = map_last_level(vor_regions_uv, float, lambda v: FreeCAD.Vector(v[0], v[1], v[2]))
 
-            # valid_vector_regions: list = [[region] for region in vor_regions_vector
-            #                               if all([target.isInside(vector, 1, True) for vector in region])]
-
             vor_wires: list[Part.Shape] = [Part.makePolygon(region, True) for region in vor_regions_vector]
             vor_faces: list[Part.Shape] = [Part.Face(wire) for wire in vor_wires]
             vor_scaled_faces: list[Part.Shape] = [face.scale(scale, face.CenterOfGravity) for face in vor_faces]
 
-            result: Part.Shape = target.common(Part.makeCompound(vor_scaled_faces))
+            result: Part.Shape = Part.makeCompound(vor_scaled_faces)
             return result
         else:
             return Part.Shape()
@@ -159,8 +155,6 @@ class VoronoiNode(NodeItem):
 
             all_points: np.ndarray = np.vstack((points, bounds))
             vor: Voronoi = Voronoi(all_points)
-
-            # Generate voronoi solids from scipy.spatial.Voronoi data
             faces_per_solid = defaultdict(list)
             n_ridges = len(vor.ridge_points)
 
@@ -176,18 +170,11 @@ class VoronoiNode(NodeItem):
                 vor_faces: list = []
                 for face in faces_per_solid[solid_idx]:
                     face_vertices: list = vor.vertices[face].tolist()
-                    face_vectors = list(
-                        map_last_level(face_vertices, float, lambda v: FreeCAD.Vector(v[0], v[1], v[2]))
-                    )
+                    face_vectors: list = [FreeCAD.Vector(v[0], v[1], v[2]) for v in face_vertices]
 
             ###################################################################################
 
-                    segments = []
-                    for i in range(len(face_vectors)):
-                        if i + 1 < len(face_vectors):
-                            segments.append(Part.LineSegment(face_vectors[i], face_vectors[i + 1]))
-                    segments.append(Part.LineSegment(face_vectors[-1], face_vectors[0]))
-                    vor_faces.append(Part.Face(Part.Wire(Part.Shape(segments).Edges)))
+                    vor_faces.append(Part.Face(Part.makePolygon(face_vectors, True)))
 
                 vor_solid: Part.Shape = Part.Solid(Part.Shell(vor_faces))
                 if vor_solid.isValid():
