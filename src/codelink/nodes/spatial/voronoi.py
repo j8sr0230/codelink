@@ -112,8 +112,7 @@ class VoronoiNode(NodeItem):
     def voronoi_on_solid(parameter_zip: tuple) -> Part.Shape:
         target: Part.Shape = parameter_zip[0]
         points: list[tuple[float, float, float]] = parameter_zip[1]
-        mode: int = parameter_zip[2]
-        scale: float = parameter_zip[3]
+        scale: float = parameter_zip[2]
 
         if len(target.Solids) > 0 and len(target.Vertexes) > 0:
             target: Part.Solid = Part.Solid(target.Solids[0])
