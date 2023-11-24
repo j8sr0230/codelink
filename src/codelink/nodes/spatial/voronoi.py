@@ -118,7 +118,14 @@ class VoronoiNode(NodeItem):
             target: Part.Face = Part.Face(target.Faces[0])
 
             uvs: np.array = np.array([target.Surface.parameter(FreeCAD.Vector(v[0], v[1], v[2])) for v in points])
-            uv_vor: Voronoi = Voronoi(uvs)
+
+            u_min, u_max = np.min(uvs[0]), np.max(uvs[0])
+            v_min, v_max = np.min(uvs[1]), np.max(uvs[1])
+            u_offset, v_offset = fabs(u_max - u_min), fabs(v_max - v_min)
+            bounds = list(itertools.product([u_min - u_offset, u_max + u_offset], [v_min - v_offset, v_max + v_offset]))
+            all_points: np.ndarray = np.vstack((uvs, bounds))
+
+            uv_vor: Voronoi = Voronoi(all_points)
 
             vor_vertices_uv = np.array([target.valueAt(uv[0], uv[1]) for uv in uv_vor.vertices])
             vor_regions_uv = [vor_vertices_uv[region].tolist() for region in uv_vor.regions
