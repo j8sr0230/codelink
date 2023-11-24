@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional, Union, cast
 import importlib
 import warnings
 import inspect
@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import map_re
+from utils import simplify_ak, global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -76,7 +76,7 @@ class Voronoi(NodeItem):
                       parent_node=self),
             VectorNone(undo_stack=self._undo_stack, name="Position", content_value="<No Input>", is_input=True,
                        parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Mode", content_value=10., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Mode", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Scale", content_value=1., is_input=True,
                       parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Voronoi", content_value="<No Input>", is_input=False,
@@ -117,29 +117,38 @@ class Voronoi(NodeItem):
                         mode: ak.Array = self.input_data(2, args)
                         scale: ak.Array = self.input_data(3, args)
 
-                        data_structure: ak.Array = ak.max(ak.ones_like(position.x), axis=-1)
-                        data_structure.show()
+                        pos_struct: Union[ak.Array, float] = ak.max(ak.ones_like(position.x), axis=-1)
+                        pos_struct: ak.Array = (ak.transform(global_index, pos_struct) if type(pos_struct) == ak.Array
+                                                else ak.Array([0]))
 
-                        nested_params: list[tuple[float, float, float]] = ak.to_list(
-                            ak.zip([shape.structure, position.x, mode, scale], right_broadcast=True)
+                        nested_params: ak.Array = ak.zip({"shape": shape.structure, "pos": pos_struct, "mode": mode,
+                                                          "scale": scale}, right_broadcast=True)
+                        simple_params: ak.Array = ak.zip([
+                            ak.flatten(nested_params.shape, axis=None),
+                            ak.flatten(nested_params.pos, axis=None),
+                            ak.flatten(nested_params.mode, axis=None),
+                            ak.flatten(nested_params.scale, axis=None)
+                        ])
+                        simple_params_list: ak.Array = ak.to_list(simple_params)
+
+                        data_structure: Union[ak.Array, float] = ak.max(ak.ones_like(nested_params.shape), axis=-1)
+                        data_structure: ak.Array = (ak.transform(global_index, data_structure)
+                                                    if type(data_structure) == ak.Array else ak.Array([0]))
+
+                        if self._option_box.currentText() == "Face":
+                            pass
+
+                        elif self._option_box.currentText() == "Solid":
+                            pass
+
+                        result: NestedData = NestedData(
+                            data=[],
+                            structure=data_structure
                         )
-
-                        nested_params: list[tuple[float, float, float]] = map_re(
-                            lambda t: (shape.data[t[0]], t[1], t[2], t[3]), nested_params
-                        )
-                        print(nested_params)
-
-                        # if self._option_box.currentText() == "Face":
-                        #     result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
-                        #
-                        # elif self._option_box.currentText() == "Solid":
-                        #     result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
-                        #
-                        # result: ak.Array = ak.flatten(result, axis=-1)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        # self._cache[cache_idx] = self.output_data(0, result)
+                        self._cache[cache_idx] = self.output_data(0, result)
                         print("Voronoi executed")
 
                     except Exception as e:
