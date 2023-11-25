@@ -29,7 +29,9 @@ import Part
 import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
+import numpy as np
 
+from utils import map_re, global_index
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
@@ -76,15 +78,30 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
+                        len_data: list[int] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
+                            len_data.append(len(shp.Solids))
                             flat_data.extend(shp.Solids)
-                        result: NestedData = NestedData(data=flat_data, structure=ak.Array([nested_data.structure]))
+
+                        if len(flat_data) > 0:
+                            data_structure: ak.Array = ak.Array(
+                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                            )
+                            data_structure: ak.Array = ak.transform(global_index, data_structure)
+
+                            if len(flat_data) == 1:
+                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
+
+                        else:
+                            data_structure: ak.Array = ak.Array([0])
+
+                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Content executed")
+                        print("Content 0 executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -92,14 +109,93 @@ class ShapeContent(NodeItem):
                 except Warning as e:
                     self._is_dirty: bool = True
                     print(e)
-
         return self._cache[cache_idx]
 
     def eval_1(self, *args) -> list:
-        pass
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
+
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
+                try:
+                    try:
+                        nested_data: NestedData = self.input_data(0, args)
+
+                        len_data: list[int] = []
+                        flat_data: list[Part.Shape] = []
+                        for shp in nested_data.data:
+                            len_data.append(len(shp.Shells))
+                            flat_data.extend(shp.Shells)
+
+                        if len(flat_data) > 0:
+                            data_structure: ak.Array = ak.Array(
+                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                            )
+                            data_structure: ak.Array = ak.transform(global_index, data_structure)
+
+                            if len(flat_data) == 1:
+                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
+
+                        else:
+                            data_structure: ak.Array = ak.Array([0])
+
+                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(1, result)
+                        print("Content 1 executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
+                    self._is_dirty: bool = True
+                    print(e)
+        return self._cache[cache_idx]
 
     def eval_2(self, *args) -> list:
-        pass
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
+
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
+                try:
+                    try:
+                        nested_data: NestedData = self.input_data(0, args)
+
+                        len_data: list[int] = []
+                        flat_data: list[Part.Shape] = []
+                        for shp in nested_data.data:
+                            len_data.append(len(shp.Faces))
+                            flat_data.extend(shp.Faces)
+
+                        if len(flat_data) > 0:
+                            data_structure: ak.Array = ak.Array(
+                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                            )
+                            data_structure: ak.Array = ak.transform(global_index, data_structure)
+
+                            if len(flat_data) == 1:
+                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
+
+                        else:
+                            data_structure: ak.Array = ak.Array([0])
+
+                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(2, result)
+                        print("Content 2 executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
+                    self._is_dirty: bool = True
+                    print(e)
+        return self._cache[cache_idx]
 
     def eval_3(self, *args) -> list:
         pass
@@ -108,4 +204,7 @@ class ShapeContent(NodeItem):
         pass
 
     def eval_5(self, *args) -> list:
+        pass
+
+    def eval_6(self, *args) -> list:
         pass
