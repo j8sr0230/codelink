@@ -79,8 +79,7 @@ class ShapeContent(NodeItem):
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
                             flat_data.extend(shp.Solids)
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.Array([0]))
+                        result: NestedData = NestedData(data=flat_data, structure=ak.Array([nested_data.structure]))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
