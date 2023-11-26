@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "codelink"
-version = "0.0.11"
+version = "0.0.12"
 authors = [
     {name="Ronny Scharf-Wildenhain", email="ronny.scharf08@gmail.com" },
 ]
@@ -16,7 +16,8 @@ dependencies = [
     "networkx>=3.1",
     "dask>=2023.2.1",
     "awkward>=2.3.1",
-    "numpy>=1.24.3"
+    "numpy>=1.24.3",
+    "scipy>=1.11.1"
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
