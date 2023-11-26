@@ -251,6 +251,22 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self._evals: list[object] = value
 
     @property
+    def cache(self) -> list[Any]:
+        return self._cache
+
+    @cache.setter
+    def cache(self, value: list[Any]) -> None:
+        self._cache: list[Any] = value
+
+    @property
+    def is_invalid(self) -> bool:
+        return self._is_invalid
+
+    @is_invalid.setter
+    def is_invalid(self, value: bool) -> None:
+        self._is_invalid: bool = value
+
+    @property
     def header_height(self) -> int:
         return self._header_height
 

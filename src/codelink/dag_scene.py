@@ -473,7 +473,8 @@ class DAGScene(QtWidgets.QGraphicsScene):
         return result
 
     def mark_successors_invalid(self, node: NodeItem) -> None:
-        node._is_invalid = True
+        node.is_invalid = True
+        node.cache = [None] * len(node.evals)
         for suc_node in node.successors():
             self.mark_successors_invalid(suc_node)
 

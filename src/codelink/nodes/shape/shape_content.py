@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Any
 import warnings
 import inspect
 
@@ -62,7 +62,7 @@ class ShapeContent(NodeItem):
                       parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Edge", content_value="<No Input>", is_input=False,
                       parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Vertexes", content_value="<No Input>", is_input=False,
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
 
@@ -89,19 +89,15 @@ class ShapeContent(NodeItem):
                                 map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
-
-                            if len(flat_data) == 1:
-                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
-
                         else:
-                            data_structure: ak.Array = ak.Array([0])
+                            data_structure: ak.Array = ak.Array([[0]])
 
-                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Content 0 executed")
+                        print("Content solid executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -132,19 +128,15 @@ class ShapeContent(NodeItem):
                                 map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
-
-                            if len(flat_data) == 1:
-                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
-
                         else:
-                            data_structure: ak.Array = ak.Array([0])
+                            data_structure: ak.Array = ak.Array([[0]])
 
-                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(1, result)
-                        print("Content 1 executed")
+                        print("Content shell executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -175,19 +167,15 @@ class ShapeContent(NodeItem):
                                 map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
-
-                            if len(flat_data) == 1:
-                                data_structure: ak.Array = ak.flatten(data_structure, axis=-1)
-
                         else:
-                            data_structure: ak.Array = ak.Array([0])
+                            data_structure: ak.Array = ak.Array([[0]])
 
-                        result: NestedData = NestedData(data=flat_data, structure=data_structure)
+                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(2, result)
-                        print("Content 2 executed")
+                        print("Content Face executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -198,13 +186,111 @@ class ShapeContent(NodeItem):
         return self._cache[cache_idx]
 
     def eval_3(self, *args) -> list:
-        pass
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
+
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
+                try:
+                    try:
+                        nested_data: NestedData = self.input_data(0, args)
+
+                        len_data: list[int] = []
+                        flat_data: list[Part.Shape] = []
+                        for shp in nested_data.data:
+                            len_data.append(len(shp.Wires))
+                            flat_data.extend(shp.Wires)
+
+                        if len(flat_data) > 0:
+                            data_structure: ak.Array = ak.Array(
+                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                            )
+                            data_structure: ak.Array = ak.transform(global_index, data_structure)
+                        else:
+                            data_structure: ak.Array = ak.Array([[0]])
+
+                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(3, result)
+                        print("Content wire executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
+                    self._is_dirty: bool = True
+                    print(e)
+        return self._cache[cache_idx]
 
     def eval_4(self, *args) -> list:
-        pass
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
-    def eval_5(self, *args) -> list:
-        pass
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
+                try:
+                    try:
+                        nested_data: NestedData = self.input_data(0, args)
 
-    def eval_6(self, *args) -> list:
-        pass
+                        len_data: list[int] = []
+                        flat_data: list[Part.Shape] = []
+                        for shp in nested_data.data:
+                            len_data.append(len(shp.Edges))
+                            flat_data.extend(shp.Edges)
+
+                        if len(flat_data) > 0:
+                            data_structure: ak.Array = ak.Array(
+                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                            )
+                            data_structure: ak.Array = ak.transform(global_index, data_structure)
+                        else:
+                            data_structure: ak.Array = ak.Array([[0]])
+
+                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(4, result)
+                        print("Content edge executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
+                    self._is_dirty: bool = True
+                    print(e)
+        return self._cache[cache_idx]
+
+    def eval_5(self, *args) -> ak.Array:
+        cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
+
+        if self._is_invalid or self._cache[cache_idx] is None:
+            with warnings.catch_warnings():
+                warnings.filterwarnings("error")
+                try:
+                    try:
+                        nested_data: NestedData = self.input_data(0, args)
+
+                        vertexes: list[Any] = map_re(
+                            lambda idx: nested_data.data[idx].Vertexes, ak.to_list(nested_data.structure)
+                        )
+                        vectors: ak.Array = ak.Array(
+                            map_re(lambda v: {"x": v.Point[0], "y": v.Point[1], "z": v.Point[2]}, vertexes)
+                        )
+
+                        result: ak.Array = ak.flatten(vectors, axis=-1)
+
+                        self._is_dirty: bool = False
+                        self._is_invalid: bool = False
+                        self._cache[cache_idx] = self.output_data(5, result)
+                        print("Content vector executed")
+
+                    except Exception as e:
+                        self._is_dirty: bool = True
+                        print(e)
+                except Warning as e:
+                    self._is_dirty: bool = True
+                    print(e)
+        return self._cache[cache_idx]
