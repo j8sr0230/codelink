@@ -80,14 +80,14 @@ class Point(NodeItem):
                         flat_pts: Points.Points = Points.Points()
                         flat_pts.addPoints(flat_pos_list)
 
-                        data_structure: ak.Array = ak.ones_like(pos.x)
+                        data_structure: ak.Array = ak.transform(global_index, pos.x)
                         flat_data: list[Part.Shape] = []
                         for pts in flat_pts.Points:
                             flat_data.append(Part.Point(pts).toShape())
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                            structure=data_structure
                         )
 
                         self._is_dirty: bool = False

@@ -35,11 +35,12 @@ import Part
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-# from nested_data import NestedData
+from nested_data import NestedData
+from utils import global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
-# from sockets.value_line import ValueLine
+from sockets.value_line import ValueLine
 from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
@@ -70,11 +71,11 @@ class Arc(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNone(undo_stack=self._undo_stack, name="A", content_value="<No Input>", is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Point 1", content_value="<No Input>", is_input=True,
                        parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="B", content_value="<No Input>", is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Point 2", content_value="<No Input>", is_input=True,
                        parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="C", content_value="<No Input>", is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Point 3", content_value="<No Input>", is_input=True,
                        parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Arc", content_value="<No Input>", is_input=False,
                       parent_node=self)
@@ -85,18 +86,69 @@ class Arc(NodeItem):
 
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
+        add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
+        remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
+        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
-        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
+        emit_dag_changed_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
 
         last_option_index: int = self._option_box.last_index
+        current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
+        input_widget_count: int = len(self.input_socket_widgets)
 
         self._undo_stack.beginMacro("Changes option box")
-        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
+        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
+
+        if current_option_name == "3 Points":
+            # Remove sockets
+            while input_widget_count > 0:
+                remove_socket: SocketWidget = self._socket_widgets[0]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+                input_widget_count -= 1
+
+            # Add sockets
+            new_first_socket: VectorNone = VectorNone(
+                undo_stack=self._undo_stack, name="Point 1", content_value="<No Input>", is_input=True,
+                parent_node=self)
+            new_second_socket: VectorNone = VectorNone(
+                undo_stack=self._undo_stack, name="Point 2", content_value="<No Input>", is_input=True,
+                parent_node=self)
+            new_third_socket: VectorNone = VectorNone(
+                undo_stack=self._undo_stack, name="Point 3", content_value="<No Input>", is_input=True,
+                parent_node=self)
+
+            self._undo_stack.push(add_socket_cmd_cls(self, new_first_socket, 0))
+            self._undo_stack.push(add_socket_cmd_cls(self, new_second_socket, 1))
+            self._undo_stack.push(add_socket_cmd_cls(self, new_third_socket, 2))
+
+        elif current_option_name == "Degree":
+            # Remove sockets
+            while input_widget_count > 0:
+                remove_socket: SocketWidget = self._socket_widgets[0]
+                for edge in remove_socket.pin.edges:
+                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+                input_widget_count -= 1
+
+            # Add sockets
+            new_first_socket: ValueLine = ValueLine(
+                undo_stack=self._undo_stack, name="Radius", content_value=10, is_input=True, parent_node=self)
+            new_second_socket: ValueLine = ValueLine(
+                undo_stack=self._undo_stack, name="Degree 1", content_value=0, is_input=True, parent_node=self)
+            new_third_socket: ValueLine = ValueLine(
+                undo_stack=self._undo_stack, name="Degree 2", content_value=90, is_input=True, parent_node=self)
+
+            self._undo_stack.push(add_socket_cmd_cls(self, new_first_socket, 0))
+            self._undo_stack.push(add_socket_cmd_cls(self, new_second_socket, 1))
+            self._undo_stack.push(add_socket_cmd_cls(self, new_third_socket, 2))
+
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
-        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
+        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
@@ -113,23 +165,54 @@ class Arc(NodeItem):
                         b: ak.Array = self.input_data(1, args)
                         c: ak.Array = self.input_data(2, args)
 
-                        nested_params: list[tuple[float, float, float]] = ak.to_list(
-                            ak.zip([a, b, c], right_broadcast=True)
-                        )
-
                         if self._option_box.currentText() == "3 Points":
-                            pass
-                            # result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
+                            nested_params: ak.Array = ak.zip({"p1": a, "p2": b, "p3": c}, right_broadcast=True)
+                            data_structure: ak.Array = ak.transform(global_index, ak.to_list(nested_params.p1.x))
+
+                            a: ak.Array = ak.zip([a.x, a.y, a.z])
+                            b: ak.Array = ak.zip([b.x, b.y, b.z])
+                            c: ak.Array = ak.zip([c.x, c.y, c.z])
+
+                            nested_params_tuple: ak.Array = ak.zip([a, b, c], right_broadcast=True)
+                            simple_params: ak.Array = ak.copy(nested_params_tuple)
+
+                            while simple_params.layout.minmax_depth[0] > 1:
+                                simple_params: ak.Array = ak.flatten(simple_params, axis=-1)
+
+                            simple_params_list: list[tuple] = ak.to_list(simple_params)
+
+                            flat_data: list[Part.Shape] = []
+                            for param in simple_params_list:
+                                pts: list[FreeCAD.Vector] = [FreeCAD.Vector(v[0], v[1], v[2]) for v in param]
+                                flat_data.append(Part.Edge(Part.Arc(pts[0], pts[1], pts[2])))
+
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=data_structure
+                            )
 
                         elif self._option_box.currentText() == "Degree":
-                            pass
-                            # result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
+                            nested_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
+                            flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.rad, axis=None),
+                                                                  ak.flatten(nested_params.deg_1, axis=None),
+                                                                  ak.flatten(nested_params.deg_2, axis=None)])
+                            flat_param_list: list[tuple[float, float, float]] = ak.to_list(flat_param_tuples)
 
-                        # result: ak.Array = ak.flatten(result, axis=-1)
+                            data_structure: ak.Array = ak.transform(global_index, nested_params.rad)
+                            flat_data: list[Part.Shape] = []
+                            for param in flat_param_list:
+                                flat_data.append(Part.makeCircle(
+                                    param[0], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1), param[1], param[2]
+                                ))
+
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=data_structure
+                            )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        # self._cache[cache_idx] = self.output_data(0, result)
+                        self._cache[cache_idx] = self.output_data(0, result)
                         print("Arc executed")
 
                     except Exception as e:

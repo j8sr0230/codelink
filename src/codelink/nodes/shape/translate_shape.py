@@ -82,7 +82,7 @@ class TranslateShape(NodeItem):
                         pts.addPoints(flat_translation_list)
                         nested_translation: NestedData = NestedData(
                             data=pts.Points,
-                            structure=ak.transform(global_index, ak.ones_like(translation.x))
+                            structure=ak.transform(global_index, translation.x)
                         )
 
                         nested_params: ak.Array = ak.zip({

@@ -71,14 +71,14 @@ class Sphere(NodeItem):
                         flat_params: ak.Array = ak.flatten(radius, axis=None)
                         flat_param_list: list[float] = ak.to_list(flat_params)
 
-                        data_structure: ak.Array = ak.ones_like(radius)
+                        data_structure: ak.Array = ak.transform(global_index, radius)
                         flat_data: list[Part.Shape] = []
                         for param in flat_param_list:
                             flat_data.append(Part.makeSphere(param))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                            structure=data_structure
                         )
 
                         self._is_dirty: bool = False

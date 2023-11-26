@@ -85,7 +85,7 @@ class RotateShape(NodeItem):
                         axis_kernel.addPoints(flat_rot_axis_list)
                         nested_rot_axis: NestedData = NestedData(
                             data=axis_kernel.Points,
-                            structure=ak.transform(global_index, ak.ones_like(rot_axis.x))
+                            structure=ak.transform(global_index, rot_axis.x)
                         )
 
                         nested_params: ak.Array = ak.zip({
@@ -100,7 +100,7 @@ class RotateShape(NodeItem):
                         ])
                         flat_params_list: list[tuple[int, int, float]] = ak.to_list(flat_params)
 
-                        data_structure: ak.Array = ak.transform(global_index, ak.ones_like(nested_params.shape))
+                        data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
                         flat_data: list[Part.Shape] = []
                         for param in flat_params_list:
                             copy: Part.Shape = Part.Shape(shape.data[param[0]])

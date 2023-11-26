@@ -79,14 +79,14 @@ class Box(NodeItem):
                                                               ak.flatten(nested_params.height, axis=None)])
                         flat_param_list: list[tuple[float, float, float]] = ak.to_list(flat_param_tuples)
 
-                        data_structure: ak.Array = ak.ones_like(nested_params.length)
+                        data_structure: ak.Array = ak.transform(global_index, nested_params.length)
                         flat_data: list[Part.Shape] = []
                         for param in flat_param_list:
                             flat_data.append(Part.makeBox(param[0], param[1], param[2]))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                            structure=data_structure
                         )
 
                         self._is_dirty: bool = False
