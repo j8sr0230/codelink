@@ -49,12 +49,13 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
 
 
 def vector_to_nested(vector: ak.Array, last_leve: bool = True) -> NestedData:
-    # Todo: Implement fast ak.RecordArray to NestedData
+    # Todo: Implement fast ak.contents.RecordArray to NestedData
     pass
 
 
 def nested_to_vector(vector: NestedData, last_leve: bool = True) -> ak.Array:
-    # Todo: Implement fast NestedData to ak.RecordArray
+    # Todo: Implement fast NestedData to ak.contents.RecordArray
+    # How: Zip nested_data.structures to ak.contents.RecordArray and replace fields (x, y, z) with flat data
     pass
 
 
