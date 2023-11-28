@@ -31,11 +31,12 @@ import awkward as ak
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
+import Points  # noqa
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from nested_data import NestedData
+from nested_data import NestedData, NestedVector
 from utils import global_index
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -166,48 +167,55 @@ class Arc(NodeItem):
                         c: ak.Array = self.input_data(2, args)
 
                         if self._option_box.currentText() == "3 Points":
-                            nested_params: ak.Array = ak.zip({"p1": a, "p2": b, "p3": c}, right_broadcast=True)
-                            data_structure: ak.Array = ak.transform(global_index, ak.to_list(nested_params.p1.x))
+                            nested_a: NestedVector = NestedVector(vector=a)
+                            nested_b: NestedVector = NestedVector(vector=b)
+                            nested_c: NestedVector = NestedVector(vector=c)
 
-                            a: ak.Array = ak.zip([a.x, a.y, a.z])
-                            b: ak.Array = ak.zip([b.x, b.y, b.z])
-                            c: ak.Array = ak.zip([c.x, c.y, c.z])
+                            flat_a, struct_a = nested_a.flat(as_tuple=True)
+                            flat_b, struct_b = nested_b.flat(as_tuple=True)
+                            flat_c, struct_c = nested_c.flat(as_tuple=True)
 
-                            nested_params_tuple: ak.Array = ak.zip([a, b, c], right_broadcast=True)
-                            simple_params: ak.Array = ak.copy(nested_params_tuple)
+                            nested_params: ak.Array = ak.zip({
+                                "a": struct_a, "b": struct_b, "c": struct_c}, right_broadcast=True
+                            )
 
-                            while simple_params.layout.minmax_depth[0] > 1:
-                                simple_params: ak.Array = ak.flatten(simple_params, axis=-1)
-
-                            simple_params_list: list[tuple] = ak.to_list(simple_params)
+                            flat_params: list[tuple[int, int, int]] = ak.to_list(ak.zip([
+                                ak.flatten(nested_params.a, axis=None),
+                                ak.flatten(nested_params.b, axis=None),
+                                ak.flatten(nested_params.c, axis=None)],
+                                right_broadcast=True
+                            ))
 
                             flat_data: list[Part.Shape] = []
-                            for param in simple_params_list:
-                                pts: list[FreeCAD.Vector] = [FreeCAD.Vector(v[0], v[1], v[2]) for v in param]
-                                flat_data.append(Part.Edge(Part.Arc(pts[0], pts[1], pts[2])))
+                            for param in flat_params:
+                                arc_pts: Points.Points = Points.Points()
+                                arc_pts.addPoints([flat_a[param[0]], flat_b[param[1]], flat_c[param[2]]])
+                                flat_data.append(Part.Edge(
+                                    Part.Arc(arc_pts.Points[0], arc_pts.Points[1], arc_pts.Points[2])
+                                ))
 
                             result: NestedData = NestedData(
                                 data=flat_data,
-                                structure=data_structure
+                                structure=ak.transform(global_index, nested_params.a)
                             )
 
                         elif self._option_box.currentText() == "Degree":
                             nested_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
-                            flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.rad, axis=None),
-                                                                  ak.flatten(nested_params.deg_1, axis=None),
-                                                                  ak.flatten(nested_params.deg_2, axis=None)])
-                            flat_param_list: list[tuple[float, float, float]] = ak.to_list(flat_param_tuples)
 
-                            data_structure: ak.Array = ak.transform(global_index, nested_params.rad)
+                            flat_params: ak.Array = ak.zip([ak.flatten(nested_params.rad, axis=None),
+                                                            ak.flatten(nested_params.deg_1, axis=None),
+                                                            ak.flatten(nested_params.deg_2, axis=None)])
+                            flat_params: list[tuple[float, float, float]] = ak.to_list(flat_params)
+
                             flat_data: list[Part.Shape] = []
-                            for param in flat_param_list:
+                            for param in flat_params:
                                 flat_data.append(Part.makeCircle(
                                     param[0], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1), param[1], param[2]
                                 ))
 
                             result: NestedData = NestedData(
                                 data=flat_data,
-                                structure=data_structure
+                                structure=ak.transform(global_index, nested_params.rad)
                             )
 
                         self._is_dirty: bool = False

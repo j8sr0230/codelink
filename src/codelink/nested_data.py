@@ -15,12 +15,12 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
 
 
 class NestedData:
-	def __init__(self, data: Optional[list[Any]] = None, structure: Union[int, ak.Array] = ak.Array([])):
+	def __init__(self, data: Optional[list[Any]] = None, structure: ak.Array = ak.Array([])):
 		if data is None:
 			data: list[Any] = []
 
 		self._data: list[Any] = data
-		self._structure: Union[int, ak.Array] = structure
+		self._structure: ak.Array = structure
 
 	@property
 	def data(self) -> list[Any]:
@@ -31,12 +31,12 @@ class NestedData:
 		self._data: list[Any] = value
 
 	@property
-	def structure(self) -> Union[int, ak.Array]:
+	def structure(self) -> ak.Array:
 		return self._structure
 
 	@structure.setter
-	def structure(self, value: Union[int, ak.Array]) -> None:
-		self._structure: Union[int, ak.Array] = value
+	def structure(self, value: ak.Array) -> None:
+		self._structure: ak.Array = value
 
 	def __str__(self) -> str:
 		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
@@ -87,11 +87,11 @@ class NestedVector:
 				"z": ak.flatten(self._vector.z, axis=None)
 			})
 		else:
-			flat_vector: ak.Array = ak.zip([
+			flat_vector: ak.Array = ak.to_list(ak.zip([
 				ak.flatten(self._vector.x, axis=None),
 				ak.flatten(self._vector.y, axis=None),
 				ak.flatten(self._vector.z, axis=None)
-			])
+			]))
 
 		return flat_vector, self._structure
 
