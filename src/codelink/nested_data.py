@@ -12,6 +12,8 @@ class NestedData:
 		self._data: Any = data
 		self._structure: ak.Array = structure
 
+	# TODO: Maybe a keep_last_level view here?
+
 	@property
 	def data(self) -> Any:
 		return self._data
@@ -30,17 +32,6 @@ class NestedData:
 
 	def __str__(self) -> str:
 		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
-
-
-def vector_to_nested(vector: ak.Array, last_leve: bool = True) -> NestedData:
-	# Todo: Implement fast ak.contents.RecordArray to NestedData
-	pass
-
-
-def nested_to_vector(vector: NestedData, last_leve: bool = True) -> ak.Array:
-	# Todo: Implement fast NestedData to ak.contents.RecordArray
-	# How: Zip nested_data.structures to ak.contents.RecordArray and replace fields (x, y, z) with flat data
-	pass
 
 
 # def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
