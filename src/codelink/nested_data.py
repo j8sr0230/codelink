@@ -16,42 +16,44 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
 
 class NestedData:
 	def __init__(self, data: Union[ak.Array, list] = ak.Array([0]), structure: ak.Array = ak.Array([0])):
+		self._original_data: Union[ak.Array, list] = data
+
 		if type(data) is ak.Array and data.layout.minmax_depth[0] != 1:
-			self._data: ak.Array = ak.zip({
+			self._flat_data: ak.Array = ak.zip({
 				"x": ak.flatten(data.x, axis=None),
 				"y": ak.flatten(data.y, axis=None),
 				"z": ak.flatten(data.z, axis=None)
 			})
-			self._structure: ak.Array = ak.transform(global_index, data.x)
+			self._data_structure: ak.Array = ak.transform(global_index, data.x)
 		else:
-			self._data: Union[ak.Array, list] = data
-			self._structure: Union[ak.Array, float] = structure
+			self._flat_data: Union[ak.Array, list] = data
+			self._data_structure: Union[ak.Array, float] = structure
 
 	@property
 	def data(self) -> Union[ak.Array, list]:
-		return self._data
+		return self._flat_data
 
 	@data.setter
 	def data(self, value: Union[ak.Array, list]) -> None:
-		self._data: Union[ak.Array, list] = value
+		self._flat_data: Union[ak.Array, list] = value
 
 	@property
 	def structure(self) -> ak.Array:
-		return self._structure
+		return self._data_structure
 
 	@structure.setter
 	def structure(self, value: ak.Array) -> None:
-		self._structure: ak.Array = value
+		self._data_structure: ak.Array = value
 
 	def data_keep_last(self) -> Union[ak.Array, list]:
-		if type(self._data) is ak.Array:
+		if type(self._flat_data) is ak.Array:
 			# This works
-			original_data: ak.Array = ak.zip({"x": self._structure, "y": self._structure, "z": self._structure})
+			original_data: ak.Array = ak.zip({"x": self._data_structure, "y": self._data_structure, "z": self._data_structure})
 
 			# This not
-			original_data["x"] = self._data.x
-			original_data["y"] = self._data.y
-			original_data["z"] = self._data.z
+			original_data["x"] = self._flat_data.x
+			original_data["y"] = self._flat_data.y
+			original_data["z"] = self._flat_data.z
 
 			if original_data.layout.minmax_depth[0] > 2:
 				while original_data.layout.minmax_depth[0] > 2:
@@ -60,13 +62,13 @@ class NestedData:
 			return original_data
 
 	def structure_keep_last(self) -> ak.Array:
-		struct: Union[float, ak.Array] = ak.sum(self._structure)
+		struct: Union[float, ak.Array] = ak.sum(self._data_structure)
 		if type(struct) == ak.Array:
 			struct: ak.Array = ak.transform(global_index, struct)
 		return struct
 
 	def __str__(self) -> str:
-		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
+		return "Data: " + str(self._flat_data) + " / Structure: " + str(self._data_structure)
 
 # def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
 # 	structure_dict: dict[str, Any] = {str(idx): item.structure for idx, item in enumerate(args)}

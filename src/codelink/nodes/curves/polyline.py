@@ -108,12 +108,6 @@ class Polyline(NodeItem):
                             is_cyclic: bool = True
 
                         nested_vectors:  ak.Array = self.input_data(0, args)
-
-                        ne: NestedData = NestedData(nested_vectors)
-
-                        print(ne)
-                        print(ne.data_keep_last(), ne.structure_keep_last())
-
                         simple_vectors: ak.Array = simplify_ak(nested_vectors)
                         simple_tuples: ak.Array = ak.zip([simple_vectors.x, simple_vectors.y, simple_vectors.z])
                         simple_depth: tuple[int, int] = simple_tuples.layout.minmax_depth
