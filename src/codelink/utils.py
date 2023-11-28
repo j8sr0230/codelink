@@ -48,29 +48,18 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
     return cropped_text
 
 
-def vector_to_nested(vector: ak.Array, simplified: bool = False) -> NestedData:
-    if not simplified:
-        data: ak.Array = ak.zip({
-            "x": ak.flatten(vector.x, axis=None),
-            "y": ak.flatten(vector.y, axis=None),
-            "z": ak.flatten(vector.z, axis=None)
-        })
-        structure: ak.Array = ak.transform(global_index, vector.x)
-    else:
-        # TODO: Needs improvement
-        data: ak.Array = ak.copy(vector)
-        while data.layout.minmax_depth[0] > 2:
-            data: ak.Array = ak.flatten(data, axis=-1)
-
-        if vector.layout.minmax_depth[0] <= 2:
-            structure: ak.Array = ak.Array([0])
-        else:
-            structure: ak.Array = ak.transform(global_index, ak.max(vector.x))
+def vector_to_nested(vector: ak.Array) -> NestedData:
+    data: ak.Array = ak.zip({
+        "x": ak.flatten(vector.x, axis=None),
+        "y": ak.flatten(vector.y, axis=None),
+        "z": ak.flatten(vector.z, axis=None)
+    })
+    structure: ak.Array = ak.transform(global_index, vector.x)
 
     return NestedData(data, structure)
 
 
-def nested_to_vector(vector: NestedData, last_leve: bool = True) -> ak.Array:
+def nested_to_vector(vector: NestedData) -> ak.Array:
     # Todo: Implement fast NestedData to ak.contents.RecordArray
     # How: Zip nested_data.structures to ak.contents.RecordArray and replace fields (x, y, z) with flat data
     pass

@@ -1,26 +1,24 @@
-from typing import Any  # , Optional
+from typing import Union
 
 import awkward as ak
 # import numpy as np
 
 
 class NestedData:
-	def __init__(self, data: Any = None, structure: ak.Array = ak.Array([])):
+	def __init__(self, data: Union[ak.Array, list] = None, structure: ak.Array = ak.Array([0])):
 		if data is None:
-			data: list[Any] = []
+			data: Union[ak.Array, list] = []
 
-		self._data: Any = data
-		self._structure: ak.Array = structure
-
-	# TODO: Maybe a keep_last_level view here?
+		self._data: Union[ak.Array, list] = data
+		self._structure: Union[ak.Array, float] = structure
 
 	@property
-	def data(self) -> Any:
+	def data(self) -> Union[ak.Array, list]:
 		return self._data
 
 	@data.setter
-	def data(self, value: Any) -> None:
-		self._data: Any = value
+	def data(self, value: Union[ak.Array, list]) -> None:
+		self._data: Union[ak.Array, list] = value
 
 	@property
 	def structure(self) -> ak.Array:
@@ -29,6 +27,14 @@ class NestedData:
 	@structure.setter
 	def structure(self, value: ak.Array) -> None:
 		self._structure: ak.Array = value
+
+	def data_keep_last(self) -> ak.Array:
+		# TODO: Gets view with last level preserved
+		pass
+
+	def structure_keep_last(self) -> ak.Array:
+		# TODO: Gets view with last level preserved
+		pass
 
 	def __str__(self) -> str:
 		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
