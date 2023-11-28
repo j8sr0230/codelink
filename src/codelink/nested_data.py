@@ -1,35 +1,7 @@
-from typing import Any, Optional, cast
+from typing import Any, Union, Optional, cast
 
 import awkward as ak
 import numpy as np
-
-
-class NestedData:
-	def __init__(self, data: Optional[list[Any]] = None, structure: ak.Array = ak.Array([])):
-		if data is None:
-			data: list[Any] = []
-
-		self._data: list[Any] = data
-		self._structure: ak.Array = structure
-
-	@property
-	def data(self) -> list[Any]:
-		return self._data
-
-	@data.setter
-	def data(self, value: list[Any]) -> None:
-		self._data: list[Any] = value
-
-	@property
-	def structure(self) -> ak.Array:
-		return self._structure
-
-	@structure.setter
-	def structure(self, value: ak.Array) -> None:
-		self._structure: ak.Array = value
-
-	def __str__(self) -> str:
-		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
 
 
 # noinspection PyUnusedLocal
@@ -42,40 +14,86 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
 		)
 
 
+class NestedData:
+	def __init__(self, data: Optional[list[Any]] = None, structure: Union[int, ak.Array] = ak.Array([])):
+		if data is None:
+			data: list[Any] = []
+
+		self._data: list[Any] = data
+		self._structure: Union[int, ak.Array] = structure
+
+	@property
+	def data(self) -> list[Any]:
+		return self._data
+
+	@data.setter
+	def data(self, value: list[Any]) -> None:
+		self._data: list[Any] = value
+
+	@property
+	def structure(self) -> Union[int, ak.Array]:
+		return self._structure
+
+	@structure.setter
+	def structure(self, value: Union[int, ak.Array]) -> None:
+		self._structure: Union[int, ak.Array] = value
+
+	def __str__(self) -> str:
+		return "Data: " + str(self._data) + " / Structure: " + str(self._structure)
+
+
 class NestedVector:
 	def __init__(self, vector: ak.Array = ak.Array([{"x": 0., "y": 0., "z": 0.}])):
-		# Original nested vector
-		self._original_vector: ak.Array = vector
-		self._original_structure: ak.Array = ak.transform(global_index, vector.x)
+		self._vector: ak.Array = vector
+		self._structure: ak.Array = ak.transform(global_index, vector.x)
 
-		# Vector with preserved last nesting level
-		self._simplified_vector: ak.Array = ak.copy(vector)
-		depth: int = vector.layout.minmax_depth[0]
-		reversed_nesting_axes: np.ndarray = np.arange(1, depth - 1)[::-1]
-		for nesting_axis in reversed_nesting_axes:
-			self._simplified_vector = ak.flatten(self._simplified_vector, axis=nesting_axis)
-		self._simplified_structure: ak.Array = ak.firsts(self._original_structure, axis=-1)
-		self._simplified_structure: ak.Array = ak.transform(global_index, self._simplified_structure.to_list())
+	@property
+	def vector(self) -> ak.Array:
+		return self._vector
 
-		# Complete flat vector
-		flat_x: ak.Array = ak.flatten(vector.x, axis=None)
-		flat_y: ak.Array = ak.flatten(vector.y, axis=None)
-		flat_z: ak.Array = ak.flatten(vector.z, axis=None)
-		self.flat_vector: ak.Array = ak.zip({"x": flat_x, "y": flat_y, "z": flat_z})
+	@vector.setter
+	def vector(self, value: ak.Array) -> None:
+		self._vector: ak.Array = value
+		self._structure: ak.Array = ak.transform(global_index, self._vector.x)
 
-		print("Original")
-		self._original_vector.show()
-		print()
+	@property
+	def structure(self) -> ak.Array:
+		return self._structure
 
-		print("Simplified")
-		self._simplified_vector.show()
-		self._simplified_structure.show()
-		print()
+	def simplified(self, as_tuple: bool = False) -> tuple[Union[list[list[tuple]], ak.Array], Union[int, ak.Array]]:
+		depth: int = self._vector.layout.minmax_depth[0]
 
-		print("Flat")
-		self.flat_vector.show()
-		self._original_structure.show()
-		print()
+		simplified_vector: ak.Array = ak.copy(self._vector)
+		nesting_axes: np.ndarray = np.arange(1, depth - 1)
+		for nesting_axis in nesting_axes[::-1]:
+			simplified_vector: ak.Array = ak.flatten(simplified_vector, axis=nesting_axis)
+
+		if as_tuple:
+			simplified_vector: ak.Array = ak.zip([simplified_vector.x, simplified_vector.y, simplified_vector.z])
+			simplified_vector: list[list[tuple]] = ak.to_list(simplified_vector)
+
+		if depth > 1:
+			simplified_structure: ak.Array = ak.transform(global_index, ak.max(self._structure, axis=-1))
+		else:
+			simplified_structure: int = 0
+
+		return simplified_vector, simplified_structure
+
+	def flat(self, as_tuple: bool = False) -> tuple[Union[list[tuple], ak.Array], Union[float, ak.Array]]:
+		if not as_tuple:
+			flat_vector: ak.Array = ak.zip({
+				"x": ak.flatten(self._vector.x, axis=None),
+				"y": ak.flatten(self._vector.y, axis=None),
+				"z": ak.flatten(self._vector.z, axis=None)
+			})
+		else:
+			flat_vector: ak.Array = ak.zip([
+				ak.flatten(self._vector.x, axis=None),
+				ak.flatten(self._vector.y, axis=None),
+				ak.flatten(self._vector.z, axis=None)
+			])
+
+		return flat_vector, self._structure
 
 
 def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
@@ -96,27 +114,6 @@ def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
 
 
 def main() -> None:
-	# start: NestedData = NestedData(
-	# 	data=[0, 1, 2],
-	# 	structure=ak.Array([0, [1, 2]])
-	# )
-	#
-	# stop: NestedData = NestedData(
-	# 	data=[5, 10],
-	# 	structure=ak.Array([0, 1])
-	# )
-	#
-	# step: NestedData = NestedData(
-	# 	data=[1, 2],
-	# 	structure=ak.Array([0, 1])
-	# )
-	#
-	# flat_params, new_struct = nd_zip(start, stop, step)
-	# new_data: list[np.ndarray] = list(map(lambda param: np.arange(param[0], param[1], param[2]), flat_params))
-	# res: NestedData = NestedData(data=new_data, structure=new_struct)
-	#
-	# print(res)
-	# res.structure.show()
 
 	a: ak.Array = ak.Array([
 		[
@@ -125,7 +122,25 @@ def main() -> None:
 			[{"x": 0, "y": 0, "z": 1}]
 		]
 	])
-	ne: NestedVector = NestedVector(a)
+
+	# b: ak.Array = ak.Array([{"x": 1, "y": 0, "z": 0}, {"x": 2, "y": 0, "z": 0}])
+
+	nv: NestedVector = NestedVector(a)
+
+	print("Original")
+	nv.vector.show()
+	print()
+
+	print("Simplified")
+	print(nv.simplified()[0])
+	print(ak.without_field(nv.simplified()[0]))
+	print(nv.simplified()[1])
+	print()
+
+	print("Flat")
+	print(nv.flat()[0])
+	print(nv.flat()[1])
+	print()
 
 
 if __name__ == "__main__":
