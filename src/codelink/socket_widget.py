@@ -176,7 +176,10 @@ class SocketWidget(QtWidgets.QWidget):
 
         return result
 
-    def perform_socket_operation(self, input_data: Union[list, NestedData]) -> Union[list, NestedData]:
+    def perform_socket_operation(
+            self, input_data: Union[list, NestedData, ak.Array]
+    ) -> Union[list, NestedData,ak.Array]:
+
         if type(input_data) == list:
             if self.socket_options_state()[0]:  # Flatten
                 input_data: list = flatten(input_data)
@@ -184,7 +187,8 @@ class SocketWidget(QtWidgets.QWidget):
                 input_data: list = simplify(input_data)
             if self.socket_options_state()[2]:  # Graft
                 input_data: list = graft(input_data)
-        else:
+
+        elif type(input_data) == NestedData:
             if self.socket_options_state()[0]:  # Flatten
                 input_data: NestedData = NestedData(input_data.data, ak.flatten(input_data.structure, axis=None))
             if self.socket_options_state()[1]:  # Simplify
@@ -193,6 +197,32 @@ class SocketWidget(QtWidgets.QWidget):
                 input_data: NestedData = NestedData(
                     input_data.data, ak.unflatten(input_data.structure, axis=-1, counts=1)
                 )
+
+        elif type(input_data) == ak.Array:
+            if len(ak.fields(input_data)) == 3:
+                if self.socket_options_state()[0]:  # Flatten
+                    x: ak.Array = ak.flatten(input_data.x, axis=None)
+                    y: ak.Array = ak.flatten(input_data.y, axis=None)
+                    z: ak.Array = ak.flatten(input_data.z, axis=None)
+                    input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
+
+                if self.socket_options_state()[1]:  # Simplify
+                    x: ak.Array = simplify_ak(input_data.x)
+                    y: ak.Array = simplify_ak(input_data.y)
+                    z: ak.Array = simplify_ak(input_data.z)
+                    input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
+
+                if self.socket_options_state()[2]:  # Graft
+                    input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
+            else:
+                if self.socket_options_state()[0]:  # Flatten
+                    input_data: ak.Array = ak.flatten(input_data, axis=None)
+
+                if self.socket_options_state()[1]:  # Simplify
+                    input_data: ak.Array = simplify_ak(input_data)
+
+                if self.socket_options_state()[2]:  # Graft
+                    input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
 
         return input_data
 
