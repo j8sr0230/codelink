@@ -27,7 +27,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from utils import flatten_it, simplify_it, graft_re
+from utils import flatten, simplify, graft
 from property_model import PropertyModel
 from pin_item import PinItem
 
@@ -175,11 +175,11 @@ class SocketWidget(QtWidgets.QWidget):
 
     def perform_socket_operation(self, input_data: list) -> list:
         if self.socket_options_state()[0]:  # Flatten
-            input_data: list = flatten_it(input_data)
+            input_data: list = flatten(input_data)
         if self.socket_options_state()[1]:  # Simplify
-            input_data: list = simplify_it(input_data)
+            input_data: list = simplify(input_data)
         if self.socket_options_state()[2]:  # Graft
-            input_data: list = graft_re(input_data)
+            input_data: list = graft(input_data)
 
         return input_data
 

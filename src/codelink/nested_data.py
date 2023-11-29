@@ -3,7 +3,7 @@ from typing import Any, Union, Optional
 import awkward as ak
 import numpy as np
 
-from utils import map_re, global_index
+from utils import global_index
 
 
 class NestedData:
@@ -86,58 +86,3 @@ class NestedVector:
 			]))
 
 		return flat_vector, self._structure
-
-
-def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
-	structure_dict: dict[str, Any] = {str(idx): item.structure for idx, item in enumerate(args)}
-	structure_zip: ak.Array = ak.zip(structure_dict)
-
-	new_structure: ak.Array = structure_zip[structure_zip.fields[0]]
-
-	flat_structure_lists: list[ak.Array] = [ak.flatten(structure_zip[key], axis=None) for key in structure_zip.fields]
-	flat_structure_zip: ak.Array = ak.zip(flat_structure_lists)
-
-	flat_param_list: list[list[Any, ...]] = [
-		[args[key].data[index] for key, index in enumerate(structure_tuple)]
-		for structure_tuple in flat_structure_zip.to_list()
-	]
-
-	return flat_param_list, new_structure
-
-
-def main() -> None:
-	a: ak.Array = ak.Array([
-		[[
-			[{"x": 1, "y": 0, "z": 0}, {"x": 99, "y": 0, "z": 0}],
-			[{"x": 0, "y": 1, "z": 0}],
-			[{"x": 0, "y": 0, "z": 1}]
-		]]
-	])
-
-	# b: ak.Array = ak.Array([{"x": 1, "y": 0, "z": 0}, {"x": 2, "y": 0, "z": 0}])
-
-	nv: NestedVector = NestedVector(a)
-
-	print("Original")
-	nv.vector.show()
-	print()
-
-	print("Simplified")
-	print(nv.simplified()[0])
-	print(nv.simplified()[1])
-	print()
-
-	print("Flat")
-	print(nv.flat()[0])
-	print(nv.flat()[1])
-	print()
-
-	print("Original from Simplified")
-	simplified_data, simplified_structure = nv.simplified()
-	orig_data: ak.Array = ak.Array(
-		map_re(lambda idx: ak.to_list(simplified_data)[idx], ak.to_list(simplified_structure)))
-	orig_data.show()
-
-
-if __name__ == "__main__":
-	main()

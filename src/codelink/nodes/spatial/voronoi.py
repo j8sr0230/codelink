@@ -42,7 +42,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_ak, global_index, map_last_level
+from utils import simplify_ak, global_index, map_list
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -130,7 +130,7 @@ class VoronoiNode(NodeItem):
             vor_vertices_uv = np.array([target.valueAt(uv[0], uv[1]) for uv in uv_vor.vertices])
             vor_regions_uv = [vor_vertices_uv[region].tolist() for region in uv_vor.regions
                               if all([-1 not in region]) and len(region) > 2]
-            vor_regions_vector = map_last_level(vor_regions_uv, float, lambda v: FreeCAD.Vector(v[0], v[1], v[2]))
+            vor_regions_vector = map_list(lambda v: FreeCAD.Vector(v[0], v[1], v[2]), vor_regions_uv)
 
             vor_wires: list[Part.Shape] = [Part.makePolygon(region, True) for region in vor_regions_vector]
             vor_faces: list[Part.Shape] = [Part.Face(wire) for wire in vor_wires]

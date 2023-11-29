@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import map_re
+from utils import map_value
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -250,15 +250,15 @@ class DistributePoints(NodeItem):
                             ak.zip([shape.structure, count, distance], right_broadcast=True)
                         )
 
-                        nested_params: list[tuple[float, float, float]] = map_re(
+                        nested_params: list[tuple[float, float, float]] = map_value(
                             lambda t: (shape.data[t[0]], t[1], t[2]), nested_params
                         )
 
                         if self._option_box.currentText() == "Face":
-                            result: ak.Array = ak.Array(map_re(self.populate_positions_face, nested_params))
+                            result: ak.Array = ak.Array(map_value(self.populate_positions_face, nested_params))
 
                         elif self._option_box.currentText() == "Solid":
-                            result: ak.Array = ak.Array(map_re(self.populate_positions_solid, nested_params))
+                            result: ak.Array = ak.Array(map_value(self.populate_positions_solid, nested_params))
 
                         result: ak.Array = ak.flatten(result, axis=-1)
 

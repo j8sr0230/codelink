@@ -31,7 +31,7 @@ import awkward as ak
 import PySide2.QtWidgets as QtWidgets
 import numpy as np
 
-from utils import map_re, global_index
+from utils import map_value, global_index
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
@@ -86,7 +86,7 @@ class ShapeContent(NodeItem):
 
                         if len(flat_data) > 0:
                             data_structure: ak.Array = ak.Array(
-                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
                         else:
@@ -125,7 +125,7 @@ class ShapeContent(NodeItem):
 
                         if len(flat_data) > 0:
                             data_structure: ak.Array = ak.Array(
-                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
                         else:
@@ -164,7 +164,7 @@ class ShapeContent(NodeItem):
 
                         if len(flat_data) > 0:
                             data_structure: ak.Array = ak.Array(
-                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
                         else:
@@ -203,7 +203,7 @@ class ShapeContent(NodeItem):
 
                         if len(flat_data) > 0:
                             data_structure: ak.Array = ak.Array(
-                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
                         else:
@@ -242,7 +242,7 @@ class ShapeContent(NodeItem):
 
                         if len(flat_data) > 0:
                             data_structure: ak.Array = ak.Array(
-                                map_re(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
+                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
                             )
                             data_structure: ak.Array = ak.transform(global_index, data_structure)
                         else:
@@ -273,11 +273,11 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
-                        vertexes: list[Any] = map_re(
+                        vertexes: list[Any] = map_value(
                             lambda idx: nested_data.data[idx].Vertexes, ak.to_list(nested_data.structure)
                         )
                         vectors: ak.Array = ak.Array(
-                            map_re(lambda v: {"x": v.Point[0], "y": v.Point[1], "z": v.Point[2]}, vertexes)
+                            map_value(lambda v: {"x": v.Point[0], "y": v.Point[1], "z": v.Point[2]}, vertexes)
                         )
 
                         result: ak.Array = ak.flatten(vectors, axis=-1)

@@ -30,7 +30,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_re
+from utils import map_value
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 
@@ -76,7 +76,7 @@ class Range(NodeItem):
                         step: ak.Array = self.input_data(2, args)
 
                         param_zip: list[tuple[float, float, float]] = ak.to_list(ak.zip([start, stop, step]))
-                        result: ak.Array = ak.Array(map_re(self.make_range, param_zip))
+                        result: ak.Array = ak.Array(map_value(self.make_range, param_zip))
                         result: ak.Array = ak.flatten(result, axis=-1)
 
                         self._is_dirty: bool = False
