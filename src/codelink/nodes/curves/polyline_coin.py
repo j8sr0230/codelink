@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any, cast
+from typing import TYPE_CHECKING, Optional, cast
 import warnings
 import importlib
 import inspect
@@ -36,8 +36,7 @@ from pivy import coin
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak, global_index
-from nested_data import NestedData
+from nested_data import NestedData, NestedVector
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone
@@ -133,24 +132,21 @@ class PolylineCoin(NodeItem):
                         if self._option_box.currentText() == "Cyclic":
                             is_cyclic: bool = True
 
-                        nested_vectors: ak.Array = self.input_data(0, args)
-                        simple_vectors: ak.Array = simplify_ak(nested_vectors)
-                        simple_tuples: ak.Array = ak.zip([simple_vectors.x, simple_vectors.y, simple_vectors.z])
-                        simple_depth: tuple[int, int] = simple_tuples.layout.minmax_depth
-                        simple_list: list[Any] = ak.to_list(simple_tuples)
+                        vectors: ak.Array = self.input_data(0, args)
+
+                        nested_vector: NestedVector = NestedVector(vector=vectors)
+                        simple_vec, simple_struct = nested_vector.simplified(as_tuple=True)
 
                         flat_data: list[coin.SoSeparator] = []
-                        if simple_depth[0] == 1:
-                            data_structure: ak.Array = ak.Array([0])
-                            flat_data.append(self.make_polyline_sep(simple_list, is_cyclic))
+                        if type(simple_struct) is int:
+                            flat_data.append(self.make_polyline_sep(cast(list[tuple], simple_vec), is_cyclic))
                         else:
-                            data_structure: ak.Array = ak.max(ak.ones_like(nested_vectors.x), axis=-1)
-                            for ctrl_pts_list in simple_list:
+                            for ctrl_pts_list in simple_vec:
                                 flat_data.append(self.make_polyline_sep(ctrl_pts_list, is_cyclic))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                            structure=simple_struct if type(simple_struct) == ak.Array else ak.Array([0])
                         )
 
                         self._is_dirty: bool = False

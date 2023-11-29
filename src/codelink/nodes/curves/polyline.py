@@ -124,7 +124,7 @@ class Polyline(NodeItem):
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=simple_struct
+                            structure=simple_struct if type(simple_struct) == ak.Array else ak.Array([0])
                         )
 
                         self._is_dirty: bool = False

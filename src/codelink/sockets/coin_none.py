@@ -79,12 +79,12 @@ class CoinNone(SocketWidget):
 
 	def perform_socket_operation(self, input_data: NestedData) -> NestedData:
 		if self.socket_options_state()[0]:  # Flatten
-			input_data.structure = ak.flatten(input_data.structure, axis=None)
-
+			input_data: NestedData = NestedData(input_data.data, ak.flatten(input_data.structure, axis=None))
 		if self.socket_options_state()[1]:  # Simplify
-			input_data.structure = simplify_ak(input_data.structure)
-
+			input_data: NestedData = NestedData(input_data.data, simplify_ak(input_data.structure))
 		if self.socket_options_state()[2]:  # Graft
-			input_data.structure = ak.unflatten(input_data.structure, axis=-1, counts=1)
+			input_data: NestedData = NestedData(
+				input_data.data, ak.unflatten(input_data.structure, axis=-1, counts=1)
+			)
 
 		return input_data
