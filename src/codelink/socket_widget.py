@@ -178,7 +178,7 @@ class SocketWidget(QtWidgets.QWidget):
 
     def perform_socket_operation(
             self, input_data: Union[list, NestedData, ak.Array]
-    ) -> Union[list, NestedData,ak.Array]:
+    ) -> Union[list, NestedData, ak.Array]:
 
         if type(input_data) == list:
             if self.socket_options_state()[0]:  # Flatten

@@ -137,6 +137,7 @@ class Slider(NodeItem):
         data_dict: dict = super().__getstate__()
         data_dict["Slider Min"] = self._slider_min.text()
         data_dict["Slider Max"] = self._slider_max.text()
+        data_dict["Slider Value"] = self._slider_value.text()
         return data_dict
 
     def __setstate__(self, state: dict):
@@ -144,8 +145,11 @@ class Slider(NodeItem):
         self.input_socket_widgets[0].input_widget.blockSignals(True)
         self._slider_min.setText(state["Slider Min"])
         self._slider_max.setText(state["Slider Max"])
+        self._slider_value.setText(state["Slider Value"])
+
         self.input_socket_widgets[0].input_widget.setMinimum(int(state["Slider Min"]))
         self.input_socket_widgets[0].input_widget.setMaximum(int(state["Slider Max"]))
+        self.input_socket_widgets[0].input_widget.setValue(int(state["Slider Value"]))
         self.input_socket_widgets[0].input_widget.blockSignals(False)
 
         cast(QtCore.SignalInstance, self.input_socket_widgets[0].input_widget.valueChanged).connect(
