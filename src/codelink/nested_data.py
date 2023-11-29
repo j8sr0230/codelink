@@ -1,17 +1,9 @@
-from typing import Any, Union, Optional, cast
+from typing import Any, Union, Optional
 
 import awkward as ak
 import numpy as np
 
-
-# noinspection PyUnusedLocal
-def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
-	if layout.is_numpy:
-		layout: np.ndarray = cast(np.ndarray, layout)
-		# noinspection PyTypeChecker
-		return ak.contents.NumpyArray(
-			np.arange(0, layout.data.size)
-		)
+from utils import map_re, global_index
 
 
 class NestedData:
@@ -114,13 +106,12 @@ def nd_zip(*args) -> tuple[list[list[Any, ...]], ak.Array]:
 
 
 def main() -> None:
-
 	a: ak.Array = ak.Array([
-		[
+		[[
 			[{"x": 1, "y": 0, "z": 0}, {"x": 99, "y": 0, "z": 0}],
 			[{"x": 0, "y": 1, "z": 0}],
 			[{"x": 0, "y": 0, "z": 1}]
-		]
+		]]
 	])
 
 	# b: ak.Array = ak.Array([{"x": 1, "y": 0, "z": 0}, {"x": 2, "y": 0, "z": 0}])
@@ -133,7 +124,6 @@ def main() -> None:
 
 	print("Simplified")
 	print(nv.simplified()[0])
-	print(ak.without_field(nv.simplified()[0]))
 	print(nv.simplified()[1])
 	print()
 
@@ -141,6 +131,12 @@ def main() -> None:
 	print(nv.flat()[0])
 	print(nv.flat()[1])
 	print()
+
+	print("Original from Simplified")
+	simplified_data, simplified_structure = nv.simplified()
+	orig_data: ak.Array = ak.Array(
+		map_re(lambda idx: ak.to_list(simplified_data)[idx], ak.to_list(simplified_structure)))
+	orig_data.show()
 
 
 if __name__ == "__main__":

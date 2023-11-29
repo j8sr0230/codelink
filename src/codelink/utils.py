@@ -29,8 +29,6 @@ import awkward as ak
 
 import PySide2.QtGui as QtGui
 
-from nested_data import NestedData
-
 
 def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
     font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
@@ -46,23 +44,6 @@ def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.Q
         cropped_text: str = cropped_text[:len(text)]
 
     return cropped_text
-
-
-def vector_to_nested(vector: ak.Array) -> NestedData:
-    data: ak.Array = ak.zip({
-        "x": ak.flatten(vector.x, axis=None),
-        "y": ak.flatten(vector.y, axis=None),
-        "z": ak.flatten(vector.z, axis=None)
-    })
-    structure: ak.Array = ak.transform(global_index, vector.x)
-
-    return NestedData(data, structure)
-
-
-def nested_to_vector(vector: NestedData) -> ak.Array:
-    # Todo: Implement fast NestedData to ak.contents.RecordArray
-    # How: Zip nested_data.structures to ak.contents.RecordArray and replace fields (x, y, z) with flat data
-    pass
 
 
 def flatten_it(nested_list):
