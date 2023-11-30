@@ -138,4 +138,3 @@ class ValueLine(SocketWidget):
 
 	def editing_finished(self) -> None:
 		self.validate_input()
-		self.clearFocus()
