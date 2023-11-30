@@ -123,7 +123,6 @@ class ValueLine(SocketWidget):
 	def update_all(self):
 		super().update_all()
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
-		self.clearFocus()
 
 	def validate_input(self):
 		last_value: float = self.prop_model.properties["Value"]

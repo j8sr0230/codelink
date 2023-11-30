@@ -52,7 +52,7 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             super().keyPressEvent(event)
             if event.key() == QtCore.Qt.Key_Return:
                 self.deselect()
-                self.parentWidget().parentWidget().setFocus()
+                QtWidgets.QApplication.topLevelWidgets()[0].setFocus()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
