@@ -725,6 +725,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
 
         if self._zoom_level < 8:
             # self.setEnabled(False)
+            self.content_widget.clearFocus()
             self.content_widget.hide()
             for socket_widget in self._socket_widgets:
                 socket_widget.pin.hide()

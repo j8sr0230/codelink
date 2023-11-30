@@ -54,6 +54,9 @@ class NumberInputWidget(QtWidgets.QLineEdit):
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()
 
+        self.parentWidget().clearFocus()
+        self.setFocus()
+
         if event.modifiers() == QtCore.Qt.ShiftModifier:
             if event.angleDelta().y() > 0:
                 self.setText(str(round(float(self.text()) + 10, 2)))
