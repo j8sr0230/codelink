@@ -27,7 +27,6 @@ import warnings
 import inspect
 
 import awkward as ak
-import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -35,13 +34,14 @@ import PySide2.QtWidgets as QtWidgets
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.value_line import ValueLine
+from sockets.bool_checkbox import BoolCheckBox
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
-class ScalarFunctions(NodeItem):
-    REG_NAME: str = "Scalar Functions"
+class ScalarCompare(NodeItem):
+    REG_NAME: str = "Scalar Compare"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -51,7 +51,7 @@ class ScalarFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget()
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Sqrt", "Exp", "Ln"])
+        self._option_box.addItems(["Greater", "Greater or Equal", "Smaller", "Smaller or Equal", "Equal"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -66,8 +66,8 @@ class ScalarFunctions(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ValueLine(undo_stack=self._undo_stack, name="A", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
-                      parent_node=self)
+            BoolCheckBox(undo_stack=self._undo_stack, name="Res", content_value="<No Input>", is_input=False,
+                         parent_node=self)
         ]
 
         # Listeners
@@ -75,43 +75,18 @@ class ScalarFunctions(NodeItem):
 
     def update_socket_widgets(self) -> None:
         # Hack to prevent cyclic imports
-        add_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "AddSocketCommand")
-        remove_socket_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveSocketCommand")
-        remove_edge_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "RemoveEdgeCommand")
         set_op_idx_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "SetOptionIndexCommand")
-        emit_dag_changed_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
+        execute_dag_cmd_cls: type = getattr(importlib.import_module("undo_commands"), "EmitDagChangedCommand")
 
         last_option_index: int = self._option_box.last_index
-        current_option_name: str = self._option_box.currentText()
         current_option_index: int = self._option_box.currentIndex()
-        input_widget_count: int = len(self.input_socket_widgets)
 
         self._undo_stack.beginMacro("Changes option box")
-        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
-
-        if current_option_name in ("Sqrt", "Exp", "Ln"):
-            while input_widget_count > 1:
-                remove_idx: int = len(self.input_socket_widgets) - 1
-                remove_socket: SocketWidget = self._socket_widgets[remove_idx]
-                for edge in remove_socket.pin.edges:
-                    self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
-
-                self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
-                input_widget_count -= 1
-
-        else:
-            while input_widget_count < 2:
-                new_socket_widget: ValueLine = ValueLine(
-                    undo_stack=self._undo_stack, name="B", content_value=.0, is_input=True, parent_node=self
-                )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
-
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self))
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
         )
-        self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self, on_redo=True))
+        self._undo_stack.push(execute_dag_cmd_cls(self.scene(), self, on_redo=True))
         self._undo_stack.endMacro()
 
     # --------------- Node eval methods ---------------
@@ -125,39 +100,27 @@ class ScalarFunctions(NodeItem):
                 try:
                     try:
                         a: ak.Array = self.input_data(0, args)
+                        b: ak.Array = self.input_data(1, args)
 
-                        if len(args) == 2:
-                            b: ak.Array = self.input_data(1, args)
+                        if self._option_box.currentText() == "Greater":
+                            result: ak.Array = ak.Array(a > b)
 
-                            if self._option_box.currentText() == "Add":
-                                result: ak.Array = a + b
+                        elif self._option_box.currentText() == "Greater or Equal":
+                            result: ak.Array = ak.Array(a >= b)
 
-                            elif self._option_box.currentText() == "Sub":
-                                result: ak.Array = a - b
+                        elif self._option_box.currentText() == "Smaller":
+                            result: ak.Array = ak.Array(a < b)
 
-                            elif self._option_box.currentText() == "Mul":
-                                result: ak.Array = a * b
+                        elif self._option_box.currentText() == "Smaller or Equal":
+                            result: ak.Array = ak.Array(a <= b)
 
-                            elif self._option_box.currentText() == "Div":
-                                result: ak.Array = a / b
-
-                            elif self._option_box.currentText() == "Pow":
-                                result: ak.Array = a ** b
-
-                        if len(args) == 1:
-                            if self._option_box.currentText() == "Sqrt":
-                                result: np.ndarray = np.sqrt(a)
-
-                            elif self._option_box.currentText() == "Exp":
-                                result: np.ndarray = np.exp(a)
-
-                            elif self._option_box.currentText() == "Ln":
-                                result: np.ndarray = np.log(a)
+                        elif self._option_box.currentText() == "Equal":
+                            result: ak.Array = ak.Array(a == b)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Scalar functions executed")
+                        print("Scalar compare executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True

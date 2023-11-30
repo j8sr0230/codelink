@@ -42,7 +42,7 @@ class NumberInputWidget(QtWidgets.QLineEdit):
 
         return self._last_valid_value
 
-    def set_input_data(self, value: Union[bool, float, str]):
+    def set_input_data(self, value: Union[bool, float, str]) -> None:
         self.setText(str(value))
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
@@ -83,6 +83,26 @@ class NumberInputWidget(QtWidgets.QLineEdit):
 
         self.deselect()
         self.selectAll()
+
+    def focusNextPrevChild(self, forward: bool) -> bool:
+        return super().focusNextPrevChild(forward)
+
+
+class BoolInputWidget(QtWidgets.QCheckBox):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+        super().__init__(parent)
+
+    def input_data(self):
+        return self.checkStateSet()
+
+    def set_input_data(self, value: Union[bool, float, str]) -> None:
+        self.setChecked(True) if value is True else self.setChecked(False)
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
+            event.ignore()
+        else:
+            super().keyPressEvent(event)
 
     def focusNextPrevChild(self, forward: bool) -> bool:
         return super().focusNextPrevChild(forward)

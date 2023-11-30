@@ -413,11 +413,12 @@ NODE_STYLE: str = """
 		outline: none;
 	}
 	
-	QSlider{
-		min-height: 15px;
-		max-height: 15px;
+	QCheckBox{
+		color: #E5E5E5;
+		background-color: #545454;
 		min-width: 5px;
-		background-color: #303030;
+		min-height: 24px;
+		max-height: 24px;
 		margin-left: 0px;
 		margin-right: 0px;
 		margin-top: 0px;
@@ -426,20 +427,5 @@ NODE_STYLE: str = """
 		padding-right: 10px;
 		padding-top: 0px;
 		padding-bottom: 0px;
-	}
-	
-	QSlider::groove:horizontal{
-		border: 1px solid #191919;
-		margin: 0px;
-		padding: 0px;
-	}
-	
-	QSlider::handle:horizontal{
-		background-color: #545454;
-		border: 1px solid #545454;
-		height: 15px;
-		width: 15px;
-		margin: 0px;
-		padding: 0px;
 	}
 """
