@@ -67,6 +67,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._last_pin: Optional[PinItem] = None
         self._temp_edge: Optional[EdgeItem] = None
         self._new_node: Optional[NodeItem] = None
+        self._focused_widgets: list[QtWidgets] = []
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -77,6 +78,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self.setWindowTitle("codelink")
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.verticalScrollBar().blockSignals(True)
+        self.horizontalScrollBar().blockSignals(True)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setRubberBandSelectionMode(QtCore.Qt.ContainsItemShape)
@@ -316,14 +319,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._temp_edge.end_pin.setPos(self.mapToScene(event.pos()))
                 self.ensureVisible(self._temp_edge.end_pin, self._scroll_border, self._scroll_border)
 
-        if self._mode == "SCENE_DRAG":
+        elif self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-        if self._mode == "EDGE_CUT":
+        elif self._mode == "EDGE_CUT":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             self._cutter.end_point = current_pos
 
@@ -333,12 +336,22 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(item) is EdgeItem:
                     self._undo_stack.push(RemoveEdgeCommand(self.scene(), cast(EdgeItem, item)))
 
-        if self._mode == "NODE_POSITIONING":
+        elif self._mode == "NODE_POSITIONING":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             self._new_node.setPos(
                 QtCore.QPoint(current_pos.x() - self._new_node.boundingRect().center().x(),
                               current_pos.y() - self._new_node.boundingRect().center().y())
             )
+
+        elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+            content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
+
+            self._focused_widgets: list[QtWidgets] = [
+                child for child in content_widget.children() if (hasattr(child, "input_widget") and
+                                                                 child.input_widget is not None and
+                                                                 child.input_widget.hasFocus())]
+        else:
+            self._focused_widgets: list[QtWidgets.QWidget] = []
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -432,32 +445,35 @@ class EditorWidget(QtWidgets.QGraphicsView):
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        event.accept()
-
         self._last_pos = self.mapToScene(event.pos())
 
-        if event.angleDelta().y() > 0:
-            if self._zoom_level < self._zoom_level_range[1]:
-                self._zoom_level += 1
-                self.scale(1.25, 1.25)
+        if len(self._focused_widgets) == 0:
+            event.accept()
+
+            if event.angleDelta().y() > 0:
+                if self._zoom_level < self._zoom_level_range[1]:
+                    self._zoom_level += 1
+                    self.scale(1.25, 1.25)
+            else:
+                if self._zoom_level > self._zoom_level_range[0]:
+                    self._zoom_level -= 1
+                    self.scale(1 / 1.25, 1 / 1.25)
+
+            # Hack: Fixes the scene drifting while zooming
+            drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
+            pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
+            self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+            self.translate(pos_delta.x(), pos_delta.y())
+            self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+
+            # if self._zoom_level < 8:
+            #     self.setInteractive(False)
+            # else:
+            #     self.setInteractive(True)
+
+            cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
         else:
-            if self._zoom_level > self._zoom_level_range[0]:
-                self._zoom_level -= 1
-                self.scale(1 / 1.25, 1 / 1.25)
-
-        # Hack: Fixes the scene drifting while zooming
-        drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
-        pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
-        self.translate(pos_delta.x(), pos_delta.y())
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
-
-        # if self._zoom_level < 8:
-        #     self.setInteractive(False)
-        # else:
-        #     self.setInteractive(True)
-
-        cast(QtCore.SignalInstance, self.zoom_level_changed).emit(self._zoom_level)
+            super().wheelEvent(event)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
 
@@ -823,9 +839,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
                                 is_flatten=socket_widget.prop_model.properties["Flatten"],
                                 is_simplify=socket_widget.prop_model.properties["Simplify"],
                                 is_graft=socket_widget.prop_model.properties["Graft"],
-                                is_graft_topo=socket_widget.prop_model.properties["Graft Topo"],
-                                is_unwrap=socket_widget.prop_model.properties["Unwrap"],
-                                is_wrap=socket_widget.prop_model.properties["Wrap"],
                                 parent_node=grp_node
                             )
                             new_socket_widget.is_input = socket_widget.is_input

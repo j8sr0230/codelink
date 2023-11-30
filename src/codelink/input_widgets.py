@@ -20,8 +20,9 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, Union
+from typing import Optional, Union, cast
 
+import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
@@ -49,6 +50,29 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             event.ignore()
         else:
             super().keyPressEvent(event)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+        event.accept()
+
+        if event.modifiers() == QtCore.Qt.ShiftModifier:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + 10, 2)))
+            else:
+                self.setText(str(round(float(self.text()) - 10, 2)))
+
+        elif event.modifiers() == QtCore.Qt.ControlModifier:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + .1, 2)))
+            else:
+                self.setText(str(round(float(self.text()) - .1, 2)))
+
+        else:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + 1, 2)))
+            else:
+                self.setText(str(round(float(self.text()) - 1, 2)))
+
+        cast(QtCore.SignalInstance, self.editingFinished).emit()
 
     def focusNextPrevChild(self, forward: bool) -> bool:
         return super().focusNextPrevChild(forward)
