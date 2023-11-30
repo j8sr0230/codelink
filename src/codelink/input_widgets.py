@@ -50,6 +50,9 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             event.ignore()
         else:
             super().keyPressEvent(event)
+            if event.key() == QtCore.Qt.Key_Return:
+                self.deselect()
+                self.parentWidget().parentWidget().setFocus()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         event.accept()

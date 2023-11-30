@@ -345,11 +345,10 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
             content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
-
             self._focused_widgets: list[QtWidgets] = [
-                child for child in content_widget.children() if (hasattr(child, "input_widget") and
-                                                                 child.input_widget is not None and
-                                                                 child.input_widget.hasFocus())]
+                child for child in content_widget.children()
+                if (hasattr(child, "input_widget") and child.input_widget is not None and child.input_widget.hasFocus())
+            ]
         else:
             self._focused_widgets: list[QtWidgets.QWidget] = []
 
