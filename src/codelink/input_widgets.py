@@ -77,6 +77,9 @@ class NumberInputWidget(QtWidgets.QLineEdit):
 
         cast(QtCore.SignalInstance, self.editingFinished).emit()
 
+        self.deselect()
+        self.selectAll()
+
     def focusNextPrevChild(self, forward: bool) -> bool:
         return super().focusNextPrevChild(forward)
 
