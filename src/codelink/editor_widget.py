@@ -319,14 +319,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._temp_edge.end_pin.setPos(self.mapToScene(event.pos()))
                 self.ensureVisible(self._temp_edge.end_pin, self._scroll_border, self._scroll_border)
 
-        elif self._mode == "SCENE_DRAG":
+        if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
 
-        elif self._mode == "EDGE_CUT":
+        if self._mode == "EDGE_CUT":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             self._cutter.end_point = current_pos
 
@@ -336,20 +336,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 if type(item) is EdgeItem:
                     self._undo_stack.push(RemoveEdgeCommand(self.scene(), cast(EdgeItem, item)))
 
-        elif self._mode == "NODE_POSITIONING":
+        if self._mode == "NODE_POSITIONING":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             self._new_node.setPos(
                 QtCore.QPoint(current_pos.x() - self._new_node.boundingRect().center().x(),
                               current_pos.y() - self._new_node.boundingRect().center().y())
             )
 
-        elif type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-            content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
-            self._focused_widgets: list[QtWidgets] = [
-                child for child in content_widget.children()
-                if (hasattr(child, "input_widget") and child.input_widget is not None and child.input_widget.hasFocus())
-            ]
-        else:
+        if type(self.itemAt(event.pos())) != QtWidgets.QGraphicsProxyWidget:
             self._focused_widgets: list[QtWidgets.QWidget] = []
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
@@ -435,6 +429,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if self._mode == "NODE_POSITIONING":
             self.scene().clearFocus()
+
+        if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+            content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
+            self._focused_widgets: list[QtWidgets] = [
+                child for child in content_widget.children()
+                if (hasattr(child, "input_widget") and child.input_widget is not None and child.input_widget.hasFocus())
+            ]
 
         # Resets mouse button state, widget mode and cursor
         self._lm_pressed: bool = False
