@@ -47,7 +47,7 @@ class NumberInputWidget(QtWidgets.QLineEdit):
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
-            event.ignore()
+            pass  # event.ignore()
         else:
             super().keyPressEvent(event)
             if event.key() == QtCore.Qt.Key_Return:
