@@ -53,7 +53,7 @@ class BoolCheckBox(SocketWidget):
 		self._pin_item.pin_type = bool
 
 		# Input widget setup
-		self._input_widget: BoolInputWidget = BoolInputWidget()
+		self._input_widget: BoolInputWidget = BoolInputWidget(undo_stack)
 		self._input_widget.setMinimumWidth(5)
 		self._input_widget.setLayoutDirection(QtCore.Qt.RightToLeft)
 		self._input_widget.setChecked(bool(self._prop_model.properties["Value"]))

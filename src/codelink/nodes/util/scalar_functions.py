@@ -48,7 +48,7 @@ class ScalarFunctions(NodeItem):
         super().__init__(pos, undo_stack, name, parent)
 
         # Option combo box
-        self._option_box: OptionBoxWidget = OptionBoxWidget()
+        self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
         self._option_box.addItems(["Add", "Sub", "Mul", "Div", "Pow", "Sqrt", "Exp", "Ln"])

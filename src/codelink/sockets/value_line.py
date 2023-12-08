@@ -53,7 +53,7 @@ class ValueLine(SocketWidget):
 		self._pin_item.pin_type = float
 
 		# Input widget setup
-		self._input_widget: NumberInputWidget = NumberInputWidget()
+		self._input_widget: NumberInputWidget = NumberInputWidget(undo_stack)
 		self._input_widget.setMinimumWidth(5)
 		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
@@ -137,3 +137,4 @@ class ValueLine(SocketWidget):
 
 	def editing_finished(self) -> None:
 		self.validate_input()
+		# self.clearFocus()

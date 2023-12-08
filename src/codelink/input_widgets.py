@@ -28,9 +28,10 @@ import PySide2.QtGui as QtGui
 
 
 class NumberInputWidget(QtWidgets.QLineEdit):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
         self._last_valid_value: float = 0
 
     def input_data(self):
@@ -46,19 +47,16 @@ class NumberInputWidget(QtWidgets.QLineEdit):
         self.setText(str(value))
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
-            pass  # event.ignore()
+        if event.matches(QtGui.QKeySequence.Undo):
+            self._undo_stack.undo()
+        elif event.matches(QtGui.QKeySequence.Redo):
+            self._undo_stack.redo()
+        elif event.key() == QtCore.Qt.Key_Return:
+            QtWidgets.QApplication.focusWidget().clearFocus()
         else:
             super().keyPressEvent(event)
-            if event.key() == QtCore.Qt.Key_Return:
-                self.deselect()
-                # QtWidgets.QApplication.topLevelWidgets()[0].setFocus()
-                self.parentWidget().parentWidget().setFocus()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        event.accept()
-
-        self.parentWidget().clearFocus()
         self.setFocus()
 
         if event.modifiers() == QtCore.Qt.ShiftModifier:
@@ -80,8 +78,6 @@ class NumberInputWidget(QtWidgets.QLineEdit):
                 self.setText(str(round(float(self.text()) - 1, 2)))
 
         cast(QtCore.SignalInstance, self.editingFinished).emit()
-
-        self.deselect()
         self.selectAll()
 
     def focusNextPrevChild(self, forward: bool) -> bool:
@@ -89,8 +85,10 @@ class NumberInputWidget(QtWidgets.QLineEdit):
 
 
 class BoolInputWidget(QtWidgets.QCheckBox):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
+
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
     def input_data(self):
         return self.checkStateSet()
@@ -99,8 +97,10 @@ class BoolInputWidget(QtWidgets.QCheckBox):
         self.setChecked(True) if value is True else self.setChecked(False)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
-            event.ignore()
+        if event.matches(QtGui.QKeySequence.Undo):
+            self._undo_stack.undo()
+        elif event.matches(QtGui.QKeySequence.Redo):
+            self._undo_stack.redo()
         else:
             super().keyPressEvent(event)
 
@@ -109,9 +109,10 @@ class BoolInputWidget(QtWidgets.QCheckBox):
 
 
 class OptionBoxWidget(QtWidgets.QComboBox):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(parent)
 
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
         self._last_index: int = 0
 
     @property
@@ -123,7 +124,9 @@ class OptionBoxWidget(QtWidgets.QComboBox):
         super().mousePressEvent(event)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
-        if event.matches(QtGui.QKeySequence.Undo) or event.matches(QtGui.QKeySequence.Redo):
-            event.ignore()
+        if event.matches(QtGui.QKeySequence.Undo):
+            self._undo_stack.undo()
+        elif event.matches(QtGui.QKeySequence.Redo):
+            self._undo_stack.redo()
         else:
             super().keyPressEvent(event)

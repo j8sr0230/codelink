@@ -428,7 +428,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self.scene().removeItem(self._cutter)
 
         if self._mode == "NODE_POSITIONING":
-            self.scene().clearFocus()
+            self._new_node.content_widget.setEnabled(True)
 
         if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
             content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
@@ -643,6 +643,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                           new_pos.y() - self._new_node.boundingRect().center().y())
         )
         self._mode: str = "NODE_POSITIONING"
+        self._new_node.content_widget.setEnabled(False)
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
     def open(self) -> None:
