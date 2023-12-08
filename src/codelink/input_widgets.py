@@ -53,8 +53,17 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             self._undo_stack.redo()
         elif event.key() == QtCore.Qt.Key_Return:
             QtWidgets.QApplication.focusWidget().clearFocus()
+            # self.parentWidget().clearFocus()
         else:
             super().keyPressEvent(event)
+
+    # def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
+    #     super().focusInEvent(e)
+    #     print("focus in")
+    #
+    # def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
+    #     super().focusOutEvent(e)
+    #     print("focus Out")
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         self.setFocus()
