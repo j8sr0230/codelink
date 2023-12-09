@@ -58,7 +58,7 @@ class ValueLine(SocketWidget):
 		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
 		self._content_layout.addWidget(self._input_widget)
-		self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+		self._input_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
 		self.setFocusProxy(self._input_widget)
 
 		self.update_stylesheets()
@@ -116,7 +116,7 @@ class ValueLine(SocketWidget):
 			else:
 				self._label_widget.setStyleSheet("background-color: #545454")
 				self._input_widget.show()
-				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
+				self._input_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
 		else:
 			self._input_widget.hide()
 
@@ -124,17 +124,20 @@ class ValueLine(SocketWidget):
 		super().update_all()
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
 
-	def validate_input(self):
+	def validate_input(self) -> float:
 		last_value: float = self.prop_model.properties["Value"]
 		input_txt: str = self._input_widget.text()
 
 		try:
-			input_number: float = float(input_txt)
-			self._prop_model.setData(self._prop_model.index(1, 1, QtCore.QModelIndex()), input_number, 2)
+			return float(input_txt)
 		except ValueError:
-			self._input_widget.setText(str(last_value))
 			print("Wrong input format")
+			return last_value
 
 	def editing_finished(self) -> None:
-		self.validate_input()
+		valid_input: float = self.validate_input()
+		if valid_input != self.prop_model.properties["Value"]:
+			self._prop_model.setData(self._prop_model.index(1, 1, QtCore.QModelIndex()), valid_input, 2)
+		else:
+			self._input_widget.setText(str(self.prop_model.properties["Value"]))
 		# self.clearFocus()

@@ -277,17 +277,17 @@ class SocketWidget(QtWidgets.QWidget):
     def focusNextPrevChild(self, forward: bool) -> bool:
         input_widget: QtWidgets.QWidget = self.focusWidget()
 
-        if input_widget == QtWidgets.QApplication.focusWidget():
-            return False
+        # if input_widget == QtWidgets.QApplication.focusWidget():
+        #     return False
 
         socket_idx: int = self.parent_node.input_socket_widgets.index(input_widget.parent())
         next_idx: int = 0
         for idx in range(socket_idx + 1, len(self.parent_node.input_socket_widgets)):
-            if self.parent_node.input_socket_widgets[idx].input_widget.focusPolicy() == QtCore.Qt.StrongFocus:
+            if self.parent_node.input_socket_widgets[idx].input_widget.focusPolicy() == QtCore.Qt.ClickFocus:
                 next_idx: int = idx
                 break
 
-        self.parent_node.input_socket_widgets[next_idx].input_widget.setFocus(QtCore.Qt.TabFocusReason)
+        self.parent_node.input_socket_widgets[next_idx].setFocus(QtCore.Qt.TabFocusReason)
         return True
 
     # --------------- Serialization ---------------

@@ -56,13 +56,13 @@ class NumberInputWidget(QtWidgets.QLineEdit):
         else:
             super().keyPressEvent(event)
 
-    def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
-        super().focusInEvent(e)
-        print("focus in")
-
-    def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
-        super().focusOutEvent(e)
-        print("focus Out")
+    # def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
+    #     super().focusInEvent(e)
+    #     print("focus in")
+    #
+    # def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
+    #     super().focusOutEvent(e)
+    #     print("focus Out")
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         if self.hasFocus():
