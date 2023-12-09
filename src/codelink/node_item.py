@@ -169,7 +169,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
         self.setZValue(2)
         self.setAcceptHoverEvents(True)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
-                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges | QtWidgets.QGraphicsItem.ItemIsFocusable)
 
         # Listeners
         cast(QtCore.SignalInstance, self._prop_model.dataChanged).connect(lambda: self.update_all())

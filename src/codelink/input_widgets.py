@@ -52,44 +52,40 @@ class NumberInputWidget(QtWidgets.QLineEdit):
         elif event.matches(QtGui.QKeySequence.Redo):
             self._undo_stack.redo()
         elif event.key() == QtCore.Qt.Key_Return:
-            self.parentWidget().parentWidget().clearFocus()
+            self.parentWidget().clearFocus()
         else:
             super().keyPressEvent(event)
 
-    # def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
-    #     super().focusInEvent(e)
-    #     print("focus in")
-    #
-    # def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
-    #     super().focusOutEvent(e)
-    #     print("focus Out")
+    def focusInEvent(self, e: QtGui.QFocusEvent) -> None:
+        super().focusInEvent(e)
+        print("focus in")
+
+    def focusOutEvent(self, e: QtGui.QFocusEvent) -> None:
+        super().focusOutEvent(e)
+        print("focus Out")
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        self.setFocus()
+        if self.hasFocus():
+            if event.modifiers() == QtCore.Qt.ShiftModifier:
+                if event.angleDelta().y() > 0:
+                    self.setText(str(round(float(self.text()) + 10, 2)))
+                else:
+                    self.setText(str(round(float(self.text()) - 10, 2)))
 
-        if event.modifiers() == QtCore.Qt.ShiftModifier:
-            if event.angleDelta().y() > 0:
-                self.setText(str(round(float(self.text()) + 10, 2)))
+            elif event.modifiers() == QtCore.Qt.ControlModifier:
+                if event.angleDelta().y() > 0:
+                    self.setText(str(round(float(self.text()) + .1, 2)))
+                else:
+                    self.setText(str(round(float(self.text()) - .1, 2)))
+
             else:
-                self.setText(str(round(float(self.text()) - 10, 2)))
+                if event.angleDelta().y() > 0:
+                    self.setText(str(round(float(self.text()) + 1, 2)))
+                else:
+                    self.setText(str(round(float(self.text()) - 1, 2)))
 
-        elif event.modifiers() == QtCore.Qt.ControlModifier:
-            if event.angleDelta().y() > 0:
-                self.setText(str(round(float(self.text()) + .1, 2)))
-            else:
-                self.setText(str(round(float(self.text()) - .1, 2)))
-
-        else:
-            if event.angleDelta().y() > 0:
-                self.setText(str(round(float(self.text()) + 1, 2)))
-            else:
-                self.setText(str(round(float(self.text()) - 1, 2)))
-
-        cast(QtCore.SignalInstance, self.editingFinished).emit()
-        self.selectAll()
-
-    def focusNextPrevChild(self, forward: bool) -> bool:
-        return super().focusNextPrevChild(forward)
+            cast(QtCore.SignalInstance, self.editingFinished).emit()
+            self.selectAll()
 
 
 class BoolInputWidget(QtWidgets.QCheckBox):
@@ -111,9 +107,6 @@ class BoolInputWidget(QtWidgets.QCheckBox):
             self._undo_stack.redo()
         else:
             super().keyPressEvent(event)
-
-    def focusNextPrevChild(self, forward: bool) -> bool:
-        return super().focusNextPrevChild(forward)
 
 
 class OptionBoxWidget(QtWidgets.QComboBox):
