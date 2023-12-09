@@ -160,6 +160,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                                )
 
         self._content_proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+        self._content_proxy.setFocusPolicy(QtCore.Qt.ClickFocus)
         self._content_proxy.setWidget(self._content_widget)
 
         self.update_all()

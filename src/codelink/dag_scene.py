@@ -72,6 +72,7 @@ class DAGScene(QtWidgets.QGraphicsScene):
         # Widget setup
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
         self.setSortCacheEnabled(False)
+        self.setStickyFocus(False)
 
         # Listeners
         cast(QtCore.SignalInstance, self.node_added).connect(lambda node: node.update_details(self._zoom_level))
