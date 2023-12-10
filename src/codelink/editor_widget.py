@@ -68,6 +68,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._temp_edge: Optional[EdgeItem] = None
         self._new_node: Optional[NodeItem] = None
         self._focused_widgets: list[QtWidgets] = []
+        self._clicked_widgets: list[QtWidgets] = []
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -436,6 +437,14 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 child for child in content_widget.children()
                 if (hasattr(child, "input_widget") and child.input_widget is not None and child.input_widget.hasFocus())
             ]
+
+            self._clicked_widgets: list[QtWidgets] = [
+                (child.x() + content_widget.x() + self.itemAt(event.pos()).parentItem().prop_model.properties["X"],
+                 child.y() + content_widget.y() + self.itemAt(event.pos()).parentItem().prop_model.properties["Y"])
+                for child in content_widget.children()
+                if (hasattr(child, "input_widget") and child.input_widget is not None)
+            ]
+            print(self._clicked_widgets)
 
         # Resets mouse button state, widget mode and cursor
         self._lm_pressed: bool = False
