@@ -65,27 +65,29 @@ class NumberInputWidget(QtWidgets.QLineEdit):
     #     print("focus Out")
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        if self.hasFocus():
-            if event.modifiers() == QtCore.Qt.ShiftModifier:
-                if event.angleDelta().y() > 0:
-                    self.setText(str(round(float(self.text()) + 10, 2)))
-                else:
-                    self.setText(str(round(float(self.text()) - 10, 2)))
+        # if self.hasFocus():
+        self.parentWidget().setFocus()
 
-            elif event.modifiers() == QtCore.Qt.ControlModifier:
-                if event.angleDelta().y() > 0:
-                    self.setText(str(round(float(self.text()) + .1, 2)))
-                else:
-                    self.setText(str(round(float(self.text()) - .1, 2)))
-
+        if event.modifiers() == QtCore.Qt.ShiftModifier:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + 10, 2)))
             else:
-                if event.angleDelta().y() > 0:
-                    self.setText(str(round(float(self.text()) + 1, 2)))
-                else:
-                    self.setText(str(round(float(self.text()) - 1, 2)))
+                self.setText(str(round(float(self.text()) - 10, 2)))
 
-            cast(QtCore.SignalInstance, self.editingFinished).emit()
-            self.selectAll()
+        elif event.modifiers() == QtCore.Qt.ControlModifier:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + .1, 2)))
+            else:
+                self.setText(str(round(float(self.text()) - .1, 2)))
+
+        else:
+            if event.angleDelta().y() > 0:
+                self.setText(str(round(float(self.text()) + 1, 2)))
+            else:
+                self.setText(str(round(float(self.text()) - 1, 2)))
+
+        cast(QtCore.SignalInstance, self.editingFinished).emit()
+        self.selectAll()
 
 
 class BoolInputWidget(QtWidgets.QCheckBox):
