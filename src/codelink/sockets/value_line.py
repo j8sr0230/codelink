@@ -58,7 +58,7 @@ class ValueLine(SocketWidget):
 		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
 		self._content_layout.addWidget(self._input_widget)
-		self._input_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
+		self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 		self.setFocusProxy(self._input_widget)
 
 		self.update_stylesheets()
@@ -116,7 +116,7 @@ class ValueLine(SocketWidget):
 			else:
 				self._label_widget.setStyleSheet("background-color: #545454")
 				self._input_widget.show()
-				self._input_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
+				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 		else:
 			self._input_widget.hide()
 

@@ -283,7 +283,7 @@ class SocketWidget(QtWidgets.QWidget):
         socket_idx: int = self.parent_node.input_socket_widgets.index(input_widget.parent())
         next_idx: int = 0
         for idx in range(socket_idx + 1, len(self.parent_node.input_socket_widgets)):
-            if self.parent_node.input_socket_widgets[idx].input_widget.focusPolicy() == QtCore.Qt.ClickFocus:
+            if self.parent_node.input_socket_widgets[idx].input_widget.focusPolicy() == QtCore.Qt.StrongFocus:
                 next_idx: int = idx
                 break
 
