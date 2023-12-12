@@ -24,6 +24,8 @@ from typing import Union, Optional, Any, cast
 import json
 import os
 
+import numpy as np
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -41,6 +43,7 @@ from property_table import PropertyTable
 from frame_item import FrameItem
 from node_item import NodeItem
 from nodes.output.shape_viewer import ShapeViewer
+from socket_widget import SocketWidget
 from pin_item import PinItem
 from edge_item import EdgeItem
 from cutter_item import CutterItem
@@ -67,8 +70,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._last_pin: Optional[PinItem] = None
         self._temp_edge: Optional[EdgeItem] = None
         self._new_node: Optional[NodeItem] = None
-        self._focused_widgets: list[QtWidgets] = []
-        self._clicked_widgets: list[QtWidgets] = []
+        self._focused_sockets: list[SocketWidget] = []
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -271,7 +273,33 @@ class EditorWidget(QtWidgets.QGraphicsView):
             super().mousePressEvent(event)
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == PinItem:
+            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+                content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
+                content_widget: QtWidgets.QWidget = content_proxy.widget()
+                node: NodeItem = content_proxy.parentItem()
+
+                socket_widget_bboxes: list[QtCore.QRect] = [
+                    QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
+                                 int(socket_widget.y() + content_proxy.y() + node.y()),
+                                 int(socket_widget.width()), int(socket_widget.height()))
+                    for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
+                ]
+
+                click_mask: list[bool] = [
+                    rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
+                ]
+
+                focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
+                if len(focused_socket_idx) == 1:
+                    focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
+                    if focused_socket.input_widget is None:
+                        content_widget.clearFocus()
+                    else:
+                        self._focused_sockets: list[SocketWidget] = [focused_socket]
+                else:
+                    content_widget.clearFocus()
+
+            elif type(self.itemAt(event.pos())) == PinItem:
                 self._last_pin: PinItem = self.itemAt(event.pos())
 
                 if (not self._last_pin.socket_widget.is_input or
@@ -345,7 +373,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             )
 
         if type(self.itemAt(event.pos())) != QtWidgets.QGraphicsProxyWidget:
-            self._focused_widgets: list[QtWidgets.QWidget] = []
+            self._focused_sockets: list[SocketWidget] = []
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -431,21 +459,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
         if self._mode == "NODE_POSITIONING":
             self._new_node.content_widget.setEnabled(True)
 
-        if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-            content_widget: QtWidgets.QWidget = self.itemAt(event.pos()).widget()
-            self._focused_widgets: list[QtWidgets] = [
-                child for child in content_widget.children()
-                if (hasattr(child, "input_widget") and child.input_widget is not None and child.input_widget.hasFocus())
-            ]
-
-            self._clicked_widgets: list[QtWidgets] = [
-                (child.x() + content_widget.x() + self.itemAt(event.pos()).parentItem().prop_model.properties["X"],
-                 child.y() + content_widget.y() + self.itemAt(event.pos()).parentItem().prop_model.properties["Y"])
-                for child in content_widget.children()
-                if (hasattr(child, "input_widget") and child.input_widget is not None)
-            ]
-            print(self._clicked_widgets)
-
         # Resets mouse button state, widget mode and cursor
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
@@ -456,7 +469,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
         self._last_pos = self.mapToScene(event.pos())
 
-        if len(self._focused_widgets) == 0:
+        if len(self._focused_sockets) == 0:
             event.accept()
 
             if event.angleDelta().y() > 0:
