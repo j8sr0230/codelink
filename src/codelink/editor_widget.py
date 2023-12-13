@@ -66,11 +66,11 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._rm_pressed: bool = False
         self._mode: str = ""
 
-        self._last_pos: QtCore.QPoint = QtCore.QPoint()
+        self._last_pressed_pos: QtCore.QPoint = QtCore.QPoint()
         self._last_pin: Optional[PinItem] = None
         self._temp_edge: Optional[EdgeItem] = None
         self._new_node: Optional[NodeItem] = None
-        self._focused_sockets: list[SocketWidget] = []
+        self._focused_input_sockets: list[SocketWidget] = []
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -260,65 +260,66 @@ class EditorWidget(QtWidgets.QGraphicsView):
                 self._prop_scroller.hide()
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        self._last_pos: QtCore.QPointF = self.mapToScene(event.pos())
+        self._last_pressed_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
-        if event.button() == QtCore.Qt.LeftButton and event.modifiers() == QtCore.Qt.ShiftModifier:
-            self._lm_pressed: bool = True
-            self._mode: str = "EDGE_CUT"
-            self._cutter: CutterItem = CutterItem(start=self._last_pos, end=self._last_pos)
-            self.scene().addItem(self._cutter)
-            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
-
-        elif event.button() == QtCore.Qt.LeftButton and not event.modifiers() == QtCore.Qt.ShiftModifier:
-            super().mousePressEvent(event)
+        if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-                content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
-                content_widget: QtWidgets.QWidget = content_proxy.widget()
-                node: NodeItem = content_proxy.parentItem()
+            if event.modifiers() != QtCore.Qt.ShiftModifier:
+                super().mousePressEvent(event)
 
-                socket_widget_bboxes: list[QtCore.QRect] = [
-                    QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
-                                 int(socket_widget.y() + content_proxy.y() + node.y()),
-                                 int(socket_widget.width()), int(socket_widget.height()))
-                    for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
-                ]
+                if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+                    content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
+                    content_widget: QtWidgets.QWidget = content_proxy.widget()
+                    node: NodeItem = content_proxy.parentItem()
 
-                click_mask: list[bool] = [
-                    rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
-                ]
+                    socket_widget_bboxes: list[QtCore.QRect] = [
+                        QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
+                                     int(socket_widget.y() + content_proxy.y() + node.y()),
+                                     int(socket_widget.width()), int(socket_widget.height()))
+                        for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
+                    ]
 
-                focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
-                if len(focused_socket_idx) == 1:
-                    focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
-                    if focused_socket.input_widget is None:
-                        content_widget.clearFocus()
+                    click_mask: list[bool] = [
+                        rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
+                    ]
+
+                    focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
+                    if len(focused_socket_idx) == 1:
+                        focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
+                        if focused_socket.input_widget is None:
+                            self.clearFocus()
+                        else:
+                            self._focused_input_sockets: list[SocketWidget] = [focused_socket]
                     else:
-                        self._focused_sockets: list[SocketWidget] = [focused_socket]
-                else:
-                    content_widget.clearFocus()
+                        self.clearFocus()
 
-            elif type(self.itemAt(event.pos())) == PinItem:
-                self._last_pin: PinItem = self.itemAt(event.pos())
+                elif type(self.itemAt(event.pos())) == PinItem:
+                    self._last_pin: PinItem = self.itemAt(event.pos())
 
-                if (not self._last_pin.socket_widget.is_input or
-                        (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
-                    self._mode: str = "EDGE_ADD"
-                    temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
-                    self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
+                    if (not self._last_pin.socket_widget.is_input or
+                            (self._last_pin.socket_widget.is_input and not self._last_pin.has_edges())):
+                        self._mode: str = "EDGE_ADD"
+                        temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                        temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
+                        self._temp_edge = self.scene().add_edge_from_pins(self._last_pin, temp_target)
 
-                elif self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
-                    self._mode: str = "EDGE_EDIT"
-                    self._temp_edge: EdgeItem = self._last_pin.edges[-1]
-                    temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
-                    temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
+                    elif self._last_pin.socket_widget.is_input and self._last_pin.has_edges():
+                        self._mode: str = "EDGE_EDIT"
+                        self._temp_edge: EdgeItem = self._last_pin.edges[-1]
+                        temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(-6, -6, 12, 12)
+                        temp_target.setPos(self._last_pin.parentItem().mapToScene(self._last_pin.center()))
 
-                    self._temp_edge.end_pin.remove_edge(self._temp_edge)
-                    self._temp_edge.end_pin.socket_widget.update_stylesheets()
-                    self._temp_edge.end_pin = temp_target
-                    self._mode = "EDGE_ADD"
+                        self._temp_edge.end_pin.remove_edge(self._temp_edge)
+                        self._temp_edge.end_pin.socket_widget.update_stylesheets()
+                        self._temp_edge.end_pin = temp_target
+                        self._mode = "EDGE_ADD"
+            else:
+                self._lm_pressed: bool = True
+                self._mode: str = "EDGE_CUT"
+                self._cutter: CutterItem = CutterItem(start=self._last_pressed_pos, end=self._last_pressed_pos)
+                self.scene().addItem(self._cutter)
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CrossCursor)
 
         elif event.button() == QtCore.Qt.MiddleButton:
             super().mousePressEvent(event)
@@ -350,7 +351,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if self._mode == "SCENE_DRAG":
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
-            pos_delta: QtCore.QPoint = current_pos - self._last_pos
+            pos_delta: QtCore.QPoint = current_pos - self._last_pressed_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -373,7 +374,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             )
 
         if type(self.itemAt(event.pos())) != QtWidgets.QGraphicsProxyWidget:
-            self._focused_sockets: list[SocketWidget] = []
+            self.clearFocus()
+            self._focused_input_sockets: list[SocketWidget] = []
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
@@ -467,9 +469,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
         QtWidgets.QApplication.restoreOverrideCursor()
 
     def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
-        self._last_pos = self.mapToScene(event.pos())
+        self._last_pressed_pos = self.mapToScene(event.pos())
 
-        if len(self._focused_sockets) == 0:
+        if len(self._focused_input_sockets) == 0:
             event.accept()
 
             if event.angleDelta().y() > 0:
@@ -483,7 +485,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
             # Hack: Fixes the scene drifting while zooming
             drifted_pos: QtCore.QPoint = self.mapToScene(event.pos())
-            pos_delta: QtCore.QPoint = drifted_pos - self._last_pos
+            pos_delta: QtCore.QPoint = drifted_pos - self._last_pressed_pos
             self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
             self.translate(pos_delta.x(), pos_delta.y())
             self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
