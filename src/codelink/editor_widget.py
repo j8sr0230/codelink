@@ -266,7 +266,6 @@ class EditorWidget(QtWidgets.QGraphicsView):
             self._lm_pressed: bool = True
 
             if event.modifiers() != QtCore.Qt.ShiftModifier:
-                super().mousePressEvent(event)
 
                 if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
                     content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
@@ -288,10 +287,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     if len(focused_socket_idx) == 1:
                         focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
                         if focused_socket.input_widget is None:
+                            node.setSelected(True)
                             self.clearFocus()
                         else:
                             self._focused_input_sockets: list[SocketWidget] = [focused_socket]
+                            super().mousePressEvent(event)
                     else:
+                        node.setSelected(True)
                         self.clearFocus()
 
                 elif type(self.itemAt(event.pos())) == PinItem:
@@ -314,6 +316,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         self._temp_edge.end_pin.socket_widget.update_stylesheets()
                         self._temp_edge.end_pin = temp_target
                         self._mode = "EDGE_ADD"
+                else:
+                    super().mousePressEvent(event)
             else:
                 self._lm_pressed: bool = True
                 self._mode: str = "EDGE_CUT"
@@ -374,7 +378,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
             )
 
         if type(self.itemAt(event.pos())) != QtWidgets.QGraphicsProxyWidget:
-            self.clearFocus()
+            # self.clearFocus()
             self._focused_input_sockets: list[SocketWidget] = []
 
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
