@@ -268,6 +268,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
             if event.modifiers() != QtCore.Qt.ShiftModifier:
 
                 if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+                    super().mousePressEvent(event)
+
                     content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
                     content_widget: QtWidgets.QWidget = content_proxy.widget()
                     node: NodeItem = content_proxy.parentItem()
@@ -287,16 +289,13 @@ class EditorWidget(QtWidgets.QGraphicsView):
                     if len(focused_socket_idx) == 1:
                         focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
                         if focused_socket.input_widget is None:
-                            node.setSelected(True)
                             self.clearFocus()
                         elif focused_socket.input_widget.isHidden():
-                            node.setSelected(True)
                             self.clearFocus()
                         else:
+                            node.setSelected(True)
                             self._focused_input_sockets: list[SocketWidget] = [focused_socket]
-                            super().mousePressEvent(event)
                     else:
-                        node.setSelected(True)
                         self.clearFocus()
 
                 elif type(self.itemAt(event.pos())) == PinItem:
