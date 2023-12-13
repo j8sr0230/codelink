@@ -703,7 +703,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     content_proxy_height += widget.height()
             content_proxy_height += (self._content_layout.count() - 1) * self._content_layout.spacing()
             self._content_proxy.show()
-            self._content_proxy.clearFocus()  # To prevent tabbing through input socket widgets
+            self._content_proxy.clearFocus()  # To prevent focusing input socket widgets
             self._collapse_btn.setPixmap(self._collapse_pixmap_down)
 
         content_rect: QtCore.QRectF = QtCore.QRectF(
