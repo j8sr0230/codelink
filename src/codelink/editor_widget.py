@@ -289,6 +289,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         if focused_socket.input_widget is None:
                             node.setSelected(True)
                             self.clearFocus()
+                        elif focused_socket.input_widget.isHidden():
+                            node.setSelected(True)
+                            self.clearFocus()
                         else:
                             self._focused_input_sockets: list[SocketWidget] = [focused_socket]
                             super().mousePressEvent(event)
