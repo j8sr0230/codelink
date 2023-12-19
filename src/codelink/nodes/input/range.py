@@ -75,6 +75,31 @@ class Range(NodeItem):
                         stop: ak.Array = self.input_data(1, args)
                         step: ak.Array = self.input_data(2, args)
 
+                        # nested_zip: ak.Array = ak.zip({"start": start, "stop": stop, "step": step})
+                        # flat_zip: ak.Array = ak.zip([
+                        #     ak.flatten(nested_zip.start, axis=None),
+                        #     ak.flatten(nested_zip.stop, axis=None),
+                        #     ak.flatten(nested_zip.step, axis=None)
+                        # ])
+                        #
+                        # structure: dict[int, int] = {}
+                        # depth: int = nested_zip.start.layout.minmax_depth[1]
+                        # reversed_nesting_axes: np.ndarray = np.arange(0, depth)[::-1]
+                        # nested_array: ak.Array = nested_zip.start
+                        # for nesting_axis in reversed_nesting_axes:
+                        #     structure[nesting_axis] = ak.count(nested_array, axis=nesting_axis)
+                        #
+                        # flat_result: list[np.ndarray] = []
+                        # if depth > 1:
+                        #     for param_tuple in flat_zip:
+                        #         flat_result.append(np.arange(param_tuple[0], param_tuple[1], param_tuple[2]))
+                        # else:
+                        #     flat_result.append(np.arange(flat_zip[0], flat_zip[1], flat_zip[2]))
+                        #
+                        # nested_zip.show()
+                        # print(structure)
+                        # ak.Array(flat_result).show()
+
                         param_zip: list[tuple[float, float, float]] = ak.to_list(ak.zip([start, stop, step]))
                         result: ak.Array = ak.Array(map_value(self.make_range, param_zip))
                         result: ak.Array = ak.flatten(result, axis=-1)
