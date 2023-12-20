@@ -31,7 +31,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_value
+from utils import map_one_to_many
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 
@@ -61,11 +61,8 @@ class Range(NodeItem):
     # --------------- Node eval methods ---------------
 
     @staticmethod
-    def make_range(parameter_zip: tuple) -> np.ndarray:
-        start: float = parameter_zip[0]
-        stop: float = parameter_zip[1]
-        step: float = parameter_zip[2]
-        return np.arange(start, stop, step)
+    def make_range(parameter_zip: ak.Array) -> np.ndarray:
+        return np.arange(parameter_zip["0"], parameter_zip["1"], parameter_zip["2"])
 
     def eval_socket_0(self, *args) -> ak.Array:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
@@ -82,13 +79,11 @@ class Range(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        param_zip: list[tuple[float, float, float]] = ak.to_list(ak.zip([start, stop, step]))
-                        result: ak.Array = ak.Array(map_value(self.make_range, param_zip))
-                        result: ak.Array = ak.flatten(result, axis=-1)
+                        result: ak.Array = map_one_to_many([start, stop, step], self.make_range)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        self._cache[cache_idx] = self.output_data(0, result)
+                        self._cache[cache_idx] = self.output_data(0,  ak.flatten(result, axis=-1))
 
                         if DEBUG:
                             b: float = time.time()
