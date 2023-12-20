@@ -59,6 +59,9 @@ class RangeIt(NodeItem):
 
     # --------------- Node eval methods ---------------
 
+    def one_to_many_mapper(self, inputs: list[ak.Array]) -> ak.Array:
+        pass
+
     def eval_socket_0(self, *args) -> ak.Array:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
