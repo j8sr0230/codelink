@@ -39,6 +39,9 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
+DEBUG: bool = True
+
+
 class Range(NodeItem):
     REG_NAME: str = "Range"
 
@@ -76,7 +79,8 @@ class Range(NodeItem):
                         stop: ak.Array = self.input_data(1, args)
                         step: ak.Array = self.input_data(2, args)
 
-                        a: float = time.time()
+                        if DEBUG:
+                            a: float = time.time()
 
                         param_zip: list[tuple[float, float, float]] = ak.to_list(ak.zip([start, stop, step]))
                         result: ak.Array = ak.Array(map_value(self.make_range, param_zip))
@@ -86,9 +90,10 @@ class Range(NodeItem):
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
 
-                        b: float = time.time()
-                        print("Range executed")
-                        print(1000 * (b - a), "ms")
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Range executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

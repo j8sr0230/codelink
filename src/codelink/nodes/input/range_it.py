@@ -38,6 +38,9 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
+DEBUG: bool = True
+
+
 class RangeIt(NodeItem):
     REG_NAME: str = "Range It"
 
@@ -68,7 +71,8 @@ class RangeIt(NodeItem):
                         stop: ak.Array = self.input_data(1, args)
                         step: ak.Array = self.input_data(2, args)
 
-                        a: float = time.time()
+                        if DEBUG:
+                            a: float = time.time()
 
                         nested_param_zip: ak.Array = ak.zip({"start": start, "stop": stop, "step": step})
 
@@ -93,9 +97,10 @@ class RangeIt(NodeItem):
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0,  ak.flatten(flat_result, axis=-1))
 
-                        b: float = time.time()
-                        print("Range It executed")
-                        print(1000 * (b - a), "ms")
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Range It executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
