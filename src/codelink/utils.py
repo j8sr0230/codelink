@@ -124,3 +124,26 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
             return [map_list(callback, sub_list) for sub_list in nested_list]
     else:
         return nested_list
+
+
+def map_one_to_many(inputs: list[ak.Array], mapper_function: Callable) -> ak.Array:
+    inputs_dict: dict = {str(idx): nested_array for idx, nested_array in enumerate(inputs)}
+    broadcasted_param_zip: ak.Array = ak.zip(inputs_dict)
+
+    broadcasted_param_structure: dict[int, int] = {}
+    broadcasted_array: ak.Array = broadcasted_param_zip["0"]
+    for level in np.arange(1, broadcasted_array.layout.minmax_depth[1])[::-1]:
+        broadcasted_param_structure[level] = ak.flatten(ak.num(broadcasted_array, axis=level), axis=None)
+
+    flat_param_zip: ak.Array = ak.zip(
+        [ak.flatten(broadcasted_param_zip[k], axis=None) for k in broadcasted_param_zip.fields]
+    )
+
+    result: list[np.ndarray] = []
+    for param_tuple in flat_param_zip:
+        result.append(mapper_function(param_tuple))
+
+    for level_list_length in broadcasted_param_structure.values():
+        result: ak.Array = ak.unflatten(result, level_list_length, axis=0)
+
+    return result
