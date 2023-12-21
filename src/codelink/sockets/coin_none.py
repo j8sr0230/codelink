@@ -31,7 +31,7 @@ from pivy import coin
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak
+from utils import simplify_ak_array
 from nested_data import NestedData
 from socket_widget import SocketWidget
 
@@ -81,7 +81,7 @@ class CoinNone(SocketWidget):
 		if self.socket_options_state()[0]:  # Flatten
 			input_data: NestedData = NestedData(input_data.data, ak.flatten(input_data.structure, axis=None))
 		if self.socket_options_state()[1]:  # Simplify
-			input_data: NestedData = NestedData(input_data.data, simplify_ak(input_data.structure))
+			input_data: NestedData = NestedData(input_data.data, simplify_ak_array(input_data.structure))
 		if self.socket_options_state()[2]:  # Graft
 			input_data: NestedData = NestedData(
 				input_data.data, ak.unflatten(input_data.structure, axis=-1, counts=1)

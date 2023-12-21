@@ -29,7 +29,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from utils import flatten, simplify, simplify_ak, graft
+from utils import flatten_list, simplify_list, simplify_ak_array, graft
 from nested_data import NestedData
 from property_model import PropertyModel
 from pin_item import PinItem
@@ -182,9 +182,9 @@ class SocketWidget(QtWidgets.QWidget):
 
         if type(input_data) == list:
             if self.socket_options_state()[0]:  # Flatten
-                input_data: list = flatten(input_data)
+                input_data: list = flatten_list(input_data)
             if self.socket_options_state()[1]:  # Simplify
-                input_data: list = simplify(input_data)
+                input_data: list = simplify_list(input_data)
             if self.socket_options_state()[2]:  # Graft
                 input_data: list = graft(input_data)
 
@@ -192,7 +192,7 @@ class SocketWidget(QtWidgets.QWidget):
             if self.socket_options_state()[0]:  # Flatten
                 input_data: NestedData = NestedData(input_data.data, ak.flatten(input_data.structure, axis=None))
             if self.socket_options_state()[1]:  # Simplify
-                input_data: NestedData = NestedData(input_data.data, simplify_ak(input_data.structure))
+                input_data: NestedData = NestedData(input_data.data, simplify_ak_array(input_data.structure))
             if self.socket_options_state()[2]:  # Graft
                 input_data: NestedData = NestedData(
                     input_data.data, ak.unflatten(input_data.structure, axis=-1, counts=1)
@@ -207,9 +207,9 @@ class SocketWidget(QtWidgets.QWidget):
                     input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
                 if self.socket_options_state()[1]:  # Simplify
-                    x: ak.Array = simplify_ak(input_data.x)
-                    y: ak.Array = simplify_ak(input_data.y)
-                    z: ak.Array = simplify_ak(input_data.z)
+                    x: ak.Array = simplify_ak_array(input_data.x)
+                    y: ak.Array = simplify_ak_array(input_data.y)
+                    z: ak.Array = simplify_ak_array(input_data.z)
                     input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
                 if self.socket_options_state()[2]:  # Graft
@@ -219,7 +219,7 @@ class SocketWidget(QtWidgets.QWidget):
                     input_data: ak.Array = ak.flatten(input_data, axis=None)
 
                 if self.socket_options_state()[1]:  # Simplify
-                    input_data: ak.Array = simplify_ak(input_data)
+                    input_data: ak.Array = simplify_ak_array(input_data)
 
                 if self.socket_options_state()[2]:  # Graft
                     input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)

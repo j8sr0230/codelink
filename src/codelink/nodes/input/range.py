@@ -31,7 +31,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_one_to_many
+from utils import map_ak_arrays_to_array
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 
@@ -79,7 +79,7 @@ class Range(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        result: ak.Array = map_one_to_many([start, stop, step], self.make_range)
+                        result: ak.Array = map_ak_arrays_to_array([start, stop, step], self.make_range)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

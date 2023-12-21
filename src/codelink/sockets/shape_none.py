@@ -33,7 +33,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_ak
+from utils import simplify_ak_array
 from socket_widget import SocketWidget
 
 if TYPE_CHECKING:
@@ -83,7 +83,7 @@ class ShapeNone(SocketWidget):
 			input_data.structure = ak.flatten(input_data.structure, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			input_data.structure = simplify_ak(input_data.structure)
+			input_data.structure = simplify_ak_array(input_data.structure)
 
 		if self.socket_options_state()[2]:  # Graft
 			input_data.structure = ak.unflatten(input_data.structure, axis=-1, counts=1)

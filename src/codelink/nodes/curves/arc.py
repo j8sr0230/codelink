@@ -36,8 +36,8 @@ import Points  # noqa
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from nested_data import NestedData, NestedVector
-from utils import global_index
+from nested_data import NestedData
+from utils import global_index, ak_vector_structure, flatten_ak_vector
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -167,29 +167,25 @@ class Arc(NodeItem):
                         c: ak.Array = self.input_data(2, args)
 
                         if self._option_box.currentText() == "3 Points":
-                            nested_a: NestedVector = NestedVector(vector=a)
-                            nested_b: NestedVector = NestedVector(vector=b)
-                            nested_c: NestedVector = NestedVector(vector=c)
-
-                            flat_a, struct_a = nested_a.flat(as_tuple=True)
-                            flat_b, struct_b = nested_b.flat(as_tuple=True)
-                            flat_c, struct_c = nested_c.flat(as_tuple=True)
+                            flat_a, struct_a = (ak.to_list(flatten_ak_vector(a, True)), ak_vector_structure(a))
+                            flat_b, struct_b = (ak.to_list(flatten_ak_vector(b, True)), ak_vector_structure(b))
+                            flat_c, struct_c = (ak.to_list(flatten_ak_vector(c, True)), ak_vector_structure(c))
 
                             nested_params: ak.Array = ak.zip({
                                 "a": struct_a, "b": struct_b, "c": struct_c}, right_broadcast=True
                             )
 
-                            flat_params: list[tuple[int, int, int]] = ak.to_list(ak.zip([
+                            flat_params: ak.Array = ak.zip([
                                 ak.flatten(nested_params.a, axis=None),
                                 ak.flatten(nested_params.b, axis=None),
                                 ak.flatten(nested_params.c, axis=None)],
                                 right_broadcast=True
-                            ))
+                            )
 
                             flat_data: list[Part.Shape] = []
                             for param in flat_params:
                                 arc_pts: Points.Points = Points.Points()
-                                arc_pts.addPoints([flat_a[param[0]], flat_b[param[1]], flat_c[param[2]]])
+                                arc_pts.addPoints([flat_a[param["0"]], flat_b[param["1"]], flat_c[param["2"]]])
                                 flat_data.append(Part.Edge(
                                     Part.Arc(arc_pts.Points[0], arc_pts.Points[1], arc_pts.Points[2])
                                 ))

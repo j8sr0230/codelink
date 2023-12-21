@@ -30,7 +30,7 @@ import FreeCAD
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak
+from utils import simplify_ak_array
 from socket_widget import SocketWidget
 
 if TYPE_CHECKING:
@@ -83,9 +83,9 @@ class VectorNone(SocketWidget):
 			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
 		if self.socket_options_state()[1]:  # Simplify
-			x: ak.Array = simplify_ak(input_data.x)
-			y: ak.Array = simplify_ak(input_data.y)
-			z: ak.Array = simplify_ak(input_data.z)
+			x: ak.Array = simplify_ak_array(input_data.x)
+			y: ak.Array = simplify_ak_array(input_data.y)
+			z: ak.Array = simplify_ak_array(input_data.z)
 			input_data: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
 		if self.socket_options_state()[2]:  # Graft

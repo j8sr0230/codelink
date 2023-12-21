@@ -55,7 +55,11 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
         )
 
 
-def flatten(nested_list):
+def ak_vector_structure(nested_vector: ak.Array) -> ak.Array:
+    return ak.transform(global_index, nested_vector.x)
+
+
+def flatten_list(nested_list):
     result = []
     stack = [iter(nested_list)]
 
@@ -72,7 +76,28 @@ def flatten(nested_list):
     return result
 
 
-def simplify(nested_list: list[Any]) -> list[Any]:
+def flatten_ak_array(nested_array: ak.Array) -> ak.Array:
+    return ak.flatten(nested_array, axis=None)
+
+
+def flatten_ak_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
+    if not as_tuple:
+        flat_vector: ak.Array = ak.zip({
+            "x": ak.flatten(nested_vector.x, axis=None),
+            "y": ak.flatten(nested_vector.y, axis=None),
+            "z": ak.flatten(nested_vector.z, axis=None)
+        })
+    else:
+        flat_vector: ak.Array = ak.zip([
+            ak.flatten(nested_vector.x, axis=None),
+            ak.flatten(nested_vector.y, axis=None),
+            ak.flatten(nested_vector.z, axis=None)
+        ])
+
+    return flat_vector
+
+
+def simplify_list(nested_list: list[Any]) -> list[Any]:
     result: list[Any] = []
     stack: list[Any] = nested_list[:]
 
@@ -89,12 +114,26 @@ def simplify(nested_list: list[Any]) -> list[Any]:
     return result[::-1]
 
 
-def simplify_ak(nested_array: ak.Array) -> ak.Array:
+def simplify_ak_array(nested_array: ak.Array) -> ak.Array:
     min_max_depth: tuple[int, int] = nested_array.layout.minmax_depth
     reversed_nesting_axes: np.ndarray = np.arange(1, min_max_depth[0] - 1)[::-1]
     for nesting_axis in reversed_nesting_axes:
         nested_array = ak.flatten(nested_array, axis=nesting_axis)
     return nested_array
+
+
+def simplify_ak_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
+    depth: int = nested_vector.layout.minmax_depth[0]
+
+    simplified_vector: ak.Array = ak.copy(nested_vector)
+    nesting_axes: np.ndarray = np.arange(1, depth - 1)
+    for nesting_axis in nesting_axes[::-1]:
+        simplified_vector: ak.Array = ak.flatten(simplified_vector, axis=nesting_axis)
+
+    if as_tuple:
+        simplified_vector: ak.Array = ak.zip([simplified_vector.x, simplified_vector.y, simplified_vector.z])
+
+    return simplified_vector
 
 
 def graft(nested_list: list[Any]) -> list[Any]:
@@ -126,7 +165,7 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
         return nested_list
 
 
-def map_one_to_many(inputs: list[ak.Array], mapper_function: Callable) -> ak.Array:
+def map_ak_arrays_to_array(inputs: list[ak.Array], enlarger: Callable) -> ak.Array:
     inputs_dict: dict = {str(idx): nested_array for idx, nested_array in enumerate(inputs)}
     broadcasted_param_zip: ak.Array = ak.zip(inputs_dict)
 
@@ -141,7 +180,7 @@ def map_one_to_many(inputs: list[ak.Array], mapper_function: Callable) -> ak.Arr
 
     result: list[np.ndarray] = []
     for param_tuple in flat_param_zip:
-        result.append(mapper_function(param_tuple))
+        result.append(enlarger(param_tuple))
 
     for level_list_length in broadcasted_param_structure.values():
         result: ak.Array = ak.unflatten(result, level_list_length, axis=0)
