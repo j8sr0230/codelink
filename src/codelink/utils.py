@@ -101,13 +101,13 @@ def flatten_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
             "x": ak.flatten(nested_vector.x, axis=None),
             "y": ak.flatten(nested_vector.y, axis=None),
             "z": ak.flatten(nested_vector.z, axis=None)
-        })
+        }, left_broad_cast=True, right_broadcast=True)
     else:
         result: ak.Array = ak.zip([
             ak.flatten(nested_vector.x, axis=None),
             ak.flatten(nested_vector.y, axis=None),
             ak.flatten(nested_vector.z, axis=None)
-        ])
+        ], right_broadcast=True)
 
     return result
 
@@ -117,7 +117,7 @@ def unflatten_vector_like(flat_vector: ak.Array, template_vector: ak.Array) -> a
     result_y: ak.Array = unflatten_array_like(flat_vector.y, template_vector.y)
     result_z: ak.Array = unflatten_array_like(flat_vector.z, template_vector.z)
 
-    return ak.zip({"x": result_x, "y": result_y, "z": result_z})
+    return ak.zip({"x": result_x, "y": result_y, "z": result_z}, right_broadcast=True)
 
 
 def simplify_list(nested_list: list[Any]) -> list[Any]:
@@ -151,7 +151,7 @@ def simplify_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array
     result: ak.Array = simplify_array(nested_vector)
 
     if as_tuple:
-        result: ak.Array = ak.zip([result.x, result.y, result.z])
+        result: ak.Array = ak.zip([result.x, result.y, result.z], right_broadcast=True)
 
     return result
 
