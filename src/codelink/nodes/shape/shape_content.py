@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Any
+from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
 import time
@@ -30,9 +30,8 @@ import Part
 import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
-import numpy as np
 
-from utils import map_value, global_index
+from utils import unflatten_array_like, global_index
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
@@ -85,21 +84,16 @@ class ShapeContent(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        len_data: list[int] = []
+                        len_data: list[list[int]] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
-                            len_data.append(len(shp.Solids))
+                            len_data.append(list(range(len(shp.Solids))))
                             flat_data.extend(shp.Solids)
 
-                        if len(flat_data) > 0:
-                            data_structure: ak.Array = ak.Array(
-                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
-                            )
-                            data_structure: ak.Array = ak.transform(global_index, data_structure)
-                        else:
-                            data_structure: ak.Array = ak.Array([[0]])
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+                        len_data: ak.Array = ak.transform(global_index, len_data)
+                        result: NestedData = NestedData(
+                            data=flat_data, structure=unflatten_array_like(len_data, nested_data.structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -128,21 +122,16 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
-                        len_data: list[int] = []
+                        len_data: list[list[int]] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
-                            len_data.append(len(shp.Shells))
+                            len_data.append(list(range(len(shp.Shells))))
                             flat_data.extend(shp.Shells)
 
-                        if len(flat_data) > 0:
-                            data_structure: ak.Array = ak.Array(
-                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
-                            )
-                            data_structure: ak.Array = ak.transform(global_index, data_structure)
-                        else:
-                            data_structure: ak.Array = ak.Array([[0]])
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+                        len_data: ak.Array = ak.transform(global_index, len_data)
+                        result: NestedData = NestedData(
+                            data=flat_data, structure=unflatten_array_like(len_data, nested_data.structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -166,21 +155,16 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
-                        len_data: list[int] = []
+                        len_data: list[list[int]] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
-                            len_data.append(len(shp.Faces))
+                            len_data.append(list(range(len(shp.Faces))))
                             flat_data.extend(shp.Faces)
 
-                        if len(flat_data) > 0:
-                            data_structure: ak.Array = ak.Array(
-                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
-                            )
-                            data_structure: ak.Array = ak.transform(global_index, data_structure)
-                        else:
-                            data_structure: ak.Array = ak.Array([[0]])
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+                        len_data: ak.Array = ak.transform(global_index, len_data)
+                        result: NestedData = NestedData(
+                            data=flat_data, structure=unflatten_array_like(len_data, nested_data.structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -204,21 +188,16 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
-                        len_data: list[int] = []
+                        len_data: list[list[int]] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
-                            len_data.append(len(shp.Wires))
+                            len_data.append(list(range(len(shp.Wires))))
                             flat_data.extend(shp.Wires)
 
-                        if len(flat_data) > 0:
-                            data_structure: ak.Array = ak.Array(
-                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
-                            )
-                            data_structure: ak.Array = ak.transform(global_index, data_structure)
-                        else:
-                            data_structure: ak.Array = ak.Array([[0]])
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+                        len_data: ak.Array = ak.transform(global_index, len_data)
+                        result: NestedData = NestedData(
+                            data=flat_data, structure=unflatten_array_like(len_data, nested_data.structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -242,21 +221,16 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
-                        len_data: list[int] = []
+                        len_data: list[list[int]] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
-                            len_data.append(len(shp.Edges))
+                            len_data.append(list(range(len(shp.Edges))))
                             flat_data.extend(shp.Edges)
 
-                        if len(flat_data) > 0:
-                            data_structure: ak.Array = ak.Array(
-                                map_value(lambda idx: np.arange(0, len_data[idx]), ak.to_list(nested_data.structure))
-                            )
-                            data_structure: ak.Array = ak.transform(global_index, data_structure)
-                        else:
-                            data_structure: ak.Array = ak.Array([[0]])
-
-                        result: NestedData = NestedData(data=flat_data, structure=ak.flatten(data_structure, axis=-1))
+                        len_data: ak.Array = ak.transform(global_index, len_data)
+                        result: NestedData = NestedData(
+                            data=flat_data, structure=unflatten_array_like(len_data, nested_data.structure)
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -279,15 +253,26 @@ class ShapeContent(NodeItem):
                 try:
                     try:
                         nested_data: NestedData = self.input_data(0, args)
+                        flat_data: list = []
+                        for shp in nested_data.data:
+                            vertexes: list[Part.Vertex] = shp.Vertexes
+                            if len(vertexes) == 0:
+                                continue
 
-                        vertexes: list[Any] = map_value(
-                            lambda idx: nested_data.data[idx].Vertexes, ak.to_list(nested_data.structure)
-                        )
-                        vectors: ak.Array = ak.Array(
-                            map_value(lambda v: {"x": v.Point[0], "y": v.Point[1], "z": v.Point[2]}, vertexes)
-                        )
+                            # noinspection PyUnresolvedReferences
+                            vectors: ak.Array = ak.Array([{"x": v.Point[0], "y": v.Point[1], "z": v.Point[2]}
+                                                          for v in vertexes])
+                            flat_data.append(vectors)
 
-                        result: ak.Array = ak.flatten(vectors, axis=-1)
+                        flat_data: ak.Array = ak.Array(flat_data)
+
+                        if len(flat_data.fields) == 0:
+                            return ak.Array([{"x": 0, "y": 0, "z": 0}])
+
+                        result_x: ak.Array = unflatten_array_like(flat_data.x, nested_data.structure)
+                        result_y: ak.Array = unflatten_array_like(flat_data.y, nested_data.structure)
+                        result_z: ak.Array = unflatten_array_like(flat_data.z, nested_data.structure)
+                        result: ak.Array = ak.zip({"x": result_x, "y": result_y, "z": result_z})
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
