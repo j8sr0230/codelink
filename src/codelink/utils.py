@@ -81,27 +81,18 @@ def flatten_array(nested_array: ak.Array) -> ak.Array:
 
 
 def unflatten_array_like(flat_array: ak.Array, template_array: ak.Array) -> ak.Array:
-    depth: int = template_array.layout.minmax_depth[0]
-    reversed_nesting_axes: np.ndarray = np.arange(1, depth-1)[::-1]
+    max_depth: int = template_array.layout.minmax_depth[1]
 
-    print("Depth", depth)
-    print("Rev axis", reversed_nesting_axes)
+    template_structure: dict[int, Union[int, ak.Array]] = {}
+    for depth in np.arange(0, max_depth)[::-1]:
+        template_structure[depth] = ak.num(template_array, axis=depth)
 
-    template_structure: dict[int, int] = {}
-    for nesting_axes in reversed_nesting_axes:
-        length: Union[int, ak.Array] = ak.num(template_structure, axis=nesting_axes)
-        if type(length) is int:
-            template_structure[nesting_axes] = length
-        else:
-            template_structure[nesting_axes] = ak.flatten(length, axis=None)
+    result: ak.Array = ak.copy(flat_array)
+    for depth, length in template_structure.items():
+        if depth > 0:
+            result: ak.Array = ak.unflatten(result, ak.flatten(length, axis=None), axis=0)
 
-    print(template_structure)
-
-    # result: ak.Array = ak.copy(flat_array)
-    # for length in template_structure.values():
-    #     result: ak.Array = ak.unflatten(result, length, axis=0)
-    #
-    # return result
+    return result
 
 
 def flatten_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
@@ -119,6 +110,14 @@ def flatten_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
         ])
 
     return result
+
+
+def unflatten_vector_like(flat_vector: ak.Array, template_vector: ak.Array) -> ak.Array:
+    result_x: ak.Array = unflatten_array_like(flat_vector.x, template_vector.x)
+    result_y: ak.Array = unflatten_array_like(flat_vector.y, template_vector.y)
+    result_z: ak.Array = unflatten_array_like(flat_vector.z, template_vector.z)
+
+    return ak.zip({"x": result_x, "y": result_y, "z": result_z})
 
 
 def simplify_list(nested_list: list[Any]) -> list[Any]:
@@ -139,8 +138,8 @@ def simplify_list(nested_list: list[Any]) -> list[Any]:
 
 
 def simplify_array(nested_array: ak.Array) -> ak.Array:
-    depth: int = nested_array.layout.minmax_depth[0]
-    reversed_nesting_axes: np.ndarray = np.arange(1, depth - 1)[::-1]
+    max_depth: int = nested_array.layout.minmax_depth[1]
+    reversed_nesting_axes: np.ndarray = np.arange(1, max_depth - 1)[::-1]
 
     result: ak.Array = ak.copy(nested_array)
     for nesting_axis in reversed_nesting_axes:
