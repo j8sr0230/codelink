@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import FreeCADGui as Gui
 # noinspection PyPackageRequirements
@@ -37,6 +38,8 @@ from sockets.coin_none import CoinNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+DEBUG = True
 
 
 class CoinViewer(NodeItem):
@@ -68,6 +71,9 @@ class CoinViewer(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         if hasattr(Gui, "ActiveDocument"):
                             flat_coin_seps: list[coin.SoSeparator] = nested_data.data
                             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
@@ -89,7 +95,11 @@ class CoinViewer(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Coin viewer executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Coin Viewer executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                          digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

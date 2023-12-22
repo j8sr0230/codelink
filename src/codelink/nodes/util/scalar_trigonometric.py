@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 import inspect
+import time
 
 import numpy as np
 import awkward as ak
@@ -38,6 +39,9 @@ from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class ScalarTrigonometric(NodeItem):
@@ -100,6 +104,9 @@ class ScalarTrigonometric(NodeItem):
                     try:
                         a: list = self.input_data(0, args)
 
+                        if DEBUG:
+                            x: float = time.time()
+
                         if self._option_box.currentText() == "Sin":
                             result: np.ndarray = np.sin(ak.Array(a))
 
@@ -121,7 +128,11 @@ class ScalarTrigonometric(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Scalar trig executed")
+
+                        if DEBUG:
+                            y: float = time.time()
+                            print("Scalar Trig executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
+                                                                                          digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

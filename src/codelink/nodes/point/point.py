@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -35,13 +36,16 @@ import Points  # noqa
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index
+from utils import flatten_record, record_structure
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class Point(NodeItem):
@@ -71,29 +75,30 @@ class Point(NodeItem):
                     try:
                         pos: ak.Array = self.input_data(0, args)
 
-                        flat_pos_tuple: ak.Array = ak.zip([
-                            ak.flatten(pos.x, axis=None),
-                            ak.flatten(pos.y, axis=None),
-                            ak.flatten(pos.z, axis=None)
-                        ])
-                        flat_pos_list: list[tuple[float, float, float]] = ak.to_list(flat_pos_tuple)
-                        flat_pts: Points.Points = Points.Points()
-                        flat_pts.addPoints(flat_pos_list)
+                        if DEBUG:
+                            a: float = time.time()
 
-                        data_structure: ak.Array = ak.transform(global_index, pos.x)
+                        flat_pos: ak.Array = flatten_record(nested_record=pos, as_tuple=True)
+                        flat_pts: Points.Points = Points.Points()
+                        flat_pts.addPoints(ak.to_list(flat_pos))
+
                         flat_data: list[Part.Shape] = []
                         for pts in flat_pts.Points:
                             flat_data.append(Part.Point(pts).toShape())
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=data_structure
+                            structure=record_structure(pos)
                         )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Point executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Point executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

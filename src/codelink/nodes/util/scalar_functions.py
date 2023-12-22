@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 import inspect
+import time
 
 import awkward as ak
 import numpy as np
@@ -38,6 +39,9 @@ from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class ScalarFunctions(NodeItem):
@@ -126,6 +130,9 @@ class ScalarFunctions(NodeItem):
                     try:
                         a: ak.Array = self.input_data(0, args)
 
+                        if DEBUG:
+                            x: float = time.time()
+
                         if len(args) == 2:
                             b: ak.Array = self.input_data(1, args)
 
@@ -157,7 +164,11 @@ class ScalarFunctions(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Scalar functions executed")
+
+                        if DEBUG:
+                            y: float = time.time()
+                            print("Scalar Function executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
+                                                                                              digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 # noinspection PyUnresolvedReferences
 import FreeCAD as App
@@ -38,6 +39,9 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class ShapeViewer(NodeItem):
@@ -77,6 +81,9 @@ class ShapeViewer(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         if hasattr(Gui, "ActiveDocument"):
                             flat_shapes: list[Part.Shape] = nested_data.data
 
@@ -101,7 +108,11 @@ class ShapeViewer(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Shape viewer executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Shape Viewer executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                           digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

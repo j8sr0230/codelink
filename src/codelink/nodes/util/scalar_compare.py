@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -38,6 +39,9 @@ from sockets.bool_checkbox import BoolCheckBox
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class ScalarCompare(NodeItem):
@@ -102,6 +106,9 @@ class ScalarCompare(NodeItem):
                         a: ak.Array = self.input_data(0, args)
                         b: ak.Array = self.input_data(1, args)
 
+                        if DEBUG:
+                            x: float = time.time()
+
                         if self._option_box.currentText() == "Greater":
                             result: ak.Array = ak.Array(a > b)
 
@@ -120,7 +127,11 @@ class ScalarCompare(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Scalar compare executed")
+
+                        if DEBUG:
+                            y: float = time.time()
+                            print("Scalar Compare executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
+                                                                                             digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

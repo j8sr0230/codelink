@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -35,6 +36,9 @@ from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class Vector(NodeItem):
@@ -67,12 +71,19 @@ class Vector(NodeItem):
                         y: list = self.input_data(1, args)
                         z: list = self.input_data(2, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         result: ak.Array = ak.zip({"x": x, "y": y, "z": z})
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Vector executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Vector executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

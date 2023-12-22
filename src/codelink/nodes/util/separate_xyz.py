@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -35,6 +36,9 @@ from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class SeparateXYZ(NodeItem):
@@ -68,12 +72,19 @@ class SeparateXYZ(NodeItem):
                     try:
                         vector: ak.Array = self.input_data(0, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         result: ak.Array = vector.x
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Scalar functions executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Separate XYZ executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                           digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -99,7 +110,6 @@ class SeparateXYZ(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(1, result)
-                        print("Scalar functions executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -125,7 +135,6 @@ class SeparateXYZ(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(2, result)
-                        print("Scalar functions executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True

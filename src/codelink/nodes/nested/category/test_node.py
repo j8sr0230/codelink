@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -34,6 +35,9 @@ from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class TestNode(NodeItem):
@@ -60,12 +64,19 @@ class TestNode(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
+                        if DEBUG:
+                            a: float = time.time()
+
                         result: ak.Array = self.input_data(0, args)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Test executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Test executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
