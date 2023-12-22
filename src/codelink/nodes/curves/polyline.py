@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import warnings
 import importlib
 import inspect
+import time
 
 import awkward as ak
 
@@ -36,7 +37,8 @@ import Points  # noqa
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from nested_data import NestedData, NestedVector
+from utils import simplify_record, simplified_rec_struct
+from nested_data import NestedData
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.vector_none import VectorNone
@@ -45,6 +47,9 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class Polyline(NodeItem):
@@ -108,29 +113,35 @@ class Polyline(NodeItem):
 
                         vectors:  ak.Array = self.input_data(0, args)
 
-                        nested_vector: NestedVector = NestedVector(vector=vectors)
-                        simple_vec, simple_struct = nested_vector.simplified(as_tuple=True)
+                        if DEBUG:
+                            a: float = time.time()
+
+                        simple_vec, struct_vec = (simplify_record(vectors, True), simplified_rec_struct(vectors))
 
                         flat_data: list[Part.Shape] = []
-                        if type(simple_struct) is int:
+                        if type(struct_vec) is int:
                             ctrl_pts: Points.Points = Points.Points()
-                            ctrl_pts.addPoints(simple_vec)
+                            ctrl_pts.addPoints(ak.to_list(simple_vec))
                             flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
                         else:
                             for ctrl_pts_list in simple_vec:
                                 ctrl_pts: Points.Points = Points.Points()
-                                ctrl_pts.addPoints(ctrl_pts_list)
+                                ctrl_pts.addPoints(ak.to_list(ctrl_pts_list))
                                 flat_data.append(Part.makePolygon(ctrl_pts.Points, is_cyclic))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=simple_struct if type(simple_struct) == ak.Array else ak.Array([0])
+                            structure=struct_vec if type(struct_vec) == ak.Array else ak.Array([0])
                         )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Polyline executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Polyline executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

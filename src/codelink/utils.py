@@ -59,6 +59,14 @@ def record_structure(nested_record: ak.Array) -> ak.Array:
     return ak.transform(global_index, nested_record[nested_record.fields[0]])
 
 
+def simplified_rec_struct(nested_record: ak.Array) -> Union[int, ak.Array]:
+    max_depth: int = nested_record.layout.minmax_depth[1]
+    if max_depth > 1:
+        return ak.transform(global_index, ak.max(record_structure(nested_record), axis=-1))
+    else:
+        return 0
+
+
 def flatten_list(nested_list: list[Any]) -> list[Any]:
     result = []
     stack = [iter(nested_list)]
