@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -34,7 +35,7 @@ import Points  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import global_index
+from utils import record_structure, flatten_record
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
@@ -42,6 +43,9 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class TranslateShape(NodeItem):
@@ -74,43 +78,33 @@ class TranslateShape(NodeItem):
                         shape: NestedData = self.input_data(0, args)
                         translation: ak.Array = self.input_data(1, args)
 
-                        flat_translations: ak.Array = ak.zip([ak.flatten(translation.x, axis=None),
-                                                              ak.flatten(translation.y, axis=None),
-                                                              ak.flatten(translation.z, axis=None)])
-                        flat_translation_list: list[tuple[float, float, float]] = ak.to_list(flat_translations)
-                        pts: Points.Points = Points.Points()
-                        pts.addPoints(flat_translation_list)
-                        nested_translation: NestedData = NestedData(
-                            data=pts.Points,
-                            structure=ak.transform(global_index, translation.x)
-                        )
+                        if DEBUG:
+                            a: float = time.time()
 
-                        nested_params: ak.Array = ak.zip({
-                            "shape": shape.structure,
-                            "translation": nested_translation.structure
-                        })
-                        flat_params: ak.Array = ak.zip([
-                            ak.flatten(nested_params.shape, axis=None),
-                            ak.flatten(nested_params.translation, axis=None)
-                        ])
-                        flat_params_list: list[tuple[int, int]] = ak.to_list(flat_params)
+                        flat_transl, struct_transl = (ak.to_list(flatten_record(translation, True)),
+                                                      record_structure(translation))
+                        broadcasted_params: ak.Array = ak.zip({"shape": shape.structure, "translation": struct_transl})
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
-                        data_structure: ak.Array = ak.transform(global_index, ak.ones_like(nested_params.shape))
                         flat_data: list[Part.Shape] = []
-                        for param in flat_params_list:
-                            copy: Part.Shape = Part.Shape(shape.data[param[0]])
-                            copy.translate(nested_translation.data[param[1]])
+                        for param_tuple in flat_params:
+                            copy: Part.Shape = Part.Shape(shape.data[param_tuple["0"]])
+                            copy.translate(flat_transl[param_tuple["1"]])
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=ak.transform(global_index, data_structure)
+                            structure=record_structure(broadcasted_params)
                         )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Translation executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Translate executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                        digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

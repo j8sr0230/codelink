@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional, Any
 import warnings
 import inspect
+import time
 
 import Part
 import awkward as ak
@@ -39,6 +40,9 @@ from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class ShapeContent(NodeItem):
@@ -78,6 +82,9 @@ class ShapeContent(NodeItem):
                     try:
                         nested_data: NestedData = self.input_data(0, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         len_data: list[int] = []
                         flat_data: list[Part.Shape] = []
                         for shp in nested_data.data:
@@ -97,7 +104,11 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Content solid executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Shape Content executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                            digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -136,7 +147,6 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(1, result)
-                        print("Content shell executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -175,7 +185,6 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(2, result)
-                        print("Content Face executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -214,7 +223,6 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(3, result)
-                        print("Content wire executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -253,7 +261,6 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(4, result)
-                        print("Content edge executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
@@ -285,7 +292,6 @@ class ShapeContent(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(5, result)
-                        print("Content vector executed")
 
                     except Exception as e:
                         self._is_dirty: bool = True
