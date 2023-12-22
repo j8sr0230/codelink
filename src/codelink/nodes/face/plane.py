@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -34,13 +35,15 @@ import Part
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index
+from utils import flatten_record, record_structure
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+DEBUG = True
 
 
 class Plane(NodeItem):
@@ -71,25 +74,29 @@ class Plane(NodeItem):
                         length: ak.Array = self.input_data(0, args)
                         width: ak.Array = self.input_data(1, args)
 
-                        nested_params: ak.Array = ak.zip({"length": length, "width": width})
-                        flat_param_tuples: ak.Array = ak.zip([ak.flatten(nested_params.length, axis=None),
-                                                              ak.flatten(nested_params.width, axis=None)])
-                        flat_param_list: list[tuple[float, float]] = ak.to_list(flat_param_tuples)
+                        if DEBUG:
+                            a: float = time.time()
 
-                        data_structure: ak.Array = ak.transform(global_index, nested_params.length)
+                        broadcasted_params: ak.Array = ak.zip({"length": length, "width": width})
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+
                         flat_data: list[Part.Shape] = []
-                        for param in flat_param_list:
-                            flat_data.append(Part.makePlane(param[0], param[1]))
+                        for param_tuple in flat_params:
+                            flat_data.append(Part.makePlane(param_tuple["0"], param_tuple["1"]))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=data_structure
+                            structure=record_structure(broadcasted_params)
                         )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Plane executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Plane executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
