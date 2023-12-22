@@ -55,8 +55,8 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
         )
 
 
-def vector_structure(nested_vector: ak.Array) -> ak.Array:
-    return ak.transform(global_index, nested_vector.x)
+def record_structure(nested_record: ak.Array) -> ak.Array:
+    return ak.transform(global_index, nested_record[nested_record.fields[0]])
 
 
 def flatten_list(nested_list: list[Any]) -> list[Any]:
@@ -80,7 +80,7 @@ def flatten_array(nested_array: ak.Array) -> ak.Array:
     return ak.flatten(nested_array, axis=None)
 
 
-def unflatten_array_like(flat_array: ak.Array, template_array: ak.Array) -> ak.Array:
+def unflatten_array_like(flat_array: Union[list, ak.Array], template_array: ak.Array) -> ak.Array:
     max_depth: int = template_array.layout.minmax_depth[1]
 
     template_structure: dict[int, Union[int, ak.Array]] = {}
@@ -95,29 +95,22 @@ def unflatten_array_like(flat_array: ak.Array, template_array: ak.Array) -> ak.A
     return result
 
 
-def flatten_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
+def flatten_record(nested_record: ak.Array, as_tuple: bool = False) -> ak.Array:
     if not as_tuple:
-        result: ak.Array = ak.zip({
-            "x": ak.flatten(nested_vector.x, axis=None),
-            "y": ak.flatten(nested_vector.y, axis=None),
-            "z": ak.flatten(nested_vector.z, axis=None)
-        }, left_broad_cast=True, right_broadcast=True)
+        result: ak.Array = ak.zip(
+            {k: ak.flatten(nested_record[k], axis=None) for k in nested_record.fields}, right_broadcast=True
+        )
     else:
-        result: ak.Array = ak.zip([
-            ak.flatten(nested_vector.x, axis=None),
-            ak.flatten(nested_vector.y, axis=None),
-            ak.flatten(nested_vector.z, axis=None)
-        ], right_broadcast=True)
-
+        result: ak.Array = ak.zip(
+            [ak.flatten(nested_record[k], axis=None) for k in nested_record.fields], right_broadcast=True
+        )
     return result
 
 
-def unflatten_vector_like(flat_vector: ak.Array, template_vector: ak.Array) -> ak.Array:
-    result_x: ak.Array = unflatten_array_like(flat_vector.x, template_vector.x)
-    result_y: ak.Array = unflatten_array_like(flat_vector.y, template_vector.y)
-    result_z: ak.Array = unflatten_array_like(flat_vector.z, template_vector.z)
-
-    return ak.zip({"x": result_x, "y": result_y, "z": result_z}, right_broadcast=True)
+def unflatten_record_like(flat_record: ak.Array, template_record: ak.Array) -> ak.Array:
+    return ak.zip(
+        {k: unflatten_array_like(flat_record[k], template_record[k]) for k in flat_record.fields}, right_broadcast=True
+    )
 
 
 def simplify_list(nested_list: list[Any]) -> list[Any]:
@@ -147,11 +140,11 @@ def simplify_array(nested_array: ak.Array) -> ak.Array:
     return result
 
 
-def simplify_vector(nested_vector: ak.Array, as_tuple: bool = False) -> ak.Array:
-    result: ak.Array = simplify_array(nested_vector)
+def simplify_record(nested_record: ak.Array, as_tuple: bool = False) -> ak.Array:
+    result: ak.Array = simplify_array(nested_record)
 
     if as_tuple:
-        result: ak.Array = ak.zip([result.x, result.y, result.z], right_broadcast=True)
+        result: ak.Array = ak.zip([result[k] for k in result.fields], right_broadcast=True)
 
     return result
 
@@ -183,26 +176,3 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
             return [map_list(callback, sub_list) for sub_list in nested_list]
     else:
         return nested_list
-
-
-def map_ak_arrays_to_array(inputs: list[ak.Array], enlarger: Callable) -> ak.Array:
-    inputs_dict: dict = {str(idx): nested_array for idx, nested_array in enumerate(inputs)}
-    broadcasted_param_zip: ak.Array = ak.zip(inputs_dict)
-
-    broadcasted_param_structure: dict[int, int] = {}
-    broadcasted_array: ak.Array = broadcasted_param_zip["0"]
-    for level in np.arange(1, broadcasted_array.layout.minmax_depth[1])[::-1]:
-        broadcasted_param_structure[level] = ak.flatten(ak.num(broadcasted_array, axis=level), axis=None)
-
-    flat_param_zip: ak.Array = ak.zip(
-        [ak.flatten(broadcasted_param_zip[k], axis=None) for k in broadcasted_param_zip.fields]
-    )
-
-    result: list[np.ndarray] = []
-    for param_tuple in flat_param_zip:
-        result.append(enlarger(param_tuple))
-
-    for level_list_length in broadcasted_param_structure.values():
-        result: ak.Array = ak.unflatten(result, level_list_length, axis=0)
-
-    return result

@@ -296,7 +296,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                             node.setSelected(True)
                             self._focused_input_sockets: list[SocketWidget] = [focused_socket]
                     else:
-                        self.clearFocus()
+                        pass  # self.clearFocus()
 
                 elif type(self.itemAt(event.pos())) == PinItem:
                     self._last_pin: PinItem = self.itemAt(event.pos())

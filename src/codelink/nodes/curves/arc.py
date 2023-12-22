@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index, vector_structure, flatten_vector
+from utils import record_structure, flatten_record
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -167,51 +167,46 @@ class Arc(NodeItem):
                         c: ak.Array = self.input_data(2, args)
 
                         if self._option_box.currentText() == "3 Points":
-                            flat_a, struct_a = (ak.to_list(flatten_vector(a, True)), vector_structure(a))
-                            flat_b, struct_b = (ak.to_list(flatten_vector(b, True)), vector_structure(b))
-                            flat_c, struct_c = (ak.to_list(flatten_vector(c, True)), vector_structure(c))
+                            flat_a, struct_a = (ak.to_list(flatten_record(a, True)), record_structure(a))
+                            flat_b, struct_b = (ak.to_list(flatten_record(b, True)), record_structure(b))
+                            flat_c, struct_c = (ak.to_list(flatten_record(c, True)), record_structure(c))
 
-                            nested_params: ak.Array = ak.zip({
+                            broadcasted_struct: ak.Array = ak.zip({
                                 "a": struct_a, "b": struct_b, "c": struct_c}, right_broadcast=True
                             )
 
-                            flat_params: ak.Array = ak.zip([
-                                ak.flatten(nested_params.a, axis=None),
-                                ak.flatten(nested_params.b, axis=None),
-                                ak.flatten(nested_params.c, axis=None)],
-                                right_broadcast=True
-                            )
+                            flat_struct: ak.Array = flatten_record(nested_record=broadcasted_struct, as_tuple=True)
 
                             flat_data: list[Part.Shape] = []
-                            for param in flat_params:
+                            for param_tuple in flat_struct:
                                 arc_pts: Points.Points = Points.Points()
-                                arc_pts.addPoints([flat_a[param["0"]], flat_b[param["1"]], flat_c[param["2"]]])
+                                arc_pts.addPoints(
+                                    [flat_a[param_tuple["0"]], flat_b[param_tuple["1"]], flat_c[param_tuple["2"]]]
+                                )
                                 flat_data.append(Part.Edge(
                                     Part.Arc(arc_pts.Points[0], arc_pts.Points[1], arc_pts.Points[2])
                                 ))
 
                             result: NestedData = NestedData(
                                 data=flat_data,
-                                structure=ak.transform(global_index, nested_params.a)
+                                structure=record_structure(broadcasted_struct)
                             )
 
                         elif self._option_box.currentText() == "Degree":
-                            nested_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
-
-                            flat_params: ak.Array = ak.zip([ak.flatten(nested_params.rad, axis=None),
-                                                            ak.flatten(nested_params.deg_1, axis=None),
-                                                            ak.flatten(nested_params.deg_2, axis=None)])
-                            flat_params: list[tuple[float, float, float]] = ak.to_list(flat_params)
+                            broadcasted_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
+                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                             flat_data: list[Part.Shape] = []
-                            for param in flat_params:
+                            for param_tuple in flat_params:
                                 flat_data.append(Part.makeCircle(
-                                    param[0], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1), param[1], param[2]
+                                    param_tuple["0"], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1),
+                                    param_tuple["1"],
+                                    param_tuple["2"]
                                 ))
 
                             result: NestedData = NestedData(
                                 data=flat_data,
-                                structure=ak.transform(global_index, nested_params.rad)
+                                structure=record_structure(broadcasted_params)
                             )
 
                         self._is_dirty: bool = False

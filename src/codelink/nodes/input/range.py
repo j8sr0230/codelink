@@ -31,7 +31,7 @@ import awkward as ak
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import map_ak_arrays_to_array
+from utils import flatten_record, unflatten_array_like
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 
@@ -79,7 +79,16 @@ class Range(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        result: ak.Array = map_ak_arrays_to_array([start, stop, step], self.make_range)
+                        broadcasted_params: ak.Array = ak.zip(
+                            {"start": start, "stop": stop, "step": step}, right_broadcast=True
+                        )
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+
+                        result: list[np.ndarray] = []
+                        for param_tuple in flat_params:
+                            result.append(self.make_range(param_tuple))
+
+                        result: ak.Array = unflatten_array_like(result, broadcasted_params)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
