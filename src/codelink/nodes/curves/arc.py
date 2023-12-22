@@ -37,7 +37,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index, ak_vector_structure, flatten_ak_vector
+from utils import global_index, vector_structure, flatten_vector
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -167,9 +167,9 @@ class Arc(NodeItem):
                         c: ak.Array = self.input_data(2, args)
 
                         if self._option_box.currentText() == "3 Points":
-                            flat_a, struct_a = (ak.to_list(flatten_ak_vector(a, True)), ak_vector_structure(a))
-                            flat_b, struct_b = (ak.to_list(flatten_ak_vector(b, True)), ak_vector_structure(b))
-                            flat_c, struct_c = (ak.to_list(flatten_ak_vector(c, True)), ak_vector_structure(c))
+                            flat_a, struct_a = (ak.to_list(flatten_vector(a, True)), vector_structure(a))
+                            flat_b, struct_b = (ak.to_list(flatten_vector(b, True)), vector_structure(b))
+                            flat_c, struct_c = (ak.to_list(flatten_vector(c, True)), vector_structure(c))
 
                             nested_params: ak.Array = ak.zip({
                                 "a": struct_a, "b": struct_b, "c": struct_c}, right_broadcast=True

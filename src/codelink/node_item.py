@@ -34,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from app_style import NODE_STYLE
-from utils import crop_text, global_index, unwrap
+from utils import crop_text, global_index, unwrap_list
 from nested_data import NestedData
 from property_model import PropertyModel
 from frame_item import FrameItem
@@ -506,7 +506,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     regular_inputs.append(item)
                 socket_data: ak.Array = ak.concatenate(regular_inputs)
 
-            elif type(unwrap(args[socket_index])) == ak.Array:
+            elif type(unwrap_list(args[socket_index])) == ak.Array:
                 socket_data: ak.Array = args[socket_index][0]
 
             # NestedData handling
@@ -532,7 +532,7 @@ class NodeItem(QtWidgets.QGraphicsItem):
                     data=flat_data, structure=ak.transform(global_index, nested_structure)
                 )
 
-            elif type(unwrap(args[socket_index])) == NestedData:
+            elif type(unwrap_list(args[socket_index])) == NestedData:
                 socket_data: NestedData = args[socket_index][0]
 
             # List handling
@@ -540,8 +540,8 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 socket_data: list = []
                 for item in args[socket_index]:
                     socket_data.extend(item)
-            elif type(unwrap(args[socket_index])) == list:
-                socket_data: list = list(unwrap(args[socket_index]))
+            elif type(unwrap_list(args[socket_index])) == list:
+                socket_data: list = list(unwrap_list(args[socket_index]))
 
             # Default behavior
             else:

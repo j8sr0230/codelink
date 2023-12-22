@@ -42,7 +42,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_ak_array, global_index, map_list
+from utils import simplify_array, global_index, map_list
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -220,7 +220,7 @@ class VoronoiNode(NodeItem):
                         ])
                         simple_params_list: ak.Array = ak.to_list(simple_params)
 
-                        simple_pos_tuple: ak.Array = simplify_ak_array(ak.zip([position.x, position.y, position.z]))
+                        simple_pos_tuple: ak.Array = simplify_array(ak.zip([position.x, position.y, position.z]))
                         simple_pos_depth: tuple[int, int] = simple_pos_tuple.layout.minmax_depth
                         simple_pos_list: list[tuple[float, float, float]] = ak.to_list(simple_pos_tuple)
 

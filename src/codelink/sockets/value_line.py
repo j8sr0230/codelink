@@ -29,7 +29,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_ak_array
+from utils import simplify_array
 from socket_widget import SocketWidget
 from input_widgets import NumberInputWidget
 
@@ -96,7 +96,7 @@ class ValueLine(SocketWidget):
 			input_data: ak.Array = ak.flatten(input_data, axis=None)
 
 		if self.socket_options_state()[1]:  # Simplify
-			input_data: ak.Array = simplify_ak_array(input_data)
+			input_data: ak.Array = simplify_array(input_data)
 
 		if self.socket_options_state()[2]:  # Graft
 			input_data: ak.Array = ak.unflatten(input_data, axis=-1, counts=1)
