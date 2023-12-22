@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -48,6 +49,9 @@ if TYPE_CHECKING:
     from socket_widget import SocketWidget
 
 
+DEBUG: bool = True
+
+
 class Arc(NodeItem):
     REG_NAME: str = "Arc"
 
@@ -59,7 +63,7 @@ class Arc(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["3 Points", "Degree"])
+        self._option_box.addItems(["Degree", "3 Points"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -72,12 +76,9 @@ class Arc(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNone(undo_stack=self._undo_stack, name="Point 1", content_value="<No Input>", is_input=True,
-                       parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Point 2", content_value="<No Input>", is_input=True,
-                       parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Point 3", content_value="<No Input>", is_input=True,
-                       parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Radius", content_value=10, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Degree 1", content_value=0, is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Degree 2", content_value=90, is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Arc", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
@@ -166,7 +167,27 @@ class Arc(NodeItem):
                         b: ak.Array = self.input_data(1, args)
                         c: ak.Array = self.input_data(2, args)
 
-                        if self._option_box.currentText() == "3 Points":
+                        if DEBUG:
+                            x: float = time.time()
+
+                        if self._option_box.currentText() == "Degree":
+                            broadcasted_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
+                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+
+                            flat_data: list[Part.Shape] = []
+                            for param_tuple in flat_params:
+                                flat_data.append(Part.makeCircle(
+                                    param_tuple["0"], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1),
+                                    param_tuple["1"],
+                                    param_tuple["2"]
+                                ))
+
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=record_structure(broadcasted_params)
+                            )
+
+                        elif self._option_box.currentText() == "3 Points":
                             flat_a, struct_a = (ak.to_list(flatten_record(a, True)), record_structure(a))
                             flat_b, struct_b = (ak.to_list(flatten_record(b, True)), record_structure(b))
                             flat_c, struct_c = (ak.to_list(flatten_record(c, True)), record_structure(c))
@@ -192,27 +213,14 @@ class Arc(NodeItem):
                                 structure=record_structure(broadcasted_struct)
                             )
 
-                        elif self._option_box.currentText() == "Degree":
-                            broadcasted_params: ak.Array = ak.zip({"rad": a, "deg_1": b, "deg_2": c})
-                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
-
-                            flat_data: list[Part.Shape] = []
-                            for param_tuple in flat_params:
-                                flat_data.append(Part.makeCircle(
-                                    param_tuple["0"], FreeCAD.Vector(0, 0, 0), FreeCAD.Vector(0, 0, 1),
-                                    param_tuple["1"],
-                                    param_tuple["2"]
-                                ))
-
-                            result: NestedData = NestedData(
-                                data=flat_data,
-                                structure=record_structure(broadcasted_params)
-                            )
-
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Arc executed")
+
+                        if DEBUG:
+                            y: float = time.time()
+                            print("Arc executed in", "{number:.{digits}f}".format(number=1000 * (y - x), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
