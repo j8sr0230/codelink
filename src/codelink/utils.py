@@ -55,6 +55,10 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
         )
 
 
+def array_structure(nested_array: ak.Array) -> ak.Array:
+    return ak.transform(global_index, nested_array)
+
+
 def record_structure(nested_record: ak.Array) -> ak.Array:
     return ak.transform(global_index, nested_record[nested_record.fields[0]])
 

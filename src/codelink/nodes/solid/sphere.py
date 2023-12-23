@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import warnings
 import inspect
+import time
 
 import awkward as ak
 
@@ -34,13 +35,16 @@ import Part
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import global_index
+from utils import array_structure, flatten_array
 from node_item import NodeItem
 from sockets.value_line import ValueLine
 from sockets.shape_none import ShapeNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class Sphere(NodeItem):
@@ -68,23 +72,29 @@ class Sphere(NodeItem):
                 try:
                     try:
                         radius: ak.Array = self.input_data(0, args)
-                        flat_params: ak.Array = ak.flatten(radius, axis=None)
-                        flat_param_list: list[float] = ak.to_list(flat_params)
 
-                        data_structure: ak.Array = ak.transform(global_index, radius)
+                        if DEBUG:
+                            a: float = time.time()
+
+                        flat_params: ak.Array = flatten_array(nested_array=radius)
+
                         flat_data: list[Part.Shape] = []
-                        for param in flat_param_list:
+                        for param in flat_params:
                             flat_data.append(Part.makeSphere(param))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=data_structure
+                            structure=array_structure(radius)
                         )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Sphere executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Sphere executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
