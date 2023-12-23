@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING, Optional, cast
 import importlib
 import warnings
 import inspect
+import time
 
 import numpy as np
 import awkward as ak
@@ -37,7 +38,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import map_value
+from utils import flatten_record, unflatten_array_like
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -242,30 +243,39 @@ class DistributePoints(NodeItem):
                         shape: NestedData = self.input_data(0, args)
                         count: ak.Array = self.input_data(1, args)
                         distance: ak.Array = self.input_data(2, args)
-
                         seed: ak.Array = self.input_data(3, args)
+
+                        if DEBUG:
+                            a: float = time.time()
+
                         np.random.seed(int(ak.flatten(seed, axis=None)[0]))
 
-                        nested_params: list[tuple[float, float, float]] = ak.to_list(
-                            ak.zip([shape.structure, count, distance], right_broadcast=True)
+                        broadcasted_params: ak.Array = ak.zip(
+                            {"shape": shape.structure, "count": count, "distance": distance}
                         )
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
-                        nested_params: list[tuple[float, float, float]] = map_value(
-                            lambda t: (shape.data[t[0]], t[1], t[2]), nested_params
-                        )
+                        result: list[ak.Array] = []
+                        for param_tuple in flat_params:
+                            if self._option_box.currentText() == "Face":
+                                result.append(self.populate_positions_face(
+                                    (shape.data[param_tuple["0"]], param_tuple["1"], param_tuple["2"])
+                                ))
+                            elif self._option_box.currentText() == "Solid":
+                                result.append(self.populate_positions_solid(
+                                    (shape.data[param_tuple["0"]], param_tuple["1"], param_tuple["2"])
+                                ))
 
-                        if self._option_box.currentText() == "Face":
-                            result: ak.Array = ak.Array(map_value(self.populate_positions_face, nested_params))
-
-                        elif self._option_box.currentText() == "Solid":
-                            result: ak.Array = ak.Array(map_value(self.populate_positions_solid, nested_params))
-
-                        result: ak.Array = ak.flatten(result, axis=-1)
+                        result: ak.Array = unflatten_array_like(result, broadcasted_params)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
-                        self._cache[cache_idx] = self.output_data(0, result)
-                        print("Point dist executed")
+                        self._cache[cache_idx] = self.output_data(0,  ak.flatten(result, axis=-1))
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Point dist executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                         digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
