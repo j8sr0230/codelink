@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union, cast
+from typing import TYPE_CHECKING, Optional, cast
 from collections import defaultdict
 from math import fabs
 import importlib
@@ -42,7 +42,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_array, global_index, map_list
+from utils import map_list, record_structure, flatten_record, simplify_record, simplified_rec_struct
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.shape_none import ShapeNone
@@ -207,44 +207,41 @@ class VoronoiNode(NodeItem):
                         position: ak.Array = self.input_data(1, args)
                         scale: ak.Array = self.input_data(2, args)
 
-                        pos_struct: Union[ak.Array, float] = ak.max(ak.ones_like(position.x), axis=-1)
-                        pos_struct: ak.Array = (ak.transform(global_index, pos_struct) if type(pos_struct) == ak.Array
-                                                else ak.Array([0]))
+                        simple_pos, struct_pos = (simplify_record(position, True), simplified_rec_struct(position))
 
-                        nested_params: ak.Array = ak.zip({"shape": shape.structure, "pos": pos_struct, "scale": scale},
-                                                         right_broadcast=True)
-                        simple_params: ak.Array = ak.zip([
-                            ak.flatten(nested_params.shape, axis=None),
-                            ak.flatten(nested_params.pos, axis=None),
-                            ak.flatten(nested_params.scale, axis=None)
-                        ])
-                        simple_params_list: ak.Array = ak.to_list(simple_params)
-
-                        simple_pos_tuple: ak.Array = simplify_array(ak.zip([position.x, position.y, position.z]))
-                        simple_pos_depth: tuple[int, int] = simple_pos_tuple.layout.minmax_depth
-                        simple_pos_list: list[tuple[float, float, float]] = ak.to_list(simple_pos_tuple)
+                        broadcasted_params: ak.Array = ak.zip(
+                            {"shape": shape.structure, "pos": struct_pos, "scale": scale}
+                        )
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                         flat_data: list[Part.Shape] = []
-                        if self._option_box.currentText() == "Face":
-                            for param in simple_params_list:
-                                if simple_pos_depth[0] == 1:
-                                    param: tuple = (shape.data[param[0]], simple_pos_list, param[2])
-                                else:
-                                    param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2])
-                                flat_data.append(self.voronoi_on_surface(param))
+                        for param_tuple in flat_params:
 
-                        elif self._option_box.currentText() == "Solid":
-                            for param in simple_params_list:
-                                if simple_pos_depth[0] == 1:
-                                    param: tuple = (shape.data[param[0]], simple_pos_list, param[2])
+                            if self._option_box.currentText() == "Face":
+                                if type(struct_pos) is int:
+                                    flat_data.append(self.voronoi_on_surface(
+                                        (shape.data[param_tuple["0"]], ak.to_list(simple_pos), param_tuple["2"])
+                                    ))
                                 else:
-                                    param: tuple = (shape.data[param[0]], simple_pos_list[param[1]], param[2])
-                                flat_data.append(self.voronoi_on_solid(param))
+                                    flat_data.append(self.voronoi_on_surface(
+                                        (shape.data[param_tuple["0"]], ak.to_list(simple_pos)[param_tuple["1"]],
+                                         param_tuple["2"])
+                                    ))
 
-                        data_structure: ak.Array = ak.transform(global_index, nested_params.shape)
+                            elif self._option_box.currentText() == "Solid":
+                                if type(struct_pos) is int:
+                                    flat_data.append(self.voronoi_on_solid(
+                                        (shape.data[param_tuple["0"]], ak.to_list(simple_pos), param_tuple["2"])
+                                    ))
+                                else:
+                                    flat_data.append(self.voronoi_on_solid(
+                                        (shape.data[param_tuple["0"]], ak.to_list(simple_pos)[param_tuple["1"]],
+                                         param_tuple["2"])
+                                    ))
+
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=data_structure
+                            structure=record_structure(broadcasted_params)
                         )
 
                         self._is_dirty: bool = False
