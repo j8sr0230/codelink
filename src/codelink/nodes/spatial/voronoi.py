@@ -28,6 +28,7 @@ import importlib
 import warnings
 import inspect
 import itertools
+import time
 
 import numpy as np
 from scipy.spatial import Voronoi
@@ -51,6 +52,9 @@ from sockets.vector_none import VectorNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
+
+
+DEBUG = True
 
 
 class VoronoiNode(NodeItem):
@@ -207,6 +211,9 @@ class VoronoiNode(NodeItem):
                         position: ak.Array = self.input_data(1, args)
                         scale: ak.Array = self.input_data(2, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         simple_pos, struct_pos = (simplify_record(position, True), simplified_rec_struct(position))
 
                         broadcasted_params: ak.Array = ak.zip(
@@ -247,7 +254,11 @@ class VoronoiNode(NodeItem):
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
-                        print("Voronoi executed")
+
+                        if DEBUG:
+                            b: float = time.time()
+                            print("Voronoi executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                                  "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
