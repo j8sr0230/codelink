@@ -26,11 +26,12 @@ import warnings
 import inspect
 import time
 
-from ikpy.chain import Chain
-from ikpy.link import OriginLink, URDFLink
-
 import awkward as ak
 import numpy as np
+from ikpy.chain import Chain
+from ikpy.link import OriginLink, URDFLink
+import matplotlib.pyplot
+from mpl_toolkits.mplot3d import Axes3D  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
@@ -82,7 +83,11 @@ class KukaKr6(NodeItem):
                 origin_orientation=np.array([0, 0, 0]),
                 rotation=np.array([0, 1, 0]),
             )
-        ])
+        ], active_links_mask=[False, True, True, True])
+
+        ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
+        self._kuka_kr_6_chain.plot([0, 0, 0, 0], ax)
+        matplotlib.pyplot.show()
 
     # --------------- Node eval methods ---------------
 
