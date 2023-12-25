@@ -66,27 +66,33 @@ class KukaKr6(NodeItem):
         self._kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
             OriginLink(),
             URDFLink(
-                name="shoulder",
-                origin_translation=np.array([-10, 0, 5]),
-                origin_orientation=np.array([0, 1.57, 0]),
-                rotation=np.array([0, 1, 0]),
+                name="A1",
+                origin_translation=np.array([0, 0, 0]),
+                origin_orientation=np.array([0, 0, 0]),
+                rotation=np.array([0, 0, 1]),
             ),
             URDFLink(
-                name="elbow",
-                origin_translation=np.array([25, 0, 0]),
+                name="A2",
+                origin_translation=np.array([260, 0, 675]),
                 origin_orientation=np.array([0, 0, 0]),
                 rotation=np.array([0, 1, 0]),
             ),
             URDFLink(
-                name="wrist",
-                origin_translation=np.array([22, 0, 0]),
+                name="A3",
+                origin_translation=np.array([0, 0, 680]),
+                origin_orientation=np.array([0, 0, 0]),
+                rotation=np.array([0, 1, 0]),
+            ),
+            URDFLink(
+                name="A4",
+                origin_translation=np.array([670, 0, -35]),
                 origin_orientation=np.array([0, 0, 0]),
                 rotation=np.array([0, 1, 0]),
             )
-        ], active_links_mask=[False, True, True, True])
+        ], active_links_mask=[False, True, True, True, True])
 
         ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-        self._kuka_kr_6_chain.plot([0, 0, 0, 0], ax)
+        self._kuka_kr_6_chain.plot([0, 0, 0, 0, 0], ax)
         matplotlib.pyplot.show()
 
     # --------------- Node eval methods ---------------
