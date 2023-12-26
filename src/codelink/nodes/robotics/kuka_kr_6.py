@@ -30,7 +30,7 @@ import awkward as ak
 import numpy as np
 from ikpy.chain import Chain
 from ikpy.link import OriginLink, URDFLink
-import matplotlib.pyplot
+# import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
 import PySide2.QtWidgets as QtWidgets
@@ -87,13 +87,34 @@ class KukaKr6(NodeItem):
                 name="A4",
                 origin_translation=np.array([670, 0, -35]),
                 origin_orientation=np.array([0, 0, 0]),
+                rotation=np.array([1, 0, 0]),
+            ),
+            URDFLink(
+                name="A5",
+                origin_translation=np.array([0, 0, 0]),
+                origin_orientation=np.array([0, 0, 0]),
                 rotation=np.array([0, 1, 0]),
+            ),
+            URDFLink(
+                name="A6",
+                origin_translation=np.array([115, 0, 0]),
+                origin_orientation=np.array([0, 0, 0]),
+                rotation=np.array([1, 0, 0]),
             )
-        ], active_links_mask=[False, True, True, True, True])
+        ], active_links_mask=[False, True, True, True, True, True, True])
 
-        ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
-        self._kuka_kr_6_chain.plot([0, 0, 0, 0, 0], ax)
-        matplotlib.pyplot.show()
+        # # Validating kinematic chain
+        # a1: np.ndarray = np.radians(0)
+        # a2: np.ndarray = np.radians(0)
+        # a3: np.ndarray = np.radians(0)
+        # a4: np.ndarray = np.radians(0)
+        # a5: np.ndarray = np.radians(90)
+        # a6: np.ndarray = np.radians(0)
+        #
+        # # Plotting forward and inverse result
+        # ax = matplotlib.pyplot.figure().add_subplot(111, projection="3d")
+        # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
+        # matplotlib.pyplot.show()
 
     # --------------- Node eval methods ---------------
 
@@ -114,7 +135,12 @@ class KukaKr6(NodeItem):
 
                         result: list[np.ndarray] = []
                         for param_tuple in flat_pos:
-                            result.append(self._kuka_kr_6_chain.inverse_kinematics(ak.to_numpy(param_tuple)))
+                            result.append(
+                                np.round(
+                                    np.degrees(self._kuka_kr_6_chain.inverse_kinematics(ak.to_numpy(param_tuple))[1:]),
+                                    2
+                                )
+                            )
 
                         result: ak.Array = unflatten_array_like(result, struct_pos)
 
