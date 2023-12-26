@@ -142,7 +142,7 @@ class KukaKr6(NodeItem):
                                 )
                             )
 
-                        result: ak.Array = unflatten_array_like(result, struct_pos)
+                        result: ak.Array = ak.Array(unflatten_array_like(result, struct_pos))
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

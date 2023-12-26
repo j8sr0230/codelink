@@ -47,7 +47,7 @@ kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
 
 a1: np.ndarray = np.radians(0)
 a2: np.ndarray = np.radians(0)
-a3: np.ndarray = np.radians(20)
+a3: np.ndarray = np.radians(0)
 a4: np.ndarray = np.radians(0)
 a5: np.ndarray = np.radians(90)
 a6: np.ndarray = np.radians(0)
