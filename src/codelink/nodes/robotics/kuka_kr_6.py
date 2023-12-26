@@ -33,6 +33,9 @@ from ikpy.link import OriginLink, URDFLink
 # import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
+# noinspection PyPackageRequirements
+from pivy import coin
+
 import PySide2.QtWidgets as QtWidgets
 
 from utils import record_structure, flatten_record, unflatten_array_like
@@ -116,6 +119,25 @@ class KukaKr6(NodeItem):
         # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
         # matplotlib.pyplot.show()
 
+        # Create an instance of SoInput and set the filename to your VRML file
+        with open("C:/Users/Administratorrechte/Desktop/2023-12-26_KUKA_KR6-Base.wrl") as reader:
+            # print(reader.read())
+            # file: QtCore.QFile = QtCore.QFile("C:/Users/Administratorrechte/Desktop/2023-12-26_KUKA_KR6-Base.wrl")
+            # buffer: QtCore.QBuffer = file.readAll()
+            so_input: coin.SoInput() = coin.SoInput()
+            so_input.setBuffer(reader.read())
+            print(so_input)
+
+            # file(fn);
+            # QByteArray buffer = file.readAll()
+            # so_input = SoInput()
+            # so_input.openFile("C:/Users/Administratorrechte/Desktop")
+            #
+            # # Create an instance of SoSeparator and read the file into it
+            # root = SoSeparator()
+            # root.addChild(SoVRMLInline())
+            # root.readInstance(so_input, "")
+
     # --------------- Node eval methods ---------------
 
     def eval_0(self, *args) -> ak.Array:
@@ -136,11 +158,11 @@ class KukaKr6(NodeItem):
                         result: list[np.ndarray] = []
                         for param_tuple in flat_pos:
                             result.append(
-                                np.round(
-                                    np.degrees(self._kuka_kr_6_chain.inverse_kinematics(ak.to_numpy(param_tuple))[1:]),
-                                    2
-                                )
-                            )
+                                np.round(np.degrees(self._kuka_kr_6_chain.inverse_kinematics(
+                                    target_position=ak.to_numpy(param_tuple),
+                                    target_orientation=np.degrees([1, 0, 0]),
+                                    orientation_mode="Z"
+                                )[1:]), 2))
 
                         result: ak.Array = ak.Array(unflatten_array_like(result, struct_pos))
 
