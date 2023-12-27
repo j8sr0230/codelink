@@ -22,9 +22,11 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
+from pathlib import Path
 import warnings
 import inspect
 import time
+import os
 
 import awkward as ak
 import numpy as np
@@ -33,6 +35,7 @@ from ikpy.link import OriginLink, URDFLink
 # import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
+import FreeCADGui as Gui
 # noinspection PyPackageRequirements
 from pivy import coin
 
@@ -119,24 +122,17 @@ class KukaKr6(NodeItem):
         # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
         # matplotlib.pyplot.show()
 
-        # Create an instance of SoInput and set the filename to your VRML file
-        with open("C:/Users/Administratorrechte/Desktop/2023-12-26_KUKA_KR6-Base.wrl") as reader:
-            # print(reader.read())
-            # file: QtCore.QFile = QtCore.QFile("C:/Users/Administratorrechte/Desktop/2023-12-26_KUKA_KR6-Base.wrl")
-            # buffer: QtCore.QBuffer = file.readAll()
-            so_input: coin.SoInput() = coin.SoInput()
-            so_input.setBuffer(reader.read())
-            print(so_input)
+        kuka_kr6_base_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_base.wrl")
+        inp: coin.SoInput = coin.SoInput()
+        inp.openFile(kuka_kr6_base_path)
+        base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp)
+        base.ref()
 
-            # file(fn);
-            # QByteArray buffer = file.readAll()
-            # so_input = SoInput()
-            # so_input.openFile("C:/Users/Administratorrechte/Desktop")
-            #
-            # # Create an instance of SoSeparator and read the file into it
-            # root = SoSeparator()
-            # root.addChild(SoVRMLInline())
-            # root.readInstance(so_input, "")
+        if hasattr(Gui, "ActiveDocument"):
+            sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
+            coin_sep: coin.SoSeparator = coin.SoSeparator()
+            coin_sep.addChild(base)
+            sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
 
