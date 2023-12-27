@@ -122,16 +122,66 @@ class KukaKr6(NodeItem):
         # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
         # matplotlib.pyplot.show()
 
+        kuka_kr6_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6.wrl")
         kuka_kr6_base_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_base.wrl")
+        kuka_kr6_a1_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a1.wrl")
+        kuka_kr6_a2_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a2.wrl")
+        kuka_kr6_a3_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a3.wrl")
+        kuka_kr6_a4_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a4.wrl")
+        kuka_kr6_a5_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a5.wrl")
+        kuka_kr6_a6_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a6.wrl")
+
         inp: coin.SoInput = coin.SoInput()
-        inp.openFile(kuka_kr6_base_path)
-        base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp)
+        inp.openFile(kuka_kr6_path)
+        kuka_kr6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp)
+        kuka_kr6.ref()
+
+        inp_base: coin.SoInput = coin.SoInput()
+        inp_base.openFile(kuka_kr6_base_path)
+        base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_base)
         base.ref()
+
+        inp_a1: coin.SoInput = coin.SoInput()
+        inp_a1.openFile(kuka_kr6_a1_path)
+        a1: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a1)
+        a1.ref()
+
+        inp_a2: coin.SoInput = coin.SoInput()
+        inp_a2.openFile(kuka_kr6_a2_path)
+        a2: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a2)
+        a2.ref()
+
+        inp_a3: coin.SoInput = coin.SoInput()
+        inp_a3.openFile(kuka_kr6_a3_path)
+        a3: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a3)
+        a3.ref()
+
+        inp_a4: coin.SoInput = coin.SoInput()
+        inp_a4.openFile(kuka_kr6_a4_path)
+        a4: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a4)
+        a4.ref()
+
+        inp_a5: coin.SoInput = coin.SoInput()
+        inp_a5.openFile(kuka_kr6_a5_path)
+        a5: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a5)
+        a5.ref()
+
+        inp_a6: coin.SoInput = coin.SoInput()
+        inp_a6.openFile(kuka_kr6_a6_path)
+        a6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a6)
+        a6.ref()
 
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
             coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(base)
+            coin_sep.addChild(kuka_kr6)
+            # coin_sep.addChild(base)
+            # coin_sep.addChild(a1)
+            # coin_sep.addChild(a2)
+            # coin_sep.addChild(a3)
+            # coin_sep.addChild(a4)
+            # coin_sep.addChild(a5)
+            # coin_sep.addChild(a6)
             sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
