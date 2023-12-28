@@ -167,14 +167,19 @@ class KukaKr6(NodeItem):
 
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
+
+            trans: coin.SoTransform = coin.SoTransform()
+            trans.translation.setValue([500, 500, -500])
+
             coin_sep: coin.SoSeparator = coin.SoSeparator()
+            coin_sep.addChild(trans)
             coin_sep.addChild(base)
-            coin_sep.addChild(a1)
-            coin_sep.addChild(a2)
-            coin_sep.addChild(a3)
-            coin_sep.addChild(a4)
-            coin_sep.addChild(a5)
-            coin_sep.addChild(a6)
+            base.addChild(a1)
+            a1.addChild(a2)
+            a2.addChild(a3)
+            a3.addChild(a4)
+            a4.addChild(a5)
+            a5.addChild(a6)
             sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
