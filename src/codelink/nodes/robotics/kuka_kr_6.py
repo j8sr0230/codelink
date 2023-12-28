@@ -63,6 +63,7 @@ class KukaKr6(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
+            ValueLine(undo_stack=self._undo_stack, name="A1", content_value=0., is_input=True, parent_node=self),
             VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
                        parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Rotation", content_value="<No Input>", is_input=False,
@@ -109,19 +110,6 @@ class KukaKr6(NodeItem):
             )
         ], active_links_mask=[False, True, True, True, True, True, True])
 
-        # # Validating kinematic chain
-        # a1: np.ndarray = np.radians(0)
-        # a2: np.ndarray = np.radians(0)
-        # a3: np.ndarray = np.radians(0)
-        # a4: np.ndarray = np.radians(0)
-        # a5: np.ndarray = np.radians(90)
-        # a6: np.ndarray = np.radians(0)
-        #
-        # # Plotting forward and inverse result
-        # ax = matplotlib.pyplot.figure().add_subplot(111, projection="3d")
-        # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
-        # matplotlib.pyplot.show()
-
         kuka_kr6_base_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_base.wrl")
         kuka_kr6_a1_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a1.wrl")
         kuka_kr6_a2_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a2.wrl")
@@ -167,14 +155,14 @@ class KukaKr6(NodeItem):
 
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
-
-            trans: coin.SoTransform = coin.SoTransform()
-            trans.translation.setValue([500, 500, -500])
-
             coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(trans)
             coin_sep.addChild(base)
+
+            self._a1_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
+            self._a1_rot.axis = coin.SoRotationXYZ.Z
+            base.addChild(self._a1_rot)
             base.addChild(a1)
+
             a1.addChild(a2)
             a2.addChild(a3)
             a3.addChild(a4)
@@ -192,10 +180,14 @@ class KukaKr6(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        position:  ak.Array = self.input_data(0, args)
+                        a1: ak.Array = self.input_data(0, args)
+                        position:  ak.Array = self.input_data(1, args)
 
                         if DEBUG:
                             a: float = time.time()
+
+                        if hasattr(Gui, "ActiveDocument"):
+                            self._a1_rot.angle = np.radians(ak.flatten(a1, axis=None))[0]
 
                         flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)), record_structure(position))
 
