@@ -122,7 +122,6 @@ class KukaKr6(NodeItem):
         # self._kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
         # matplotlib.pyplot.show()
 
-        kuka_kr6_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6.wrl")
         kuka_kr6_base_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_base.wrl")
         kuka_kr6_a1_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a1.wrl")
         kuka_kr6_a2_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a2.wrl")
@@ -130,11 +129,6 @@ class KukaKr6(NodeItem):
         kuka_kr6_a4_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a4.wrl")
         kuka_kr6_a5_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a5.wrl")
         kuka_kr6_a6_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a6.wrl")
-
-        inp: coin.SoInput = coin.SoInput()
-        inp.openFile(kuka_kr6_path)
-        kuka_kr6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp)
-        kuka_kr6.ref()
 
         inp_base: coin.SoInput = coin.SoInput()
         inp_base.openFile(kuka_kr6_base_path)
@@ -174,14 +168,13 @@ class KukaKr6(NodeItem):
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
             coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(kuka_kr6)
-            # coin_sep.addChild(base)
-            # coin_sep.addChild(a1)
-            # coin_sep.addChild(a2)
-            # coin_sep.addChild(a3)
-            # coin_sep.addChild(a4)
-            # coin_sep.addChild(a5)
-            # coin_sep.addChild(a6)
+            coin_sep.addChild(base)
+            coin_sep.addChild(a1)
+            coin_sep.addChild(a2)
+            coin_sep.addChild(a3)
+            coin_sep.addChild(a4)
+            coin_sep.addChild(a5)
+            coin_sep.addChild(a6)
             sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
