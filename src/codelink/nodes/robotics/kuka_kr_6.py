@@ -64,6 +64,11 @@ class KukaKr6(NodeItem):
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
             ValueLine(undo_stack=self._undo_stack, name="A1", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A2", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A3", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A4", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A5", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A6", content_value=0., is_input=True, parent_node=self),
             VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
                        parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Rotation", content_value="<No Input>", is_input=False,
@@ -120,54 +125,74 @@ class KukaKr6(NodeItem):
 
         inp_base: coin.SoInput = coin.SoInput()
         inp_base.openFile(kuka_kr6_base_path)
-        base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_base)
-        base.ref()
+        so_base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_base)
+        so_base.ref()
 
         inp_a1: coin.SoInput = coin.SoInput()
         inp_a1.openFile(kuka_kr6_a1_path)
-        a1: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a1)
-        a1.ref()
+        so_a1: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a1)
+        so_a1.ref()
 
         inp_a2: coin.SoInput = coin.SoInput()
         inp_a2.openFile(kuka_kr6_a2_path)
-        a2: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a2)
-        a2.ref()
+        so_a2: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a2)
+        so_a2.ref()
 
         inp_a3: coin.SoInput = coin.SoInput()
         inp_a3.openFile(kuka_kr6_a3_path)
-        a3: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a3)
-        a3.ref()
+        so_a3: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a3)
+        so_a3.ref()
 
         inp_a4: coin.SoInput = coin.SoInput()
         inp_a4.openFile(kuka_kr6_a4_path)
-        a4: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a4)
-        a4.ref()
+        so_a4: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a4)
+        so_a4.ref()
 
         inp_a5: coin.SoInput = coin.SoInput()
         inp_a5.openFile(kuka_kr6_a5_path)
-        a5: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a5)
-        a5.ref()
+        so_a5: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a5)
+        so_a5.ref()
 
         inp_a6: coin.SoInput = coin.SoInput()
         inp_a6.openFile(kuka_kr6_a6_path)
-        a6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a6)
-        a6.ref()
+        so_a6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a6)
+        so_a6.ref()
 
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
             coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(base)
+            coin_sep.addChild(so_base)
 
             self._a1_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
             self._a1_rot.axis = coin.SoRotationXYZ.Z
-            base.addChild(self._a1_rot)
-            base.addChild(a1)
+            so_base.addChild(self._a1_rot)
+            so_base.addChild(so_a1)
 
-            a1.addChild(a2)
-            a2.addChild(a3)
-            a3.addChild(a4)
-            a4.addChild(a5)
-            a5.addChild(a6)
+            a2_reverse_trans: coin.SoTranslation = coin.SoTranslation()
+            a2_reverse_trans.translation.setValue([260, 0, 675])
+            self._a2_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
+            self._a2_rot.axis = coin.SoRotationXYZ.Y
+            a2_forward_trans: coin.SoTranslation = coin.SoTranslation()
+            a2_forward_trans.translation.setValue([-260, 0, -675])
+            so_a1.addChild(a2_reverse_trans)
+            so_a1.addChild(self._a2_rot)
+            so_a1.addChild(a2_forward_trans)
+            so_a1.addChild(so_a2)
+
+            a3_reverse_trans: coin.SoTranslation = coin.SoTranslation()
+            a3_reverse_trans.translation.setValue([260, 0, 1355])
+            self._a3_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
+            self._a3_rot.axis = coin.SoRotationXYZ.Y
+            a3_forward_trans: coin.SoTranslation = coin.SoTranslation()
+            a3_forward_trans.translation.setValue([-260, 0, -1355])
+            so_a2.addChild(a3_reverse_trans)
+            so_a2.addChild(self._a3_rot)
+            so_a2.addChild(a3_forward_trans)
+            so_a2.addChild(so_a3)
+
+            so_a3.addChild(so_a4)
+            so_a4.addChild(so_a5)
+            so_a5.addChild(so_a6)
             sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
@@ -181,13 +206,21 @@ class KukaKr6(NodeItem):
                 try:
                     try:
                         a1: ak.Array = self.input_data(0, args)
-                        position:  ak.Array = self.input_data(1, args)
+                        a2: ak.Array = self.input_data(1, args)
+                        a3: ak.Array = self.input_data(2, args)
+                        # a4: ak.Array = self.input_data(3, args)
+                        # a5: ak.Array = self.input_data(4, args)
+                        # a6: ak.Array = self.input_data(5, args)
+
+                        position:  ak.Array = self.input_data(6, args)
 
                         if DEBUG:
                             a: float = time.time()
 
                         if hasattr(Gui, "ActiveDocument"):
                             self._a1_rot.angle = np.radians(ak.flatten(a1, axis=None))[0]
+                            self._a2_rot.angle = np.radians(ak.flatten(a2, axis=None))[0]
+                            self._a3_rot.angle = np.radians(ak.flatten(a3, axis=None))[0]
 
                         flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)), record_structure(position))
 
