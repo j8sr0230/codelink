@@ -26,6 +26,9 @@ from typing import Callable, Any, Union, cast
 import numpy as np
 import awkward as ak
 
+# noinspection PyPackageRequirements
+from pivy import coin
+
 import PySide2.QtGui as QtGui
 
 
@@ -188,3 +191,19 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
             return [map_list(callback, sub_list) for sub_list in nested_list]
     else:
         return nested_list
+
+
+def populate_coin_scene(child: coin.SoVRMLGroup, pivot: np.ndarray, axis: int,
+                        parent: Union[coin.SoSeparator, coin.SoVRMLGroup]) -> coin.SoRotationXYZ:
+    so_reverse_transformation: coin.SoTranslation = coin.SoTranslation()
+    so_reverse_transformation.translation.setValue(pivot)
+    so_rotation: coin.SoRotationXYZ = coin.SoRotationXYZ()
+    so_rotation.axis = axis
+    so_forward_transformation: coin.SoTranslation = coin.SoTranslation()
+    so_forward_transformation.translation.setValue(-pivot)
+    parent.addChild(so_reverse_transformation)
+    parent.addChild(so_rotation)
+    parent.addChild(so_forward_transformation)
+    parent.addChild(child)
+
+    return so_rotation

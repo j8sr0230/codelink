@@ -73,7 +73,7 @@ class PolylineCoin(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
                        parent_node=self),
-            CoinNone(undo_stack=self._undo_stack, name="Polyline Coin", content_value="<No Input>", is_input=False,
+            CoinNone(undo_stack=self._undo_stack, name="Polyline (Coin)", content_value="<No Input>", is_input=False,
                      parent_node=self)
         ]
 

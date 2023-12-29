@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 from pathlib import Path
 import warnings
 import inspect
@@ -41,10 +41,12 @@ from pivy import coin
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import record_structure, flatten_record, unflatten_array_like
+from utils import populate_coin_scene  # , record_structure, flatten_record, unflatten_array_like
+from nested_data import NestedData
 from node_item import NodeItem
-from sockets.vector_none import VectorNone
+# from sockets.vector_none import VectorNone
 from sockets.value_line import ValueLine
+from sockets.coin_none import CoinNone
 
 
 if TYPE_CHECKING:
@@ -69,13 +71,13 @@ class KukaKr6(NodeItem):
             ValueLine(undo_stack=self._undo_stack, name="A4", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="A5", content_value=0., is_input=True, parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="A6", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
-                       parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Rotation", content_value="<No Input>", is_input=False,
-                      parent_node=self)
+            # VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+            #            parent_node=self),
+            CoinNone(undo_stack=self._undo_stack, name="KUKA KR 6", content_value="<No Input>", is_input=False,
+                     parent_node=self)
         ]
 
-        # Build KUKA KR6 kinematic chain
+        # Kinematic chain
         self._kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
             OriginLink(),
             URDFLink(name="A1", origin_translation=np.array([0, 0, 0]), origin_orientation=np.array([0, 0, 0]),
@@ -92,7 +94,7 @@ class KukaKr6(NodeItem):
                      rotation=np.array([1, 0, 0]))
         ], active_links_mask=[False, True, True, True, True, True, True])
 
-        # Import robot vrml_data as coin.SoVRMLGroup
+        # SoVRMLGroup per axis
         so_vrml_groups: list[coin.SoVRMLGroup] = []
         vrml_paths: list[str] = [f for f in os.listdir(os.path.join(str(Path(__file__).parent), "vrml"))]
         vrml_paths.insert(0, vrml_paths.pop())
@@ -103,42 +105,22 @@ class KukaKr6(NodeItem):
             so_vrml_group.ref()
             so_vrml_groups.append(so_vrml_group)
 
-        # Assemble robot forward kinematic as coin.SoSeparator
-        if hasattr(Gui, "ActiveDocument"):
-            sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
-            coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(so_vrml_groups[0])
+        # SoSeparator with forward kinematic
+        self._coin_sep: coin.SoSeparator = coin.SoSeparator()
+        self._coin_sep.addChild(so_vrml_groups[0])
 
-            self._a1_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[1], np.array([0, 0, 0]),
-                                                                   coin.SoRotationXYZ.Z, so_vrml_groups[0])
-            self._a2_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[2], np.array([260, 0, 675]),
-                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[1])
-            self._a3_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[3], np.array([260, 0, 1355]),
-                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[2])
-            self._a4_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[4], np.array([260, 0, 1320]),
-                                                                   coin.SoRotationXYZ.X, so_vrml_groups[3])
-            self._a5_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[5], np.array([930, 0, 1320]),
-                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[4])
-            self._a6_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[6], np.array([1045, 0, 1320]),
-                                                                   coin.SoRotationXYZ.X, so_vrml_groups[5])
-            sg.addChild(coin_sep)
-
-    @staticmethod
-    def add_so_vrml(child: coin.SoVRMLGroup, pivot: np.ndarray, axis: int,
-                    parent: Union[coin.SoSeparator, coin.SoVRMLGroup]) -> coin.SoRotationXYZ:
-
-        so_reverse_transformation: coin.SoTranslation = coin.SoTranslation()
-        so_reverse_transformation.translation.setValue(pivot)
-        so_rotation: coin.SoRotationXYZ = coin.SoRotationXYZ()
-        so_rotation.axis = axis
-        so_forward_transformation: coin.SoTranslation = coin.SoTranslation()
-        so_forward_transformation.translation.setValue(-pivot)
-        parent.addChild(so_reverse_transformation)
-        parent.addChild(so_rotation)
-        parent.addChild(so_forward_transformation)
-        parent.addChild(child)
-
-        return so_rotation
+        self._a1_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[1], np.array([0, 0, 0]),
+                                                               coin.SoRotationXYZ.Z, so_vrml_groups[0])
+        self._a2_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[2], np.array([260, 0, 675]),
+                                                               coin.SoRotationXYZ.Y, so_vrml_groups[1])
+        self._a3_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[3], np.array([260, 0, 1355]),
+                                                               coin.SoRotationXYZ.Y, so_vrml_groups[2])
+        self._a4_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[4], np.array([260, 0, 1320]),
+                                                               coin.SoRotationXYZ.X, so_vrml_groups[3])
+        self._a5_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[5], np.array([930, 0, 1320]),
+                                                               coin.SoRotationXYZ.Y, so_vrml_groups[4])
+        self._a6_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[6], np.array([1045, 0, 1320]),
+                                                               coin.SoRotationXYZ.X, so_vrml_groups[5])
 
     # --------------- Node eval methods ---------------
 
@@ -157,7 +139,7 @@ class KukaKr6(NodeItem):
                         a5: ak.Array = self.input_data(4, args)
                         a6: ak.Array = self.input_data(5, args)
 
-                        position:  ak.Array = self.input_data(6, args)
+                        # position:  ak.Array = self.input_data(6, args)
 
                         if DEBUG:
                             a: float = time.time()
@@ -170,18 +152,24 @@ class KukaKr6(NodeItem):
                             self._a5_rot.angle = np.radians(ak.flatten(a5, axis=None))[0]
                             self._a6_rot.angle = np.radians(ak.flatten(a6, axis=None))[0]
 
-                        flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)), record_structure(position))
+                        # flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)),
+                        #                         record_structure(position))
+                        #
+                        # result: list[np.ndarray] = []
+                        # for param_tuple in flat_pos:
+                        #     result.append(
+                        #         np.round(np.degrees(self._kuka_kr_6_chain.inverse_kinematics(
+                        #             target_position=ak.to_numpy(param_tuple),
+                        #             target_orientation=np.degrees([1, 0, 0]),
+                        #             orientation_mode="Z"
+                        #         )[1:]), 2))
+                        #
+                        # result: ak.Array = ak.Array(unflatten_array_like(result, struct_pos))
 
-                        result: list[np.ndarray] = []
-                        for param_tuple in flat_pos:
-                            result.append(
-                                np.round(np.degrees(self._kuka_kr_6_chain.inverse_kinematics(
-                                    target_position=ak.to_numpy(param_tuple),
-                                    target_orientation=np.degrees([1, 0, 0]),
-                                    orientation_mode="Z"
-                                )[1:]), 2))
-
-                        result: ak.Array = ak.Array(unflatten_array_like(result, struct_pos))
+                        result: NestedData = NestedData(
+                            data=[self._coin_sep],
+                            structure=ak.Array([0])
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
