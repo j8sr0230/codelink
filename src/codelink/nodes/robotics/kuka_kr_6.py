@@ -108,7 +108,6 @@ class KukaKr6(NodeItem):
         # SoSeparator with forward kinematic
         self._coin_sep: coin.SoSeparator = coin.SoSeparator()
         self._coin_sep.addChild(so_vrml_groups[0])
-
         self._a1_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[1], np.array([0, 0, 0]),
                                                                coin.SoRotationXYZ.Z, so_vrml_groups[0])
         self._a2_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[2], np.array([260, 0, 675]),
