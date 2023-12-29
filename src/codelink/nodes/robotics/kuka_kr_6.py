@@ -35,17 +35,16 @@ from ikpy.link import OriginLink, URDFLink
 # import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
-import FreeCADGui as Gui
+# import FreeCADGui as Gui
 # noinspection PyPackageRequirements
 from pivy import coin
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import populate_coin_scene  # , record_structure, flatten_record, unflatten_array_like
+from utils import populate_coin_scene, flatten_record
 from nested_data import NestedData
 from node_item import NodeItem
-# from sockets.vector_none import VectorNone
-from sockets.value_line import ValueLine
+from sockets.vector_none import VectorNone
 from sockets.coin_none import CoinNone
 
 
@@ -65,14 +64,8 @@ class KukaKr6(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="A1", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="A2", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="A3", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="A4", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="A5", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="A6", content_value=0., is_input=True, parent_node=self),
-            # VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
-            #            parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+                       parent_node=self),
             CoinNone(undo_stack=self._undo_stack, name="KUKA KR 6", content_value="<No Input>", is_input=False,
                      parent_node=self)
         ]
@@ -131,39 +124,27 @@ class KukaKr6(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        a1: ak.Array = self.input_data(0, args)
-                        a2: ak.Array = self.input_data(1, args)
-                        a3: ak.Array = self.input_data(2, args)
-                        a4: ak.Array = self.input_data(3, args)
-                        a5: ak.Array = self.input_data(4, args)
-                        a6: ak.Array = self.input_data(5, args)
-
-                        # position:  ak.Array = self.input_data(6, args)
+                        position:  ak.Array = self.input_data(0, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        if hasattr(Gui, "ActiveDocument"):
-                            self._a1_rot.angle = np.radians(ak.flatten(a1, axis=None))[0]
-                            self._a2_rot.angle = np.radians(ak.flatten(a2, axis=None))[0]
-                            self._a3_rot.angle = np.radians(ak.flatten(a3, axis=None))[0]
-                            self._a4_rot.angle = np.radians(ak.flatten(a4, axis=None))[0]
-                            self._a5_rot.angle = np.radians(ak.flatten(a5, axis=None))[0]
-                            self._a6_rot.angle = np.radians(ak.flatten(a6, axis=None))[0]
+                        flat_pos: list[float, float, float] = ak.to_list(flatten_record(position, True))[0]
+                        flat_pos: list[float, float, float] = flat_pos if not all(flat_pos) == 0 else [930, 0, 1205]
 
-                        # flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)),
-                        #                         record_structure(position))
-                        #
-                        # result: list[np.ndarray] = []
-                        # for param_tuple in flat_pos:
-                        #     result.append(
-                        #         np.round(np.degrees(self._kuka_kr_6_chain.inverse_kinematics(
-                        #             target_position=ak.to_numpy(param_tuple),
-                        #             target_orientation=np.degrees([1, 0, 0]),
-                        #             orientation_mode="Z"
-                        #         )[1:]), 2))
-                        #
-                        # result: ak.Array = ak.Array(unflatten_array_like(result, struct_pos))
+                        axis_radians: list = self._kuka_kr_6_chain.inverse_kinematics(
+                            target_position=ak.to_numpy(flat_pos),
+                            target_orientation=np.degrees([1, 0, 0]),
+                            orientation_mode="Z"
+                        )[1:]
+
+                        # if hasattr(Gui, "ActiveDocument"):
+                        self._a1_rot.angle = axis_radians[0]
+                        self._a2_rot.angle = axis_radians[1]
+                        self._a3_rot.angle = axis_radians[2]
+                        self._a4_rot.angle = axis_radians[3]
+                        self._a5_rot.angle = axis_radians[4]
+                        self._a6_rot.angle = axis_radians[5]
 
                         result: NestedData = NestedData(
                             data=[self._coin_sep],
