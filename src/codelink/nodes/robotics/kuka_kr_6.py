@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 from pathlib import Path
 import warnings
 import inspect
@@ -78,42 +78,18 @@ class KukaKr6(NodeItem):
         # Build KUKA KR6 kinematic chain
         self._kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
             OriginLink(),
-            URDFLink(
-                name="A1",
-                origin_translation=np.array([0, 0, 0]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([0, 0, 1]),
-            ),
-            URDFLink(
-                name="A2",
-                origin_translation=np.array([260, 0, 675]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([0, 1, 0]),
-            ),
-            URDFLink(
-                name="A3",
-                origin_translation=np.array([0, 0, 680]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([0, 1, 0]),
-            ),
-            URDFLink(
-                name="A4",
-                origin_translation=np.array([670, 0, -35]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([1, 0, 0]),
-            ),
-            URDFLink(
-                name="A5",
-                origin_translation=np.array([0, 0, 0]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([0, 1, 0]),
-            ),
-            URDFLink(
-                name="A6",
-                origin_translation=np.array([115, 0, 0]),
-                origin_orientation=np.array([0, 0, 0]),
-                rotation=np.array([1, 0, 0]),
-            )
+            URDFLink(name="A1", origin_translation=np.array([0, 0, 0]), origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([0, 0, 1])),
+            URDFLink(name="A2", origin_translation=np.array([260, 0, 675]), origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([0, 1, 0])),
+            URDFLink(name="A3", origin_translation=np.array([0, 0, 680]),  origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([0, 1, 0])),
+            URDFLink(name="A4", origin_translation=np.array([670, 0, -35]), origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([1, 0, 0])),
+            URDFLink(name="A5", origin_translation=np.array([0, 0, 0]), origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([0, 1, 0])),
+            URDFLink(name="A6", origin_translation=np.array([115, 0, 0]), origin_orientation=np.array([0, 0, 0]),
+                     rotation=np.array([1, 0, 0]))
         ], active_links_mask=[False, True, True, True, True, True, True])
 
         # Import robot vrml_data as coin.SoVRMLGroup
@@ -133,37 +109,35 @@ class KukaKr6(NodeItem):
             coin_sep: coin.SoSeparator = coin.SoSeparator()
             coin_sep.addChild(so_vrml_groups[0])
 
-            self._a1_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
-            self._a1_rot.axis = coin.SoRotationXYZ.Z
-            so_vrml_groups[0].addChild(self._a1_rot)
-            so_vrml_groups[0].addChild(so_vrml_groups[1])
+            self._a1_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[1], np.array([0, 0, 0]),
+                                                                   coin.SoRotationXYZ.Z, so_vrml_groups[0])
+            self._a2_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[2], np.array([260, 0, 675]),
+                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[1])
+            self._a3_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[3], np.array([260, 0, 1355]),
+                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[2])
+            self._a4_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[4], np.array([260, 0, 1320]),
+                                                                   coin.SoRotationXYZ.X, so_vrml_groups[3])
 
-            a2_reverse_trans: coin.SoTranslation = coin.SoTranslation()
-            a2_reverse_trans.translation.setValue([260, 0, 675])
-            self._a2_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
-            self._a2_rot.axis = coin.SoRotationXYZ.Y
-            a2_forward_trans: coin.SoTranslation = coin.SoTranslation()
-            a2_forward_trans.translation.setValue([-260, 0, -675])
-            so_vrml_groups[1].addChild(a2_reverse_trans)
-            so_vrml_groups[1].addChild(self._a2_rot)
-            so_vrml_groups[1].addChild(a2_forward_trans)
-            so_vrml_groups[1].addChild(so_vrml_groups[2])
-
-            a3_reverse_trans: coin.SoTranslation = coin.SoTranslation()
-            a3_reverse_trans.translation.setValue([260, 0, 1355])
-            self._a3_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
-            self._a3_rot.axis = coin.SoRotationXYZ.Y
-            a3_forward_trans: coin.SoTranslation = coin.SoTranslation()
-            a3_forward_trans.translation.setValue([-260, 0, -1355])
-            so_vrml_groups[2].addChild(a3_reverse_trans)
-            so_vrml_groups[2].addChild(self._a3_rot)
-            so_vrml_groups[2].addChild(a3_forward_trans)
-            so_vrml_groups[2].addChild(so_vrml_groups[3])
-
-            so_vrml_groups[3].addChild(so_vrml_groups[4])
             so_vrml_groups[4].addChild(so_vrml_groups[5])
             so_vrml_groups[5].addChild(so_vrml_groups[6])
             sg.addChild(coin_sep)
+
+    @staticmethod
+    def add_so_vrml(child: coin.SoVRMLGroup, pivot: np.ndarray, axis: int,
+                    parent: Union[coin.SoSeparator, coin.SoVRMLGroup]) -> coin.SoRotationXYZ:
+
+        so_reverse_transformation: coin.SoTranslation = coin.SoTranslation()
+        so_reverse_transformation.translation.setValue(pivot)
+        so_rotation: coin.SoRotationXYZ = coin.SoRotationXYZ()
+        so_rotation.axis = axis
+        so_forward_transformation: coin.SoTranslation = coin.SoTranslation()
+        so_forward_transformation.translation.setValue(-pivot)
+        parent.addChild(so_reverse_transformation)
+        parent.addChild(so_rotation)
+        parent.addChild(so_forward_transformation)
+        parent.addChild(child)
+
+        return so_rotation
 
     # --------------- Node eval methods ---------------
 
@@ -178,7 +152,7 @@ class KukaKr6(NodeItem):
                         a1: ak.Array = self.input_data(0, args)
                         a2: ak.Array = self.input_data(1, args)
                         a3: ak.Array = self.input_data(2, args)
-                        # a4: ak.Array = self.input_data(3, args)
+                        a4: ak.Array = self.input_data(3, args)
                         # a5: ak.Array = self.input_data(4, args)
                         # a6: ak.Array = self.input_data(5, args)
 
@@ -191,6 +165,7 @@ class KukaKr6(NodeItem):
                             self._a1_rot.angle = np.radians(ak.flatten(a1, axis=None))[0]
                             self._a2_rot.angle = np.radians(ak.flatten(a2, axis=None))[0]
                             self._a3_rot.angle = np.radians(ak.flatten(a3, axis=None))[0]
+                            self._a4_rot.angle = np.radians(ak.flatten(a4, axis=None))[0]
 
                         flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)), record_structure(position))
 
