@@ -75,6 +75,7 @@ class KukaKr6(NodeItem):
                       parent_node=self)
         ]
 
+        # Build KUKA KR6 kinematic chain
         self._kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
             OriginLink(),
             URDFLink(
@@ -115,58 +116,27 @@ class KukaKr6(NodeItem):
             )
         ], active_links_mask=[False, True, True, True, True, True, True])
 
-        kuka_kr6_base_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_base.wrl")
-        kuka_kr6_a1_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a1.wrl")
-        kuka_kr6_a2_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a2.wrl")
-        kuka_kr6_a3_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a3.wrl")
-        kuka_kr6_a4_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a4.wrl")
-        kuka_kr6_a5_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a5.wrl")
-        kuka_kr6_a6_path: str = os.path.join(str(Path(__file__).parent), "vrml", "kuka_kr6_a6.wrl")
+        # Import robot vrml_data as coin.SoVRMLGroup
+        so_vrml_groups: list[coin.SoVRMLGroup] = []
+        vrml_paths: list[str] = [f for f in os.listdir(os.path.join(str(Path(__file__).parent), "vrml"))]
+        vrml_paths.insert(0, vrml_paths.pop())
+        so_input: coin.SoInput = coin.SoInput()
+        for vrml_path in vrml_paths:
+            so_input.openFile(os.path.join(str(Path(__file__).parent), "vrml", vrml_path))
+            so_vrml_group: coin.SoVRMLGroup = coin.SoDB.readAllVRML(so_input)
+            so_vrml_group.ref()
+            so_vrml_groups.append(so_vrml_group)
 
-        inp_base: coin.SoInput = coin.SoInput()
-        inp_base.openFile(kuka_kr6_base_path)
-        so_base: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_base)
-        so_base.ref()
-
-        inp_a1: coin.SoInput = coin.SoInput()
-        inp_a1.openFile(kuka_kr6_a1_path)
-        so_a1: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a1)
-        so_a1.ref()
-
-        inp_a2: coin.SoInput = coin.SoInput()
-        inp_a2.openFile(kuka_kr6_a2_path)
-        so_a2: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a2)
-        so_a2.ref()
-
-        inp_a3: coin.SoInput = coin.SoInput()
-        inp_a3.openFile(kuka_kr6_a3_path)
-        so_a3: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a3)
-        so_a3.ref()
-
-        inp_a4: coin.SoInput = coin.SoInput()
-        inp_a4.openFile(kuka_kr6_a4_path)
-        so_a4: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a4)
-        so_a4.ref()
-
-        inp_a5: coin.SoInput = coin.SoInput()
-        inp_a5.openFile(kuka_kr6_a5_path)
-        so_a5: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a5)
-        so_a5.ref()
-
-        inp_a6: coin.SoInput = coin.SoInput()
-        inp_a6.openFile(kuka_kr6_a6_path)
-        so_a6: coin.SoVRMLGroup = coin.SoDB.readAllVRML(inp_a6)
-        so_a6.ref()
-
+        # Assemble robot forward kinematic as coin.SoSeparator
         if hasattr(Gui, "ActiveDocument"):
             sg = Gui.ActiveDocument.ActiveView.getSceneGraph()
             coin_sep: coin.SoSeparator = coin.SoSeparator()
-            coin_sep.addChild(so_base)
+            coin_sep.addChild(so_vrml_groups[0])
 
             self._a1_rot: coin.SoRotationXYZ = coin.SoRotationXYZ()
             self._a1_rot.axis = coin.SoRotationXYZ.Z
-            so_base.addChild(self._a1_rot)
-            so_base.addChild(so_a1)
+            so_vrml_groups[0].addChild(self._a1_rot)
+            so_vrml_groups[0].addChild(so_vrml_groups[1])
 
             a2_reverse_trans: coin.SoTranslation = coin.SoTranslation()
             a2_reverse_trans.translation.setValue([260, 0, 675])
@@ -174,10 +144,10 @@ class KukaKr6(NodeItem):
             self._a2_rot.axis = coin.SoRotationXYZ.Y
             a2_forward_trans: coin.SoTranslation = coin.SoTranslation()
             a2_forward_trans.translation.setValue([-260, 0, -675])
-            so_a1.addChild(a2_reverse_trans)
-            so_a1.addChild(self._a2_rot)
-            so_a1.addChild(a2_forward_trans)
-            so_a1.addChild(so_a2)
+            so_vrml_groups[1].addChild(a2_reverse_trans)
+            so_vrml_groups[1].addChild(self._a2_rot)
+            so_vrml_groups[1].addChild(a2_forward_trans)
+            so_vrml_groups[1].addChild(so_vrml_groups[2])
 
             a3_reverse_trans: coin.SoTranslation = coin.SoTranslation()
             a3_reverse_trans.translation.setValue([260, 0, 1355])
@@ -185,14 +155,14 @@ class KukaKr6(NodeItem):
             self._a3_rot.axis = coin.SoRotationXYZ.Y
             a3_forward_trans: coin.SoTranslation = coin.SoTranslation()
             a3_forward_trans.translation.setValue([-260, 0, -1355])
-            so_a2.addChild(a3_reverse_trans)
-            so_a2.addChild(self._a3_rot)
-            so_a2.addChild(a3_forward_trans)
-            so_a2.addChild(so_a3)
+            so_vrml_groups[2].addChild(a3_reverse_trans)
+            so_vrml_groups[2].addChild(self._a3_rot)
+            so_vrml_groups[2].addChild(a3_forward_trans)
+            so_vrml_groups[2].addChild(so_vrml_groups[3])
 
-            so_a3.addChild(so_a4)
-            so_a4.addChild(so_a5)
-            so_a5.addChild(so_a6)
+            so_vrml_groups[3].addChild(so_vrml_groups[4])
+            so_vrml_groups[4].addChild(so_vrml_groups[5])
+            so_vrml_groups[5].addChild(so_vrml_groups[6])
             sg.addChild(coin_sep)
 
     # --------------- Node eval methods ---------------
