@@ -117,9 +117,10 @@ class KukaKr6(NodeItem):
                                                                    coin.SoRotationXYZ.Y, so_vrml_groups[2])
             self._a4_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[4], np.array([260, 0, 1320]),
                                                                    coin.SoRotationXYZ.X, so_vrml_groups[3])
-
-            so_vrml_groups[4].addChild(so_vrml_groups[5])
-            so_vrml_groups[5].addChild(so_vrml_groups[6])
+            self._a5_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[5], np.array([930, 0, 1320]),
+                                                                   coin.SoRotationXYZ.Y, so_vrml_groups[4])
+            self._a6_rot: coin.SoRotationXYZ = KukaKr6.add_so_vrml(so_vrml_groups[6], np.array([1045, 0, 1320]),
+                                                                   coin.SoRotationXYZ.X, so_vrml_groups[5])
             sg.addChild(coin_sep)
 
     @staticmethod
@@ -153,8 +154,8 @@ class KukaKr6(NodeItem):
                         a2: ak.Array = self.input_data(1, args)
                         a3: ak.Array = self.input_data(2, args)
                         a4: ak.Array = self.input_data(3, args)
-                        # a5: ak.Array = self.input_data(4, args)
-                        # a6: ak.Array = self.input_data(5, args)
+                        a5: ak.Array = self.input_data(4, args)
+                        a6: ak.Array = self.input_data(5, args)
 
                         position:  ak.Array = self.input_data(6, args)
 
@@ -166,6 +167,8 @@ class KukaKr6(NodeItem):
                             self._a2_rot.angle = np.radians(ak.flatten(a2, axis=None))[0]
                             self._a3_rot.angle = np.radians(ak.flatten(a3, axis=None))[0]
                             self._a4_rot.angle = np.radians(ak.flatten(a4, axis=None))[0]
+                            self._a5_rot.angle = np.radians(ak.flatten(a5, axis=None))[0]
+                            self._a6_rot.angle = np.radians(ak.flatten(a6, axis=None))[0]
 
                         flat_pos, struct_pos = (ak.to_list(flatten_record(position, True)), record_structure(position))
 
