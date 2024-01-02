@@ -33,7 +33,7 @@ import numpy as np
 from ikpy.chain import Chain
 from ikpy.link import OriginLink, URDFLink
 # import matplotlib.pyplot
-from mpl_toolkits.mplot3d import Axes3D  # noqa
+# from mpl_toolkits.mplot3d import Axes3D  # noqa
 
 # import FreeCADGui as Gui
 # noinspection PyPackageRequirements
