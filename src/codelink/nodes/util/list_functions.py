@@ -28,14 +28,15 @@ import inspect
 import time
 
 import awkward as ak
-import numpy as np
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from nested_data import NestedData
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
+from sockets.value_line import ValueLine
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -68,11 +69,9 @@ class ListFunctions(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            AnyNone(undo_stack=self._undo_stack, name="List A", content_value="<No Input>", is_input=True,
+            AnyNone(undo_stack=self._undo_stack, name="List In", content_value="<No Input>", is_input=True,
                     parent_node=self),
-            AnyNone(undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
-                    parent_node=self),
-            AnyNone(undo_stack=self._undo_stack, name="Out", content_value="<No Input>", is_input=False,
+            AnyNone(undo_stack=self._undo_stack, name="List Out", content_value="<No Input>", is_input=False,
                     parent_node=self)
         ]
 
@@ -96,27 +95,23 @@ class ListFunctions(NodeItem):
         self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
 
         if current_option_name == "Zip":
-            # Remove sockets
-            while input_widget_count > 0:
-                remove_socket: SocketWidget = self._socket_widgets[0]
+            while input_widget_count > 1:
+                remove_idx: int = len(self.input_socket_widgets) - 1
+                remove_socket: SocketWidget = self._socket_widgets[remove_idx]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
-                self._undo_stack.push(remove_socket_cmd_cls(self, 0))
+
+                self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
 
-            # Add sockets
-            new_first_socket: AnyNone = AnyNone(
-                undo_stack=self._undo_stack, name="List A", content_value="<No Input>", is_input=True,
-                parent_node=self)
-            new_second_socket: AnyNone = AnyNone(
-                undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
-                parent_node=self)
-
-            self._undo_stack.push(add_socket_cmd_cls(self, new_first_socket, 0))
-            self._undo_stack.push(add_socket_cmd_cls(self, new_second_socket, 1))
-
         else:
-            pass
+            while input_widget_count < 2:
+                new_socket_widget: ValueLine = ValueLine(
+                    undo_stack=self._undo_stack, name="Offset", content_value=1.0, is_input=True, parent_node=self
+                )
+                insert_idx: int = len(self.input_socket_widgets)
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
+                input_widget_count += 1
 
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
@@ -134,47 +129,36 @@ class ListFunctions(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        a: ak.Array = self.input_data(0, args)
-
                         if DEBUG:
-                            x: float = time.time()
+                            a: float = time.time()
 
-                        if len(args) == 2:
-                            b: ak.Array = self.input_data(1, args)
+                        list_in: ak.Array = self.input_data(0, args)
 
-                            if self._option_box.currentText() == "Add":
-                                result: ak.Array = a + b
+                        if self._option_box.currentText() == "Zip":
+                            if isinstance(list_in, ak.Array):
+                                result: ak.Array = ak.zip(list_in.to_list(), right_broadcast=True)
+                            elif isinstance(list_in, NestedData):
+                                print("Nested data:", list_in)
 
-                            elif self._option_box.currentText() == "Sub":
-                                result: ak.Array = a - b
+                            else:
+                                print(
+                                    "Domain size: " + str(len(self.input_data(0, args))) + "->",
+                                    [str(input_item) for input_item in self.input_data(0, args)]
+                                )
 
-                            elif self._option_box.currentText() == "Mul":
-                                result: ak.Array = a * b
+                        else:
+                            offset: ak.Array = self.input_data(1, args)
 
-                            elif self._option_box.currentText() == "Div":
-                                result: ak.Array = a / b
-
-                            elif self._option_box.currentText() == "Pow":
-                                result: ak.Array = a ** b
-
-                        if len(args) == 1:
-                            if self._option_box.currentText() == "Sqrt":
-                                result: np.ndarray = np.sqrt(a)
-
-                            elif self._option_box.currentText() == "Exp":
-                                result: np.ndarray = np.exp(a)
-
-                            elif self._option_box.currentText() == "Ln":
-                                result: np.ndarray = np.log(a)
+                            offset.show()
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
                         self._cache[cache_idx] = self.output_data(0, result)
 
                         if DEBUG:
-                            y: float = time.time()
-                            print("List Function executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
-                                                                                              digits=2), "ms")
+                            b: float = time.time()
+                            print("List Functions executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                             digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
