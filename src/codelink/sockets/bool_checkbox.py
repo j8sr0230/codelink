@@ -83,11 +83,7 @@ class BoolCheckBox(SocketWidget):
 				result.extend(linked_highest.input_data())
 
 		if len(result) == 0:
-			if self._input_widget.text() != "":
-				result.append(ak.Array([self._input_widget.checkState()]))
-			else:
-				result.append(ak.Array([False]))
-				# result.append(0.)
+			result.append(ak.Array([bool(self._input_widget.checkState())]))
 
 		return result
 
@@ -125,7 +121,7 @@ class BoolCheckBox(SocketWidget):
 		self._input_widget.setChecked(bool(self._prop_model.properties["Value"]))
 
 	def validate_input(self):
-		input_state: bool = self._input_widget.checkState()
+		input_state: bool = bool(self._input_widget.checkState())
 		self._prop_model.setData(self._prop_model.index(1, 1, QtCore.QModelIndex()), input_state, 2)
 
 	def editing_finished(self) -> None:

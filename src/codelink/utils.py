@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Callable, Any, Union, cast
+from typing import Callable, Any, Union, cast, Iterator
 
 import numpy as np
 import awkward as ak
@@ -62,21 +62,25 @@ def array_structure(nested_array: ak.Array) -> ak.Array:
     return ak.transform(global_index, nested_array)
 
 
-def record_structure(nested_record: ak.Array) -> ak.Array:
-    return ak.transform(global_index, nested_record[nested_record.fields[0]])
-
-
-def simplified_rec_struct(nested_record: ak.Array) -> Union[int, ak.Array]:
-    max_depth: int = nested_record.layout.minmax_depth[1]
+def simplified_array_structure(nested_array: ak.Array) -> Union[int, ak.Array]:
+    max_depth: int = nested_array.layout.minmax_depth[1]
     if max_depth > 1:
-        return ak.transform(global_index, ak.max(record_structure(nested_record), axis=-1))
+        return ak.transform(global_index, ak.max(array_structure(nested_array), axis=-1))
     else:
         return 0
 
 
+def record_structure(nested_record: ak.Array) -> ak.Array:
+    return array_structure(nested_record[nested_record.fields[0]])
+
+
+def simplified_rec_struct(nested_record: ak.Array) -> Union[int, ak.Array]:
+    return simplified_array_structure(nested_record[nested_record.fields[0]])
+
+
 def flatten_list(nested_list: list[Any]) -> list[Any]:
-    result = []
-    stack = [iter(nested_list)]
+    result: list[Any] = []
+    stack: list[Iterator[Any]] = [iter(nested_list)]
 
     while stack:
         for item in stack[-1]:

@@ -31,12 +31,11 @@ import awkward as ak
 # noinspection PyUnresolvedReferences
 import FreeCAD
 import Part
-import Points  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import simplify_array
+from utils import simplified_array_structure, simplify_array, flatten_record, record_structure
 from node_item import NodeItem
 from sockets.shape_none import ShapeNone
 from sockets.bool_checkbox import BoolCheckBox
@@ -62,7 +61,9 @@ class Loft(NodeItem):
                       parent_node=self),
             BoolCheckBox(undo_stack=self._undo_stack, name="Solid", content_value=False, is_input=True,
                          parent_node=self),
-            BoolCheckBox(undo_stack=self._undo_stack, name="Regular", content_value=False, is_input=True,
+            BoolCheckBox(undo_stack=self._undo_stack, name="Ruled", content_value=False, is_input=True,
+                         parent_node=self),
+            BoolCheckBox(undo_stack=self._undo_stack, name="Closed", content_value=False, is_input=True,
                          parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Loft", content_value="<No Input>", is_input=False,
                       parent_node=self)
@@ -79,26 +80,42 @@ class Loft(NodeItem):
                 try:
                     try:
                         sections: NestedData = self.input_data(0, args)
+                        solid: ak.Array = self.input_data(1, args)
+                        ruled: ak.Array = self.input_data(2, args)
+                        closed: ak.Array = self.input_data(3, args)
 
-                        struct_sections: ak.Array = simplify_array(sections.structure)
+                        simple_sections, struct_sections = (simplify_array(sections.structure),
+                                                            simplified_array_structure(sections.structure))
+
+                        broadcasted_params: ak.Array = ak.zip(
+                            {"sections": struct_sections, "solid": solid, "ruled": ruled, "closed": closed},
+                            right_broadcast=True)
+
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                         if DEBUG:
                             a: float = time.time()
 
                         flat_data: list[Part.Shape] = []
-                        if type(ak.num(struct_sections, axis=1)) == int:
-                            flat_data.append(Part.makeLoft(sections.data, False, False, False))
-                        else:
-                            flat_params: ak.Array = ak.to_list(ak.zip(ak.to_list(struct_sections),
-                                                                      right_broadcast=True))
-                            for param_tuple in flat_params:
+                        for param_tuple in flat_params:
+                            if type(struct_sections) is int:
                                 flat_data.append(Part.makeLoft(
-                                    [sections.data[idx] for idx in param_tuple], False, False, False
+                                    sections.data,
+                                    bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
+                                ))
+
+                            else:
+                                sub_sections: list[Part.Shape] = [
+                                    sections.data[idx] for idx in simple_sections[param_tuple["0"]]
+                                ]
+                                flat_data.append(Part.makeLoft(
+                                    sub_sections,
+                                    bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
                                 ))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=struct_sections if type(struct_sections) == ak.Array else ak.Array([0])
+                            structure=record_structure(broadcasted_params)
                         )
 
                         self._is_dirty: bool = False
@@ -107,7 +124,7 @@ class Loft(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Polyline executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                            print("Loft executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
                                   "ms")
 
                     except Exception as e:
