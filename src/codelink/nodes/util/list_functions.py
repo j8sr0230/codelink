@@ -131,10 +131,10 @@ class ListFunctions(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
+                        list_in: Union[ak.Array, NestedData] = self.input_data(0, args)
+
                         if DEBUG:
                             a: float = time.time()
-
-                        list_in: Union[ak.Array, NestedData] = self.input_data(0, args)
 
                         if self._option_box.currentText() == "Zip":
                             if isinstance(list_in, ak.Array):
@@ -142,10 +142,8 @@ class ListFunctions(NodeItem):
                                 result: ak.Array = ak.Array(map_value(lambda val: [i for i in val], zipped_tuples))
 
                             elif isinstance(list_in, NestedData):
-                                print(list_in.structure)
                                 zipped_tuples: list = ak.to_list(ak.zip(list_in.structure.to_list(),
                                                                         right_broadcast=True))
-                                print(zipped_tuples)
                                 zipped_list: ak.Array = ak.Array(map_value(lambda val: [i for i in val], zipped_tuples))
                                 result: NestedData = NestedData(list_in.data, zipped_list)
 
@@ -187,15 +185,18 @@ class ListFunctions(NodeItem):
                                 flat_data: list = []
                                 for param_tuple in flat_params:
                                     if type(struct_list) is int:
-                                        flat_data.append(np.roll(simple_list, int(param_tuple["1"])))
+                                        flat_data.append(list_in.data[int(param_tuple["1"]):] +
+                                                         list_in.data[:int(param_tuple["1"])])
+                                        # flat_data.append(np.roll(simple_list, int(param_tuple["1"])))
                                     else:
                                         flat_data.append(
                                             np.roll(ak.to_list(simple_list)[param_tuple["0"]], int(param_tuple["1"]))
                                         )
 
+                                # TODO: Build new structure
                                 new_structure: ak.Array = unflatten_array_like(ak.flatten(flat_data, axis=None),
                                                                                list_in.structure)
-                                result: NestedData = NestedData(list_in.data, new_structure)
+                                result: NestedData = NestedData(flat_data, new_structure)
 
                             else:
                                 result: ak.Array = ak.Array([0])
