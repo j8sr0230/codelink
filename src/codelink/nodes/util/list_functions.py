@@ -21,7 +21,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, Optional, Union, cast
 import importlib
 import warnings
 import inspect
@@ -31,8 +31,10 @@ import awkward as ak
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+import numpy as np
 
 from nested_data import NestedData
+from utils import map_value, simplify_array, simplified_array_structure, flatten_record, unflatten_array_like
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
@@ -121,7 +123,7 @@ class ListFunctions(NodeItem):
 
     # --------------- Node eval methods ---------------
 
-    def eval_0(self, *args) -> ak.Array:
+    def eval_0(self, *args) -> Union[ak.Array, NestedData, list]:
         cache_idx: int = int(inspect.stack()[0][3].split("_")[-1])
 
         if self._is_invalid or self._cache[cache_idx] is None:
@@ -132,24 +134,71 @@ class ListFunctions(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        list_in: ak.Array = self.input_data(0, args)
+                        list_in: Union[ak.Array, NestedData] = self.input_data(0, args)
 
                         if self._option_box.currentText() == "Zip":
                             if isinstance(list_in, ak.Array):
-                                result: ak.Array = ak.zip(list_in.to_list(), right_broadcast=True)
+                                zipped_tuples: list = ak.to_list(ak.zip(list_in.to_list(), right_broadcast=True))
+                                result: ak.Array = ak.Array(map_value(lambda val: [i for i in val], zipped_tuples))
+
                             elif isinstance(list_in, NestedData):
-                                print("Nested data:", list_in)
+                                print(list_in.structure)
+                                zipped_tuples: list = ak.to_list(ak.zip(list_in.structure.to_list(),
+                                                                        right_broadcast=True))
+                                print(zipped_tuples)
+                                zipped_list: ak.Array = ak.Array(map_value(lambda val: [i for i in val], zipped_tuples))
+                                result: NestedData = NestedData(list_in.data, zipped_list)
 
                             else:
-                                print(
-                                    "Domain size: " + str(len(self.input_data(0, args))) + "->",
-                                    [str(input_item) for input_item in self.input_data(0, args)]
-                                )
+                                result: ak.Array = ak.Array([0])
 
                         else:
                             offset: ak.Array = self.input_data(1, args)
 
-                            offset.show()
+                            if isinstance(list_in, ak.Array):
+                                simple_list, struct_list = (simplify_array(list_in),
+                                                            simplified_array_structure(list_in))
+
+                                broadcasted_params: ak.Array = ak.zip(
+                                    {"sections": struct_list, "offset": offset}, right_broadcast=True)
+
+                                flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+
+                                flat_data: list = []
+                                for param_tuple in flat_params:
+                                    if type(struct_list) is int:
+                                        flat_data.append(np.roll(simple_list, int(param_tuple["1"])))
+                                    else:
+                                        flat_data.append(
+                                            np.roll(ak.to_list(simple_list)[param_tuple["0"]], int(param_tuple["1"]))
+                                        )
+
+                                result: ak.Array = unflatten_array_like(ak.flatten(flat_data, axis=None), list_in)
+
+                            elif isinstance(list_in, NestedData):
+                                simple_list, struct_list = (simplify_array(list_in.structure),
+                                                            simplified_array_structure(list_in.structure))
+
+                                broadcasted_params: ak.Array = ak.zip(
+                                    {"sections": struct_list, "offset": offset}, right_broadcast=True)
+
+                                flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+
+                                flat_data: list = []
+                                for param_tuple in flat_params:
+                                    if type(struct_list) is int:
+                                        flat_data.append(np.roll(simple_list, int(param_tuple["1"])))
+                                    else:
+                                        flat_data.append(
+                                            np.roll(ak.to_list(simple_list)[param_tuple["0"]], int(param_tuple["1"]))
+                                        )
+
+                                new_structure: ak.Array = unflatten_array_like(ak.flatten(flat_data, axis=None),
+                                                                               list_in.structure)
+                                result: NestedData = NestedData(list_in.data, new_structure)
+
+                            else:
+                                result: ak.Array = ak.Array([0])
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False

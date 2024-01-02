@@ -84,6 +84,9 @@ class Loft(NodeItem):
                         ruled: ak.Array = self.input_data(2, args)
                         closed: ak.Array = self.input_data(3, args)
 
+                        if DEBUG:
+                            a: float = time.time()
+
                         simple_sections, struct_sections = (simplify_array(sections.structure),
                                                             simplified_array_structure(sections.structure))
 
@@ -92,9 +95,6 @@ class Loft(NodeItem):
                             right_broadcast=True)
 
                         flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
-
-                        if DEBUG:
-                            a: float = time.time()
 
                         flat_data: list[Part.Shape] = []
                         for param_tuple in flat_params:

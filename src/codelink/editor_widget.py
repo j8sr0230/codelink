@@ -281,6 +281,8 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
                     ]
 
+                    socket_widget_bboxes.sort(key=lambda bbox: bbox.y(), reverse=False)
+
                     click_mask: list[bool] = [
                         rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
                     ]
