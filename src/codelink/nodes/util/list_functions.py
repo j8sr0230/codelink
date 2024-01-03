@@ -34,7 +34,8 @@ import PySide2.QtWidgets as QtWidgets
 import numpy as np
 
 from nested_data import NestedData
-from utils import map_value, simplify_array, simplified_array_structure, flatten_record, unflatten_array_like
+from utils import (map_value, simplify_array, simplified_array_structure, simplified_rec_struct, flatten_record,
+                   unflatten_array_like)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
@@ -138,8 +139,16 @@ class ListFunctions(NodeItem):
 
                         if self._option_box.currentText() == "Zip":
                             if isinstance(list_in, ak.Array):
-                                zipped_tuples: list = ak.to_list(ak.zip(list_in.to_list(), right_broadcast=True))
-                                result: ak.Array = ak.Array(map_value(lambda val: [i for i in val], zipped_tuples))
+                                if (len(list_in.fields) == 0 and type(simplified_array_structure(list_in)) == int or
+                                        len(list_in.fields) != 0 and type(simplified_rec_struct(list_in)) == int):
+                                    result: ak.Array = list_in
+                                else:
+                                    zipped_tuples: ak.Array = ak.zip(ak.to_list(list_in), right_broadcast=True)
+                                    grafted_fields: list[ak.Array] = [
+                                        ak.unflatten(zipped_tuples[field], counts=1, axis=-1)
+                                        for field in zipped_tuples.fields
+                                    ]
+                                    result: ak.Array = ak.concatenate(grafted_fields, axis=-1)
 
                             elif isinstance(list_in, NestedData):
                                 zipped_tuples: list = ak.to_list(ak.zip(list_in.structure.to_list(),
