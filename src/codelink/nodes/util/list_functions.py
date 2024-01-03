@@ -182,9 +182,15 @@ class ListFunctions(NodeItem):
                                 flat_offsets: ak.Array = ak.flatten(offset, axis=None)
 
                                 offset_list: list = []
-                                target_structure: list = []
+                                target_structure: Optional[ak.Array] = None
+
                                 for off in flat_offsets:
-                                    target_structure[:] = target_structure + [list_in]
+                                    if target_structure is None:
+                                        target_structure: ak.Array = list_in
+                                    else:
+                                        target_structure: ak.Array = ak.concatenate([target_structure, list_in])
+
+                                    # target_structure[:] = target_structure + [list_in]
                                     simple_list, struct_simple_list = (simplify_array(list_in),
                                                                        simplified_array_structure(list_in))
                                     if type(struct_simple_list) is int:
@@ -192,10 +198,14 @@ class ListFunctions(NodeItem):
                                     else:
                                         for sub_list in simple_list:
                                             offset_list.append(np.roll(ak.to_list(sub_list), int(off)))
+                                        #offset_list.append(unflatten_array_like(sub_list, list_in))
 
+                                #target_structure.show()
                                 flat_result: ak.Array = ak.flatten(offset_list, axis=None)
-                                result: ak.Array = unflatten_array_like(flat_result, ak.Array(target_structure))
-                                result: ak.Array = ak.flatten(result, axis=1)
+                                result: ak.Array = unflatten_array_like(flat_result, target_structure)
+                                result: ak.Array = unflatten_array_like(ak.flatten(result, axis=None), offset)
+
+                                #result: ak.Array = ak.flatten(result, axis=1)
 
                             elif isinstance(list_in, NestedData):
                                 simple_list, struct_list = (simplify_array(list_in.structure),
