@@ -240,29 +240,47 @@ class ListFunctions(NodeItem):
                                         offset_dept -= 1
 
                             elif isinstance(list_in, NestedData):
-                                simple_list, struct_list = (simplify_array(list_in.structure),
-                                                            simplified_array_structure(list_in.structure))
-
-                                broadcasted_params: ak.Array = ak.zip(
-                                    {"sections": struct_list, "offset": offset}, right_broadcast=True)
-
-                                flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
-
                                 flat_data: list = []
-                                for param_tuple in flat_params:
-                                    if type(struct_list) is int:
-                                        flat_data.append(list_in.data[int(param_tuple["1"]):] +
-                                                         list_in.data[:int(param_tuple["1"])])
-                                        # flat_data.append(np.roll(simple_list, int(param_tuple["1"])))
+                                target_structure: Optional[ak.Array] = None
+                                flat_offsets: ak.Array = ak.flatten(offset, axis=None)
+                                for flat_offset in flat_offsets:
+                                    if target_structure is None:
+                                        target_structure: ak.Array = list_in.structure
                                     else:
-                                        flat_data.append(
-                                            np.roll(ak.to_list(simple_list)[param_tuple["0"]], int(param_tuple["1"]))
-                                        )
+                                        target_structure: ak.Array = ak.concatenate([target_structure,
+                                                                                     list_in.structure])
 
-                                # TODO: Build new structure
-                                new_structure: ak.Array = unflatten_array_like(ak.flatten(flat_data, axis=None),
-                                                                               list_in.structure)
-                                result: NestedData = NestedData(flat_data, new_structure)
+                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in.structure)),
+                                                                       simplified_array_structure(list_in.structure))
+                                    if type(struct_simple_list) is int:
+                                        flat_data.append(np.roll(simple_list, int(flat_offset)))
+                                    else:
+                                        for sub_list in simple_list:
+                                            flat_data.append(np.roll(sub_list, int(flat_offset)))
+
+                                flat_structure: ak.Array = ak.flatten(flat_data, axis=None)
+                                new_structure: ak.Array = unflatten_array_like(flat_structure, target_structure)
+
+                                offset_dept: int = offset.layout.minmax_depth[1]
+                                while offset_dept > 1:
+                                    new_structure: ak.Array = ak.unflatten(
+                                        new_structure, counts=ak.num(new_structure, axis=0), axis=0
+                                    )
+                                    offset_dept -= 1
+
+                                simple_structure: list = ak.to_list(simplify_array(new_structure))
+
+                                flat_data_in: np.ndarray = np.array(list_in.data, dtype="object")
+                                flat_data_out: [Part.Shape] = []
+                                for simple_ids in simple_structure:
+                                    if type(simple_ids) == int:
+                                        flat_data_out.append(flat_data_in[simple_ids])
+                                    else:
+                                        flat_data_out.extend(flat_data_in[simple_ids])
+
+                                result: NestedData = NestedData(
+                                    flat_data_out, ak.transform(global_index, new_structure)
+                                )
 
                             else:
                                 result: ak.Array = ak.Array([0])
