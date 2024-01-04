@@ -26,16 +26,16 @@ import warnings
 import inspect
 import time
 
-# import awkward as ak
+import awkward as ak
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
-# import Part
+import Part
 import Points  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
-# from utils import simplify_record, simplified_rec_struct
+from utils import simplify_array, simplified_array_structure
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.shape_none import ShapeNone
@@ -48,8 +48,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class FaceFromCurves(NodeItem):
-    REG_NAME: str = "Face from Curves"
+class SolidFromFace(NodeItem):
+    REG_NAME: str = "Solid from Face"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -57,9 +57,9 @@ class FaceFromCurves(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ShapeNone(undo_stack=self._undo_stack, name="Curves", content_value="<No Input>", is_input=True,
+            ShapeNone(undo_stack=self._undo_stack, name="Face", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            ShapeNone(undo_stack=self._undo_stack, name="Face", content_value="<No Input>", is_input=False,
+            ShapeNone(undo_stack=self._undo_stack, name="Solid", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
 
@@ -78,12 +78,21 @@ class FaceFromCurves(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        # result: NestedData = NestedData(
-                        #     data=[],
-                        #     structure=ak.Array([0])
-                        # )
+                        simple_crv, struct_crv = (simplify_array(curves.structure),
+                                                  simplified_array_structure(curves.structure))
 
-                        result: NestedData = curves
+                        flat_data: list[Part.Shape] = []
+                        if type(struct_crv) is int:
+                            flat_data.append(Part.makeFace(Part.Wire(curves.data), "Part::FaceMakerBullseye"))
+                        else:
+                            for crv_idx_set in simple_crv:
+                                crv_set: list[Part.Edge] = [curves.data[idx] for idx in crv_idx_set]
+                                flat_data.append(Part.makeFace(Part.Wire(crv_set), "Part::FaceMakerBullseye"))
+
+                        result: NestedData = NestedData(
+                            data=flat_data,
+                            structure=struct_crv if type(struct_crv) == ak.Array else ak.Array([0])
+                        )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
