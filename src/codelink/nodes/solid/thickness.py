@@ -97,22 +97,24 @@ class Thickness(NodeItem):
                                 "Part::Thickness", "Thickness"
                             )
 
-                            if type(struct_cutout) == int:
-                                face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
-                            else:
-                                face_names: list[str] = ["Face" + str(int(face_idx))
-                                                         for face_idx in simple_cutout[param_tuple["1"]]]
-                            result_obj.Faces = (target_obj, face_names) if face_names[0] != "Face0" else target_obj
-                            result_obj.Mode = 0
-                            result_obj.Join = 2
-                            result_obj.Value = param_tuple["2"]
-                            FreeCAD.activeDocument().recompute()
-
                             # noinspection PyUnresolvedReferences
-                            flat_data.append(result_obj.Shape)
+                            if len(target_obj.Shape.Solids) > 0 and len(target_obj.Shape.Vertexes) > 0:
+                                if type(struct_cutout) == int:
+                                    face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
+                                else:
+                                    face_names: list[str] = ["Face" + str(int(face_idx))
+                                                             for face_idx in simple_cutout[param_tuple["1"]]]
+                                result_obj.Faces = (target_obj, face_names) if face_names[0] != "Face0" else target_obj
+                                result_obj.Mode = 0
+                                result_obj.Join = 2
+                                result_obj.Value = param_tuple["2"]
+                                FreeCAD.activeDocument().recompute()
 
-                            FreeCAD.activeDocument().removeObject(target_obj.Name)
-                            FreeCAD.activeDocument().removeObject(result_obj.Name)
+                                # noinspection PyUnresolvedReferences
+                                flat_data.append(result_obj.Shape)
+
+                                FreeCAD.activeDocument().removeObject(target_obj.Name)
+                                FreeCAD.activeDocument().removeObject(result_obj.Name)
 
                         result: NestedData = NestedData(
                             data=flat_data,
