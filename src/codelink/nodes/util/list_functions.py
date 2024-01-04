@@ -61,7 +61,7 @@ class ListFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Zip", "Shift"])
+        self._option_box.addItems(["Zip", "Flip", "Shift"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -99,7 +99,7 @@ class ListFunctions(NodeItem):
         self._undo_stack.beginMacro("Changes option box")
         self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
 
-        if current_option_name == "Zip":
+        if current_option_name in ("Zip", "Flip"):
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -160,6 +160,61 @@ class ListFunctions(NodeItem):
                             else:
                                 result: ak.Array = ak.Array([0])
 
+                        elif self._option_box.currentText() == "Flip":
+                            flat_data: list = []
+
+                            if isinstance(list_in, ak.Array):
+                                if len(list_in.fields) == 0:
+                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in)),
+                                                                       simplified_array_structure(list_in))
+                                    if type(struct_simple_list) is int:
+                                        flat_data.append(np.flip(simple_list))
+                                    else:
+                                        for sub_list in simple_list:
+                                            flat_data.append(np.flip(sub_list))
+
+                                    flat_result: ak.Array = ak.flatten(flat_data, axis=None)
+                                    result: ak.Array = unflatten_array_like(flat_result, list_in)
+
+                                else:
+                                    simple_list, struct_simple_list = (simplify_record(list_in),
+                                                                       simplified_rec_struct(list_in))
+                                    if type(struct_simple_list) is int:
+                                        flat_data.append(
+                                            {"x": np.flip(ak.to_list(simple_list.x)),
+                                             "y": np.flip(ak.to_list(simple_list.y)),
+                                             "z": np.flip(ak.to_list(simple_list.z))}
+                                        )
+                                    else:
+                                        for sub_list in simple_list:
+                                            flat_data.append(
+                                                {"x": np.flip(ak.to_list(sub_list.x)),
+                                                 "y": np.flip(ak.to_list(sub_list.y)),
+                                                 "z": np.flip(ak.to_list(sub_list.z))}
+                                            )
+
+                                    flat_result: ak.Array = flatten_record(ak.Array(flat_data))
+                                    result: ak.Array = unflatten_record_like(flat_result, list_in)
+
+                            elif isinstance(list_in, NestedData):
+                                simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in.structure)),
+                                                                   simplified_array_structure(list_in.structure))
+                                if type(struct_simple_list) is int:
+                                    flat_data.append(np.flip(simple_list))
+                                else:
+                                    for sub_list in simple_list:
+                                        flat_data.append(np.flip(sub_list))
+
+                                flat_structure: ak.Array = ak.flatten(flat_data, axis=None)
+                                new_structure: ak.Array = unflatten_array_like(flat_structure, list_in.structure)
+                                flat_data_out: list[Part.Shape] = reorder_list(list_in.data, new_structure)
+
+                                result: NestedData = NestedData(
+                                    flat_data_out, ak.transform(global_index, new_structure)
+                                )
+                            else:
+                                result: ak.Array = ak.Array([0])
+
                         else:
                             offset: ak.Array = self.input_data(1, args)
 
@@ -184,6 +239,7 @@ class ListFunctions(NodeItem):
                                                 flat_data.append(np.roll(sub_list, int(flat_offset)))
 
                                     flat_result: ak.Array = ak.flatten(flat_data, axis=None)
+                                    result: ak.Array = unflatten_array_like(flat_result, target_structure)
 
                                 else:
                                     for flat_offset in flat_offsets:
@@ -209,8 +265,8 @@ class ListFunctions(NodeItem):
                                                 )
 
                                     flat_result: ak.Array = flatten_record(ak.Array(flat_data))
+                                    result: ak.Array = unflatten_record_like(flat_result, target_structure)
 
-                                result: ak.Array = unflatten_record_like(flat_result, target_structure)
                                 offset_dept: int = offset.layout.minmax_depth[1]
                                 while offset_dept > 1:
                                     result: ak.Array = ak.unflatten(result, counts=ak.num(result, axis=0), axis=0)
