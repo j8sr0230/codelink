@@ -35,10 +35,11 @@ import Points  # noqa
 
 import PySide2.QtWidgets as QtWidgets
 
-from utils import simplify_array, simplified_array_structure
+from utils import simplify_array, simplified_array_structure, flatten_record, record_structure
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.shape_none import ShapeNone
+from sockets.value_line import ValueLine
 
 
 if TYPE_CHECKING:
@@ -48,8 +49,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class SolidFromFace(NodeItem):
-    REG_NAME: str = "Solid from Face"
+class Thickness(NodeItem):
+    REG_NAME: str = "Thickness"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -57,8 +58,10 @@ class SolidFromFace(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ShapeNone(undo_stack=self._undo_stack, name="Face", content_value="<No Input>", is_input=True,
+            ShapeNone(undo_stack=self._undo_stack, name="Solid", content_value="<No Input>", is_input=True,
                       parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Cutout Id", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Thickness", content_value=1., is_input=True, parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Solid", content_value="<No Input>", is_input=False,
                       parent_node=self)
         ]
@@ -73,25 +76,47 @@ class SolidFromFace(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        faces: NestedData = self.input_data(0, args)
+                        solid: NestedData = self.input_data(0, args)
+                        cutout_id: ak.Array = self.input_data(1, args)
+                        thickness: ak.Array = self.input_data(2, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        simple_face, struct_face = (simplify_array(faces.structure),
-                                                    simplified_array_structure(faces.structure))
+                        simple_cutout, struct_cutout = (ak.to_list(simplify_array(cutout_id)),
+                                                        simplified_array_structure(cutout_id))
 
+                        broadcasted_params: ak.Array = ak.zip(
+                            {"solid": solid.structure, "cutout": struct_cutout, "thickness": thickness}
+                        )
+                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
                         flat_data: list[Part.Shape] = []
-                        if type(struct_face) is int:
-                            flat_data.append(Part.Solid(Part.Shell(faces.data)))
-                        else:
-                            for face_idx_set in simple_face:
-                                face_set: list[Part.Face] = [faces.data[idx] for idx in face_idx_set]
-                                flat_data.append(Part.Solid(Part.Shell(face_set)))
+                        for param_tuple in flat_params:
+                            target_obj: FreeCAD.DocumentObject = Part.show(solid.data[param_tuple["0"]])
+                            result_obj: FreeCAD.DocumentObject = FreeCAD.activeDocument().addObject(
+                                "Part::Thickness", "Thickness"
+                            )
+
+                            if type(struct_cutout) == int:
+                                face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
+                            else:
+                                face_names: list[str] = ["Face" + str(int(face_idx))
+                                                         for face_idx in simple_cutout[param_tuple["1"]]]
+                            result_obj.Faces = (target_obj, face_names) if face_names[0] != "Face0" else target_obj
+                            result_obj.Mode = 0
+                            result_obj.Join = 2
+                            result_obj.Value = param_tuple["2"]
+                            FreeCAD.activeDocument().recompute()
+
+                            # noinspection PyUnresolvedReferences
+                            flat_data.append(result_obj.Shape)
+
+                            FreeCAD.activeDocument().removeObject(target_obj.Name)
+                            FreeCAD.activeDocument().removeObject(result_obj.Name)
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=struct_face if type(struct_face) == ak.Array else ak.Array([0])
+                            structure=record_structure(broadcasted_params)
                         )
 
                         self._is_dirty: bool = False
@@ -100,8 +125,8 @@ class SolidFromFace(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Solid from Face executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
-                                                                                              digits=2), "ms")
+                            print("Thickness executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                        digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
