@@ -71,3 +71,8 @@ ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
 kuka_kr_6_chain.plot(axes, ax)
 matplotlib.pyplot.show()
+
+# Numpy array composing by slicing
+a: np.ndarray = np.array([1, 2, 3, 4, 5, 6])
+print(a)
+print(a[[0, 3, 4, 0, 3, 4]])

@@ -197,6 +197,29 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
         return nested_list
 
 
+def zip_to_array(nested_array: ak.Array) -> ak.Array:
+    zipped_tuples: ak.Array = ak.zip(ak.to_list(nested_array), right_broadcast=True)
+    grafted_fields: list[ak.Array] = [
+        ak.unflatten(zipped_tuples[field], counts=1, axis=-1)
+        for field in zipped_tuples.fields
+    ]
+    return ak.concatenate(grafted_fields, axis=-1)
+
+
+def reorder_list(flat_list: list[Any], target_structure: ak.Array) -> list:
+    flat_data_in: np.ndarray = np.array(flat_list, dtype="object")
+    result: [Any] = []
+
+    simple_structure: list = ak.to_list(simplify_array(target_structure))
+    for simple_ids in simple_structure:
+        if type(simple_ids) == int:
+            result.append(flat_data_in[simple_ids])
+        else:
+            result.extend(flat_data_in[simple_ids])
+
+    return result
+
+
 def populate_coin_scene(child: coin.SoVRMLGroup, pivot: np.ndarray, axis: int,
                         parent: Union[coin.SoSeparator, coin.SoVRMLGroup]) -> coin.SoRotationXYZ:
     so_reverse_transformation: coin.SoTranslation = coin.SoTranslation()
