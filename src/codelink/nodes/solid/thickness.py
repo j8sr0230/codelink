@@ -92,13 +92,13 @@ class Thickness(NodeItem):
                         flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
                         flat_data: list[Part.Shape] = []
                         for param_tuple in flat_params:
-                            target_obj: FreeCAD.DocumentObject = Part.show(solid.data[param_tuple["0"]])
-                            result_obj: FreeCAD.DocumentObject = FreeCAD.activeDocument().addObject(
-                                "Part::Thickness", "Thickness"
-                            )
+                            target: Part.Solid = solid.data[param_tuple["0"]]
+                            if len(target.Solids) > 0 and len(target.Vertexes) > 0:
+                                target_obj: FreeCAD.DocumentObject = Part.show(target)
+                                result_obj: FreeCAD.DocumentObject = FreeCAD.activeDocument().addObject(
+                                    "Part::Thickness", "Thickness"
+                                )
 
-                            # noinspection PyUnresolvedReferences
-                            if len(target_obj.Shape.Solids) > 0 and len(target_obj.Shape.Vertexes) > 0:
                                 if type(struct_cutout) == int:
                                     face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
                                 else:
@@ -116,10 +116,10 @@ class Thickness(NodeItem):
                                 FreeCAD.activeDocument().removeObject(target_obj.Name)
                                 FreeCAD.activeDocument().removeObject(result_obj.Name)
 
-                        result: NestedData = NestedData(
-                            data=flat_data,
-                            structure=record_structure(broadcasted_params)
-                        )
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=record_structure(broadcasted_params)
+                            )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
