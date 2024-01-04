@@ -73,25 +73,25 @@ class SolidFromFace(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        curves: NestedData = self.input_data(0, args)
+                        faces: NestedData = self.input_data(0, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        simple_crv, struct_crv = (simplify_array(curves.structure),
-                                                  simplified_array_structure(curves.structure))
+                        simple_face, struct_face = (simplify_array(faces.structure),
+                                                    simplified_array_structure(faces.structure))
 
                         flat_data: list[Part.Shape] = []
-                        if type(struct_crv) is int:
-                            flat_data.append(Part.makeFace(Part.Wire(curves.data), "Part::FaceMakerBullseye"))
+                        if type(struct_face) is int:
+                            flat_data.append(Part.Solid(Part.Shell(faces.data)))
                         else:
-                            for crv_idx_set in simple_crv:
-                                crv_set: list[Part.Edge] = [curves.data[idx] for idx in crv_idx_set]
-                                flat_data.append(Part.makeFace(Part.Wire(crv_set), "Part::FaceMakerBullseye"))
+                            for face_idx_set in simple_face:
+                                face_set: list[Part.Face] = [faces.data[idx] for idx in face_idx_set]
+                                flat_data.append(Part.Solid(Part.Shell(face_set)))
 
                         result: NestedData = NestedData(
                             data=flat_data,
-                            structure=struct_crv if type(struct_crv) == ak.Array else ak.Array([0])
+                            structure=struct_face if type(struct_face) == ak.Array else ak.Array([0])
                         )
 
                         self._is_dirty: bool = False
