@@ -83,11 +83,11 @@ class FaceFromCurve(NodeItem):
 
                         flat_data: list[Part.Shape] = []
                         if type(struct_crv) is int:
-                            flat_data.append(Part.makeFace(Part.Wire(curves.data), "Part::FaceMakerBullseye"))
+                            flat_data.append(Part.makeFace(curves.data, "Part::FaceMakerBullseye"))
                         else:
                             for crv_idx_set in simple_crv:
                                 crv_set: list[Part.Edge] = [curves.data[idx] for idx in crv_idx_set]
-                                flat_data.append(Part.makeFace(Part.Wire(crv_set), "Part::FaceMakerBullseye"))
+                                flat_data.append(Part.makeFace(crv_set, "Part::FaceMakerBullseye"))
 
                         result: NestedData = NestedData(
                             data=flat_data,
