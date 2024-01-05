@@ -60,6 +60,8 @@ class RotateShape(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Pivot", content_value="<No Input>", is_input=True,
+                       parent_node=self),
             VectorNone(undo_stack=self._undo_stack, name="Axis", content_value="<No Input>", is_input=True,
                        parent_node=self),
             ValueLine(undo_stack=self._undo_stack, name="Angle", content_value=0., is_input=True, parent_node=self),
@@ -78,24 +80,27 @@ class RotateShape(NodeItem):
                 try:
                     try:
                         shape: NestedData = self.input_data(0, args)
-                        rot_axis: ak.Array = self.input_data(1, args)
-                        rot_angle: ak.Array = self.input_data(2, args)
+                        rot_pivot: ak.Array = self.input_data(1, args)
+                        rot_axis: ak.Array = self.input_data(2, args)
+                        rot_angle: ak.Array = self.input_data(3, args)
 
                         if DEBUG:
                             a: float = time.time()
 
+                        flat_pivot, struct_pivot = (ak.to_list(flatten_record(rot_pivot, True)),
+                                                    record_structure(rot_pivot))
                         flat_axis, struct_axis = (ak.to_list(flatten_record(rot_axis, True)),
                                                   record_structure(rot_axis))
 
                         broadcasted_params: ak.Array = ak.zip(
-                            {"shape": shape.structure, "axis": struct_axis, "angle": rot_angle}
+                            {"shape": shape.structure, "pivot": struct_pivot, "axis": struct_axis, "angle": rot_angle}
                         )
                         flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                         flat_data: list[Part.Shape] = []
                         for param_tuple in flat_params:
                             copy: Part.Shape = Part.Shape(shape.data[param_tuple["0"]])
-                            copy.rotate(copy.CenterOfGravity, flat_axis[param_tuple["1"]], param_tuple["2"])
+                            copy.rotate(flat_pivot[param_tuple["1"]], flat_axis[param_tuple["2"]], param_tuple["3"])
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
