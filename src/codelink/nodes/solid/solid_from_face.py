@@ -87,8 +87,10 @@ class SolidFromFace(NodeItem):
                         else:
                             for face_idx_set in simple_face:
                                 face_set: list[Part.Face] = [faces.data[idx] for idx in face_idx_set]
-                                shell: Part.Shape = Part.makeShell(face_set).sewShape()
-                                solid: Part.Shape = Part.makeSolid(shell).sewShape()
+                                shell: Part.Shape = Part.makeShell(face_set)
+                                shell.sewShape()
+                                solid: Part.Shape = Part.makeSolid(shell)
+                                solid.sewShape()
                                 flat_data.append(solid)
 
                         result: NestedData = NestedData(
