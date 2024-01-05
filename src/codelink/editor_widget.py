@@ -539,18 +539,24 @@ class EditorWidget(QtWidgets.QGraphicsView):
             add_menu: QtWidgets.QMenu = QtWidgets.QMenu(context_menu)
             add_menu.setTitle("&Add")
 
+            main_node_categories: dict[str, QtWidgets.QMenu] = {}
             for node_category, nodes in self._node_actions.items():
                 first_menu: Optional[QtWidgets.QMenu] = add_menu
                 last_menu: QtWidgets.QMenu = add_menu
 
                 for idx, sub_category in enumerate(node_category.split(", ")):
-                    new_menu: QtWidgets.QMenu = QtWidgets.QMenu(last_menu)
-                    new_menu.setTitle(sub_category)
-                    if idx == 0:
-                        first_menu: Optional[QtWidgets.QMenu] = new_menu
+                    if sub_category not in main_node_categories.keys():
+                        new_menu: QtWidgets.QMenu = QtWidgets.QMenu(last_menu)
+                        new_menu.setTitle(sub_category)
+                        last_menu.addMenu(new_menu)
+                        last_menu: QtWidgets.QMenu = new_menu
 
-                    last_menu.addMenu(new_menu)
-                    last_menu: QtWidgets.QMenu = new_menu
+                        if idx == 0:
+                            main_node_categories[sub_category] = new_menu
+                            first_menu: Optional[QtWidgets.QMenu] = new_menu
+                    else:
+                        first_menu: QtWidgets.QMenu = main_node_categories[sub_category]
+                        last_menu: QtWidgets.QMenu = main_node_categories[sub_category]
 
                 for node_name, node_action in nodes.items():
                     last_menu.addAction(node_action)
