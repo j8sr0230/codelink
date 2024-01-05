@@ -84,26 +84,27 @@ class SolidFromFace(NodeItem):
                         flat_data: list[Part.Shape] = []
                         if type(struct_face) is int:
                             shell: Part.Shape = Part.makeShell(faces.data)
-                            shell.fix(0.1, 0, 1)
-                            shell.removeSplitter()
+                            shell.sewShape()
+                            # shell.fix(0.1, 0, 1)
+                            # shell.removeSplitter()
                             solid: Part.Shape = Part.makeSolid(shell)
                             solid.sewShape()
-                            solid.fix(0.1, 0, 1)
-                            solid.removeSplitter()
-                            print("Is Valid", solid.isValid())
+                            # solid.fix(0.1, 0, 1)
+                            # solid.removeSplitter()
+                            # print("Is Valid", solid.isValid())
                             flat_data.append(solid)
                         else:
                             for face_idx_set in simple_face:
                                 face_set: list[Part.Face] = [faces.data[idx] for idx in face_idx_set]
                                 shell: Part.Shape = Part.makeShell(face_set)
                                 shell.sewShape()
-                                shell.fix(0.1, 0, 1)
-                                shell.removeSplitter()
+                                # shell.fix(0.1, 0, 1)
+                                # shell.removeSplitter()
                                 solid: Part.Shape = Part.makeSolid(shell)
                                 solid.sewShape()
-                                solid.fix(0.1, 0, 1)
-                                solid.removeSplitter()
-                                print("Is Valid", solid.isValid())
+                                # solid.fix(0.1, 0, 1)
+                                # solid.removeSplitter()
+                                # print("Is Valid", solid.isValid())
                                 flat_data.append(solid)
 
                         result: NestedData = NestedData(
