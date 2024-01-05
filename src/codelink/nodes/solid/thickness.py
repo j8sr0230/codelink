@@ -94,27 +94,42 @@ class Thickness(NodeItem):
                         for param_tuple in flat_params:
                             target: Part.Solid = solid.data[param_tuple["0"]]
                             if len(target.Solids) > 0 and len(target.Vertexes) > 0:
-                                target_obj: FreeCAD.DocumentObject = Part.show(target)
-                                result_obj: FreeCAD.DocumentObject = FreeCAD.activeDocument().addObject(
-                                    "Part::Thickness", "Thickness"
-                                )
-
                                 if type(struct_cutout) == int:
-                                    face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
+                                    faces: list[Part.Face] = [
+                                        target.Faces[int(idx)]
+                                        if int(idx) in range(len(target.Faces)) else None for idx in simple_cutout
+                                    ]
                                 else:
-                                    face_names: list[str] = ["Face" + str(int(face_idx))
-                                                             for face_idx in simple_cutout[param_tuple["1"]]]
-                                result_obj.Faces = (target_obj, face_names) if face_names[0] != "Face0" else target_obj
-                                result_obj.Mode = 0
-                                result_obj.Join = 2
-                                result_obj.Value = param_tuple["2"]
-                                FreeCAD.activeDocument().recompute()
+                                    faces: list[Part.Face] = [
+                                        target.Faces[int(idx)]
+                                        if int(idx) in range(len(target.Faces)) else None
+                                        for idx in simple_cutout[param_tuple["1"]]
+                                    ]
 
-                                # noinspection PyUnresolvedReferences
-                                flat_data.append(result_obj.Shape)
+                                flat_data.append(target.makeThickness(faces, param_tuple["2"], 0.1))
 
-                                FreeCAD.activeDocument().removeObject(target_obj.Name)
-                                FreeCAD.activeDocument().removeObject(result_obj.Name)
+                                # target_obj: FreeCAD.DocumentObject = Part.show(target)
+                                # result_obj: FreeCAD.DocumentObject = FreeCAD.activeDocument().addObject(
+                                #     "Part::Thickness", "Thickness"
+                                # )
+                                #
+                                # if type(struct_cutout) == int:
+                                # face_names: list[str] = ["Face" + str(int(face_idx)) for face_idx in simple_cutout]
+                                # else:
+                                #     face_names: list[str] = ["Face" + str(int(face_idx))
+                                #                              for face_idx in simple_cutout[param_tuple["1"]]]
+                                # result_obj.Faces = (target_obj, face_names) if face_names[0] != "Face0"
+                                # else target_obj
+                                # result_obj.Mode = 0
+                                # result_obj.Join = 2
+                                # result_obj.Value = param_tuple["2"]
+                                # FreeCAD.activeDocument().recompute()
+                                #
+                                # # noinspection PyUnresolvedReferences
+                                # flat_data.append(result_obj.Shape)
+                                #
+                                # FreeCAD.activeDocument().removeObject(target_obj.Name)
+                                # FreeCAD.activeDocument().removeObject(result_obj.Name)
 
                             result: NestedData = NestedData(
                                 data=flat_data,
