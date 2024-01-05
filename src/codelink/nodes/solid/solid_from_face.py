@@ -83,7 +83,15 @@ class SolidFromFace(NodeItem):
 
                         flat_data: list[Part.Shape] = []
                         if type(struct_face) is int:
-                            flat_data.append(Part.Solid(Part.Shell(faces.data)))
+                            shell: Part.Shape = Part.makeShell(faces.data)
+                            shell.fix(0.1, 0, 1)
+                            shell.removeSplitter()
+                            solid: Part.Shape = Part.makeSolid(shell)
+                            solid.sewShape()
+                            solid.fix(0.1, 0, 1)
+                            solid.removeSplitter()
+                            print("Is Valid", solid.isValid())
+                            flat_data.append(solid)
                         else:
                             for face_idx_set in simple_face:
                                 face_set: list[Part.Face] = [faces.data[idx] for idx in face_idx_set]
@@ -95,6 +103,7 @@ class SolidFromFace(NodeItem):
                                 solid.sewShape()
                                 solid.fix(0.1, 0, 1)
                                 solid.removeSplitter()
+                                print("Is Valid", solid.isValid())
                                 flat_data.append(solid)
 
                         result: NestedData = NestedData(
