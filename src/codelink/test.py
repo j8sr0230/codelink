@@ -1,4 +1,5 @@
 import numpy as np
+import awkward as ak
 from ikpy.chain import Chain
 from ikpy.link import OriginLink, URDFLink
 import matplotlib.pyplot
@@ -76,3 +77,8 @@ matplotlib.pyplot.show()
 a: np.ndarray = np.array([1, 2, 3, 4, 5, 6])
 print(a)
 print(a[[0, 3, 4, 0, 3, 4]])
+
+# Transform Awkward Record to Awkward Array
+ar: ak.Array = ak.Array([[(1, 1), (2, 2), (3, 3)]])
+grafted_ar: ak.Array = ak.unflatten(ar, counts=1, axis=-1)
+ak.concatenate(ak.unzip(grafted_ar), axis=-1).show()

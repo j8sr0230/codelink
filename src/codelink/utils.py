@@ -199,11 +199,8 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
 
 def zip_to_array(nested_array: ak.Array) -> ak.Array:
     zipped_tuples: ak.Array = ak.zip(ak.to_list(nested_array), right_broadcast=True)
-    grafted_fields: list[ak.Array] = [
-        ak.unflatten(zipped_tuples[field], counts=1, axis=-1)
-        for field in zipped_tuples.fields
-    ]
-    return ak.concatenate(grafted_fields, axis=-1)
+    grafted_tuples: ak.Array = ak.unflatten(zipped_tuples, counts=1, axis=-1)
+    return ak.concatenate(ak.unzip(grafted_tuples), axis=-1)
 
 
 def reorder_list(flat_list: list[Any], target_structure: ak.Array) -> list:
