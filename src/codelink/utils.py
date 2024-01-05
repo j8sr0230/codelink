@@ -197,7 +197,7 @@ def map_list(callback: Callable, nested_list: list[Any]) -> list[Any]:
         return nested_list
 
 
-def zip_to_array(nested_array: ak.Array) -> ak.Array:
+def mass_zip_to_array(nested_array: ak.Array) -> ak.Array:
     zipped_tuples: ak.Array = ak.zip(ak.to_list(nested_array), right_broadcast=True)
     grafted_tuples: ak.Array = ak.unflatten(zipped_tuples, counts=1, axis=-1)
     return ak.concatenate(ak.unzip(grafted_tuples), axis=-1)

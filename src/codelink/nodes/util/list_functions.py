@@ -36,7 +36,7 @@ import numpy as np
 
 from nested_data import NestedData
 from utils import (global_index, unflatten_array_like, simplify_array, simplified_array_structure,
-                   unflatten_record_like, flatten_record, simplify_record, simplified_rec_struct, zip_to_array,
+                   unflatten_record_like, flatten_record, simplify_record, simplified_rec_struct, mass_zip_to_array,
                    reorder_list)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -61,7 +61,7 @@ class ListFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Zip", "Flip", "Shift"])
+        self._option_box.addItems(["Zip", "Mass Zip", "Flip", "Shift"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -74,9 +74,11 @@ class ListFunctions(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            AnyNone(undo_stack=self._undo_stack, name="List In", content_value="<No Input>", is_input=True,
+            AnyNone(undo_stack=self._undo_stack, name="List A", content_value="<No Input>", is_input=True,
                     parent_node=self),
-            AnyNone(undo_stack=self._undo_stack, name="List Out", content_value="<No Input>", is_input=False,
+            AnyNone(undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
+                    parent_node=self),
+            AnyNone(undo_stack=self._undo_stack, name="Out", content_value="<No Input>", is_input=False,
                     parent_node=self)
         ]
 
@@ -99,7 +101,7 @@ class ListFunctions(NodeItem):
         self._undo_stack.beginMacro("Changes option box")
         self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
 
-        if current_option_name in ("Zip", "Flip"):
+        if current_option_name in ("Mass Zip", "Flip"):
             while input_widget_count > 1:
                 remove_idx: int = len(self.input_socket_widgets) - 1
                 remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -108,11 +110,51 @@ class ListFunctions(NodeItem):
 
                 self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
                 input_widget_count -= 1
-
         else:
             while input_widget_count < 2:
+                if current_option_name == "Shift":
+                    new_socket_widget: ValueLine = ValueLine(
+                        undo_stack=self._undo_stack, name="Offset", content_value=1.0, is_input=True, parent_node=self
+                    )
+                else:
+                    new_socket_widget: AnyNone = AnyNone(
+                        undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
+                        parent_node=self
+                    )
+                insert_idx: int = len(self.input_socket_widgets)
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
+                input_widget_count += 1
+
+            if current_option_name == "Shift" and input_widget_count == 2 and type(self._socket_widgets[2]) == AnyNone:
+                while input_widget_count > 1:
+                    remove_idx: int = len(self.input_socket_widgets) - 1
+                    remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+
+                    self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
+                    input_widget_count -= 1
+
                 new_socket_widget: ValueLine = ValueLine(
                     undo_stack=self._undo_stack, name="Offset", content_value=1.0, is_input=True, parent_node=self
+                )
+                insert_idx: int = len(self.input_socket_widgets)
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
+                input_widget_count += 1
+
+            if current_option_name == "Zip" and input_widget_count == 2 and type(self._socket_widgets[2]) == ValueLine:
+                while input_widget_count > 1:
+                    remove_idx: int = len(self.input_socket_widgets) - 1
+                    remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+
+                    self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
+                    input_widget_count -= 1
+
+                new_socket_widget: AnyNone = AnyNone(
+                    undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
+                    parent_node=self
                 )
                 insert_idx: int = len(self.input_socket_widgets)
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
@@ -134,25 +176,52 @@ class ListFunctions(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        list_in: Union[ak.Array, NestedData] = self.input_data(0, args)
+                        list_a: Union[ak.Array, NestedData] = self.input_data(0, args)
 
                         if DEBUG:
                             a: float = time.time()
 
                         if self._option_box.currentText() == "Zip":
-                            if isinstance(list_in, ak.Array):
-                                if (len(list_in.fields) == 0 and type(simplified_array_structure(list_in)) == int or
-                                        len(list_in.fields) != 0 and type(simplified_rec_struct(list_in)) == int):
-                                    result: ak.Array = list_in
-                                else:
-                                    result: ak.Array = zip_to_array(list_in)
+                            list_b: Union[ak.Array, NestedData] = self.input_data(1, args)
 
-                            elif isinstance(list_in, NestedData):
-                                if type(simplified_array_structure(list_in.structure)) == int:
-                                    result: NestedData = list_in
+                            if isinstance(list_a, ak.Array) and isinstance(list_b, ak.Array):
+                                zipped_tuples: ak.Array = ak.zip([list_a, list_b], right_broadcast=True)
+                                grafted_tuples: ak.Array = ak.unflatten(zipped_tuples, counts=1, axis=-1)
+                                result = ak.concatenate(ak.unzip(grafted_tuples), axis=-1)
+
+                            elif isinstance(list_a, NestedData) and isinstance(list_b, NestedData):
+                                zipped_tuples: ak.Array = ak.zip([list_a.structure, list_b.structure],
+                                                                 right_broadcast=True)
+                                grafted_tuples: ak.Array = ak.unflatten(zipped_tuples, counts=1, axis=-1)
+                                new_structure: ak.Array = ak.concatenate(ak.unzip(grafted_tuples), axis=-1)
+
+                                flat_data: list[Part.Shape] = []
+                                simple_structure: list = ak.to_list(simplify_array(new_structure))
+
+                                for simple_ids in simple_structure:
+                                    flat_data.append(list_a.data[simple_ids[0]])
+                                    flat_data.append(list_b.data[simple_ids[1]])
+
+                                result: NestedData = NestedData(
+                                    flat_data, ak.transform(global_index, new_structure)
+                                )
+                            else:
+                                result: ak.Array = ak.Array([0])
+
+                        elif self._option_box.currentText() == "Mass Zip":
+                            if isinstance(list_a, ak.Array):
+                                if (len(list_a.fields) == 0 and type(simplified_array_structure(list_a)) == int or
+                                        len(list_a.fields) != 0 and type(simplified_rec_struct(list_a)) == int):
+                                    result: ak.Array = list_a
                                 else:
-                                    new_structure: ak.Array = zip_to_array(list_in.structure)
-                                    flat_data_out: list[Part.Shape] = reorder_list(list_in.data, new_structure)
+                                    result: ak.Array = mass_zip_to_array(list_a)
+
+                            elif isinstance(list_a, NestedData):
+                                if type(simplified_array_structure(list_a.structure)) == int:
+                                    result: NestedData = list_a
+                                else:
+                                    new_structure: ak.Array = mass_zip_to_array(list_a.structure)
+                                    flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                     result: NestedData = NestedData(
                                         flat_data_out, ak.transform(global_index, new_structure)
@@ -163,10 +232,10 @@ class ListFunctions(NodeItem):
                         elif self._option_box.currentText() == "Flip":
                             flat_data: list = []
 
-                            if isinstance(list_in, ak.Array):
-                                if len(list_in.fields) == 0:
-                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in)),
-                                                                       simplified_array_structure(list_in))
+                            if isinstance(list_a, ak.Array):
+                                if len(list_a.fields) == 0:
+                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a)),
+                                                                       simplified_array_structure(list_a))
                                     if type(struct_simple_list) is int:
                                         flat_data.append(np.flip(simple_list))
                                     else:
@@ -174,11 +243,11 @@ class ListFunctions(NodeItem):
                                             flat_data.append(np.flip(sub_list))
 
                                     flat_result: ak.Array = ak.flatten(flat_data, axis=None)
-                                    result: ak.Array = unflatten_array_like(flat_result, list_in)
+                                    result: ak.Array = unflatten_array_like(flat_result, list_a)
 
                                 else:
-                                    simple_list, struct_simple_list = (simplify_record(list_in),
-                                                                       simplified_rec_struct(list_in))
+                                    simple_list, struct_simple_list = (simplify_record(list_a),
+                                                                       simplified_rec_struct(list_a))
                                     if type(struct_simple_list) is int:
                                         flat_data.append(
                                             {"x": np.flip(ak.to_list(simple_list.x)),
@@ -194,11 +263,11 @@ class ListFunctions(NodeItem):
                                             )
 
                                     flat_result: ak.Array = flatten_record(ak.Array(flat_data))
-                                    result: ak.Array = unflatten_record_like(flat_result, list_in)
+                                    result: ak.Array = unflatten_record_like(flat_result, list_a)
 
-                            elif isinstance(list_in, NestedData):
-                                simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in.structure)),
-                                                                   simplified_array_structure(list_in.structure))
+                            elif isinstance(list_a, NestedData):
+                                simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a.structure)),
+                                                                   simplified_array_structure(list_a.structure))
                                 if type(struct_simple_list) is int:
                                     flat_data.append(np.flip(simple_list))
                                 else:
@@ -206,8 +275,8 @@ class ListFunctions(NodeItem):
                                         flat_data.append(np.flip(sub_list))
 
                                 flat_structure: ak.Array = ak.flatten(flat_data, axis=None)
-                                new_structure: ak.Array = unflatten_array_like(flat_structure, list_in.structure)
-                                flat_data_out: list[Part.Shape] = reorder_list(list_in.data, new_structure)
+                                new_structure: ak.Array = unflatten_array_like(flat_structure, list_a.structure)
+                                flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
                                     flat_data_out, ak.transform(global_index, new_structure)
@@ -222,16 +291,16 @@ class ListFunctions(NodeItem):
                             target_structure: Optional[ak.Array] = None
                             flat_offsets: ak.Array = ak.flatten(offset, axis=None)
 
-                            if isinstance(list_in, ak.Array):
-                                if len(list_in.fields) == 0:
+                            if isinstance(list_a, ak.Array):
+                                if len(list_a.fields) == 0:
                                     for flat_offset in flat_offsets:
                                         if target_structure is None:
-                                            target_structure: ak.Array = list_in
+                                            target_structure: ak.Array = list_a
                                         else:
-                                            target_structure: ak.Array = ak.concatenate([target_structure, list_in])
+                                            target_structure: ak.Array = ak.concatenate([target_structure, list_a])
 
-                                        simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in)),
-                                                                           simplified_array_structure(list_in))
+                                        simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a)),
+                                                                           simplified_array_structure(list_a))
                                         if type(struct_simple_list) is int:
                                             flat_data.append(np.roll(simple_list, int(flat_offset)))
                                         else:
@@ -244,12 +313,12 @@ class ListFunctions(NodeItem):
                                 else:
                                     for flat_offset in flat_offsets:
                                         if target_structure is None:
-                                            target_structure: ak.Array = list_in
+                                            target_structure: ak.Array = list_a
                                         else:
-                                            target_structure: ak.Array = ak.concatenate([target_structure, list_in])
+                                            target_structure: ak.Array = ak.concatenate([target_structure, list_a])
 
-                                        simple_list, struct_simple_list = (simplify_record(list_in),
-                                                                           simplified_rec_struct(list_in))
+                                        simple_list, struct_simple_list = (simplify_record(list_a),
+                                                                           simplified_rec_struct(list_a))
                                         if type(struct_simple_list) is int:
                                             flat_data.append(
                                                 {"x": np.roll(ak.to_list(simple_list.x), int(flat_offset)),
@@ -272,16 +341,16 @@ class ListFunctions(NodeItem):
                                     result: ak.Array = ak.unflatten(result, counts=ak.num(result, axis=0), axis=0)
                                     offset_dept -= 1
 
-                            elif isinstance(list_in, NestedData):
+                            elif isinstance(list_a, NestedData):
                                 for flat_offset in flat_offsets:
                                     if target_structure is None:
-                                        target_structure: ak.Array = list_in.structure
+                                        target_structure: ak.Array = list_a.structure
                                     else:
                                         target_structure: ak.Array = ak.concatenate([target_structure,
-                                                                                     list_in.structure])
+                                                                                     list_a.structure])
 
-                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_in.structure)),
-                                                                       simplified_array_structure(list_in.structure))
+                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a.structure)),
+                                                                       simplified_array_structure(list_a.structure))
                                     if type(struct_simple_list) is int:
                                         flat_data.append(np.roll(simple_list, int(flat_offset)))
                                     else:
@@ -298,7 +367,7 @@ class ListFunctions(NodeItem):
                                     )
                                     offset_dept -= 1
 
-                                flat_data_out: list[Part.Shape] = reorder_list(list_in.data, new_structure)
+                                flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
                                     flat_data_out, ak.transform(global_index, new_structure)
