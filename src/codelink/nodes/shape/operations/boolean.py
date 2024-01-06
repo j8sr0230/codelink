@@ -37,6 +37,7 @@ import Points  # noqa
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from utils import simplified_array_structure, simplify_array
 from nested_data import NestedData
 from utils import record_structure, flatten_record
 from node_item import NodeItem
@@ -135,29 +136,58 @@ class Boolean(NodeItem):
                 try:
                     try:
                         shape_a: NestedData = self.input_data(0, args)
-                        shape_b: NestedData = self.input_data(1, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        broadcasted_params: ak.Array = ak.zip(
-                            {"shape_a": shape_a.structure, "shape_b": shape_b.structure}
-                        )
-                        flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+                        if len(args) == 1:
+                            simple_shapes, struct_shapes = (simplify_array(shape_a.structure),
+                                                            simplified_array_structure(shape_a.structure))
+                            flat_data: list[Part.Shape] = []
+                            for simple_idx in struct_shapes:
+                                if type(struct_shapes) is int:
+                                    flat_data.append(Part.makeLoft(
+                                        sections.data,
+                                        bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
+                                    ))
+                                else:
+                                    sub_sections: list[Part.Shape] = [
+                                        sections.data[idx] for idx in simple_sections[param_tuple["0"]]
+                                    ]
+                                    flat_data.append(Part.makeLoft(
+                                        sub_sections,
+                                        bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
+                                    ))
 
-                        flat_data: list[Part.Shape] = []
-                        for param_tuple in flat_params:
+                        if len(args) == 2:
+                            shape_b: NestedData = self.input_data(1, args)
 
-                            if self._option_box.currentText() == "Face":
-                                pass
+                            broadcasted_params: ak.Array = ak.zip(
+                                {"shape_a": shape_a.structure, "shape_b": shape_b.structure}
+                            )
+                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
-                            elif self._option_box.currentText() == "Solid":
-                                pass
+                            flat_data: list[Part.Shape] = []
+                            for param_tuple in flat_params:
+                                copy_a: Part.Shape = Part.Shape(shape_a.data[param_tuple["0"]])
+                                copy_b: Part.Shape = Part.Shape(shape_b.data[param_tuple["1"]])
 
-                        result: NestedData = NestedData(
-                            data=flat_data,
-                            structure=record_structure(broadcasted_params)
-                        )
+                                if self._option_box.currentText() == "Union":
+                                    flat_data.append(copy_a.fuse(copy_b))
+
+                                elif self._option_box.currentText() == "Subtraction":
+                                    flat_data.append(copy_a.cut(copy_b))
+
+                                elif self._option_box.currentText() == "Intersection":
+                                    flat_data.append(copy_a.common(copy_b))
+
+                                elif self._option_box.currentText() == "Section":
+                                    flat_data.append(copy_a.section(copy_b))
+
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=record_structure(broadcasted_params)
+                            )
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -165,7 +195,7 @@ class Boolean(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Voronoi executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                            print("Boolean executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
                                   "ms")
 
                     except Exception as e:
