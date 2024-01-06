@@ -28,6 +28,7 @@ import inspect
 import time
 
 import awkward as ak
+import numpy as np
 
 # noinspection PyUnresolvedReferences
 import FreeCAD
@@ -144,20 +145,28 @@ class Boolean(NodeItem):
                             simple_shapes, struct_shapes = (simplify_array(shape_a.structure),
                                                             simplified_array_structure(shape_a.structure))
                             flat_data: list[Part.Shape] = []
-                            for simple_idx in struct_shapes:
-                                if type(struct_shapes) is int:
-                                    flat_data.append(Part.makeLoft(
-                                        sections.data,
-                                        bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
-                                    ))
+                            if type(struct_shapes) is int:
+                                first: Part.Shape = shape_a.data[0]
+                                rest: list[Part.Shape] = shape_a.data[1:]
+                                if len(rest) > 0:
+                                    flat_data.append(first.generalFuse(rest)[0])
                                 else:
-                                    sub_sections: list[Part.Shape] = [
-                                        sections.data[idx] for idx in simple_sections[param_tuple["0"]]
-                                    ]
-                                    flat_data.append(Part.makeLoft(
-                                        sub_sections,
-                                        bool(param_tuple["1"]), bool(param_tuple["2"]), bool(param_tuple["3"])
-                                    ))
+                                    flat_data.append(first)
+                            else:
+                                shapes: np.ndarray = np.array(shape_a.data, dtype="object")
+                                for simple_idx in simple_shapes:
+                                    sub_shapes: np.ndarray = shapes[simple_idx]
+                                    first: Part.Shape = sub_shapes[0]
+                                    rest: list[Part.Shape] = sub_shapes[1:]
+                                    if len(rest) > 0:
+                                        flat_data.append(first.generalFuse(rest)[0])
+                                    else:
+                                        flat_data.append(first)
+
+                            result: NestedData = NestedData(
+                                data=flat_data,
+                                structure=struct_shapes
+                            )
 
                         if len(args) == 2:
                             shape_b: NestedData = self.input_data(1, args)
