@@ -93,7 +93,6 @@ class Scale(NodeItem):
 
                             if len(copy.Vertexes) > 0 and all(factor_tuple):
                                 scale_matrix: FreeCAD.Matrix = FreeCAD.Matrix()
-                                # print(factor_tuple[0], factor_tuple[1], factor_tuple[2])
                                 scale_matrix.scale(factor_tuple[0], factor_tuple[1], factor_tuple[2])
                                 copy: Part.Shape = copy.transformGeometry(scale_matrix)
                             flat_data.append(copy)
