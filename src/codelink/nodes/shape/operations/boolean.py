@@ -149,7 +149,7 @@ class Boolean(NodeItem):
                                 first: Part.Shape = shape_a.data[0]
                                 if len(shape_a.data) > 1:
                                     rest: list[Part.Shape] = shape_a.data[1:]
-                                    flat_data.append(first.generalFuse(rest)[0])
+                                    flat_data.append(first.multiFuse(rest))
                                 else:
                                     flat_data.append(first)
                             else:
@@ -159,7 +159,7 @@ class Boolean(NodeItem):
                                     first: Part.Shape = sub_shapes[0]
                                     if len(sub_shapes) > 1:
                                         rest: list[Part.Shape] = sub_shapes[1:]
-                                        flat_data.append(first.generalFuse(rest)[0])
+                                        flat_data.append(first.multiFuse(rest))
                                     else:
                                         flat_data.append(first)
 
