@@ -147,8 +147,8 @@ class Boolean(NodeItem):
                             flat_data: list[Part.Shape] = []
                             if type(struct_shapes) is int:
                                 first: Part.Shape = shape_a.data[0]
-                                rest: list[Part.Shape] = shape_a.data[1:]
-                                if len(rest) > 0:
+                                if len(shape_a.data) > 1:
+                                    rest: list[Part.Shape] = shape_a.data[1:]
                                     flat_data.append(first.generalFuse(rest)[0])
                                 else:
                                     flat_data.append(first)
@@ -157,15 +157,15 @@ class Boolean(NodeItem):
                                 for simple_idx in simple_shapes:
                                     sub_shapes: np.ndarray = shapes[simple_idx]
                                     first: Part.Shape = sub_shapes[0]
-                                    rest: list[Part.Shape] = sub_shapes[1:]
-                                    if len(rest) > 0:
+                                    if len(sub_shapes) > 1:
+                                        rest: list[Part.Shape] = sub_shapes[1:]
                                         flat_data.append(first.generalFuse(rest)[0])
                                     else:
                                         flat_data.append(first)
 
                             result: NestedData = NestedData(
                                 data=flat_data,
-                                structure=struct_shapes
+                                structure=struct_shapes if type(struct_shapes) == ak.Array else ak.Array([0])
                             )
 
                         if len(args) == 2:
