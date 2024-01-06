@@ -49,8 +49,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class RotateShape(NodeItem):
-    REG_NAME: str = "Rotate Shape"
+class Rotate(NodeItem):
+    REG_NAME: str = "Rotate"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:

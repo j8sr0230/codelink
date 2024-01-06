@@ -44,8 +44,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class ShapeContent(NodeItem):
-    REG_NAME: str = "Shape Content"
+class Content(NodeItem):
+    REG_NAME: str = "Content"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:

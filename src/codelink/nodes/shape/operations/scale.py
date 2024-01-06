@@ -48,8 +48,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class TranslateShape(NodeItem):
-    REG_NAME: str = "Translate Shape"
+class Scale(NodeItem):
+    REG_NAME: str = "Scale"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -59,7 +59,7 @@ class TranslateShape(NodeItem):
         self._socket_widgets: list[SocketWidget] = [
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=True,
                       parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Translation", content_value="<No Input>", is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Factor", content_value="<No Input>", is_input=True,
                        parent_node=self),
             ShapeNone(undo_stack=self._undo_stack, name="Shape", content_value="<No Input>", is_input=False,
                       parent_node=self)
@@ -76,20 +76,26 @@ class TranslateShape(NodeItem):
                 try:
                     try:
                         shape: NestedData = self.input_data(0, args)
-                        translation: ak.Array = self.input_data(1, args)
+                        factor: ak.Array = self.input_data(1, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        flat_transl, struct_transl = (ak.to_list(flatten_record(translation, True)),
-                                                      record_structure(translation))
-                        broadcasted_params: ak.Array = ak.zip({"shape": shape.structure, "translation": struct_transl})
+                        flat_factor, struct_factor = (ak.to_list(flatten_record(factor, True)),
+                                                      record_structure(factor))
+                        broadcasted_params: ak.Array = ak.zip({"shape": shape.structure, "factor": struct_factor})
                         flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                         flat_data: list[Part.Shape] = []
                         for param_tuple in flat_params:
                             copy: Part.Shape = Part.Shape(shape.data[param_tuple["0"]])
-                            copy.translate(flat_transl[param_tuple["1"]])
+                            factor_tuple: tuple = flat_factor[param_tuple["1"]]
+
+                            if len(copy.Vertexes) > 0 and all(factor_tuple):
+                                scale_matrix: FreeCAD.Matrix = FreeCAD.Matrix()
+                                # print(factor_tuple[0], factor_tuple[1], factor_tuple[2])
+                                scale_matrix.scale(factor_tuple[0], factor_tuple[1], factor_tuple[2])
+                                copy: Part.Shape = copy.transformShape(scale_matrix)
                             flat_data.append(copy)
 
                         result: NestedData = NestedData(
@@ -103,8 +109,8 @@ class TranslateShape(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Translate executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
-                                                                                        digits=2), "ms")
+                            print("Scale executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                    digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
