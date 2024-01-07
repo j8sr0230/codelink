@@ -48,8 +48,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class CenterOfGravity(NodeItem):
-    REG_NAME: str = "Center of Gravity"
+class Center(NodeItem):
+    REG_NAME: str = "Center"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name: str = REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
