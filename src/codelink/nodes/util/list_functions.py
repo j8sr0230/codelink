@@ -61,7 +61,7 @@ class ListFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Zip", "Mass Zip", "Flip", "Shift"])
+        self._option_box.addItems(["Zip", "Mass Zip", "Flip", "Shift", "Item"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -112,9 +112,9 @@ class ListFunctions(NodeItem):
                 input_widget_count -= 1
         else:
             while input_widget_count < 2:
-                if current_option_name == "Shift":
+                if current_option_name in ("Shift", "Item"):
                     new_socket_widget: ValueLine = ValueLine(
-                        undo_stack=self._undo_stack, name="Offset", content_value=1.0, is_input=True, parent_node=self
+                        undo_stack=self._undo_stack, name="Value", content_value=0.0, is_input=True, parent_node=self
                     )
                 else:
                     new_socket_widget: AnyNone = AnyNone(
@@ -125,7 +125,8 @@ class ListFunctions(NodeItem):
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
                 input_widget_count += 1
 
-            if current_option_name == "Shift" and input_widget_count == 2 and type(self._socket_widgets[2]) == AnyNone:
+            if (current_option_name in ("Shift", "Item") and input_widget_count == 2 and
+                    type(self._socket_widgets[1]) == AnyNone):
                 while input_widget_count > 1:
                     remove_idx: int = len(self.input_socket_widgets) - 1
                     remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -136,13 +137,13 @@ class ListFunctions(NodeItem):
                     input_widget_count -= 1
 
                 new_socket_widget: ValueLine = ValueLine(
-                    undo_stack=self._undo_stack, name="Offset", content_value=1.0, is_input=True, parent_node=self
+                    undo_stack=self._undo_stack, name="Value", content_value=0.0, is_input=True, parent_node=self
                 )
                 insert_idx: int = len(self.input_socket_widgets)
                 self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
                 input_widget_count += 1
 
-            if current_option_name == "Zip" and input_widget_count == 2 and type(self._socket_widgets[2]) == ValueLine:
+            if current_option_name == "Zip" and input_widget_count == 2 and type(self._socket_widgets[1]) == ValueLine:
                 while input_widget_count > 1:
                     remove_idx: int = len(self.input_socket_widgets) - 1
                     remove_socket: SocketWidget = self._socket_widgets[remove_idx]
@@ -284,7 +285,7 @@ class ListFunctions(NodeItem):
                             else:
                                 result: ak.Array = ak.Array([0])
 
-                        else:
+                        elif self._option_box.currentText() == "Shift":
                             offset: ak.Array = self.input_data(1, args)
 
                             flat_data: list = []
@@ -373,6 +374,26 @@ class ListFunctions(NodeItem):
                                     flat_data_out, ak.transform(global_index, new_structure)
                                 )
 
+                            else:
+                                result: ak.Array = ak.Array([0])
+
+                        else:
+                            index: ak.Array = self.input_data(1, args)
+
+                            broadcasted_params: ak.Array = ak.zip({"list_a": ak.Array([0]), "index": index},
+                                                                  right_broadcast=True)
+                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
+                            flat_params.show()
+
+                            if isinstance(list_a, ak.Array):
+                                result_list: list[ak.Array] = []
+                                for param_tuple in flat_params:
+                                    locale_idx: ak.Array = ak.local_index(list_a)
+                                    result_list.append(list_a[locale_idx == param_tuple["1"]])
+                                result: ak.Array = ak.Array(result_list)
+
+                            elif isinstance(list_a, NestedData):
+                                pass
                             else:
                                 result: ak.Array = ak.Array([0])
 
