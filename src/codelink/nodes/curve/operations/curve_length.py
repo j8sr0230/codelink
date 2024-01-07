@@ -73,16 +73,17 @@ class CurveLength(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        curves: NestedData = self.input_data(0, args)
+                        curve: NestedData = self.input_data(0, args)
 
                         if DEBUG:
                             a: float = time.time()
 
                         flat_result: list[float] = []
-                        for shp in curves.data:
-                            flat_result.append(shp.Length)
+                        for shp in curve.data:
+                            if len(shp.Vertexes) > 0 and (len(shp.Wires) > 0 or len(shp.Edges) > 0):
+                                flat_result.append(shp.Length)
 
-                        result: ak.Array = unflatten_array_like(ak.Array(flat_result), curves.structure)
+                        result: ak.Array = unflatten_array_like(ak.Array(flat_result), curve.structure)
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -90,8 +91,8 @@ class CurveLength(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Face from Curve executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
-                                                                                              digits=2), "ms")
+                            print("Curve Length executed in", "{number:.{digits}f}".format(number=1000 * (b - a),
+                                                                                           digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True
