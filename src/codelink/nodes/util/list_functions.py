@@ -373,27 +373,40 @@ class ListFunctions(NodeItem):
                                 result: NestedData = NestedData(
                                     flat_data_out, ak.transform(global_index, new_structure)
                                 )
-
                             else:
                                 result: ak.Array = ak.Array([0])
 
                         else:
                             index: ak.Array = self.input_data(1, args)
 
-                            broadcasted_params: ak.Array = ak.zip({"list_a": ak.Array([0]), "index": index},
+                            broadcasted_params: ak.Array = ak.zip({"list_a": 0, "index": index},
                                                                   right_broadcast=True)
                             flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
-                            flat_params.show()
 
                             if isinstance(list_a, ak.Array):
                                 result_list: list[ak.Array] = []
                                 for param_tuple in flat_params:
                                     locale_idx: ak.Array = ak.local_index(list_a)
                                     result_list.append(list_a[locale_idx == param_tuple["1"]])
+
                                 result: ak.Array = ak.Array(result_list)
+                                if type(simplified_array_structure(index)) == int:
+                                    result: ak.Array = ak.flatten(result, axis=1)
 
                             elif isinstance(list_a, NestedData):
-                                pass
+                                new_structure: list[ak.Array] = []
+                                for param_tuple in flat_params:
+                                    locale_idx: ak.Array = ak.local_index(list_a.structure)
+                                    new_structure.append(list_a.structure[locale_idx == param_tuple["1"]])
+
+                                if type(simplified_array_structure(index)) == int:
+                                    new_structure: ak.Array = ak.flatten(new_structure, axis=1)
+
+                                flat_data_out: list[Part.Shape] = reorder_list(list_a.data, ak.Array(new_structure))
+                                result: NestedData = NestedData(
+                                    flat_data_out, ak.transform(global_index, new_structure)
+                                )
+
                             else:
                                 result: ak.Array = ak.Array([0])
 

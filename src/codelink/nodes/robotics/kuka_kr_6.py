@@ -130,7 +130,8 @@ class KukaKr6(NodeItem):
                             a: float = time.time()
 
                         flat_pos: list[float, float, float] = ak.to_list(flatten_record(position, True))[0]
-                        flat_pos: list[float, float, float] = flat_pos if not all(flat_pos) == 0 else [930, 0, 1205]
+                        flat_pos: list[float, float, float] = (flat_pos if not all(v == 0 for v in flat_pos)
+                                                               else [930, 0, 1205])
 
                         axis_radians: list = self._kuka_kr_6_chain.inverse_kinematics(
                             target_position=ak.to_numpy(flat_pos),
