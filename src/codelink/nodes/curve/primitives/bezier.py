@@ -123,7 +123,7 @@ class Bezier(NodeItem):
                             ctrl_pts: Points.Points = Points.Points()
                             ctrl_pts.addPoints(ak.to_list(simple_vec))
                             if is_cyclic:
-                                ctrl_pts.addPoints(ctrl_pts.Points[0])
+                                ctrl_pts.addPoints([ctrl_pts.Points[0]])
 
                             bezier: Part.BezierCurve = Part.BezierCurve()
                             bezier.setPoles(ctrl_pts.Points)
@@ -133,7 +133,7 @@ class Bezier(NodeItem):
                                 ctrl_pts: Points.Points = Points.Points()
                                 ctrl_pts.addPoints(ak.to_list(ctrl_pts_list))
                                 if is_cyclic:
-                                    ctrl_pts.addPoints(ctrl_pts.Points[0])
+                                    ctrl_pts.addPoints([ctrl_pts.Points[0]])
 
                                 bezier: Part.BezierCurve = Part.BezierCurve()
                                 bezier.setPoles(ctrl_pts.Points)
@@ -150,7 +150,7 @@ class Bezier(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Polyline executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                            print("Bezier executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
                                   "ms")
 
                     except Exception as e:
