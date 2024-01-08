@@ -32,12 +32,10 @@ import awkward as ak
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-import numpy as np
 
 from nested_data import NestedData
-from utils import (global_index, unflatten_array_like, simplify_array, simplified_array_structure,
-                   unflatten_record_like, flatten_record, simplify_record, simplified_rec_struct, mass_zip_to_array,
-                   reorder_list)
+from utils import (global_index, mass_zip_to_array, shift_array_leafs, flip_array_leafs, reorder_list,
+                   simplify_array, simplified_array_structure, flatten_record, simplified_rec_struct)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
@@ -231,52 +229,11 @@ class ListFunctions(NodeItem):
                                 result: ak.Array = ak.Array([0])
 
                         elif self._option_box.currentText() == "Flip":
-                            flat_data: list = []
-
                             if isinstance(list_a, ak.Array):
-                                if len(list_a.fields) == 0:
-                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a)),
-                                                                       simplified_array_structure(list_a))
-                                    if type(struct_simple_list) is int:
-                                        flat_data.append(np.flip(simple_list))
-                                    else:
-                                        for sub_list in simple_list:
-                                            flat_data.append(np.flip(sub_list))
-
-                                    flat_result: ak.Array = ak.flatten(flat_data, axis=None)
-                                    result: ak.Array = unflatten_array_like(flat_result, list_a)
-
-                                else:
-                                    simple_list, struct_simple_list = (simplify_record(list_a),
-                                                                       simplified_rec_struct(list_a))
-                                    if type(struct_simple_list) is int:
-                                        flat_data.append(
-                                            {"x": np.flip(ak.to_list(simple_list.x)),
-                                             "y": np.flip(ak.to_list(simple_list.y)),
-                                             "z": np.flip(ak.to_list(simple_list.z))}
-                                        )
-                                    else:
-                                        for sub_list in simple_list:
-                                            flat_data.append(
-                                                {"x": np.flip(ak.to_list(sub_list.x)),
-                                                 "y": np.flip(ak.to_list(sub_list.y)),
-                                                 "z": np.flip(ak.to_list(sub_list.z))}
-                                            )
-
-                                    flat_result: ak.Array = flatten_record(ak.Array(flat_data))
-                                    result: ak.Array = unflatten_record_like(flat_result, list_a)
+                                result: ak.Array = flip_array_leafs(list_a)
 
                             elif isinstance(list_a, NestedData):
-                                simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a.structure)),
-                                                                   simplified_array_structure(list_a.structure))
-                                if type(struct_simple_list) is int:
-                                    flat_data.append(np.flip(simple_list))
-                                else:
-                                    for sub_list in simple_list:
-                                        flat_data.append(np.flip(sub_list))
-
-                                flat_structure: ak.Array = ak.flatten(flat_data, axis=None)
-                                new_structure: ak.Array = unflatten_array_like(flat_structure, list_a.structure)
+                                new_structure: ak.Array = flip_array_leafs(list_a.structure)
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
@@ -288,86 +245,23 @@ class ListFunctions(NodeItem):
                         elif self._option_box.currentText() == "Shift":
                             offset: ak.Array = self.input_data(1, args)
 
-                            flat_data: list = []
-                            target_structure: Optional[ak.Array] = None
-                            flat_offsets: ak.Array = ak.flatten(offset, axis=None)
+                            broadcasted_params: ak.Array = ak.zip({"list_a": 0, "offset": offset},
+                                                                  right_broadcast=True)
+                            flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                             if isinstance(list_a, ak.Array):
-                                if len(list_a.fields) == 0:
-                                    for flat_offset in flat_offsets:
-                                        if target_structure is None:
-                                            target_structure: ak.Array = list_a
-                                        else:
-                                            target_structure: ak.Array = ak.concatenate([target_structure, list_a])
+                                result_list: list[ak.Array] = []
+                                for param_tuple in flat_params:
+                                    result_list.append(shift_array_leafs(list_a, int(param_tuple["1"])))
 
-                                        simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a)),
-                                                                           simplified_array_structure(list_a))
-                                        if type(struct_simple_list) is int:
-                                            flat_data.append(np.roll(simple_list, int(flat_offset)))
-                                        else:
-                                            for sub_list in simple_list:
-                                                flat_data.append(np.roll(sub_list, int(flat_offset)))
-
-                                    flat_result: ak.Array = ak.flatten(flat_data, axis=None)
-                                    result: ak.Array = unflatten_array_like(flat_result, target_structure)
-
-                                else:
-                                    for flat_offset in flat_offsets:
-                                        if target_structure is None:
-                                            target_structure: ak.Array = list_a
-                                        else:
-                                            target_structure: ak.Array = ak.concatenate([target_structure, list_a])
-
-                                        simple_list, struct_simple_list = (simplify_record(list_a),
-                                                                           simplified_rec_struct(list_a))
-                                        if type(struct_simple_list) is int:
-                                            flat_data.append(
-                                                {"x": np.roll(ak.to_list(simple_list.x), int(flat_offset)),
-                                                 "y": np.roll(ak.to_list(simple_list.y), int(flat_offset)),
-                                                 "z": np.roll(ak.to_list(simple_list.z), int(flat_offset))}
-                                            )
-                                        else:
-                                            for sub_list in simple_list:
-                                                flat_data.append(
-                                                    {"x": np.roll(ak.to_list(sub_list.x), int(flat_offset)),
-                                                     "y": np.roll(ak.to_list(sub_list.y), int(flat_offset)),
-                                                     "z": np.roll(ak.to_list(sub_list.z), int(flat_offset))}
-                                                )
-
-                                    flat_result: ak.Array = flatten_record(ak.Array(flat_data))
-                                    result: ak.Array = unflatten_record_like(flat_result, target_structure)
-
-                                offset_dept: int = offset.layout.minmax_depth[1]
-                                while offset_dept > 1:
-                                    result: ak.Array = ak.unflatten(result, counts=ak.num(result, axis=0), axis=0)
-                                    offset_dept -= 1
+                                result: ak.Array = ak.flatten(result_list, axis=1)
 
                             elif isinstance(list_a, NestedData):
-                                for flat_offset in flat_offsets:
-                                    if target_structure is None:
-                                        target_structure: ak.Array = list_a.structure
-                                    else:
-                                        target_structure: ak.Array = ak.concatenate([target_structure,
-                                                                                     list_a.structure])
+                                new_structure: list[ak.Array] = []
+                                for param_tuple in flat_params:
+                                    new_structure.append(shift_array_leafs(list_a.structure, int(param_tuple["1"])))
 
-                                    simple_list, struct_simple_list = (ak.to_list(simplify_array(list_a.structure)),
-                                                                       simplified_array_structure(list_a.structure))
-                                    if type(struct_simple_list) is int:
-                                        flat_data.append(np.roll(simple_list, int(flat_offset)))
-                                    else:
-                                        for sub_list in simple_list:
-                                            flat_data.append(np.roll(sub_list, int(flat_offset)))
-
-                                flat_structure: ak.Array = ak.flatten(flat_data, axis=None)
-                                new_structure: ak.Array = unflatten_array_like(flat_structure, target_structure)
-
-                                offset_dept: int = offset.layout.minmax_depth[1]
-                                while offset_dept > 1:
-                                    new_structure: ak.Array = ak.unflatten(
-                                        new_structure, counts=ak.num(new_structure, axis=0), axis=0
-                                    )
-                                    offset_dept -= 1
-
+                                new_structure: ak.Array = ak.flatten(new_structure, axis=1)
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
@@ -406,7 +300,6 @@ class ListFunctions(NodeItem):
                                 result: NestedData = NestedData(
                                     flat_data_out, ak.transform(global_index, new_structure)
                                 )
-
                             else:
                                 result: ak.Array = ak.Array([0])
 
