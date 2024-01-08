@@ -250,18 +250,27 @@ class ListFunctions(NodeItem):
                             flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                             if isinstance(list_a, ak.Array):
-                                result_list: list[ak.Array] = []
+                                result: Optional[ak.Array] = None
                                 for param_tuple in flat_params:
-                                    result_list.append(shift_array_leafs(list_a, int(param_tuple["1"])))
-
-                                result: ak.Array = ak.flatten(result_list, axis=1)
+                                    if result is None:
+                                        result: ak.Array = shift_array_leafs(list_a, int(param_tuple["1"]))
+                                    else:
+                                        result: ak.Array = ak.concatenate(
+                                            [result, shift_array_leafs(list_a, int(param_tuple["1"]))], axis=0
+                                        )
 
                             elif isinstance(list_a, NestedData):
-                                new_structure: list[ak.Array] = []
+                                new_structure: Optional[ak.Array] = None
                                 for param_tuple in flat_params:
-                                    new_structure.append(shift_array_leafs(list_a.structure, int(param_tuple["1"])))
+                                    if new_structure is None:
+                                        new_structure: ak.Array = shift_array_leafs(list_a.structure,
+                                                                                    int(param_tuple["1"]))
+                                    else:
+                                        new_structure: ak.Array = ak.concatenate(
+                                            [new_structure, shift_array_leafs(
+                                                list_a.structure, int(param_tuple["1"]))], axis=0
+                                        )
 
-                                new_structure: ak.Array = ak.flatten(new_structure, axis=1)
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
