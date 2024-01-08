@@ -84,5 +84,14 @@ grafted_ar: ak.Array = ak.unflatten(ar, counts=1, axis=-1)
 ak.concatenate(ak.unzip(grafted_ar), axis=-1).show()
 
 
-t = ak.Array([[0, 1], [1, 1], [2, 1], [3, 1],  [4, 1],  [5, 1], [6, 1], [7, 1], [8, 1], [9, 1]])
+t = ak.Array([[[0, 1.], [1, 1.], [2, 1.], [3, 1.],  [4, 1.],  [5, 1.], [6, 1.], [7, 1.], [8, 1.], [9, 1.]]])
+flipped_index: ak.Array = -1 * (ak.local_index(t) - ak.max(ak.local_index(t)))
 idx = ak.Array([[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]])
+
+print(ak.type(t))
+print(ak.type(flipped_index))
+
+t.show()
+idx.show()
+t[idx].show()
+t[flipped_index].show()
