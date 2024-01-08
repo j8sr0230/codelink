@@ -202,7 +202,8 @@ class ListFunctions(NodeItem):
                                     flat_data.append(list_b.data[simple_ids[1]])
 
                                 result: NestedData = NestedData(
-                                    flat_data, new_structure  # ak.transform(global_index, new_structure)
+                                    flat_data, array_structure(new_structure)
+                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
