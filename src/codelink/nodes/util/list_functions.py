@@ -34,7 +34,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import (global_index, mass_zip_to_array, shift_array_leafs, flip_array_leafs, reorder_list,
+from utils import (mass_zip_to_array, shift_array_leafs, flip_array_leafs, reorder_list, array_structure,
                    simplify_array, simplified_array_structure, flatten_record, simplified_rec_struct)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -202,7 +202,7 @@ class ListFunctions(NodeItem):
                                     flat_data.append(list_b.data[simple_ids[1]])
 
                                 result: NestedData = NestedData(
-                                    flat_data, ak.transform(global_index, new_structure)
+                                    flat_data, new_structure  # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
@@ -223,7 +223,8 @@ class ListFunctions(NodeItem):
                                     flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                     result: NestedData = NestedData(
-                                        flat_data_out, ak.transform(global_index, new_structure)
+                                        flat_data_out, array_structure(new_structure)
+                                        # ak.transform(global_index, new_structure)
                                     )
                             else:
                                 result: ak.Array = ak.Array([0])
@@ -237,7 +238,8 @@ class ListFunctions(NodeItem):
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
-                                    flat_data_out, ak.transform(global_index, new_structure)
+                                    flat_data_out, array_structure(new_structure)
+                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
@@ -274,7 +276,8 @@ class ListFunctions(NodeItem):
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
-                                    flat_data_out, ak.transform(global_index, new_structure)
+                                    flat_data_out, array_structure(new_structure)
+                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
@@ -307,7 +310,8 @@ class ListFunctions(NodeItem):
 
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, ak.Array(new_structure))
                                 result: NestedData = NestedData(
-                                    flat_data_out, ak.transform(global_index, new_structure)
+                                    flat_data_out, array_structure(new_structure)
+                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])

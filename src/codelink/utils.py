@@ -59,7 +59,13 @@ def global_index(layout: ak.contents.Content, **kwargs) -> ak.contents.Content:
 
 
 def array_structure(nested_array: ak.Array) -> ak.Array:
-    return ak.transform(global_index, nested_array)
+    # return ak.transform(global_index, nested_array)
+
+    flat_array: ak.Array = ak.flatten(nested_array, axis=None)
+    item_count: int = ak.num(flat_array, axis=0)
+    flat_indexes: ak.Array = ak.Array(np.arange(0, item_count))
+    nested_index: ak.Array = unflatten_array_like(flat_indexes, nested_array)
+    return nested_index
 
 
 def simplified_array_structure(nested_array: ak.Array) -> Union[int, ak.Array]:
@@ -208,6 +214,7 @@ def shift_array_leafs(nested_array: ak.Array, offset: int) -> ak.Array:
     locale_idx: ak.Array = ak.local_index(nested_array)
     leaf_length: ak.Array = ak.num(nested_array, axis=-1)
     shifted_index: ak.Array = (locale_idx + offset) % leaf_length
+    # return ak.Array(ak.to_list(nested_array[shifted_index]))
     return nested_array[shifted_index]
 
 
@@ -215,6 +222,7 @@ def flip_array_leafs(nested_array: ak.Array) -> ak.Array:
     locale_idx: ak.Array = ak.local_index(nested_array)
     leaf_length: ak.Array = ak.num(nested_array, axis=-1)
     flipped_index: ak.Array = -1 * (locale_idx - leaf_length + 1)
+    # return ak.Array(ak.to_list(nested_array[flipped_index]))
     return nested_array[flipped_index]
 
 
