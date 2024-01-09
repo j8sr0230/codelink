@@ -5,6 +5,8 @@ from ikpy.link import OriginLink, URDFLink
 import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
+from utils import unflatten_array_like
+
 
 kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
 	OriginLink(),
@@ -71,7 +73,7 @@ print("Axes for", np.round(np.round(pos_ori[:3, 3], 2), 2), " mm ->", np.round(n
 ax = matplotlib.pyplot.figure().add_subplot(111, projection='3d')
 kuka_kr_6_chain.plot([0, a1, a2, a3, a4, a5, a6], ax)
 kuka_kr_6_chain.plot(axes, ax)
-matplotlib.pyplot.show()
+# matplotlib.pyplot.show()
 
 # Numpy array composing by slicing
 a: np.ndarray = np.array([1, 2, 3, 4, 5, 6])
@@ -84,14 +86,36 @@ grafted_ar: ak.Array = ak.unflatten(ar, counts=1, axis=-1)
 ak.concatenate(ak.unzip(grafted_ar), axis=-1).show()
 
 
-t = ak.Array([[[0, 1.], [1, 1.], [2, 1.], [3, 1.],  [4, 1.],  [5, 1.], [6, 1.], [7, 1.], [8, 1.], [9, 1.]]])
-flipped_index: ak.Array = -1 * (ak.local_index(t) - ak.max(ak.local_index(t)))
-idx = ak.Array([[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]])
+# Array type test
+print()
+x: ak.Array = ak.Array([[[1, 2, 3], [4, 5], [6]]])
+y: ak.Array = ak.Array([[[1, 1, 1], [2, 2], [3]]])
+xy: ak.Array = ak.Array([[[[1, 1], [2, 1], [3, 1]], [[4, 1], [5, 1]], [[6, 1]]]])
 
-print(ak.type(t))
-print(ak.type(flipped_index))
+print("Type of x:", ak.type(x), ", type of y:", ak.type(y))
+print("Type of xy:", ak.type(xy))
 
-t.show()
-idx.show()
-t[idx].show()
-t[flipped_index].show()
+xy_concat: ak.Array = ak.concatenate((ak.unflatten(x, counts=1, axis=-1), ak.unflatten(y, counts=1, axis=-1)), axis=-1)
+print("Type of xy_concat:", ak.type(xy_concat))
+xy_concat.show()
+
+xy_zip: ak.Array = ak.zip([x, y], right_broadcast=True)
+print(ak.type(xy_zip))
+
+flat_zip = ak.flatten(xy_zip)
+flat_zip.show()
+# unflatten_array_like(flat_zip, ak.unflatten(x, counts=1, axis=-1)).show()
+
+# t = ak.Array([[[0, 1.], [1, 1.], [2, 1.], [3, 1.],  [4, 1.],  [5, 1.], [6, 1.], [7, 1.], [8, 1.], [9, 1.]]])
+# flipped_index: ak.Array = -1 * (ak.local_index(t) - ak.max(ak.local_index(t)))
+# idx = ak.Array([[1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0], [1, 0]])
+#
+# print(ak.type(t))
+# print(ak.type(flipped_index))
+#
+#
+#
+# t.show()
+# idx.show()
+# t[idx].show()
+# t[flipped_index].show()
