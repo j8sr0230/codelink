@@ -210,13 +210,6 @@ def mass_zip_to_array(nested_array: ak.Array) -> ak.Array:
     return ak.concatenate(ak.unzip(grafted_tuples), axis=-1)
 
 
-def shift_array_leafs(nested_array: ak.Array, offset: int) -> ak.Array:
-    locale_idx: ak.Array = ak.local_index(nested_array)
-    leaf_length: ak.Array = ak.num(nested_array, axis=-1)
-    shifted_index: ak.Array = (locale_idx + offset) % leaf_length
-    return nested_array[shifted_index]
-
-
 def reorder_list(flat_list: list[Any], target_structure: ak.Array) -> list:
     flat_data_in: np.ndarray = np.array(flat_list, dtype="object")
     result: [Any] = []

@@ -34,8 +34,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import (mass_zip_to_array, shift_array_leafs, reorder_list, array_structure,
-                   simplify_array, simplified_array_structure, flatten_record, simplified_rec_struct)
+from utils import (mass_zip_to_array, reorder_list, array_structure, simplify_array, simplified_array_structure,
+                   flatten_record, simplified_rec_struct)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
@@ -251,32 +251,27 @@ class ListFunctions(NodeItem):
                             flat_params: ak.Array = flatten_record(nested_record=broadcasted_params, as_tuple=True)
 
                             if isinstance(list_a, ak.Array):
-                                result: Optional[ak.Array] = None
+                                result_list: list[ak.Array] = []
                                 for param_tuple in flat_params:
-                                    if result is None:
-                                        result: ak.Array = shift_array_leafs(list_a, int(param_tuple["1"]))
-                                    else:
-                                        result: ak.Array = ak.concatenate(
-                                            [result, shift_array_leafs(list_a, int(param_tuple["1"]))], axis=0
-                                        )
+                                    offset: int = int(param_tuple["1"])
+                                    result_list.append(ak.concatenate(
+                                        [list_a[..., offset:], list_a[..., :offset]], axis=-1
+                                    ))
+                                    result: ak.Array = ak.flatten(result_list)
 
                             elif isinstance(list_a, NestedData):
-                                new_structure: Optional[ak.Array] = None
+                                new_structure_list: list[ak.Array] = []
                                 for param_tuple in flat_params:
-                                    if new_structure is None:
-                                        new_structure: ak.Array = shift_array_leafs(list_a.structure,
-                                                                                    int(param_tuple["1"]))
-                                    else:
-                                        new_structure: ak.Array = ak.concatenate(
-                                            [new_structure, shift_array_leafs(
-                                                list_a.structure, int(param_tuple["1"]))], axis=0
-                                        )
+                                    offset: int = int(param_tuple["1"])
+                                    new_structure_list.append(ak.concatenate(
+                                        [list_a.structure[..., offset:], list_a.structure[..., :offset]], axis=-1
+                                    ))
+                                    new_structure: ak.Array = ak.flatten(new_structure_list)
 
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
                                     flat_data_out, array_structure(new_structure)
-                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
