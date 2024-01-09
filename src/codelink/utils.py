@@ -221,6 +221,8 @@ def shift_array_leafs(nested_array: ak.Array, offset: int) -> ak.Array:
 def flip_array_leafs(nested_array: ak.Array) -> ak.Array:
     local_idx: ak.Array = ak.local_index(nested_array)
     flipped_index: ak.Array = -1 * (local_idx - ak.max(local_idx))
+    print(ak.type(nested_array))
+    print(ak.type(flipped_index))
     # return ak.Array(ak.to_list(nested_array[flipped_index]))
     return nested_array[flipped_index]
 

@@ -89,19 +89,16 @@ print()
 x: ak.Array = ak.Array([[[1, 2, 3], [4, 5], [6]]])
 y: ak.Array = ak.Array([[[1, 1, 1], [2, 2], [3]]])
 xy: ak.Array = ak.Array([[[[1, 1], [2, 1], [3, 1]], [[4, 1], [5, 1]], [[6, 1]]]])
-
 print("Type of x:", ak.type(x), ", type of y:", ak.type(y))
 print("Type of xy:", ak.type(xy))
 
 xy_concat: ak.Array = ak.concatenate([ak.unflatten(x, counts=1, axis=-1), ak.unflatten(y, counts=1, axis=-1)], axis=-1)
 print("Type of xy_concat:", ak.type(xy_concat))
-xy_concat.show()
 
 xy_zip: ak.Array = ak.zip([x, y], right_broadcast=True)
 print(ak.type(xy_zip))
 
-flat_zip = ak.flatten(xy_zip)
-flat_zip.show()
+# flat_zip.show()
 # unflatten_array_like(flat_zip, ak.unflatten(x, counts=1, axis=-1)).show()
 
 # t = ak.Array([[[0, 1.], [1, 1.], [2, 1.], [3, 1.],  [4, 1.],  [5, 1.], [6, 1.], [7, 1.], [8, 1.], [9, 1.]]])
