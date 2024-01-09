@@ -34,7 +34,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from nested_data import NestedData
-from utils import (mass_zip_to_array, shift_array_leafs, flip_array_leafs, reorder_list, array_structure,
+from utils import (mass_zip_to_array, shift_array_leafs, reorder_list, array_structure,
                    simplify_array, simplified_array_structure, flatten_record, simplified_rec_struct)
 from node_item import NodeItem
 from input_widgets import OptionBoxWidget
@@ -203,7 +203,6 @@ class ListFunctions(NodeItem):
 
                                 result: NestedData = NestedData(
                                     flat_data, array_structure(new_structure)
-                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
@@ -225,17 +224,16 @@ class ListFunctions(NodeItem):
 
                                     result: NestedData = NestedData(
                                         flat_data_out, array_structure(new_structure)
-                                        # ak.transform(global_index, new_structure)
                                     )
                             else:
                                 result: ak.Array = ak.Array([0])
 
                         elif self._option_box.currentText() == "Flip":
                             if isinstance(list_a, ak.Array):
-                                result: ak.Array = flip_array_leafs(list_a)
+                                result: ak.Array = list_a[..., ::-1]
 
                             elif isinstance(list_a, NestedData):
-                                new_structure: ak.Array = flip_array_leafs(list_a.structure)
+                                new_structure: ak.Array = list_a[..., ::-1]
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
 
                                 result: NestedData = NestedData(
@@ -293,8 +291,8 @@ class ListFunctions(NodeItem):
                             if isinstance(list_a, ak.Array):
                                 result_list: list[ak.Array] = []
                                 for param_tuple in flat_params:
-                                    locale_idx: ak.Array = ak.local_index(list_a)
-                                    result_list.append(list_a[locale_idx == param_tuple["1"]])
+                                    idx: int = int(param_tuple["1"])
+                                    result_list.append(list_a[..., idx:idx+1])
 
                                 result: ak.Array = ak.Array(result_list)
                                 if type(simplified_array_structure(index)) == int:
@@ -303,8 +301,8 @@ class ListFunctions(NodeItem):
                             elif isinstance(list_a, NestedData):
                                 new_structure: list[ak.Array] = []
                                 for param_tuple in flat_params:
-                                    locale_idx: ak.Array = ak.local_index(list_a.structure)
-                                    new_structure.append(list_a.structure[locale_idx == param_tuple["1"]])
+                                    idx: int = int(param_tuple["1"])
+                                    new_structure.append(list_a.structure[..., idx:idx+1])
 
                                 if type(simplified_array_structure(index)) == int:
                                     new_structure: ak.Array = ak.flatten(new_structure, axis=1)
@@ -312,7 +310,6 @@ class ListFunctions(NodeItem):
                                 flat_data_out: list[Part.Shape] = reorder_list(list_a.data, ak.Array(new_structure))
                                 result: NestedData = NestedData(
                                     flat_data_out, array_structure(new_structure)
-                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])

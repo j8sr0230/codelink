@@ -214,17 +214,7 @@ def shift_array_leafs(nested_array: ak.Array, offset: int) -> ak.Array:
     locale_idx: ak.Array = ak.local_index(nested_array)
     leaf_length: ak.Array = ak.num(nested_array, axis=-1)
     shifted_index: ak.Array = (locale_idx + offset) % leaf_length
-    # return ak.Array(ak.to_list(nested_array[shifted_index]))
     return nested_array[shifted_index]
-
-
-def flip_array_leafs(nested_array: ak.Array) -> ak.Array:
-    local_idx: ak.Array = ak.local_index(nested_array)
-    flipped_index: ak.Array = -1 * (local_idx - ak.max(local_idx))
-    print(ak.type(nested_array))
-    print(ak.type(flipped_index))
-    # return ak.Array(ak.to_list(nested_array[flipped_index]))
-    return nested_array[flipped_index]
 
 
 def reorder_list(flat_list: list[Any], target_structure: ak.Array) -> list:
