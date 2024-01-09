@@ -5,8 +5,6 @@ from ikpy.link import OriginLink, URDFLink
 import matplotlib.pyplot
 from mpl_toolkits.mplot3d import Axes3D  # noqa
 
-from utils import unflatten_array_like
-
 
 kuka_kr_6_chain: Chain = Chain(name="kuka_kr_6", links=[
 	OriginLink(),
@@ -95,7 +93,7 @@ xy: ak.Array = ak.Array([[[[1, 1], [2, 1], [3, 1]], [[4, 1], [5, 1]], [[6, 1]]]]
 print("Type of x:", ak.type(x), ", type of y:", ak.type(y))
 print("Type of xy:", ak.type(xy))
 
-xy_concat: ak.Array = ak.concatenate((ak.unflatten(x, counts=1, axis=-1), ak.unflatten(y, counts=1, axis=-1)), axis=-1)
+xy_concat: ak.Array = ak.concatenate([ak.unflatten(x, counts=1, axis=-1), ak.unflatten(y, counts=1, axis=-1)], axis=-1)
 print("Type of xy_concat:", ak.type(xy_concat))
 xy_concat.show()
 
