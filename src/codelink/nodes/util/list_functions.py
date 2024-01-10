@@ -40,6 +40,7 @@ from node_item import NodeItem
 from input_widgets import OptionBoxWidget
 from sockets.any_none import AnyNone
 from sockets.value_line import ValueLine
+from sockets.bool_checkbox import BoolCheckBox
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -59,7 +60,7 @@ class ListFunctions(NodeItem):
         self._option_box: OptionBoxWidget = OptionBoxWidget(undo_stack)
         self._option_box.setFocusPolicy(QtCore.Qt.NoFocus)
         self._option_box.setMinimumWidth(5)
-        self._option_box.addItems(["Zip", "Mass Zip", "Flip", "Shift", "Item"])
+        self._option_box.addItems(["Zip", "Mass Zip", "Flip", "Shift", "Item", "Mask"])
         for option_idx in range(self._option_box.count()):
             self._option_box.model().setData(self._option_box.model().index(option_idx, 0), QtCore.QSize(160, 24),
                                              QtCore.Qt.SizeHintRole)
@@ -100,64 +101,68 @@ class ListFunctions(NodeItem):
         self._undo_stack.push(emit_dag_changed_cmd_cls(self.scene(), self))
 
         if current_option_name in ("Mass Zip", "Flip"):
-            while input_widget_count > 1:
-                remove_idx: int = len(self.input_socket_widgets) - 1
-                remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+            if input_widget_count > 1:
+                remove_socket: SocketWidget = self._socket_widgets[len(self.input_socket_widgets) - 1]
                 for edge in remove_socket.pin.edges:
                     self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
 
-                self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
-                input_widget_count -= 1
+                self._undo_stack.push(remove_socket_cmd_cls(self, len(self.input_socket_widgets) - 1))
         else:
-            while input_widget_count < 2:
+            if input_widget_count < 2:
                 if current_option_name in ("Shift", "Item"):
                     new_socket_widget: ValueLine = ValueLine(
                         undo_stack=self._undo_stack, name="Value", content_value=0.0, is_input=True, parent_node=self
                     )
+                elif current_option_name in ("Mask", ):
+                    new_socket_widget: BoolCheckBox = BoolCheckBox(undo_stack=self._undo_stack, name="Mask",
+                                                                   content_value=True, is_input=True, parent_node=self)
                 else:
                     new_socket_widget: AnyNone = AnyNone(
                         undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
                         parent_node=self
                     )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
+                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
 
-            if (current_option_name in ("Shift", "Item") and input_widget_count == 2 and
-                    type(self._socket_widgets[1]) == AnyNone):
-                while input_widget_count > 1:
-                    remove_idx: int = len(self.input_socket_widgets) - 1
-                    remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+            if input_widget_count == 2:
+                if (current_option_name in ("Shift", "Item") and (type(self._socket_widgets[1]) == AnyNone or
+                                                                  type(self._socket_widgets[1]) == BoolCheckBox)):
+                    remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
-                    self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
-                    input_widget_count -= 1
+                    new_socket_widget: ValueLine = ValueLine(
+                        undo_stack=self._undo_stack, name="Value", content_value=0.0, is_input=True, parent_node=self
+                    )
 
-                new_socket_widget: ValueLine = ValueLine(
-                    undo_stack=self._undo_stack, name="Value", content_value=0.0, is_input=True, parent_node=self
-                )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
 
-            if current_option_name == "Zip" and input_widget_count == 2 and type(self._socket_widgets[1]) == ValueLine:
-                while input_widget_count > 1:
-                    remove_idx: int = len(self.input_socket_widgets) - 1
-                    remove_socket: SocketWidget = self._socket_widgets[remove_idx]
+                if (current_option_name in ("Mask", ) and (type(self._socket_widgets[1]) == AnyNone or
+                                                           type(self._socket_widgets[1]) == ValueLine)):
+                    remove_socket: SocketWidget = self._socket_widgets[1]
                     for edge in remove_socket.pin.edges:
                         self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
 
-                    self._undo_stack.push(remove_socket_cmd_cls(self, remove_idx))
-                    input_widget_count -= 1
+                    new_socket_widget: BoolCheckBox = BoolCheckBox(
+                        undo_stack=self._undo_stack, name="Mask", content_value=True, is_input=True, parent_node=self
+                    )
 
-                new_socket_widget: AnyNone = AnyNone(
-                    undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
-                    parent_node=self
-                )
-                insert_idx: int = len(self.input_socket_widgets)
-                self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, insert_idx))
-                input_widget_count += 1
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
+
+                if (current_option_name == "Zip" and (type(self._socket_widgets[1]) == ValueLine or
+                                                      type(self._socket_widgets[1]) == BoolCheckBox)):
+                    remove_socket: SocketWidget = self._socket_widgets[1]
+                    for edge in remove_socket.pin.edges:
+                        self._undo_stack.push(remove_edge_cmd_cls(self.scene(), edge, True))
+                    self._undo_stack.push(remove_socket_cmd_cls(self, 1))
+
+                    new_socket_widget: AnyNone = AnyNone(
+                        undo_stack=self._undo_stack, name="List B", content_value="<No Input>", is_input=True,
+                        parent_node=self
+                    )
+
+                    self._undo_stack.push(add_socket_cmd_cls(self, new_socket_widget, 1))
 
         self._undo_stack.push(
             set_op_idx_cmd_cls(self, self._option_box, last_option_index, current_option_index)
@@ -276,7 +281,7 @@ class ListFunctions(NodeItem):
                             else:
                                 result: ak.Array = ak.Array([0])
 
-                        else:
+                        elif self._option_box.currentText() == "Index":
                             index: ak.Array = self.input_data(1, args)
 
                             broadcasted_params: ak.Array = ak.zip({"list_a": 0, "index": index},
@@ -306,6 +311,22 @@ class ListFunctions(NodeItem):
                                 result: NestedData = NestedData(
                                     flat_data_out, array_structure(new_structure)
                                 )
+                            else:
+                                result: ak.Array = ak.Array([0])
+                        else:
+                            mask: ak.Array = self.input_data(1, args)
+
+                            list_a, mask = ak.broadcast_arrays(list_a, mask)
+                            if ak.any(mask, axis=None):
+                                if isinstance(list_a, ak.Array):
+                                    result: ak.Array = list_a[mask]
+
+                                elif isinstance(list_a, NestedData):
+                                    new_structure: ak.Array = list_a.structure[mask]
+                                    flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
+                                    result: NestedData = NestedData(
+                                        flat_data_out, array_structure(new_structure)
+                                    )
                             else:
                                 result: ak.Array = ak.Array([0])
 
