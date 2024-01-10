@@ -281,7 +281,7 @@ class ListFunctions(NodeItem):
                             else:
                                 result: ak.Array = ak.Array([0])
 
-                        elif self._option_box.currentText() == "Index":
+                        elif self._option_box.currentText() == "Item":
                             index: ak.Array = self.input_data(1, args)
 
                             broadcasted_params: ak.Array = ak.zip({"list_a": 0, "index": index},
