@@ -243,7 +243,6 @@ class ListFunctions(NodeItem):
 
                                 result: NestedData = NestedData(
                                     flat_data_out, array_structure(new_structure)
-                                    # ak.transform(global_index, new_structure)
                                 )
                             else:
                                 result: ak.Array = ak.Array([0])
