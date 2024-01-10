@@ -316,13 +316,14 @@ class ListFunctions(NodeItem):
                         else:
                             mask: ak.Array = self.input_data(1, args)
 
-                            list_a, mask = ak.broadcast_arrays(list_a, mask)
                             if ak.any(mask, axis=None):
                                 if isinstance(list_a, ak.Array):
+                                    list_a, mask = ak.broadcast_arrays(list_a, mask)
                                     result: ak.Array = list_a[mask]
 
                                 elif isinstance(list_a, NestedData):
-                                    new_structure: ak.Array = list_a.structure[mask]
+                                    list_a_struct, mask = ak.broadcast_arrays(list_a.structure, mask)
+                                    new_structure: ak.Array = list_a_struct[mask]
                                     flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
                                     result: NestedData = NestedData(
                                         flat_data_out, array_structure(new_structure)
