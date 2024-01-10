@@ -45,6 +45,7 @@ from utils import populate_coin_scene, flatten_record
 from nested_data import NestedData
 from node_item import NodeItem
 from sockets.vector_none import VectorNone
+from sockets.value_line import ValueLine
 from sockets.coin_none import CoinNone
 
 
@@ -64,7 +65,10 @@ class KukaKr6(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=True,
+            VectorNone(undo_stack=self._undo_stack, name="Origin", content_value="<No Input>", is_input=True,
+                       parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="Rotation", content_value=0., is_input=True, parent_node=self),
+            VectorNone(undo_stack=self._undo_stack, name="Target", content_value="<No Input>", is_input=True,
                        parent_node=self),
             CoinNone(undo_stack=self._undo_stack, name="KUKA KR 6", content_value="<No Input>", is_input=False,
                      parent_node=self)
@@ -100,6 +104,14 @@ class KukaKr6(NodeItem):
 
         # SoSeparator with forward kinematic
         self._coin_sep: coin.SoSeparator = coin.SoSeparator()
+
+        self._rotation: coin.SoRotationXYZ = coin.SoRotationXYZ()
+        self._rotation.axis = coin.SoRotationXYZ.Z
+        self._coin_sep.addChild(self._rotation)
+
+        self._trans = coin.SoTranslation()
+        self._coin_sep.addChild(self._trans)
+
         self._coin_sep.addChild(so_vrml_groups[0])
         self._a1_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[1], np.array([0, 0, 0]),
                                                                coin.SoRotationXYZ.Z, so_vrml_groups[0])
@@ -124,21 +136,26 @@ class KukaKr6(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        position:  ak.Array = self.input_data(0, args)
+                        origin:  ak.Array = self.input_data(0, args)
+                        rotation: ak.Array = self.input_data(1, args)
+                        target:  ak.Array = self.input_data(2, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        flat_pos: ak.Array = flatten_record(position, True)[0]
-                        flat_pos: list[float, float, float] = (ak.to_list(flat_pos)
-                                                               if not all(flat_pos[f] == 0 for f in flat_pos.fields)
-                                                               else [930, 0, 1205])
+                        flat_targ: ak.Array = flatten_record(target, True)[0]
+                        flat_targ: list[float, float, float] = (ak.to_list(flat_targ)
+                                                                if not all(flat_targ[f] == 0 for f in flat_targ.fields)
+                                                                else [930, 0, 1205])
 
                         axis_radians: list = self._kuka_kr_6_chain.inverse_kinematics(
-                            target_position=ak.to_numpy(flat_pos),
+                            target_position=ak.to_numpy(flat_targ),
                             target_orientation=np.degrees([1, 0, 0]),
                             orientation_mode="Z"
                         )[1:]
+
+                        self._rotation.angle = np.radians(ak.flatten(rotation, axis=None)[0])
+                        self._trans.translation.setValue(ak.to_list(flatten_record(origin, True)[0]))
 
                         self._a1_rot.angle = axis_radians[0]
                         self._a2_rot.angle = axis_radians[1]
