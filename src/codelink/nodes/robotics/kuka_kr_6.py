@@ -30,6 +30,7 @@ import os
 
 import awkward as ak
 import numpy as np
+from scipy.spatial.transform import Rotation
 from ikpy.chain import Chain
 from ikpy.link import OriginLink, URDFLink
 # import matplotlib.pyplot
@@ -107,10 +108,10 @@ class KukaKr6(NodeItem):
 
         self._rotation: coin.SoRotationXYZ = coin.SoRotationXYZ()
         self._rotation.axis = coin.SoRotationXYZ.Z
-        self._coin_sep.addChild(self._rotation)
 
         self._trans = coin.SoTranslation()
         self._coin_sep.addChild(self._trans)
+        self._coin_sep.addChild(self._rotation)
 
         self._coin_sep.addChild(so_vrml_groups[0])
         self._a1_rot: coin.SoRotationXYZ = populate_coin_scene(so_vrml_groups[1], np.array([0, 0, 0]),
@@ -143,18 +144,25 @@ class KukaKr6(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        flat_targ: ak.Array = flatten_record(target, True)[0]
-                        flat_targ: list[float, float, float] = (ak.to_list(flat_targ)
-                                                                if not all(flat_targ[f] == 0 for f in flat_targ.fields)
-                                                                else [930, 0, 1205])
+                        flat_orig: np.ndarray = ak.to_numpy(ak.to_list(flatten_record(origin, True)[0]))
+                        flat_rotation: np.ndarray = np.radians(ak.flatten(rotation, axis=None)[0])
+                        flat_target: np.ndarray = ak.to_numpy(ak.to_list(flatten_record(target, True)[0]))
+
+                        forward_rotation: Rotation = Rotation.from_quat(
+                            [0, 0, np.sin(-flat_rotation / 2), np.cos(-flat_rotation / 2)]
+                        )
+
+                        flat_target: np.ndarray = (forward_rotation.apply(flat_target - flat_orig)
+                                                   if np.any(flat_target > 0)
+                                                   else np.array([930, 0, 1205]))
 
                         axis_radians: list = self._kuka_kr_6_chain.inverse_kinematics(
-                            target_position=ak.to_numpy(flat_targ),
+                            target_position=flat_target,
                             target_orientation=np.degrees([1, 0, 0]),
                             orientation_mode="Z"
                         )[1:]
 
-                        self._rotation.angle = np.radians(ak.flatten(rotation, axis=None)[0])
+                        self._rotation.angle = flat_rotation
                         self._trans.translation.setValue(ak.to_list(flatten_record(origin, True)[0]))
 
                         self._a1_rot.angle = axis_radians[0]
