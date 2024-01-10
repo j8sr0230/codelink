@@ -129,8 +129,9 @@ class KukaKr6(NodeItem):
                         if DEBUG:
                             a: float = time.time()
 
-                        flat_pos: list[float, float, float] = ak.to_list(flatten_record(position, True))[0]
-                        flat_pos: list[float, float, float] = (flat_pos if not all(v == 0 for v in flat_pos)
+                        flat_pos: ak.Array = flatten_record(position, True)[0]
+                        flat_pos: list[float, float, float] = (ak.to_list(flat_pos)
+                                                               if not all(flat_pos[f] == 0 for f in flat_pos.fields)
                                                                else [930, 0, 1205])
 
                         axis_radians: list = self._kuka_kr_6_chain.inverse_kinematics(
@@ -139,7 +140,6 @@ class KukaKr6(NodeItem):
                             orientation_mode="Z"
                         )[1:]
 
-                        # if hasattr(Gui, "ActiveDocument"):
                         self._a1_rot.angle = axis_radians[0]
                         self._a2_rot.angle = axis_radians[1]
                         self._a3_rot.angle = axis_radians[2]
