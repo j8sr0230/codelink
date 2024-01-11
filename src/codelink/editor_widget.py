@@ -72,7 +72,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._temp_edge: Optional[EdgeItem] = None
         self._new_node: Optional[NodeItem] = None
         self._focused_input_sockets: list[SocketWidget] = []
-        self._current_input_values: list[float] = [0]
+        self._focused_input_values: list[float] = []
         self._cutter: Optional[CutterItem] = None
 
         self._zoom_level: int = 10
@@ -80,7 +80,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
         self._scroll_border: int = 50
 
         # Widget layout and setup
-        self.setWindowTitle("codelink")
+        self.setWindowTitle("Codelink")
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.verticalScrollBar().blockSignals(True)
@@ -362,7 +362,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         node.setSelected(True)
                         self._focused_input_sockets: list[SocketWidget] = [focused_socket]
                         if type(self._focused_input_sockets[0]) == sockets.value_line.ValueLine:
-                            self._current_input_values[0] = float(focused_socket.input_widget.text())
+                            self._focused_input_values[0] = float(focused_socket.input_widget.text())
                             self._mode: str = "VALUE_DRAG"
                             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
             else:
@@ -418,7 +418,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
 
         if self._mode == "VALUE_DRAG":
             input_widget: QtWidgets.QLineEdit = self._focused_input_sockets[0].input_widget
-            input_value: float = self._current_input_values[0]
+            input_value: float = self._focused_input_values[0]
             current_pos: QtCore.QPoint = self.mapToScene(event.pos())
             pos_delta: QtCore.QPoint = current_pos - self._last_pressed_pos
 
