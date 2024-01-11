@@ -32,7 +32,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from node_item import NodeItem
 from sockets.value_line import ValueLine
-from sockets.vector_none import VectorNone
+from sockets.e6_axis_none import E6AxisNone
 
 if TYPE_CHECKING:
     from socket_widget import SocketWidget
@@ -41,8 +41,8 @@ if TYPE_CHECKING:
 DEBUG = True
 
 
-class Vector(NodeItem):
-    REG_NAME: str = "Vector"
+class E6Axis(NodeItem):
+    REG_NAME: str = "E6Axis"
 
     def __init__(self, pos: tuple, undo_stack: QtWidgets.QUndoStack, name=REG_NAME,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
@@ -50,10 +50,13 @@ class Vector(NodeItem):
 
         # Socket widgets
         self._socket_widgets: list[SocketWidget] = [
-            ValueLine(undo_stack=self._undo_stack, name="X", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Y", content_value=0., is_input=True, parent_node=self),
-            ValueLine(undo_stack=self._undo_stack, name="Z", content_value=0., is_input=True, parent_node=self),
-            VectorNone(undo_stack=self._undo_stack, name="Vector", content_value="<No Input>", is_input=False,
+            ValueLine(undo_stack=self._undo_stack, name="A1", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A2", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A3", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A4", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A5", content_value=0., is_input=True, parent_node=self),
+            ValueLine(undo_stack=self._undo_stack, name="A6", content_value=0., is_input=True, parent_node=self),
+            E6AxisNone(undo_stack=self._undo_stack, name="E6Axis", content_value="<No Input>", is_input=False,
                        parent_node=self)
         ]
 
@@ -67,14 +70,17 @@ class Vector(NodeItem):
                 warnings.filterwarnings("error")
                 try:
                     try:
-                        x: ak.Array = self.input_data(0, args)
-                        y: ak.Array = self.input_data(1, args)
-                        z: ak.Array = self.input_data(2, args)
+                        a1: ak.Array = self.input_data(0, args)
+                        a2: ak.Array = self.input_data(1, args)
+                        a3: ak.Array = self.input_data(2, args)
+                        a4: ak.Array = self.input_data(3, args)
+                        a5: ak.Array = self.input_data(4, args)
+                        a6: ak.Array = self.input_data(5, args)
 
                         if DEBUG:
                             a: float = time.time()
 
-                        result: ak.Array = ak.zip({"x": x, "y": y, "z": z})
+                        result: ak.Array = ak.zip({"a1": a1, "a2": a2, "a3": a3, "a4": a4, "a5": a5, "a6": a6})
 
                         self._is_dirty: bool = False
                         self._is_invalid: bool = False
@@ -82,7 +88,7 @@ class Vector(NodeItem):
 
                         if DEBUG:
                             b: float = time.time()
-                            print("Vector executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
+                            print("E6Axis executed in", "{number:.{digits}f}".format(number=1000 * (b - a), digits=2),
                                   "ms")
 
                     except Exception as e:
