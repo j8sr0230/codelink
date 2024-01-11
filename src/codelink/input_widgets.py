@@ -51,7 +51,7 @@ class NumberInputWidget(QtWidgets.QLineEdit):
             self._undo_stack.undo()
         elif event.matches(QtGui.QKeySequence.Redo):
             self._undo_stack.redo()
-        elif event.key() == QtCore.Qt.Key_Return:
+        elif event.key() == QtCore.Qt.Key_Return or event.key() == QtCore.Qt.Key_Enter:
             self.parentWidget().clearFocus()
         else:
             super().keyPressEvent(event)

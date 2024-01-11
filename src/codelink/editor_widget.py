@@ -264,43 +264,38 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         self._last_pressed_pos: QtCore.QPointF = self.mapToScene(event.pos())
 
+        if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
+            content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
+            content_widget: QtWidgets.QWidget = content_proxy.widget()
+            node: NodeItem = content_proxy.parentItem()
+
+            socket_widget_bboxes: list[QtCore.QRect] = [
+                QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
+                             int(socket_widget.y() + content_proxy.y() + node.y()),
+                             int(socket_widget.width()), int(socket_widget.height()))
+                for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
+            ]
+
+            socket_widget_bboxes.sort(key=lambda bbox: bbox.y(), reverse=False)
+
+            click_mask: list[bool] = [
+                rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
+            ]
+
+            focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
+            if len(focused_socket_idx) == 1:
+                focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
+                if focused_socket.input_widget is None or focused_socket.input_widget.isHidden():
+                    self.clearFocus()
+                else:
+                    node.setSelected(True)
+                    self._focused_input_sockets: list[SocketWidget] = [focused_socket]
+
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = True
 
             if event.modifiers() != QtCore.Qt.ShiftModifier:
-
-                if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-                    super().mousePressEvent(event)
-
-                    content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
-                    content_widget: QtWidgets.QWidget = content_proxy.widget()
-                    node: NodeItem = content_proxy.parentItem()
-
-                    socket_widget_bboxes: list[QtCore.QRect] = [
-                        QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
-                                     int(socket_widget.y() + content_proxy.y() + node.y()),
-                                     int(socket_widget.width()), int(socket_widget.height()))
-                        for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
-                    ]
-
-                    socket_widget_bboxes.sort(key=lambda bbox: bbox.y(), reverse=False)
-
-                    click_mask: list[bool] = [
-                        rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
-                    ]
-
-                    focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
-                    if len(focused_socket_idx) == 1:
-                        focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
-                        if focused_socket.input_widget is None:
-                            self.clearFocus()
-                        elif focused_socket.input_widget.isHidden():
-                            self.clearFocus()
-                        else:
-                            node.setSelected(True)
-                            self._focused_input_sockets: list[SocketWidget] = [focused_socket]
-
-                elif type(self.itemAt(event.pos())) == PinItem:
+                if type(self.itemAt(event.pos())) == PinItem:
                     self._last_pin: PinItem = self.itemAt(event.pos())
 
                     if (not self._last_pin.socket_widget.is_input or
@@ -331,38 +326,12 @@ class EditorWidget(QtWidgets.QGraphicsView):
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsProxyWidget:
-                content_proxy: QtWidgets.QGraphicsProxyWidget = self.itemAt(event.pos())
-                content_widget: QtWidgets.QWidget = content_proxy.widget()
-                node: NodeItem = content_proxy.parentItem()
+            if (len(self._focused_input_sockets) > 0
+                    and type(self._focused_input_sockets[0]) == sockets.value_line.ValueLine):
+                self._mode: str = "VALUE_DRAG"
+                self._focused_input_values: list[float] = [float(self._focused_input_sockets[0].input_widget.text())]
+                QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
 
-                socket_widget_bboxes: list[QtCore.QRect] = [
-                    QtCore.QRect(int(socket_widget.x() + content_proxy.x() + node.x()),
-                                 int(socket_widget.y() + content_proxy.y() + node.y()),
-                                 int(socket_widget.width()), int(socket_widget.height()))
-                    for socket_widget in content_widget.children() if (isinstance(socket_widget, SocketWidget))
-                ]
-
-                socket_widget_bboxes.sort(key=lambda bbox: bbox.y(), reverse=False)
-
-                click_mask: list[bool] = [
-                    rect.contains(self.mapToScene(event.pos()).toPoint(), False) for rect in socket_widget_bboxes
-                ]
-
-                focused_socket_idx: list[int] = np.arange(0, len(socket_widget_bboxes))[click_mask].tolist()
-                if len(focused_socket_idx) == 1:
-                    focused_socket: SocketWidget = node.socket_widgets[focused_socket_idx[0]]
-                    if focused_socket.input_widget is None:
-                        self.clearFocus()
-                    elif focused_socket.input_widget.isHidden():
-                        self.clearFocus()
-                    else:
-                        node.setSelected(True)
-                        self._focused_input_sockets: list[SocketWidget] = [focused_socket]
-                        if type(self._focused_input_sockets[0]) == sockets.value_line.ValueLine:
-                            self._focused_input_values: list[float] = [float(focused_socket.input_widget.text())]
-                            self._mode: str = "VALUE_DRAG"
-                            QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
             else:
                 super().mousePressEvent(event)
                 self._mode: str = "SCENE_DRAG"
@@ -431,7 +400,9 @@ class EditorWidget(QtWidgets.QGraphicsView):
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
-        if event.button() == QtCore.Qt.LeftButton and self._mode not in ("EDGE_ADD", "EDGE_EDIT", "EDGE_CUT"):
+        if event.button() == QtCore.Qt.LeftButton and self._mode not in (
+                "EDGE_ADD", "EDGE_EDIT", "EDGE_CUT", "VALUE_DRAG"
+        ):
             selected_nodes: list[NodeItem] = self.scene().selected_nodes()
             selected_nodes_moved: list[bool] = [node.moved for node in self.scene().selected_nodes()]
 
