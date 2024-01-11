@@ -362,7 +362,7 @@ class EditorWidget(QtWidgets.QGraphicsView):
                         node.setSelected(True)
                         self._focused_input_sockets: list[SocketWidget] = [focused_socket]
                         if type(self._focused_input_sockets[0]) == sockets.value_line.ValueLine:
-                            self._focused_input_values[0] = float(focused_socket.input_widget.text())
+                            self._focused_input_values: list[float] = [float(focused_socket.input_widget.text())]
                             self._mode: str = "VALUE_DRAG"
                             QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.SizeHorCursor)
             else:
