@@ -167,8 +167,8 @@ class ScalarFunctions(NodeItem):
 
                         if DEBUG:
                             y: float = time.time()
-                            print("Scalar Function executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
-                                                                                              digits=2), "ms")
+                            print("Scalar Functions executed in", "{number:.{digits}f}".format(number=1000 * (y - x),
+                                                                                               digits=2), "ms")
 
                     except Exception as e:
                         self._is_dirty: bool = True

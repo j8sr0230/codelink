@@ -82,3 +82,38 @@ print(a[[0, 3, 4, 0, 3, 4]])
 ar: ak.Array = ak.Array([[(1, 1), (2, 2), (3, 3)]])
 grafted_ar: ak.Array = ak.unflatten(ar, counts=1, axis=-1)
 ak.concatenate(ak.unzip(grafted_ar), axis=-1).show()
+
+# Testing awkward randomizer
+# def random(size=None, highlevel=True, behavior=None):
+# 	if size is None:
+# 		size = 1
+#
+# 	if isinstance(size, int):
+# 		return ak.from_numpy(
+# 			np.random.random(size=size), highlevel=highlevel, behavior=behavior
+# 		)
+#
+# 	# noinspection PyUnusedLocal
+# 	def get_function(array_layout, depth):
+# 		if not isinstance(array_layout, ak.contents.NumpyArray):
+# 			return
+#
+# 		array_size = np.asarray(array_layout)
+# 		offset = np.zeros(array_size.size + 1, dtype=np.uint64)
+# 		offset[1:] = np.cumsum(array_size)
+#
+# 		return lambda: ak.contents.ListOffsetArray(
+# 			ak.index.Index64(offset),
+# 			ak.contents.NumpyArray(np.random.random(size=offset[-1])),
+# 		)
+#
+# 	layout = ak.to_layout(size)
+#
+# 	# noinspection PyProtectedMember
+# 	out = ak._util.recursively_apply(layout, get_function)
+#
+# 	# noinspection PyProtectedMember
+# 	return ak._util.maybe_wrap_like(out, size, behavior, highlevel)
+#
+#
+# random(ak.Array([1, 2])).show()
