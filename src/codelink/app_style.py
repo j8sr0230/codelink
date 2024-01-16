@@ -326,8 +326,8 @@ NODE_STYLE: str = """
 		margin-right: 0px;
 		margin-top: 0px;
 		margin-bottom: 0px;
-		padding-left: 10px;
-		padding-right: 10px;
+		padding-left: 3px;
+		padding-right: 0px;
 		padding-top: 0px;
 		padding-bottom: 0px;
 		border-top-left-radius: 0px; /*5px;*/
@@ -349,7 +349,7 @@ NODE_STYLE: str = """
 		margin-top: 0px;
 		margin-bottom: 0px;
 		padding-left: 10px;
-		padding-right: 10px;
+		padding-right: 3px;
 		padding-top: 0px;
 		padding-bottom: 0px;
 		border-top-left-radius: 0px;

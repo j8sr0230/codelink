@@ -75,7 +75,7 @@ class SocketWidget(QtWidgets.QWidget):
         self._flatten_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._flatten_img)
         self._graft_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
         self._graft_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._graft_img)
-        self._simplify_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._simplify_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/right_arrow_light.svg")
         self._simplify_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._simplify_img)
 
         # UI
@@ -87,33 +87,25 @@ class SocketWidget(QtWidgets.QWidget):
         self.setLayout(self._content_layout)
 
         # Socket option icon
-        socket_option_icon = QtWidgets.QLabel(self)
-        socket_option_icon.setStyleSheet(
+        self._socket_option_icon = QtWidgets.QLabel(self)
+        self._socket_option_icon.setStyleSheet(
             """
             color: #E5E5E5;
-            background-color: red;
+            background-color: transparent;
             min-height: 24px;
             max-height: 24px;
-            margin-left: 0px;
-            margin-right: 0px;
-            margin-top: 0px;
-            margin-bottom: 0px;
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-top: 0px;
-            padding-bottom: 0px;
-            border-top-left-radius: 0px; /*5px;*/
-            border-bottom-left-radius: 0px; /*5px;*/
-            border-top-right-radius: 0px;
-            border-bottom-right-radius: 0px;
+            min-width: 14px;
+            max-width: 14px;
+            margin: 0px;
+            padding: 0px;
             border: 0px
             """
         )
-        socket_option_icon.setPixmap(self._flatten_pixmap)
+        self._socket_option_icon.setPixmap(self._flatten_pixmap)
 
         if self._is_input:
-            socket_option_icon.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-            self._content_layout.addWidget(socket_option_icon)
+            self._socket_option_icon.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self._content_layout.addWidget(self._socket_option_icon)
 
         # Label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
@@ -121,8 +113,9 @@ class SocketWidget(QtWidgets.QWidget):
         self._content_layout.addWidget(self._label_widget)
 
         if not self._is_input:
-            socket_option_icon.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-            self._content_layout.addWidget(socket_option_icon)
+            self._socket_option_icon.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            self._content_layout.addWidget(self._socket_option_icon)
+        self._socket_option_icon.hide()
 
         # Input widget placeholder
         self._input_widget: Optional[QtWidgets.QWidget] = None
@@ -272,10 +265,39 @@ class SocketWidget(QtWidgets.QWidget):
     def on_socket_action(self) -> None:
         sender: QtWidgets.QAction = self.sender()
         row: int = list(self._prop_model.properties.keys()).index(sender.text())
-        self._prop_model.setData(
-            self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
-        )
-        # cast(QtCore.SignalInstance, self.parent_node.scene().dag_changed).emit(self.parent_node, "")
+
+        if row == 2:
+            # Flatten
+            self._prop_model.setData(self._prop_model.index(3, 1, QtCore.QModelIndex()), False, 2)
+            self._prop_model.setData(self._prop_model.index(4, 1, QtCore.QModelIndex()), False, 2)
+
+            self._prop_model.setData(
+                self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
+            )
+            self._socket_option_icon.setPixmap(self._flatten_pixmap)
+
+        if row == 3:
+            # Simplify
+            self._prop_model.setData(self._prop_model.index(2, 1, QtCore.QModelIndex()), False, 2)
+            self._prop_model.setData(self._prop_model.index(4, 1, QtCore.QModelIndex()), False, 2)
+
+            self._prop_model.setData(
+                self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
+            )
+            self._socket_option_icon.setPixmap(self._simplify_pixmap)
+
+        if row == 4:
+            # Grat
+            self._prop_model.setData(self._prop_model.index(2, 1, QtCore.QModelIndex()), False, 2)
+            self._prop_model.setData(self._prop_model.index(3, 1, QtCore.QModelIndex()), False, 2)
+
+            self._prop_model.setData(
+                self._prop_model.index(row, 1, QtCore.QModelIndex()), sender.isChecked(), 2
+            )
+            self._socket_option_icon.setPixmap(self._graft_pixmap)
+
+        self._socket_option_icon.hide()
+        self._socket_option_icon.show()
 
     def update_pin_position(self, is_node_collapsed: bool) -> None:
         if not is_node_collapsed:
