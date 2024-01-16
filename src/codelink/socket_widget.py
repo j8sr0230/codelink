@@ -70,6 +70,14 @@ class SocketWidget(QtWidgets.QWidget):
             parent_node=parent_node
         )
 
+        # Assets
+        self._flatten_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/down_arrow_light.svg")
+        self._flatten_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._flatten_img)
+        self._graft_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._graft_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._graft_img)
+        self._simplify_img: QtGui.QImage = QtGui.QImage("icon:images_dark-light/up_arrow_light.svg")
+        self._simplify_pixmap: QtGui.QPixmap = QtGui.QPixmap(self._simplify_img)
+
         # UI
         # Layout
         self._content_layout: QtWidgets.QHBoxLayout = QtWidgets.QHBoxLayout()
@@ -78,10 +86,43 @@ class SocketWidget(QtWidgets.QWidget):
         self.setFixedHeight(24)
         self.setLayout(self._content_layout)
 
+        # Socket option icon
+        socket_option_icon = QtWidgets.QLabel(self)
+        socket_option_icon.setStyleSheet(
+            """
+            color: #E5E5E5;
+            background-color: red;
+            min-height: 24px;
+            max-height: 24px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            border-top-left-radius: 0px; /*5px;*/
+            border-bottom-left-radius: 0px; /*5px;*/
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+            border: 0px
+            """
+        )
+        socket_option_icon.setPixmap(self._flatten_pixmap)
+
+        if self._is_input:
+            socket_option_icon.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self._content_layout.addWidget(socket_option_icon)
+
         # Label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
         self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self._content_layout.addWidget(self._label_widget)
+
+        if not self._is_input:
+            socket_option_icon.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            self._content_layout.addWidget(socket_option_icon)
 
         # Input widget placeholder
         self._input_widget: Optional[QtWidgets.QWidget] = None
