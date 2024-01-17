@@ -110,10 +110,43 @@ class ValueLine(SocketWidget):
 
 		if self._is_input:
 			if self._pin_item.has_edges() or self.link != ("", -1):
+				self._socket_option_label.setStyleSheet(
+					"""
+					color: #E5E5E5;
+					background-color: transparent;
+					min-height: 24px;
+					max-height: 24px;
+					min-width: 10px;
+					max-width: 10px;
+					margin-left: 0px;
+					margin-right: 0px;
+					margin-top: 0px;
+					margin-bottom: 0px;
+					padding: 0px;
+					border: 0px
+					"""
+				)
 				self._label_widget.setStyleSheet("background-color: transparent")
 				self._input_widget.hide()
 				self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
 			else:
+				self._socket_option_label.setStyleSheet(
+					"""
+					color: #E5E5E5;
+					background-color: transparent;
+					min-height: 24px;
+					max-height: 24px;
+					min-width: 10px;
+					max-width: 10px;
+					margin-left: 0px;
+					margin-right: 6px;
+					margin-top: 0px;
+					margin-bottom: 0px;
+					padding: 0px;
+					border: 0px
+					"""
+				)
+
 				self._label_widget.setStyleSheet("background-color: #545454")
 				self._input_widget.show()
 				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)

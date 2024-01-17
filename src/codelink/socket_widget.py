@@ -88,25 +88,25 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Socket option label
         self._socket_option_label = QtWidgets.QLabel(self)
+        self._socket_option_label.setStyleSheet(
+            """
+            color: #E5E5E5;
+            background-color: transparent;
+            min-height: 24px;
+            max-height: 24px;
+            min-width: 10px;
+            max-width: 10px;
+            margin-left: 0px;
+            margin-right: 0px;
+            margin-top: 0px;
+            margin-bottom: 0px;
+            padding: 0px;
+            border: 0px
+            """
+        )
         self._socket_option_label.setPixmap(self._flatten_pixmap)
 
         if self._is_input:
-            self._socket_option_label.setStyleSheet(
-                """
-                color: #E5E5E5;
-                background-color: transparent;
-                min-height: 24px;
-                max-height: 24px;
-                min-width: 10px;
-                max-width: 10px;
-                margin-left: 0px;
-                margin-right: 4px;
-                margin-top: 0px;
-                margin-bottom: 0px;
-                padding: 0px;
-                border: 0px
-                """
-            )
             self._content_layout.addWidget(self._socket_option_label)
 
         # Socket label
@@ -115,22 +115,6 @@ class SocketWidget(QtWidgets.QWidget):
         self._content_layout.addWidget(self._label_widget)
 
         if not self._is_input:
-            self._socket_option_label.setStyleSheet(
-                """
-                color: #E5E5E5;
-                background-color: transparent;
-                min-height: 24px;
-                max-height: 24px;
-                min-width: 10px;
-                max-width: 10px;
-                margin-left: 4px;
-                margin-right: 0px;
-                margin-top: 0px;
-                margin-bottom: 0px;
-                padding: 0px;
-                border: 0px
-                """
-            )
             self._content_layout.addWidget(self._socket_option_label)
         self._socket_option_label.hide()
 
@@ -141,19 +125,19 @@ class SocketWidget(QtWidgets.QWidget):
         self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
         self._flatten_action.setCheckable(True)
         self._flatten_action.setChecked(False)
-        self._flatten_action.setIcon(self._flatten_pixmap)
+        # self._flatten_action.setIcon(self._flatten_pixmap)
         cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(self.on_socket_action)
 
         self._simplify_action: QtWidgets.QAction = QtWidgets.QAction("Simplify", self)
         self._simplify_action.setCheckable(True)
         self._simplify_action.setChecked(False)
-        self._simplify_action.setIcon(self._simplify_pixmap)
+        # self._simplify_action.setIcon(self._simplify_pixmap)
         cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(self.on_socket_action)
 
         self._graft_action: QtWidgets.QAction = QtWidgets.QAction("Graft", self)
         self._graft_action.setCheckable(True)
         self._graft_action.setChecked(False)
-        self._graft_action.setIcon(self._graft_pixmap)
+        # self._graft_action.setIcon(self._graft_pixmap)
         cast(QtCore.SignalInstance, self._graft_action.triggered).connect(self.on_socket_action)
 
         # Listeners
