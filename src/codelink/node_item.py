@@ -815,9 +815,10 @@ class NodeItem(QtWidgets.QGraphicsItem):
                 is_flatten=socket_widget_dict["Properties"]["Flatten"],
                 is_simplify=socket_widget_dict["Properties"]["Simplify"],
                 is_graft=socket_widget_dict["Properties"]["Graft"],
+                is_input=bool(socket_widget_dict["Is Input"]),
                 parent_node=self
             )
-            new_socket_widget.is_input = bool(socket_widget_dict["Is Input"])
+            # new_socket_widget.is_input = bool(socket_widget_dict["Is Input"])
             new_socket_widget.link = tuple(socket_widget_dict["Link"])
             self.insert_socket_widget(new_socket_widget, i)
 
