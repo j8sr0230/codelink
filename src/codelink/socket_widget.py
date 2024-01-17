@@ -88,6 +88,7 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Socket option label
         self._socket_option_label = QtWidgets.QLabel(self)
+        self._socket_option_label.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self._socket_option_label.setStyleSheet(
             """
             color: #E5E5E5;
@@ -111,6 +112,8 @@ class SocketWidget(QtWidgets.QWidget):
 
         # Socket label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
+        # self._label_widget.setMinimumWidth(5)
+        self._label_widget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
         self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self._content_layout.addWidget(self._label_widget)
 

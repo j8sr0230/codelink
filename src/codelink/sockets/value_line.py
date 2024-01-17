@@ -54,7 +54,8 @@ class ValueLine(SocketWidget):
 
 		# Input widget setup
 		self._input_widget: NumberInputWidget = NumberInputWidget(undo_stack)
-		self._input_widget.setMinimumWidth(5)
+		# self._input_widget.setMinimumWidth(25)
+		# self._input_widget.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
 		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
 		self._content_layout.addWidget(self._input_widget)
