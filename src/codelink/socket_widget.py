@@ -141,16 +141,19 @@ class SocketWidget(QtWidgets.QWidget):
         self._flatten_action: QtWidgets.QAction = QtWidgets.QAction("Flatten", self)
         self._flatten_action.setCheckable(True)
         self._flatten_action.setChecked(False)
+        self._flatten_action.setIcon(self._flatten_pixmap)
         cast(QtCore.SignalInstance, self._flatten_action.triggered).connect(self.on_socket_action)
 
         self._simplify_action: QtWidgets.QAction = QtWidgets.QAction("Simplify", self)
         self._simplify_action.setCheckable(True)
         self._simplify_action.setChecked(False)
+        self._simplify_action.setIcon(self._simplify_pixmap)
         cast(QtCore.SignalInstance, self._simplify_action.triggered).connect(self.on_socket_action)
 
         self._graft_action: QtWidgets.QAction = QtWidgets.QAction("Graft", self)
         self._graft_action.setCheckable(True)
         self._graft_action.setChecked(False)
+        self._graft_action.setIcon(self._graft_pixmap)
         cast(QtCore.SignalInstance, self._graft_action.triggered).connect(self.on_socket_action)
 
         # Listeners
