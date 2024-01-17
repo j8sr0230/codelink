@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="10"
+   height="10"
+   id="svg2"
+   version="1.1"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   sodipodi:docname="graft_light.svg"
+   viewBox="0 0 10 10"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#000000"
+     bordercolor="#c0c0c0"
+     borderopacity="1"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="30.53817"
+     inkscape:cx="8.4156975"
+     inkscape:cy="6.3854514"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:object-nodes="true"
+     guidecolor="#0092ff"
+     guideopacity="0.49803922"
+     guidehicolor="#ff5200"
+     guidehiopacity="0.49803922"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:snap-global="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     borderlayer="true"
+     units="px"
+     inkscape:pagecheckerboard="0"
+     height="7px">
+    <inkscape:grid
+       type="xygrid"
+       id="grid2242"
+       originx="-5.8789061e-05"
+       originy="6.4096091e-06"
+       enabled="true"
+       spacingx="0.49999999"
+       spacingy="0.49999999"
+       empspacing="2"
+       color="#c63fff"
+       opacity="0.0627451" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Pablo Gil</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:subject>
+          <rdf:Bag>
+            <rdf:li>SVG</rdf:li>
+            <rdf:li>template</rdf:li>
+          </rdf:Bag>
+        </dc:subject>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Capa 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-1074.0664,-350.59799)">
+    <path
+       id="rect540"
+       style="fill:#cacaca;fill-opacity:1;stroke-width:1.23839"
+       d="m 1079.0705,360.59784 c 0.6798,0.009 1.2366,-0.5068 1.2463,-1.15846 l 0.064,-4.273 1.4249,1.6657 c 0.3779,0.44161 1.0545,0.50483 1.5153,0.14241 l 0.3516,-0.2768 c 0.4606,-0.36243 0.5263,-1.00853 0.1487,-1.45013 l -3.5965,-4.20475 c -0.1241,-0.1465 -0.284,-0.24966 -0.4561,-0.31122 -0.1637,-0.0809 -0.3504,-0.12885 -0.5478,-0.13149 l -0.1508,-0.002 c -0.1974,-0.002 -0.3855,0.04 -0.5516,0.11628 -0.1737,0.0568 -0.3355,0.1555 -0.4651,0.29849 l -3.7217,4.10355 c -0.3909,0.43097 -0.3446,1.07862 0.1044,1.45363 l 0.3434,0.28641 c 0.4495,0.37502 1.1277,0.33054 1.5187,-0.10042 l 1.4744,-1.62559 -0.062,4.273 c -0.014,0.65166 0.5311,1.18305 1.2109,1.19244 z" />
+    <rect
+       style="fill:#cacaca;fill-opacity:1"
+       id="rect5743"
+       width="5.7031251e-05"
+       height="1.0000044"
+       x="1074.0663"
+       y="355.09799"
+       ry="1.3552527e-20" />
+  </g>
+</svg>
