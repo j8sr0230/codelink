@@ -55,9 +55,10 @@ class BoolCheckBox(SocketWidget):
 		# Input widget setup
 		self._input_widget: BoolInputWidget = BoolInputWidget(undo_stack)
 		self._input_widget.setMinimumWidth(5)
+		self._input_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
 		self._input_widget.setLayoutDirection(QtCore.Qt.RightToLeft)
 		self._input_widget.setChecked(bool(self._prop_model.properties["Value"]))
-		self._content_layout.addWidget(self._input_widget)
+		self._content_layout.addWidget(self._input_widget, 1)
 		self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 		self.setFocusProxy(self._input_widget)
 

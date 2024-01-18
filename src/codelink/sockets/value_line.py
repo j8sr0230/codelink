@@ -54,11 +54,11 @@ class ValueLine(SocketWidget):
 
 		# Input widget setup
 		self._input_widget: NumberInputWidget = NumberInputWidget(undo_stack)
-		# self._input_widget.setMinimumWidth(25)
-		# self._input_widget.setSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
+		self._input_widget.setMinimumWidth(5)
+		self._input_widget.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
 		self._input_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 		self._input_widget.setText(str(self._prop_model.properties["Value"]))
-		self._content_layout.addWidget(self._input_widget)
+		self._content_layout.addWidget(self._input_widget, 1)
 		self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)
 		self.setFocusProxy(self._input_widget)
 
@@ -111,43 +111,10 @@ class ValueLine(SocketWidget):
 
 		if self._is_input:
 			if self._pin_item.has_edges() or self.link != ("", -1):
-				self._socket_option_label.setStyleSheet(
-					"""
-					color: #E5E5E5;
-					background-color: transparent;
-					min-height: 24px;
-					max-height: 24px;
-					min-width: 10px;
-					max-width: 10px;
-					margin-left: 0px;
-					margin-right: 0px;
-					margin-top: 0px;
-					margin-bottom: 0px;
-					padding: 0px;
-					border: 0px
-					"""
-				)
 				self._label_widget.setStyleSheet("background-color: transparent")
 				self._input_widget.hide()
 				self._input_widget.setFocusPolicy(QtCore.Qt.NoFocus)
 			else:
-				self._socket_option_label.setStyleSheet(
-					"""
-					color: #E5E5E5;
-					background-color: transparent;
-					min-height: 24px;
-					max-height: 24px;
-					min-width: 10px;
-					max-width: 10px;
-					margin-left: 0px;
-					margin-right: 6px;
-					margin-top: 0px;
-					margin-bottom: 0px;
-					padding: 0px;
-					border: 0px
-					"""
-				)
-
 				self._label_widget.setStyleSheet("background-color: #545454")
 				self._input_widget.show()
 				self._input_widget.setFocusPolicy(QtCore.Qt.StrongFocus)

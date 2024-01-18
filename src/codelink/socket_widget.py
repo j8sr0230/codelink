@@ -108,17 +108,17 @@ class SocketWidget(QtWidgets.QWidget):
         self._socket_option_label.setPixmap(self._flatten_pixmap)
 
         if self._is_input:
-            self._content_layout.addWidget(self._socket_option_label)
+            self._content_layout.addWidget(self._socket_option_label, 0)
 
         # Socket label
         self._label_widget: QtWidgets.QLabel = QtWidgets.QLabel(self._prop_model.properties["Name"], self)
-        # self._label_widget.setMinimumWidth(5)
-        self._label_widget.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed)
+        self._label_widget.setMinimumWidth(5)
+        self._label_widget.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
         self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self._content_layout.addWidget(self._label_widget)
+        self._content_layout.addWidget(self._label_widget, 1)
 
         if not self._is_input:
-            self._content_layout.addWidget(self._socket_option_label)
+            self._content_layout.addWidget(self._socket_option_label, 0)
         self._socket_option_label.hide()
 
         # Input widget placeholder
@@ -303,8 +303,43 @@ class SocketWidget(QtWidgets.QWidget):
         self._label_widget.setStyleSheet("background-color: transparent")
 
         if self._is_input:
-            self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
             self._socket_option_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            self._label_widget.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+
+            if self._pin_item.has_edges() or self.link != ("", -1):
+                self._socket_option_label.setStyleSheet(
+                    """
+                    color: #E5E5E5;
+                    background-color: transparent;
+                    min-height: 24px;
+                    max-height: 24px;
+                    min-width: 10px;
+                    max-width: 10px;
+                    margin-left: 0px;
+                    margin-right: 0px;
+                    margin-top: 0px;
+                    margin-bottom: 0px;
+                    padding: 0px;
+                    border: 0px
+                    """
+                )
+            else:
+                self._socket_option_label.setStyleSheet(
+                    """
+                    color: #E5E5E5;
+                    background-color: transparent;
+                    min-height: 24px;
+                    max-height: 24px;
+                    min-width: 10px;
+                    max-width: 10px;
+                    margin-left: 0px;
+                    margin-right: 6px;
+                    margin-top: 0px;
+                    margin-bottom: 0px;
+                    padding: 0px;
+                    border: 0px
+                    """
+                )
         else:
             self._label_widget.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             self._socket_option_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
