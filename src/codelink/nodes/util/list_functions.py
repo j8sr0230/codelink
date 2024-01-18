@@ -292,21 +292,16 @@ class ListFunctions(NodeItem):
                                 for param_tuple in flat_params:
                                     idx: int = int(param_tuple["1"])
                                     result_list.append(list_a[..., idx:idx+1])
-
-                                result: ak.Array = ak.Array(result_list)
-                                if type(simplified_array_structure(index)) == int:
-                                    result: ak.Array = ak.flatten(result, axis=1)
+                                result: ak.Array = ak.concatenate(result_list, axis=0)
 
                             elif isinstance(list_a, NestedData):
                                 new_structure: list[ak.Array] = []
                                 for param_tuple in flat_params:
                                     idx: int = int(param_tuple["1"])
                                     new_structure.append(list_a.structure[..., idx:idx+1])
+                                new_structure: ak.Array = ak.concatenate(new_structure, axis=0)
 
-                                if type(simplified_array_structure(index)) == int:
-                                    new_structure: ak.Array = ak.flatten(new_structure, axis=1)
-
-                                flat_data_out: list[Part.Shape] = reorder_list(list_a.data, ak.Array(new_structure))
+                                flat_data_out: list[Part.Shape] = reorder_list(list_a.data, new_structure)
                                 result: NestedData = NestedData(
                                     flat_data_out, array_structure(new_structure)
                                 )
