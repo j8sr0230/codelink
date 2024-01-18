@@ -320,6 +320,7 @@ NODE_STYLE: str = """
     QLabel {
         color: #E5E5E5;
         background-color: #545454;
+        min-width: 5px;
         min-height: 24px;
         max-height: 24px;
         margin-left: 0px;
@@ -341,6 +342,7 @@ NODE_STYLE: str = """
         color: #E5E5E5;
         background-color: #545454;
         selection-background-color: #191919;
+        min-width: 5px;
         min-height: 24px;
         max-height: 24px;
         margin-left: 0px;
