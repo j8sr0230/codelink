@@ -95,6 +95,7 @@ class NodeListAction(QtWidgets.QWidgetAction):
         filter_pattern_input.setPlaceholderText("...")
         filter_pattern_input.textChanged.connect(self.node_filter_changed)
         layout.addWidget(filter_pattern_input)
+        filter_pattern_input.setFocus()
 
         # Node list output
         filtered_node_list: QtWidgets.QListView = QtWidgets.QListView(node_list_widget)
