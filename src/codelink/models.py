@@ -1,53 +1,54 @@
 from __future__ import annotations
+import sys
 from typing import Any, Optional, Union, cast
 
 from PySide2 import QtCore, QtWidgets
 
 
 class TreeItem:
-    def __init__(self, data: list[str],  parent: TreeItem = None) -> None:
-        self.parentItem = parent
-        self.itemData = data
-        self.childItems = []
+    def __init__(self, data: list[str],  parent: Optional[TreeItem] = None) -> None:
+        self.parent_item: Optional[TreeItem] = parent
+        self.item_data: list[str] = data
+        self.child_items: list[TreeItem] = []
 
     def append_child(self, item: TreeItem) -> None:
-        self.childItems.append(item)
+        self.child_items.append(item)
 
     def child(self, row) -> TreeItem:
-        return self.childItems[row]
+        return self.child_items[row]
 
     def child_count(self) -> int:
-        return len(self.childItems)
+        return len(self.child_items)
 
     def column_count(self) -> int:
-        return len(self.itemData)
+        return len(self.item_data)
 
     def data(self, column: int) -> Optional[str]:
         try:
-            return self.itemData[column]
+            return self.item_data[column]
         except IndexError:
             return None
 
-    def parent(self) -> Any:
-        return self.parentItem
+    def parent(self) -> Optional[TreeItem]:
+        return self.parent_item
 
     def row(self) -> int:
-        if self.parentItem:
-            return self.parentItem.childItems.index(self)
+        if self.parent_item:
+            return self.parent_item.child_items.index(self)
 
         return 0
 
 
 class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, data: str, parent: Optional[QtCore.QObject] = None):
-        super(TreeModel, self).__init__(parent)
+        super().__init__(parent)
 
-        self.rootItem = TreeItem(["Title", "Summary"])
-        self.setup_model_data(data.split('\n'), self.rootItem)
+        self.rootItem: TreeItem = TreeItem(["Title", "Summary"])
+        self.setup_model_data(data.split("\n"), self.rootItem)
 
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         if parent.isValid():
-            return cast(parent.internalPointer(), TreeItem).column_count()
+            return cast(TreeItem, parent.internalPointer()).column_count()
         else:
             return self.rootItem.column_count()
 
@@ -58,8 +59,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.DisplayRole:
             return None
 
-        item: TreeItem = cast(index.internalPointer(), TreeItem)
-
+        item: TreeItem = cast(TreeItem, index.internalPointer())
         return item.data(index.column())
 
     def flags(self, index: QtCore.QModelIndex) -> Union[QtCore.Qt.ItemFlag, QtCore.Qt.ItemFlags]:
@@ -81,7 +81,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not parent.isValid():
             parent_item: TreeItem = self.rootItem
         else:
-            parent_item: TreeItem = cast(parent.internalPointer(), TreeItem)
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer())
 
         child_item: TreeItem = parent_item.child(row)
         if child_item:
@@ -93,7 +93,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        child_item: TreeItem = cast(index.internalPointer(), TreeItem)
+        child_item: TreeItem = cast(TreeItem, index.internalPointer())
         parent_item: TreeItem = child_item.parent()
 
         if parent_item == self.rootItem:
@@ -108,7 +108,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not parent.isValid():
             parent_item: TreeItem = self.rootItem
         else:
-            parent_item: TreeItem = cast(parent.internalPointer(), TreeItem)
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer(), )
 
         return parent_item.child_count()
 
@@ -122,7 +122,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         while number < len(lines):
             position = 0
             while position < len(lines[number]):
-                if lines[number][position] != ' ':
+                if lines[number][position] != " ":
                     break
                 position += 1
 
@@ -130,7 +130,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if line_data:
                 # Read the column data from the rest of the line.
-                column_data = [s for s in line_data.split('\t') if s]
+                column_data = [s for s in line_data.split("\t") if s]
 
                 if position > indentations[-1]:
                     # The last child of the current parent is now the new
@@ -152,18 +152,16 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 
 if __name__ == '__main__':
-
-    import sys
-
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
 
-    f: QtCore.QFile = QtCore.QFile(':/default.txt')
-    f.open(QtCore.QIODevice.ReadOnly)
-    model: TreeModel = TreeModel(str(f.readAll()))
+    f: QtCore.QFile = QtCore.QFile("./default.txt")
+    f.open(cast(QtCore.QIODevice.OpenMode, QtCore.QIODevice.ReadOnly))
+    model: TreeModel = TreeModel(str(f.readAll(), "utf-8"))
     f.close()
 
     view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     view.setModel(model)
     view.setWindowTitle("Simple Tree Model")
     view.show()
+
     sys.exit(app.exec_())

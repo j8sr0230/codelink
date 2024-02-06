@@ -22,7 +22,7 @@ Form Editing Mode			How to edit a form in Qt Designer
     The Property Editor			Changing widget properties
     The Object Inspector		Examining the hierarchy of objects on a form
     Layouts				Objects that arrange widgets on a form
-        Applying and Breaking Layouts	Managing widgets in layouts
+        Applying and Breaking Layouts	Managing widgets in layouts 
         Horizontal and Vertical Layouts	Standard row and column layouts
         The Grid Layout			Arranging widgets in a matrix
     Previewing Forms			Checking that the design works
