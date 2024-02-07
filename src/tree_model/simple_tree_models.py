@@ -114,10 +114,10 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     @staticmethod
     def setup_model_data(lines: list[str], parent: TreeItem) -> None:
-        parents = [parent]
-        indentations = [0]
+        parents: list[TreeItem] = [parent]
+        indentations: list[int] = [0]
 
-        number = 0
+        number: int = 0
 
         while number < len(lines):
             position = 0
