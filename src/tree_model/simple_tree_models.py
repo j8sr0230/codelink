@@ -154,7 +154,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 if __name__ == '__main__':
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
 
-    f: QtCore.QFile = QtCore.QFile("./default.txt")
+    f: QtCore.QFile = QtCore.QFile("default.txt")
     f.open(cast(QtCore.QIODevice.OpenMode, QtCore.QIODevice.ReadOnly))
     model: TreeModel = TreeModel(str(f.readAll(), "utf-8"))
     f.close()
