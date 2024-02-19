@@ -259,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow, UiMainWindow):
 
         self.setup_ui(self)
 
-        headers: list[str] = ["Title", "Description"]
+        headers: list[str] = ["Key", "Value"]
 
         file = QtCore.QFile("./default.txt")
         file.open(cast(QtCore.QIODevice.OpenMode, QtCore.QIODevice.ReadOnly))
