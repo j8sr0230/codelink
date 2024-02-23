@@ -111,12 +111,14 @@ class TreeItem:
 
 
 if __name__ == "__main__":
+    import PySide2.QtGui as QtGui
+
     root_item: TreeItem = TreeItem(data=["Key", "Value"], parent=None)
     root_item.insert_children(0, 1, 2)
 
     data_item: TreeItem = root_item.child(0)
     data_item.set_data(0, "Color")
-    data_item.set_data(1, "#1D1D1D")
+    data_item.set_data(1, QtGui.QColor("#1D1D1D"))
 
     root_item.insert_columns(root_item.column_count(), 2)
     print(data_item.child_number(), data_item.data(0), data_item.data(1))
