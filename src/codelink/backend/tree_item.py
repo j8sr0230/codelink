@@ -28,97 +28,104 @@ from __future__ import annotations
 from typing import Optional, Any
 
 
-class TreeItem:
+class TreeItem(object):
     def __init__(self, data: list[Any], parent: Optional[TreeItem] = None):
-        self._parent_item: Optional[TreeItem] = parent
-        self._item_data: list[Any] = data
-        self._child_items: list[TreeItem] = []
-
-    def parent(self) -> TreeItem:
-        return self._parent_item
+        self._data: list[Any] = data
+        self._parent: Optional[TreeItem] = parent
+        self._children: list[TreeItem] = []
 
     def data(self, column: int) -> Any:
-        if column < self.column_count():
-            return self._item_data[column]
+        if 0 <= column < self.column_count():
+            return self._data[column]
+
         return None
 
     def set_data(self, column: int, value: Any) -> bool:
-        if column < 0 or column >= len(self._item_data):
+        if column < 0 or column >= len(self._data):
             return False
 
-        self._item_data[column] = value
+        self._data[column] = value
         return True
 
     def column_count(self) -> int:
-        return len(self._item_data)
+        return len(self._data)
 
     def insert_columns(self, position: int, columns: int) -> bool:
-        if position < 0 or position > len(self._item_data):
+        if position < 0 or position > len(self._data):
             return False
 
         for column in range(columns):
-            self._item_data.insert(position, None)
+            self._data.insert(position, None)
 
-        for child in self._child_items:
+        for child in self._children:
             child.insert_columns(position, columns)
 
         return True
 
     def remove_columns(self, position: int, columns: int) -> bool:
-        if position < 0 or position + columns > len(self._item_data):
+        if position < 0 or position + columns > len(self._data):
             return False
 
         for column in range(columns):
-            self._item_data.pop(position)
+            self._data.pop(position)
 
-        for child in self._child_items:
+        for child in self._children:
             child.remove_columns(position, columns)
 
         return True
 
-    def child_number(self) -> int:
-        if self._parent_item is not None:
-            return self._parent_item._child_items.index(self)
-        return 0
+    @property
+    def parent(self) -> Optional[TreeItem]:
+        return self._parent
 
-    def child_count(self) -> int:
-        return len(self._child_items)
+    @property
+    def children(self) -> list[TreeItem]:
+        return self._children
 
     def child(self, row: int) -> Any:
-        if self.child_count() > 0:
-            return self._child_items[row]
+        if 0 <= row < self.child_count():
+            return self._children[row]
+
         return None
 
     def insert_children(self, position: int, count: int, columns: int) -> bool:
-        if position < 0 or position > len(self._child_items):
+        if position < 0 or position > len(self._children):
             return False
 
         for row in range(count):
-            data: list[Any] = [None] * columns
-            item: TreeItem = TreeItem(data, self)
-            self._child_items.insert(position, item)
+            item: TreeItem = TreeItem([None] * columns, self)
+            self._children.insert(position, item)
 
         return True
 
     def remove_children(self, position, count):
-        if position < 0 or position + count > len(self._child_items):
+        if position < 0 or position + count > len(self._children):
             return False
 
         for row in range(count):
-            self._child_items.pop(position)
+            self._children.pop(position)
 
         return True
+
+    def child_count(self) -> int:
+        return len(self._children)
+
+    def child_number(self) -> int:
+        if self._parent is not None and self in self._parent.children:
+            return self._parent.children.index(self)
+
+        return 0
 
 
 if __name__ == "__main__":
     import PySide2.QtGui as QtGui
 
     root_item: TreeItem = TreeItem(data=["Key", "Value"], parent=None)
-    root_item.insert_children(0, 1, 2)
+    root_item.insert_children(position=0, count=1, columns=2)
 
     data_item: TreeItem = root_item.child(0)
-    data_item.set_data(0, "Color")
-    data_item.set_data(1, QtGui.QColor("#1D1D1D"))
+    data_item.set_data(column=0, value="Color")
+    data_item.set_data(column=1, value=QtGui.QColor("#1D1D1D"))
 
-    root_item.insert_columns(root_item.column_count(), 2)
+    print(root_item.data(0), root_item.data(1))
     print(data_item.child_number(), data_item.data(0), data_item.data(1))
