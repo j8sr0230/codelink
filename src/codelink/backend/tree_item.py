@@ -35,7 +35,7 @@ class TreeItem(object):
         self._children: list[TreeItem] = []
 
     def data(self, column: int) -> Any:
-        if 0 <= column < self.column_count():
+        if 0 <= column < self.data_column_count():
             return self._data[column]
 
         return None
@@ -47,10 +47,10 @@ class TreeItem(object):
         self._data[column] = value
         return True
 
-    def column_count(self) -> int:
+    def data_column_count(self) -> int:
         return len(self._data)
 
-    def insert_columns(self, position: int, columns: int) -> bool:
+    def insert_data_columns(self, position: int, columns: int) -> bool:
         if position < 0 or position > len(self._data):
             return False
 
@@ -58,11 +58,11 @@ class TreeItem(object):
             self._data.insert(position, None)
 
         for child in self._children:
-            child.insert_columns(position, columns)
+            child.insert_data_columns(position, columns)
 
         return True
 
-    def remove_columns(self, position: int, columns: int) -> bool:
+    def remove_data_columns(self, position: int, columns: int) -> bool:
         if position < 0 or position + columns > len(self._data):
             return False
 
@@ -70,7 +70,7 @@ class TreeItem(object):
             self._data.pop(position)
 
         for child in self._children:
-            child.remove_columns(position, columns)
+            child.remove_data_columns(position, columns)
 
         return True
 
@@ -83,12 +83,12 @@ class TreeItem(object):
         return self._children
 
     def child(self, row: int) -> Any:
-        if 0 <= row < self.child_count():
+        if 0 <= row < self.child_row_count():
             return self._children[row]
 
         return None
 
-    def insert_children(self, position: int, count: int, columns: int) -> bool:
+    def insert_child_rows(self, position: int, count: int, columns: int) -> bool:
         if position < 0 or position > len(self._children):
             return False
 
@@ -98,7 +98,7 @@ class TreeItem(object):
 
         return True
 
-    def remove_children(self, position, count):
+    def remove_child_rows(self, position, count):
         if position < 0 or position + count > len(self._children):
             return False
 
@@ -107,10 +107,10 @@ class TreeItem(object):
 
         return True
 
-    def child_count(self) -> int:
+    def child_row_count(self) -> int:
         return len(self._children)
 
-    def child_number(self) -> int:
+    def child_row_number(self) -> int:
         if self._parent is not None and self in self._parent.children:
             return self._parent.children.index(self)
 
@@ -121,11 +121,11 @@ if __name__ == "__main__":
     import PySide2.QtGui as QtGui
 
     root_item: TreeItem = TreeItem(data=["Key", "Value"], parent=None)
-    root_item.insert_children(position=0, count=1, columns=2)
+    root_item.insert_child_rows(position=0, count=1, columns=2)
 
     data_item: TreeItem = root_item.child(0)
     data_item.set_data(column=0, value="Color")
     data_item.set_data(column=1, value=QtGui.QColor("#1D1D1D"))
 
     print(root_item.data(0), root_item.data(1))
-    print(data_item.child_number(), data_item.data(0), data_item.data(1))
+    print(data_item.child_row_number(), data_item.data(0), data_item.data(1))
