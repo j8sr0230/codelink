@@ -34,6 +34,17 @@ class TreeItem(object):
         self._parent: Optional[TreeItem] = parent
         self._children: list[TreeItem] = []
 
+    @property
+    def parent(self) -> Optional[TreeItem]:
+        return self._parent
+
+    @property
+    def children(self) -> list[TreeItem]:
+        return self._children
+
+    def data_column_count(self) -> int:
+        return len(self._data)
+
     def data(self, column: int) -> Any:
         if 0 <= column < self.data_column_count():
             return self._data[column]
@@ -46,9 +57,6 @@ class TreeItem(object):
 
         self._data[column] = value
         return True
-
-    def data_column_count(self) -> int:
-        return len(self._data)
 
     def insert_data_columns(self, position: int, columns: int) -> bool:
         if position < 0 or position > len(self._data):
@@ -74,13 +82,8 @@ class TreeItem(object):
 
         return True
 
-    @property
-    def parent(self) -> Optional[TreeItem]:
-        return self._parent
-
-    @property
-    def children(self) -> list[TreeItem]:
-        return self._children
+    def child_row_count(self) -> int:
+        return len(self._children)
 
     def child(self, row: int) -> Any:
         if 0 <= row < self.child_row_count():
@@ -106,9 +109,6 @@ class TreeItem(object):
             self._children.pop(position)
 
         return True
-
-    def child_row_count(self) -> int:
-        return len(self._children)
 
     def child_row_number(self) -> int:
         if self._parent is not None and self in self._parent.children:
