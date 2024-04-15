@@ -130,7 +130,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         child_item: TreeItem = self.get_item(index)
         parent_item: Optional[TreeItem] = child_item.parent
 
-        if parent_item == self._root_item:
+        if parent_item == self._root_item or parent_item is None:
             return QtCore.QModelIndex()
 
         return self.createIndex(parent_item.child_row_number(), 0, parent_item)
@@ -171,6 +171,7 @@ if __name__ == "__main__":
     new_node_value_index: QtCore.QModelIndex = model.index(0, 1, model.createIndex(0, 0, model.root_item))
     model.setData(new_node_key_index, "Name")
     model.setData(new_node_value_index, "Node")
+    # print(model.parent(model.createIndex(0, 0, model.root_item)))
 
     model.insertRows(0, 1, new_node_key_index)
     new_prop_key_index: QtCore.QModelIndex = model.index(0, 0, new_node_key_index)
