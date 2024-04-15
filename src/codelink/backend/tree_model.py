@@ -87,39 +87,23 @@ class TreeModel(QtCore.QAbstractItemModel):
         return result
 
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
-        return self._root_item.data_column_count()
-
-    def insertColumns(self, position: int, columns: int, parent=QtCore.QModelIndex()) -> bool:
-        self.beginInsertColumns(parent, position, position + columns - 1)
-        result: bool = self._root_item.insert_data_columns(position, columns)
-        self.endInsertColumns()
-        return result
-
-    def removeColumns(self, position: int, columns: int, parent=QtCore.QModelIndex()) -> bool:
-        self.beginRemoveColumns(parent, position, position + columns - 1)
-        result: bool = self._root_item.remove_data_columns(position, columns)
-        self.endRemoveColumns()
-
-        if self.rootItem.data_column_count() == 0:
-            self.removeRows(0, self.rowCount())
-
-        return result
+        return 2
 
     def rowCount(self, parent=QtCore.QModelIndex()) -> int:
         parent_item: TreeItem = self.get_item(parent)
-        return parent_item.child_row_count()
+        return parent_item.child_count()
 
     def insertRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
         parent_item: TreeItem = self.get_item(parent)
         self.beginInsertRows(parent, position, position + rows - 1)
-        result: bool = parent_item.insert_child_rows(position, rows, self._root_item.data_column_count())
+        result: bool = parent_item.insert_children(position, rows)
         self.endInsertRows()
         return result
 
     def removeRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
         parent_item: TreeItem = self.get_item(parent)
         self.beginRemoveRows(parent, position, position + rows - 1)
-        result: bool = parent_item.remove_child_rows(position, rows)
+        result: bool = parent_item.remove_children(position, rows)
         self.endRemoveRows()
         return result
 
@@ -169,8 +153,8 @@ if __name__ == "__main__":
     model.insertRows(0, 1, QtCore.QModelIndex())
     new_node_key_index: QtCore.QModelIndex = model.index(0, 0, model.createIndex(0, 0, model.root_item))
     new_node_value_index: QtCore.QModelIndex = model.index(0, 1, model.createIndex(0, 0, model.root_item))
-    model.setData(new_node_key_index, "Name")
-    model.setData(new_node_value_index, "Node")
+    model.setData(new_node_key_index, "Node")
+    model.setData(new_node_value_index, None)
     # print(model.parent(model.createIndex(0, 0, model.root_item)))
 
     model.insertRows(0, 1, new_node_key_index)
