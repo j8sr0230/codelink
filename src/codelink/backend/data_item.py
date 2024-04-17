@@ -51,6 +51,11 @@ class DataItem(object):
         child.parent = self
         self._children.append(child)
 
+    def remove_child(self, child: DataItem) -> None:
+        child.parent = None
+        if child in self._children:
+            self._children.remove(child)
+
     def child_count(self) -> int:
         return len(self._children)
 
