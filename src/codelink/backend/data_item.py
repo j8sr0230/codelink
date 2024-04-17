@@ -23,7 +23,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional, Any
+from typing import Optional
 
 
 class DataItem(object):
@@ -35,45 +35,42 @@ class DataItem(object):
     def parent(self) -> Optional[DataItem]:
         return self._parent
 
+    @parent.setter
+    def parent(self, value: Optional[DataItem]) -> None:
+        self._parent: Optional[DataItem] = value
+
     @property
     def children(self) -> list[DataItem]:
         return self._children
 
-    def insert_child(self, child: DataItem, position: int) -> bool:
-        if 0 <= position < len(self._children):
-            self._children.insert(position, child)
-            return True
-        else:
-            return False
+    @children.setter
+    def children(self, value: list[DataItem]) -> None:
+        self._children: list[DataItem] = value
 
-    def child_row_number(self) -> int:
-        if self._parent is not None and self in self._parent.children:
-            return self._parent.children.index(self)
-
-        return 0
+    def append_child(self, child: DataItem) -> None:
+        child.parent = self
+        self._children.append(child)
 
     def child_count(self) -> int:
         return len(self._children)
 
-    def child(self, row: int) -> Any:
+    def child(self, row: int) -> Optional[DataItem]:
         if 0 <= row < self.child_count():
             return self._children[row]
-
         return None
 
-    def remove_children(self, position, count):
-        if position < 0 or position + count > len(self._children):
-            return False
-
-        for row in range(count):
-            self._children.pop(position)
-
-        return True
+    def row(self) -> int:
+        if self._parent is not None:
+            return self._parent.children.index(self)
+        return 0
 
 
 if __name__ == "__main__":
     root_item: DataItem = DataItem(parent=None)
-    root_item.insert_children(position=0, count=1)
+    data_item_1: DataItem = DataItem(parent=None)
+    data_item_2: DataItem = DataItem(parent=None)
 
-    data_item: DataItem = root_item.child(0)
-    print(data_item.child_row_number())
+    print(data_item_1.row(), data_item_2.row())
+    root_item.append_child(data_item_1)
+    root_item.append_child(data_item_2)
+    print(data_item_1.row(), data_item_2.row())
