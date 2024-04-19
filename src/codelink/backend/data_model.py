@@ -75,21 +75,19 @@ class DataModel(QtCore.QAbstractItemModel):
 
         return True
 
-    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
-        if not parent.isValid():
-            parent_item: DataItem = self._root_item
-        else:
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
-
-        return parent_item.child_count()
-
     def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
         if not parent.isValid():
             parent_item: DataItem = self._root_item
         else:
             parent_item: DataItem = cast(DataItem, parent.internalPointer())
-
         return parent_item.child_count() > 0
+
+    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
+        if not parent.isValid():
+            parent_item: DataItem = self._root_item
+        else:
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+        return parent_item.child_count()
 
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return 2
@@ -100,12 +98,13 @@ class DataModel(QtCore.QAbstractItemModel):
 
         data_item: DataItem = cast(DataItem, index.internalPointer())
 
-        if type(data_item) is DataProperty:
-            data_property: DataProperty = cast(DataProperty, data_item)
-            if index.column() == 0:
-                return data_property.key
-            if index.column() == 1:
-                return data_property.value
+        if role == QtCore.Qt.DisplayRole:
+            if type(data_item) is DataProperty:
+                data_property: DataProperty = cast(DataProperty, data_item)
+                if index.column() == 0:
+                    return data_property.key
+                if index.column() == 1:
+                    return data_property.value
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
         if not index.isValid():
@@ -174,21 +173,21 @@ class DataModel(QtCore.QAbstractItemModel):
 
 if __name__ == "__main__":
     model: DataModel = DataModel()
-    model.dataChanged.connect(
-        lambda top_left_idx, bottom_right_idx, roles: print(model.data(top_left_idx))
+    model.rowsInserted.connect(
+        lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
     )
-
-    model.append_property(DataProperty(key="Color", value="red"))
-
-    print(model.root_item.child(0).parent)
-    # model.data(model.createIndex(0, 0, model.root_item.child(0)))
+    model.dataChanged.connect(
+        lambda top_left_idx, bottom_right_idx, roles: print("Changed at:", top_left_idx.row(), top_left_idx.column())
+    )
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
-
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
     main_window.setCentralWidget(tree_view)
     main_window.show()
+
+    model.append_property(DataProperty(key="Name", value="test"))
+    model.append_property(DataProperty(key="Color", value="red"))
 
     sys.exit(app.exec_())
