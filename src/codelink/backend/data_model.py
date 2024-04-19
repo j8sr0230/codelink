@@ -57,7 +57,6 @@ class DataModel(QtCore.QAbstractItemModel):
             parent_item: DataItem = cast(DataItem, parent.internalPointer())
 
         row: int = self.rowCount(parent_index)
-
         self.beginInsertRows(parent_index, row, row)
         parent_item.append_child(data_property)
         self.endInsertRows()
@@ -124,9 +123,6 @@ class DataModel(QtCore.QAbstractItemModel):
         return False
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex) -> QtCore.QModelIndex:
-        if not self.hasIndex(row, column, parent):
-            return QtCore.QModelIndex()
-
         if not parent.isValid():
             parent_item: DataItem = self._root_item
         else:
