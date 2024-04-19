@@ -48,14 +48,30 @@ class DataModel(QtCore.QAbstractItemModel):
     def root_item(self, value: DataRoot) -> None:
         self._root_item: DataRoot = value
 
-    def append_property(self, data_property: DataProperty) -> QtCore.QModelIndex:
-        row: int = self.rowCount(QtCore.QModelIndex())
+    # def append_property(self, data_property: DataProperty) -> QtCore.QModelIndex:
+    #     row: int = self.rowCount(QtCore.QModelIndex())
+    #
+    #     self.beginInsertRows(QtCore.QModelIndex(), row, row)
+    #     self._root_item.append_child(data_property)
+    #     self.endInsertRows()
+    #
+    #     return self.index(row, 0, QtCore.QModelIndex())
 
-        self.beginInsertRows(QtCore.QModelIndex(), row, row)
-        self._root_item.append_child(data_property)
+    def append_property(self, data_property: DataProperty, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
+        if not parent.isValid():
+            parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
+            parent_item: DataItem = self._root_item
+        else:
+            parent_index: QtCore.QModelIndex = parent
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+
+        row: int = self.rowCount(parent_index)
+
+        self.beginInsertRows(parent_index, row, row)
+        parent_item.append_child(data_property)
         self.endInsertRows()
 
-        return self.index(row, 0, QtCore.QModelIndex())
+        return self.index(row, 0, parent_index)
 
     def insertRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
         return False
@@ -153,7 +169,7 @@ class DataModel(QtCore.QAbstractItemModel):
 
         data_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
         if type(data_item) is DataProperty:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable  # QtCore.Qt.ItemIsEnabled
 
         return 0
 
@@ -176,6 +192,9 @@ if __name__ == "__main__":
     model.rowsInserted.connect(
         lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
     )
+    model.rowsRemoved.connect(
+        lambda parent_idx, first_row_idx, last_row_idx: print("Removed at:", first_row_idx)
+    )
     model.dataChanged.connect(
         lambda top_left_idx, bottom_right_idx, roles: print("Changed at:", top_left_idx.row(), top_left_idx.column())
     )
@@ -187,7 +206,20 @@ if __name__ == "__main__":
     main_window.setCentralWidget(tree_view)
     main_window.show()
 
-    model.append_property(DataProperty(key="Name", value="test"))
-    model.append_property(DataProperty(key="Color", value="red"))
+    model.rowsInserted.connect(
+        lambda parent_idx, first_row_idx, last_row_idx: tree_view.expandRecursively(QtCore.QModelIndex())
+    )
+
+    vector_item: DataProperty = DataProperty(key="Vector", value="")
+    x_component: DataProperty = DataProperty(key="X", value=1)
+    y_component: DataProperty = DataProperty(key="Y", value=0)
+    z_component: DataProperty = DataProperty(key="Z", value=0)
+
+    vect_idx: QtCore.QModelIndex = model.append_property(vector_item, QtCore.QModelIndex())
+    model.append_property(x_component, vect_idx)
+    model.append_property(y_component, vect_idx)
+    model.append_property(z_component, vect_idx)
+
+    # model.removeRows(0, 1, QtCore.QModelIndex())
 
     sys.exit(app.exec_())
