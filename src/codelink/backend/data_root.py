@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Any, Optional
+from typing import Optional
 
 from data_item import DataItem
 
