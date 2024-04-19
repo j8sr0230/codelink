@@ -196,13 +196,16 @@ if __name__ == "__main__":
         lambda parent_idx, first_row_idx, last_row_idx: print("Removed at:", first_row_idx)
     )
     model.dataChanged.connect(
-        lambda top_left_idx, bottom_right_idx, roles: print("Changed at:", top_left_idx.row(), top_left_idx.column())
+        lambda top_left_idx, bottom_right_idx, roles: print(
+            "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:", model.data(top_left_idx)
+        )
     )
 
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
+
     main_window.setCentralWidget(tree_view)
     main_window.show()
 
