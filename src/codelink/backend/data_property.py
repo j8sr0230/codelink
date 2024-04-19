@@ -28,7 +28,7 @@ from data_item import DataItem
 
 
 class DataProperty(DataItem):
-    def __init__(self, key: str, value: Any, parent: Optional[DataItem] = None):
+    def __init__(self, key: str, value: Any, parent: Optional[DataItem] = None) -> None:
         super().__init__(parent)
 
         self._key: str = key

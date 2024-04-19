@@ -22,50 +22,11 @@
 # *                                                                         *
 # ***************************************************************************
 
-from __future__ import annotations
-from typing import Optional
+from typing import Any, Optional
+
+from data_item import DataItem
 
 
-class DataItem(object):
+class DataRoot(DataItem):
     def __init__(self, parent: Optional[DataItem] = None) -> None:
-        self._parent: Optional[DataItem] = parent
-        self._children: list[DataItem] = []
-
-    @property
-    def parent(self) -> Optional[DataItem]:
-        return self._parent
-
-    @parent.setter
-    def parent(self, value: Optional[DataItem]) -> None:
-        self._parent: Optional[DataItem] = value
-
-    @property
-    def children(self) -> list[DataItem]:
-        return self._children
-
-    @children.setter
-    def children(self, value: list[DataItem]) -> None:
-        self._children: list[DataItem] = value
-
-    def append_child(self, child: DataItem) -> None:
-        child.parent = self
-        self._children.append(child)
-
-    def remove_child(self, row: int) -> None:
-        if 0 <= row < self.child_count():
-            child: DataItem = self._children[row]
-            child.parent = None
-            self._children.remove(child)
-
-    def child_count(self) -> int:
-        return len(self._children)
-
-    def child(self, row: int) -> Optional[DataItem]:
-        if 0 <= row < self.child_count():
-            return self._children[row]
-        return None
-
-    def row(self) -> int:
-        if self._parent is not None:
-            return self._parent.children.index(self)
-        return 0
+        super().__init__(parent)
