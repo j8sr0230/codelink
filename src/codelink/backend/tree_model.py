@@ -27,69 +27,64 @@ from typing import cast, Any, Optional
 import sys
 
 import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from data_item import DataItem
-from data_root import DataRoot
-from data_property import DataProperty
+from tree_item import TreeItem
+from root_item import RootItem
+from container_item import ContainerItem
+from property_item import PropertyItem
 
 
-class DataModel(QtCore.QAbstractItemModel):
+class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, parent: QtCore.QObject = None):
         super().__init__(parent)
 
-        self._root_item: DataRoot = DataRoot()
+        self._root_item: RootItem = RootItem()
 
     @property
-    def root_item(self) -> DataRoot:
+    def root_item(self) -> RootItem:
         return self._root_item
 
     @root_item.setter
-    def root_item(self, value: DataRoot) -> None:
-        self._root_item: DataRoot = value
+    def root_item(self, value: RootItem) -> None:
+        self._root_item: RootItem = value
 
-    def append_property(self, data_property: DataProperty, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
+    def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
         if not parent.isValid():
             parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
-            parent_item: DataItem = self._root_item
+            parent_item: TreeItem = self._root_item
         else:
             parent_index: QtCore.QModelIndex = parent
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer())
 
         row: int = self.rowCount(parent_index)
         self.beginInsertRows(parent_index, row, row)
-        parent_item.append_child(data_property)
+        parent_item.append_child(tree_item)
         self.endInsertRows()
-
         return self.index(row, 0, parent_index)
 
     def removeRow(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         if not parent.isValid():
-            parent_item: DataItem = self._root_item
+            parent_item: TreeItem = self._root_item
         else:
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer())
 
-        child_item: Optional[DataItem] = parent_item.child(row)
+        child_item: Optional[TreeItem] = parent_item.child(row)
         if child_item is not None:
             self.beginRemoveRows(parent, row, row)
             parent_item.remove_child(row)
             self.endRemoveRows()
+            return True
 
-        return True
-
-    def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
-        if not parent.isValid():
-            parent_item: DataItem = self._root_item
-        else:
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
-        return parent_item.child_count() > 0
+        return False
 
     def rowCount(self, parent=QtCore.QModelIndex()) -> int:
         if not parent.isValid():
-            parent_item: DataItem = self._root_item
+            parent_item: TreeItem = self._root_item
         else:
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
-        return parent_item.child_count()
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer())
+        return len(parent_item.children)
 
     def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
         return 2
@@ -98,25 +93,34 @@ class DataModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        data_item: DataItem = cast(DataItem, index.internalPointer())
+        tree_item: TreeItem = cast(TreeItem, index.internalPointer())
 
         if role == QtCore.Qt.DisplayRole:
-            if type(data_item) is DataProperty:
-                data_property: DataProperty = cast(DataProperty, data_item)
+            if type(tree_item) is ContainerItem:
+                container_item: ContainerItem = cast(ContainerItem, tree_item)
                 if index.column() == 0:
-                    return data_property.key
+                    return container_item.name
+
+            if type(tree_item) is PropertyItem:
+                property_item: PropertyItem = cast(PropertyItem, tree_item)
+                if index.column() == 0:
+                    return property_item.key
                 if index.column() == 1:
-                    return data_property.value
+                    return property_item.value
+
+        if role == QtCore.Qt.BackgroundColorRole:
+            if type(tree_item) is ContainerItem:
+                return QtGui.QColor("#ccc")
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
         if not index.isValid():
             return False
 
-        data_item: DataItem = cast(DataItem, index.internalPointer())
+        tree_item: TreeItem = cast(TreeItem, index.internalPointer())
 
-        if type(data_item) is DataProperty and index.column() == 1 and role == QtCore.Qt.EditRole:
-            data_property: DataProperty = cast(DataProperty, data_item)
-            data_property.value = value
+        if type(tree_item) is PropertyItem and index.column() == 1 and role == QtCore.Qt.EditRole:
+            property_item: PropertyItem = cast(PropertyItem, tree_item)
+            property_item.value = value
             self.dataChanged.emit(index, index)
             return True
 
@@ -124,11 +128,11 @@ class DataModel(QtCore.QAbstractItemModel):
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex) -> QtCore.QModelIndex:
         if not parent.isValid():
-            parent_item: DataItem = self._root_item
+            parent_item: TreeItem = self._root_item
         else:
-            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+            parent_item: TreeItem = cast(TreeItem, parent.internalPointer())
 
-        child_item: Optional[DataItem] = parent_item.child(row)
+        child_item: Optional[TreeItem] = parent_item.child(row)
         if child_item is not None:
             return self.createIndex(row, column, child_item)
 
@@ -138,10 +142,10 @@ class DataModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        child_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
-        parent_item: Optional[DataItem] = child_item.parent
+        child_item: Optional[TreeItem] = cast(TreeItem, index.internalPointer())
+        parent_item: Optional[TreeItem] = child_item.parent
 
-        if parent_item is None or parent_item == self._root_item:
+        if parent_item is None:
             return QtCore.QModelIndex()
 
         return self.createIndex(parent_item.row(), 0, parent_item)
@@ -150,8 +154,8 @@ class DataModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
 
-        data_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
-        if type(data_item) is DataProperty:
+        tree_item: Optional[TreeItem] = cast(TreeItem, index.internalPointer())
+        if type(tree_item) is PropertyItem:
             if index.column() == 0:
                 return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
             if index.column() == 1:
@@ -163,7 +167,7 @@ class DataModel(QtCore.QAbstractItemModel):
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
                 if role == QtCore.Qt.DisplayRole:
-                    return "Key"
+                    return "Property"
                 if role == QtCore.Qt.ToolTipRole:
                     return "The name of the property"
             if section == 1:
@@ -174,7 +178,7 @@ class DataModel(QtCore.QAbstractItemModel):
 
 
 if __name__ == "__main__":
-    model: DataModel = DataModel()
+    model: TreeModel = TreeModel()
     model.rowsInserted.connect(
         lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
     )
@@ -192,23 +196,28 @@ if __name__ == "__main__":
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
     tree_view.setAlternatingRowColors(True)
-
     main_window.setCentralWidget(tree_view)
     main_window.show()
 
     model.rowsInserted.connect(
-        lambda parent_idx, first_row_idx, last_row_idx: tree_view.expandRecursively(QtCore.QModelIndex())
+        lambda: tree_view.expandRecursively(QtCore.QModelIndex())
     )
 
-    vector_item: DataProperty = DataProperty(key="Vector", value="")
-    x_component: DataProperty = DataProperty(key="X", value=1)
-    y_component: DataProperty = DataProperty(key="Y", value=0)
-    z_component: DataProperty = DataProperty(key="Z", value=0)
+    node_container: ContainerItem = ContainerItem(name="Nodes")
+    nodes_idx: QtCore.QModelIndex = model.append_item(node_container, QtCore.QModelIndex())
 
-    vect_idx: QtCore.QModelIndex = model.append_property(vector_item, QtCore.QModelIndex())
-    model.append_property(x_component, vect_idx)
-    model.append_property(y_component, vect_idx)
-    model.append_property(z_component, vect_idx)
+    vector_item: PropertyItem = PropertyItem(key="Vector", value="")
+    x_component: PropertyItem = PropertyItem(key="X", value=1)
+    y_component: PropertyItem = PropertyItem(key="Y", value=0)
+    z_component: PropertyItem = PropertyItem(key="Z", value=0)
+
+    vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
+    model.append_item(x_component, vect_idx)
+    model.append_item(y_component, vect_idx)
+    model.append_item(z_component, vect_idx)
+
+    edge_container: ContainerItem = ContainerItem(name="Edges")
+    edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())
 
     # model.removeRow(0, QtCore.QModelIndex())
 

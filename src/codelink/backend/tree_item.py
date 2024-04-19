@@ -22,30 +22,47 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Any, Optional
+from __future__ import annotations
+from typing import Optional
 
-from data_item import DataItem
 
-
-class DataProperty(DataItem):
-    def __init__(self, key: str, value: Any, parent: Optional[DataItem] = None) -> None:
-        super().__init__(parent)
-
-        self._key: str = key
-        self._value: Any = value
+class TreeItem(object):
+    def __init__(self, parent: Optional[TreeItem] = None) -> None:
+        self._parent: Optional[TreeItem] = parent
+        self._children: list[TreeItem] = []
 
     @property
-    def key(self) -> str:
-        return self._key
+    def parent(self) -> Optional[TreeItem]:
+        return self._parent
 
-    @key.setter
-    def key(self, value: str) -> None:
-        self._key: str = value
+    @parent.setter
+    def parent(self, value: Optional[TreeItem]) -> None:
+        self._parent: Optional[TreeItem] = value
 
     @property
-    def value(self) -> Any:
-        return self._value
+    def children(self) -> list[TreeItem]:
+        return self._children
 
-    @value.setter
-    def value(self, value: Any) -> None:
-        self._value: Any = value
+    @children.setter
+    def children(self, value: list[TreeItem]) -> None:
+        self._children: list[TreeItem] = value
+
+    def append_child(self, child: TreeItem) -> None:
+        child.parent = self
+        self._children.append(child)
+
+    def remove_child(self, row: int) -> None:
+        if 0 <= row < len(self._children):
+            child: TreeItem = self._children[row]
+            child.parent = None
+            self._children.remove(child)
+
+    def child(self, row: int) -> Optional[TreeItem]:
+        if 0 <= row < len(self._children):
+            return self._children[row]
+        return None
+
+    def row(self) -> int:
+        if self._parent is not None:
+            return self._parent.children.index(self)
+        return 0

@@ -24,9 +24,9 @@
 
 from typing import Optional
 
-from data_item import DataItem
+from tree_item import TreeItem
 
 
-class DataRoot(DataItem):
-    def __init__(self, parent: Optional[DataItem] = None) -> None:
+class RootItem(TreeItem):
+    def __init__(self, parent: Optional[TreeItem] = None) -> None:
         super().__init__(parent)
