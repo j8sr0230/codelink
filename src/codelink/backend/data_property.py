@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Any, Optional, cast
+from typing import Any, Optional
 
 from data_item import DataItem
 
@@ -49,17 +49,3 @@ class DataProperty(DataItem):
     @value.setter
     def value(self, value: Any) -> None:
         self._value: Any = value
-
-
-if __name__ == "__main__":
-    root_item: DataItem = DataItem(parent=None)
-    data_item: DataItem = DataItem(parent=None)
-    prop_item: DataProperty = DataProperty(key="Number", value=10, parent=None)
-
-    root_item.append_child(data_item)
-    root_item.append_child(prop_item)
-
-    child_item: DataItem = root_item.child(root_item.child_count() - 1)
-    if type(child_item) is DataProperty:
-        child_item: DataProperty = cast(DataProperty, child_item)
-        print(child_item.key, child_item.value)

@@ -27,7 +27,7 @@ from typing import Optional
 
 
 class DataItem(object):
-    def __init__(self, parent: Optional[DataItem] = None):
+    def __init__(self, parent: Optional[DataItem] = None) -> None:
         self._parent: Optional[DataItem] = parent
         self._children: list[DataItem] = []
 
