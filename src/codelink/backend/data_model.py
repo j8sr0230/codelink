@@ -48,15 +48,6 @@ class DataModel(QtCore.QAbstractItemModel):
     def root_item(self, value: DataRoot) -> None:
         self._root_item: DataRoot = value
 
-    # def append_property(self, data_property: DataProperty) -> QtCore.QModelIndex:
-    #     row: int = self.rowCount(QtCore.QModelIndex())
-    #
-    #     self.beginInsertRows(QtCore.QModelIndex(), row, row)
-    #     self._root_item.append_child(data_property)
-    #     self.endInsertRows()
-    #
-    #     return self.index(row, 0, QtCore.QModelIndex())
-
     def append_property(self, data_property: DataProperty, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
         if not parent.isValid():
             parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
@@ -73,21 +64,17 @@ class DataModel(QtCore.QAbstractItemModel):
 
         return self.index(row, 0, parent_index)
 
-    def insertRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
-        return False
-
-    def removeRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
+    def removeRow(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         if not parent.isValid():
             parent_item: DataItem = self._root_item
         else:
             parent_item: DataItem = cast(DataItem, parent.internalPointer())
 
-        for i in range(rows):
-            child_item: Optional[DataItem] = parent_item.child(position)
-            if child_item is not None:
-                self.beginRemoveRows(parent, position, position)
-                parent_item.remove_child(position)
-                self.endRemoveRows()
+        child_item: Optional[DataItem] = parent_item.child(row)
+        if child_item is not None:
+            self.beginRemoveRows(parent, row, row)
+            parent_item.remove_child(row)
+            self.endRemoveRows()
 
         return True
 
@@ -223,6 +210,6 @@ if __name__ == "__main__":
     model.append_property(y_component, vect_idx)
     model.append_property(z_component, vect_idx)
 
-    # model.removeRows(0, 1, QtCore.QModelIndex())
+    # model.removeRow(0, QtCore.QModelIndex())
 
     sys.exit(app.exec_())
