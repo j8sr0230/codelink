@@ -23,114 +23,172 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import cast, Any, Optional, Union
+from typing import cast, Any, Union, Optional
+import sys
 
 import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
+
+from data_item import DataItem
+from data_root import DataRoot
+from data_property import DataProperty
 
 
 class DataModel(QtCore.QAbstractItemModel):
     def __init__(self, parent: QtCore.QObject = None):
         super().__init__(parent)
 
-        self._root_item: TreeItem = TreeItem(header)
+        self._root_item: DataRoot = DataRoot()
 
     @property
-    def root_item(self) -> TreeItem:
+    def root_item(self) -> DataRoot:
         return self._root_item
 
-    def index(self, row: int, column: int, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
-        if parent.isValid() and parent.column() != 0:
-            return QtCore.QModelIndex()
+    @root_item.setter
+    def root_item(self, value: DataRoot) -> None:
+        self._root_item: DataRoot = value
 
-        parent_item: TreeItem = self.get_item(parent)
-        child_item: Optional[TreeItem] = parent_item.child(row)
-        if child_item is not None:
-            return self.createIndex(row, column, child_item)
+    def append_property(self, data_property: DataProperty) -> QtCore.QModelIndex:
+        row: int = self.rowCount(QtCore.QModelIndex())
+
+        self.beginInsertRows(QtCore.QModelIndex(), row, row)
+        self._root_item.append_child(data_property)
+        self.endInsertRows()
+
+        return self.index(row, 0, QtCore.QModelIndex())
+
+    def insertRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
+        return False
+
+    def removeRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
+        if not parent.isValid():
+            parent_item: DataItem = self._root_item
         else:
-            return QtCore.QModelIndex()
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
 
-    def get_item(self, index: QtCore.QModelIndex) -> TreeItem:
-        if index.isValid():
-            item: Optional[TreeItem] = cast(TreeItem, index.internalPointer())
-            if item is not None:
-                return item
+        for i in range(rows):
+            child_item: Optional[DataItem] = parent_item.child(position)
+            if child_item is not None:
+                self.beginRemoveRows(parent, position, position)
+                parent_item.remove_child(position)
+                self.endRemoveRows()
 
-        return self._root_item
+        return True
+
+    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
+        if not parent.isValid():
+            parent_item: DataItem = self._root_item
+        else:
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+
+        return parent_item.child_count()
+
+    def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
+        if not parent.isValid():
+            parent_item: DataItem = self._root_item
+        else:
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
+
+        return parent_item.child_count() > 0
+
+    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
+        return 2
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole:
-            return None
+        data_item: DataItem = cast(DataItem, index.internalPointer())
 
-        item: Optional[TreeItem] = self.get_item(index)
-        return item.data(index.column())
+        if type(data_item) is DataProperty:
+            data_property: DataProperty = cast(DataProperty, data_item)
+            if index.column() == 0:
+                return data_property.key
+            if index.column() == 1:
+                return data_property.value
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
-        if role != QtCore.Qt.EditRole:
+        if not index.isValid():
             return False
 
-        item: TreeItem = self.get_item(index)
-        result: bool = item.set_data(index.column(), value)
+        data_item: DataItem = cast(DataItem, index.internalPointer())
 
-        if result:
+        if type(data_item) is DataProperty and index.column() == 1 and role == QtCore.Qt.EditRole:
+            data_property: DataProperty = cast(DataProperty, data_item)
+            data_property.value = value
             self.dataChanged.emit(index, index)
+            return True
 
-        return result
+        return False
 
-    def columnCount(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> int:
-        return 2
+    def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex) -> QtCore.QModelIndex:
+        if not self.hasIndex(row, column, parent):
+            return QtCore.QModelIndex()
 
-    def rowCount(self, parent=QtCore.QModelIndex()) -> int:
-        parent_item: TreeItem = self.get_item(parent)
-        return parent_item.child_count()
+        if not parent.isValid():
+            parent_item: DataItem = self._root_item
+        else:
+            parent_item: DataItem = cast(DataItem, parent.internalPointer())
 
-    def insertRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
-        parent_item: TreeItem = self.get_item(parent)
-        self.beginInsertRows(parent, position, position + rows - 1)
-        result: bool = parent_item.insert_children(position, rows)
-        self.endInsertRows()
-        return result
+        child_item: Optional[DataItem] = parent_item.child(row)
+        if child_item is not None:
+            return self.createIndex(row, column, child_item)
 
-    def removeRows(self, position: int, rows: int, parent=QtCore.QModelIndex()) -> bool:
-        parent_item: TreeItem = self.get_item(parent)
-        self.beginRemoveRows(parent, position, position + rows - 1)
-        result: bool = parent_item.remove_children(position, rows)
-        self.endRemoveRows()
-        return result
+        return QtCore.QModelIndex()
 
     def parent(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        child_item: TreeItem = self.get_item(index)
-        parent_item: Optional[TreeItem] = child_item.parent
+        child_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
+        parent_item: Optional[DataItem] = child_item.parent
 
-        if parent_item == self._root_item or parent_item is None:
+        if parent_item is None or parent_item == self._root_item:
             return QtCore.QModelIndex()
 
-        return self.createIndex(parent_item.child_row_number(), 0, parent_item)
+        return self.createIndex(parent_item.row(), 0, parent_item)
 
     def flags(self, index: QtCore.QModelIndex) -> Union[int, QtCore.Qt.ItemFlags]:
         if not index.isValid():
             return 0
 
-        return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsSelectable
+        data_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
+        if type(data_item) is DataProperty:
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
+
+        return 0
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role=QtCore.Qt.DisplayRole) -> Any:
-        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
-            return self._root_item.data(section)
+        if orientation == QtCore.Qt.Horizontal:
+            if section == 0:
+                if role == QtCore.Qt.DisplayRole:
+                    return "Key"
+                if role == QtCore.Qt.ToolTipRole:
+                    return "The name of the property"
+            if section == 1:
+                if role == QtCore.Qt.DisplayRole:
+                    return "Value"
+                if role == QtCore.Qt.ToolTipRole:
+                    return "The value of the property"
 
-        return None
 
-    def setHeaderData(self, section: int, orientation: QtCore.Qt.Orientation, value: Any,
-                      role: int = QtCore.Qt.EditRole) -> bool:
-        if role != QtCore.Qt.EditRole or orientation != QtCore.Qt.Horizontal:
-            return False
+if __name__ == "__main__":
+    model: DataModel = DataModel()
+    model.dataChanged.connect(
+        lambda top_left_idx, bottom_right_idx, roles: print(model.data(top_left_idx))
+    )
 
-        result: bool = self.rootItem.set_data(section, value)
-        if result:
-            self.headerDataChanged.emit(orientation, section, section)
+    model.append_property(DataProperty(key="Color", value="red"))
 
-        return result
+    print(model.root_item.child(0).parent)
+    # model.data(model.createIndex(0, 0, model.root_item.child(0)))
+
+    app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
+    main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
+
+    tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
+    tree_view.setModel(model)
+    main_window.setCentralWidget(tree_view)
+    main_window.show()
+
+    sys.exit(app.exec_())
