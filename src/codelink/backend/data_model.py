@@ -23,7 +23,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import cast, Any, Union, Optional
+from typing import cast, Any, Optional
 import sys
 
 import PySide2.QtCore as QtCore
@@ -146,15 +146,18 @@ class DataModel(QtCore.QAbstractItemModel):
 
         return self.createIndex(parent_item.row(), 0, parent_item)
 
-    def flags(self, index: QtCore.QModelIndex) -> Union[int, QtCore.Qt.ItemFlags]:
+    def flags(self, index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags:
         if not index.isValid():
-            return 0
+            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
 
         data_item: Optional[DataItem] = cast(DataItem, index.internalPointer())
         if type(data_item) is DataProperty:
-            return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable  # QtCore.Qt.ItemIsEnabled
+            if index.column() == 0:
+                return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
+            if index.column() == 1:
+                return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
-        return 0
+        return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEnabled
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role=QtCore.Qt.DisplayRole) -> Any:
         if orientation == QtCore.Qt.Horizontal:
@@ -188,6 +191,7 @@ if __name__ == "__main__":
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
+    tree_view.setAlternatingRowColors(True)
 
     main_window.setCentralWidget(tree_view)
     main_window.show()
