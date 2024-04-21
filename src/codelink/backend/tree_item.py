@@ -51,16 +51,16 @@ class TreeItem(object):
         child.parent = self
         self._children.append(child)
 
+    def child(self, row: int) -> Optional[TreeItem]:
+        if 0 <= row < len(self._children):
+            return self._children[row]
+        return None
+
     def remove_child(self, row: int) -> None:
         if 0 <= row < len(self._children):
             child: TreeItem = self._children[row]
             child.parent = None
             self._children.remove(child)
-
-    def child(self, row: int) -> Optional[TreeItem]:
-        if 0 <= row < len(self._children):
-            return self._children[row]
-        return None
 
     def row(self) -> int:
         if self._parent is not None:
