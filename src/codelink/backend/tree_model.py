@@ -115,6 +115,13 @@ class TreeModel(QtCore.QAbstractItemModel):
             if type(tree_item) is ContainerItem:
                 return QtGui.QColor("#ccc")
 
+    def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
+        parent_item: TreeItem = self.get_item(parent)
+        if parent_item:
+            return len(parent_item.children) > 0
+        else:
+            return False
+
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
         if role != QtCore.Qt.EditRole:
             return False
@@ -191,6 +198,16 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.endInsertRows()
         return self.index(row, 0, parent_index)
 
+    def traverse(self, depth: int = 0, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> None:
+        row_count: int = self.rowCount(parent_index)
+        for row in range(row_count):
+            index: QtCore.QModelIndex = self.index(row, 0, parent_index)
+            tree_item: TreeItem = self.get_item(index)
+            print(4 * " " * depth, type(tree_item), tree_item.__getstate__())
+
+            if self.hasChildren(index):
+                self.traverse(depth+1, index)
+
 
 if __name__ == "__main__":
     model: TreeModel = TreeModel()
@@ -234,8 +251,6 @@ if __name__ == "__main__":
     edge_container: ContainerItem = ContainerItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())
 
-    print(model.get_item().__getstate__())
-
-    # model.removeRow(0, QtCore.QModelIndex())
+    model.traverse()
 
     sys.exit(app.exec_())

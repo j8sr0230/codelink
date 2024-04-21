@@ -68,7 +68,5 @@ class TreeItem(object):
         return 0
 
     def __getstate__(self) -> dict[str, Any]:
-        state: dict = {
-            "class": type(self),
-        }
+        state: dict = {}
         return state
