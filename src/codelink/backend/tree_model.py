@@ -234,7 +234,7 @@ if __name__ == "__main__":
     edge_container: ContainerItem = ContainerItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())
 
-    print(x_component.__getstate__())
+    print(model.get_item().__getstate__())
 
     # model.removeRow(0, QtCore.QModelIndex())
 

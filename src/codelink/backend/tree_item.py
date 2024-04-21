@@ -23,7 +23,7 @@
 # ***************************************************************************
 
 from __future__ import annotations
-from typing import Optional
+from typing import Optional, Any
 
 
 class TreeItem(object):
@@ -66,3 +66,9 @@ class TreeItem(object):
         if self._parent is not None:
             return self._parent.children.index(self)
         return 0
+
+    def __getstate__(self) -> dict[str, Any]:
+        state: dict = {
+            "class": type(self),
+        }
+        return state

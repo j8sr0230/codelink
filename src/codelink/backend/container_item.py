@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, Any
 
 from tree_item import TreeItem
 
@@ -40,3 +40,8 @@ class ContainerItem(TreeItem):
     @name.setter
     def name(self, value: str) -> None:
         self._name: str = value
+
+    def __getstate__(self) -> dict[str, Any]:
+        state: dict[str, Any] = super().__getstate__()
+        state["name"] = self._name
+        return state

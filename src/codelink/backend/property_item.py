@@ -50,11 +50,8 @@ class PropertyItem(TreeItem):
     def value(self, value: Any) -> None:
         self._value: Any = value
 
-    def __getstate__(self) -> dict:
-        state: dict = {
-            "class": type(self),
-            "key": self._key,
-            "value": self._value
-        }
-
+    def __getstate__(self) -> dict[str, Any]:
+        state: dict[str, Any] = super().__getstate__()
+        state["key"] = self._key
+        state["value"] = self._value
         return state
