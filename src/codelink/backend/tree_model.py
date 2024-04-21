@@ -251,6 +251,9 @@ if __name__ == "__main__":
     edge_container: ContainerItem = ContainerItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())
 
+    frame_container: ContainerItem = ContainerItem(name="Frames")
+    frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
+
     model.traverse()
 
     sys.exit(app.exec_())
