@@ -39,10 +39,14 @@ from property_item import PropertyItem
 
 
 class TreeModel(QtCore.QAbstractItemModel):
-    def __init__(self, parent: QtCore.QObject = None):
+    def __init__(self, tree_data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
         super().__init__(parent)
 
-        self._root_item: RootItem = RootItem()
+        if tree_data:
+            self._root_item: RootItem = cast(RootItem, self.from_dict(tree_data))
+
+        else:
+            self._root_item: RootItem = RootItem()
 
     @property
     def root_item(self) -> RootItem:
@@ -200,9 +204,9 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.endInsertRows()
         return self.index(row, 0, parent_index)
 
-    def _to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
+    def to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
         parent_item: TreeItem = self.get_item(parent_index)
-        state: dict[str, Any] = parent_item.__getstate__()
+        state: dict[str, Any] = parent_item.__dict__.items()
 
         if self.hasChildren(parent_index):
             child_states: list[dict[str, Any]] = []
@@ -210,29 +214,23 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             for row in range(row_count):
                 child_index: QtCore.QModelIndex = self.index(row, 0, parent_index)
-                child_states.append(self._to_dict(child_index))
+                child_states.append(self.to_dict(child_index))
 
             state["children"] = child_states
 
         return state
 
-    def _from_dict(self, data: dict[str, Any]) -> TreeItem:
-        values: list[Any] = [value for value in data.values()]
+    def from_dict(self, data: dict[str, Any]) -> TreeItem:
+        values: list[Any] = [value for key, value in data.values()]
+        print(values)
         cls_name: str = values.pop(0)
         tree_item: TreeItem = eval(cls_name)(*values)
 
         if "children" in data.keys():
             for child_data in data["children"]:
-                tree_item.append_child(self._from_dict(child_data))
+                tree_item.append_child(self.from_dict(child_data))
 
         return tree_item
-
-    def __getstate__(self) -> dict[str, Any]:
-        return self._to_dict()
-
-    def __setstate__(self, state) -> None:
-        super().__init__()
-        self.__dict__["_root_item"] = cast(RootItem, self._from_dict(state))
 
 
 if __name__ == "__main__":
@@ -281,8 +279,8 @@ if __name__ == "__main__":
     frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
 
     # Serialisation test
-    serialized_tree_model: Any = pickle.dumps(model)
-    restored_tree_model: TreeModel = pickle.loads(serialized_tree_model)
+    serialized_tree_model: dict[str, Any] = model.to_dict()
+    restored_tree_model: TreeModel = TreeModel(serialized_tree_model)
     json_str: str = json.dumps(restored_tree_model.__getstate__(), indent=4)
     print(json_str)
 
