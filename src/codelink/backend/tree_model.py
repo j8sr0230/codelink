@@ -37,10 +37,13 @@ from property_item import PropertyItem
 
 
 class TreeModel(QtCore.QAbstractItemModel):
-    def __init__(self, parent: QtCore.QObject = None):
+    def __init__(self, data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
         super().__init__(parent)
 
-        self._root_item: RootItem = RootItem()
+        if data:
+            self._root_item: RootItem = self._from_dict(data)
+        else:
+            self._root_item: RootItem = RootItem()
 
     @property
     def root_item(self) -> RootItem:
@@ -198,15 +201,41 @@ class TreeModel(QtCore.QAbstractItemModel):
         self.endInsertRows()
         return self.index(row, 0, parent_index)
 
-    def traverse(self, depth: int = 0, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> None:
-        row_count: int = self.rowCount(parent_index)
-        for row in range(row_count):
-            index: QtCore.QModelIndex = self.index(row, 0, parent_index)
-            tree_item: TreeItem = self.get_item(index)
-            print(4 * " " * depth, type(tree_item), tree_item.__getstate__())
+    def _to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
+        parent_item: TreeItem = self.get_item(parent_index)
+        state: dict[str, Any] = parent_item.__getstate__()
 
-            if self.hasChildren(index):
-                self.traverse(depth+1, index)
+        if self.hasChildren(parent_index):
+            child_states: list[dict[str, Any]] = []
+            row_count: int = self.rowCount(parent_index)
+
+            for row in range(row_count):
+                child_index: QtCore.QModelIndex = self.index(row, 0, parent_index)
+                child_states.append(self._to_dict(child_index))
+
+            state["children"] = child_states
+
+        return state
+
+    def _from_dict(self, data: dict[str, Any]) -> RootItem:
+        if data["type"] == "ContainerItem":
+            name: str = data["name"]
+            tree_item: ContainerItem = eval(data["type"])(name)
+
+        elif data["type"] == "PropertyItem":
+            key: str = data["key"]
+            value: Any = data["value"]
+            tree_item: ContainerItem = eval(data["type"])(key, value)
+
+        else:
+            tree_item: RootItem = eval(data["type"])()
+
+        print(tree_item)
+
+        return tree_item
+
+    def __getstate__(self) -> dict[str, Any]:
+        return self._to_dict()
 
 
 if __name__ == "__main__":
@@ -254,6 +283,9 @@ if __name__ == "__main__":
     frame_container: ContainerItem = ContainerItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
 
-    model.traverse()
+    # json_str: str = json.dumps(model.__getstate__(), indent=4)
+    # print(json_str)
+
+    restored_model: TreeItem = TreeModel(model.__getstate__())
 
     sys.exit(app.exec_())
