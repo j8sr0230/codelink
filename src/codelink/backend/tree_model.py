@@ -58,6 +58,10 @@ class TreeModel(QtCore.QAbstractItemModel):
     def root_item(self, value: RootItem) -> None:
         self._root_item: RootItem = value
 
+    @property
+    def undo_stack(self) -> QtWidgets.QUndoStack:
+        return self._undo_stack
+
     def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
         if parent.isValid() and parent.column() != 0:
             return QtCore.QModelIndex()
@@ -238,6 +242,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
 
 if __name__ == "__main__":
+    # Setup tree model
     model: TreeModel = TreeModel()
     model.rowsInserted.connect(
         lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
@@ -251,18 +256,29 @@ if __name__ == "__main__":
         )
     )
 
+    # Setup ui
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
+
+    undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
+    undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+    main_window.addAction(undo_action)
+
+    redo_action: QtWidgets.QAction = model.undo_stack.createRedoAction(main_window, "Redo")
+    redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+    main_window.addAction(redo_action)
+
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
     tree_view.setAlternatingRowColors(True)
-    main_window.setCentralWidget(tree_view)
-    main_window.show()
-
     model.rowsInserted.connect(
         lambda: tree_view.expandRecursively(QtCore.QModelIndex())
     )
 
+    main_window.setCentralWidget(tree_view)
+    main_window.show()
+
+    # Populate tree model with tree items
     node_container: ContainerItem = ContainerItem(name="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_container, QtCore.QModelIndex())
 
@@ -284,7 +300,7 @@ if __name__ == "__main__":
     frame_container: ContainerItem = ContainerItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
 
-    # Serialisation test
+    # Serialize tree mode
     serialized: dict[str, Any] = model.to_dict()
     restored_model: TreeModel = TreeModel(serialized)
     json_str: str = json.dumps(restored_model.to_dict(), indent=4)
