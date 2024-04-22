@@ -153,11 +153,11 @@ class TreeModel(QtCore.QAbstractItemModel):
         tree_item: Optional[TreeItem] = self.get_item(index)
         if type(tree_item) is PropertyItem:
             if index.column() == 0:
-                return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
+                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
             if index.column() == 1:
-                return QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
-        return QtCore.Qt.ItemIsEnabled | QtCore.QAbstractItemModel.flags(self, index)
+        return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
 
     def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role=QtCore.Qt.DisplayRole) -> Any:
         if orientation == QtCore.Qt.Horizontal:
