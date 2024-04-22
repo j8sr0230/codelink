@@ -144,7 +144,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
-        tree_item: Optional[TreeItem] = cast(TreeItem, index.internalPointer())
+        tree_item: Optional[TreeItem] = self.get_item(index)
         if type(tree_item) is PropertyItem:
             if index.column() == 0:
                 return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
@@ -180,6 +180,22 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return False
 
+    def insert_item(self, row: int, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
+        parent_item: TreeItem = self.get_item(parent)
+
+        if parent_item == self.root_item or not parent_item:
+            parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
+        else:
+            parent_index: QtCore.QModelIndex = parent
+
+        self.beginInsertRows(parent, row, row)
+        parent_item.insert_child(row, tree_item)
+        self.endInsertRows()
+        return self.index(row, 0, parent_index)
+
+    def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
+        return self.insert_item(self.rowCount(parent), tree_item, parent)
+
     def get_item(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> TreeItem:
         if index.isValid():
             item: TreeItem = cast(TreeItem, index.internalPointer())
@@ -188,19 +204,8 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return self.root_item
 
-    def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
-        parent_item: TreeItem = self.get_item(parent)
-        row: int = len(parent_item.children)
-
-        if parent_item == self.root_item or not parent_item:
-            parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
-        else:
-            parent_index: QtCore.QModelIndex = parent
-
-        self.beginInsertRows(parent_index, row, row)
-        parent_item.append_child(tree_item)
-        self.endInsertRows()
-        return self.index(row, 0, parent_index)
+    def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
+        return self.removeRow(row, parent)
 
     def to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
         parent_item: TreeItem = self.get_item(parent_index)
@@ -260,14 +265,16 @@ if __name__ == "__main__":
     nodes_idx: QtCore.QModelIndex = model.append_item(node_container, QtCore.QModelIndex())
 
     vector_item: PropertyItem = PropertyItem(key="Vector", value="")
-    x_component: PropertyItem = PropertyItem(key="X", value=1)
-    y_component: PropertyItem = PropertyItem(key="Y", value=0)
-    z_component: PropertyItem = PropertyItem(key="Z", value=0)
-
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
+
+    x_component: PropertyItem = PropertyItem(key="X", value=1)
     model.append_item(x_component, vect_idx)
-    model.append_item(y_component, vect_idx)
+
+    z_component: PropertyItem = PropertyItem(key="Z", value=0)
     model.append_item(z_component, vect_idx)
+
+    y_component: PropertyItem = PropertyItem(key="Y", value=0)
+    model.insert_item(1, y_component, vect_idx)
 
     edge_container: ContainerItem = ContainerItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())

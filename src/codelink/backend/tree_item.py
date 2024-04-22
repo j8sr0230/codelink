@@ -47,9 +47,13 @@ class TreeItem(object):
     def children(self, value: list[TreeItem]) -> None:
         self._children: list[TreeItem] = value
 
-    def append_child(self, child: TreeItem) -> None:
+    def insert_child(self, row: int, child: TreeItem) -> None:
         child.parent = self
-        self._children.append(child)
+        row: int = max(0, min(row, len(self._children)))
+        self._children.insert(row, child)
+
+    def append_child(self, child: TreeItem) -> None:
+        self.insert_child(len(self._children), child)
 
     def child(self, row: int) -> Optional[TreeItem]:
         if 0 <= row < len(self._children):
