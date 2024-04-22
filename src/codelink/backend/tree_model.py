@@ -36,6 +36,8 @@ from root_item import RootItem
 from container_item import ContainerItem
 from property_item import PropertyItem
 
+from undo_cmds import PropertyEditCommand
+
 
 class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
@@ -45,6 +47,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             self._root_item: RootItem = cast(RootItem, self.from_dict(data))
         else:
             self._root_item: RootItem = RootItem()
+
+        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     @property
     def root_item(self) -> RootItem:
@@ -133,9 +137,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         tree_item: TreeItem = self.get_item(index)
 
         if type(tree_item) is PropertyItem and index.column() == 1:
-            property_item: PropertyItem = cast(PropertyItem, tree_item)
-            property_item.value = value
-            self.dataChanged.emit(index, index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+            self._undo_stack.push(PropertyEditCommand(index, value, self))
             return True
 
         return False
