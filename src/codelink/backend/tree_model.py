@@ -26,7 +26,6 @@ from __future__ import annotations
 from typing import cast, Any, Optional
 import sys
 import json
-import pickle
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -39,12 +38,11 @@ from property_item import PropertyItem
 
 
 class TreeModel(QtCore.QAbstractItemModel):
-    def __init__(self, tree_data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
+    def __init__(self, data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
         super().__init__(parent)
 
-        if tree_data:
-            self._root_item: RootItem = cast(RootItem, self.from_dict(tree_data))
-
+        if data:
+            self._root_item: RootItem = cast(RootItem, self.from_dict(data))
         else:
             self._root_item: RootItem = RootItem()
 
@@ -206,7 +204,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
         parent_item: TreeItem = self.get_item(parent_index)
-        state: dict[str, Any] = parent_item.__dict__.items()
+        state: dict[str, Any] = parent_item.__getstate__()
 
         if self.hasChildren(parent_index):
             child_states: list[dict[str, Any]] = []
@@ -220,14 +218,13 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return state
 
-    def from_dict(self, data: dict[str, Any]) -> TreeItem:
-        values: list[Any] = [value for key, value in data.values()]
-        print(values)
+    def from_dict(self, state: dict[str, Any]) -> TreeItem:
+        values: list[Any] = list(state.values())
         cls_name: str = values.pop(0)
         tree_item: TreeItem = eval(cls_name)(*values)
 
-        if "children" in data.keys():
-            for child_data in data["children"]:
+        if "children" in state.keys():
+            for child_data in state["children"]:
                 tree_item.append_child(self.from_dict(child_data))
 
         return tree_item
@@ -279,9 +276,12 @@ if __name__ == "__main__":
     frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
 
     # Serialisation test
-    serialized_tree_model: dict[str, Any] = model.to_dict()
-    restored_tree_model: TreeModel = TreeModel(serialized_tree_model)
-    json_str: str = json.dumps(restored_tree_model.__getstate__(), indent=4)
+    serialized: dict[str, Any] = model.to_dict()
+    restored_model: TreeModel = TreeModel(serialized)
+    json_str: str = json.dumps(restored_model.to_dict(), indent=4)
     print(json_str)
+
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(restored_model.to_dict(), f, ensure_ascii=False, indent=4)
 
     sys.exit(app.exec_())

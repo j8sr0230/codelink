@@ -1,0 +1,41 @@
+{
+    "type": "RootItem",
+    "children": [
+        {
+            "type": "ContainerItem",
+            "name": "Nodes",
+            "children": [
+                {
+                    "type": "PropertyItem",
+                    "key": "Vector",
+                    "value": "",
+                    "children": [
+                        {
+                            "type": "PropertyItem",
+                            "key": "X",
+                            "value": 1
+                        },
+                        {
+                            "type": "PropertyItem",
+                            "key": "Y",
+                            "value": 0
+                        },
+                        {
+                            "type": "PropertyItem",
+                            "key": "Z",
+                            "value": 0
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "ContainerItem",
+            "name": "Edges"
+        },
+        {
+            "type": "ContainerItem",
+            "name": "Frames"
+        }
+    ]
+}
