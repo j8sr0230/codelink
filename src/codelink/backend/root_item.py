@@ -30,3 +30,8 @@ from tree_item import TreeItem
 class RootItem(TreeItem):
     def __init__(self, parent: Optional[TreeItem] = None) -> None:
         super().__init__(parent)
+
+    def __repr__(self) -> str:
+        result: str = f"<root_item.RootItem at 0x{id(self):x}"
+        result += f", {len(self._children)} children>"
+        return result

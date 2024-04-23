@@ -55,3 +55,8 @@ class PropertyItem(TreeItem):
         state["key"] = self._key
         state["value"] = self._value
         return state
+
+    def __repr__(self) -> str:
+        result: str = f"<property_item.PropertyItem at 0x{id(self):x}"
+        result += f", {len(self._children)} children>"
+        return result

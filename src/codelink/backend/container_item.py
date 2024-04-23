@@ -45,3 +45,8 @@ class ContainerItem(TreeItem):
         state: dict[str, Any] = super().__getstate__()
         state["name"] = self._name
         return state
+
+    def __repr__(self) -> str:
+        result: str = f"<container_item.ContainerItem at 0x{id(self):x}"
+        result += f", {len(self._children)} children>"
+        return result
