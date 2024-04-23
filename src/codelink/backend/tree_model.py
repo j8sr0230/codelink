@@ -312,9 +312,6 @@ if __name__ == "__main__":
     serialized: dict[str, Any] = model.to_dict()
     restored_model: TreeModel = TreeModel(serialized)
     json_str: str = json.dumps(restored_model.to_dict(), indent=4)
-    print(json_str)
-
-    print(node_container)
 
     with open("./data.json", "w", encoding="utf-8") as f:
         json.dump(restored_model.to_dict(), f, ensure_ascii=False, indent=4)
