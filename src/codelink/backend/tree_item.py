@@ -47,24 +47,28 @@ class TreeItem(object):
     def children(self, value: list[TreeItem]) -> None:
         self._children: list[TreeItem] = value
 
-    def insert_child(self, row: int, child: TreeItem) -> None:
+    def insert_child(self, row: int, child: TreeItem) -> bool:
         child.parent = self
         row: int = max(0, min(row, len(self._children)))
         self._children.insert(row, child)
+        return True
 
-    def append_child(self, child: TreeItem) -> None:
-        self.insert_child(len(self._children), child)
+    def append_child(self, child: TreeItem) -> bool:
+        return self.insert_child(len(self._children), child)
 
     def child(self, row: int) -> Optional[TreeItem]:
         if 0 <= row < len(self._children):
             return self._children[row]
         return None
 
-    def remove_child(self, row: int) -> None:
+    def remove_child(self, row: int) -> bool:
         if 0 <= row < len(self._children):
             child: TreeItem = self._children[row]
             child.parent = None
             self._children.remove(child)
+            return True
+
+        return False
 
     def row(self) -> int:
         if self._parent is not None:
@@ -76,3 +80,8 @@ class TreeItem(object):
             "type": self.__class__.__name__
         }
         return state
+
+    def __repr__(self) -> str:
+        result: str = f"<tree_item.TreeItem at 0x{id(self):x}"
+        result += f", {len(self._children)} children>"
+        return result

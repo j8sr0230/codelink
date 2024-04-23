@@ -108,6 +108,9 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
+        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole:
+            return None
+
         tree_item: TreeItem = self.get_item(index)
 
         if role == QtCore.Qt.DisplayRole:
@@ -128,11 +131,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                 return QtGui.QColor("#ccc")
 
     def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
-        parent_item: TreeItem = self.get_item(parent)
-        if parent_item:
-            return len(parent_item.children) > 0
-        else:
-            return False
+        return self.rowCount(parent) > 0
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
         if role != QtCore.Qt.EditRole:
@@ -240,6 +239,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return tree_item
 
+    def _repr_recursion(self, tree_item: TreeItem, indent: int = 0) -> str:
+        result: str = " " * indent + repr(tree_item) + "\n"
+        for child in tree_item.children:
+            result += self._repr_recursion(child, indent + 4)
+        return result
+
+    def __repr__(self) -> str:
+        return self._repr_recursion(self.root_item)
+
 
 if __name__ == "__main__":
     # Setup tree model
@@ -306,7 +314,11 @@ if __name__ == "__main__":
     json_str: str = json.dumps(restored_model.to_dict(), indent=4)
     print(json_str)
 
+    print(node_container)
+
     with open("./data.json", "w", encoding="utf-8") as f:
         json.dump(restored_model.to_dict(), f, ensure_ascii=False, indent=4)
+
+    print(restored_model)
 
     sys.exit(app.exec_())
