@@ -22,31 +22,51 @@
 # *                                                                         *
 # ***************************************************************************
 
+from typing import Optional, Any
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 
-class SpinBoxDelegate(QtWidgets.QStyledItemDelegate):
+class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex()) -> QtWidgets.QSpinBox:
-        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
-        editor.setFrame(False)
-        editor.setMinimum(0)
-        editor.setMaximum(100)
+        editor: Optional[QtWidgets.QWidget] = None
+        data_type: type = type(index.model().data(index, QtCore.Qt.EditRole))
+
+        if data_type is str:
+            editor: QtWidgets.QSpinBox = QtWidgets.QLineEdit(parent)
+
+        if data_type is int:
+            editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
+            editor.setFrame(False)
+            # editor.setMinimum(0)
+            # editor.setMaximum(100)
+
         return editor
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        value: int = index.model().data(index, QtCore.Qt.EditRole)
-        editor.setValue(value)
+        value: Any = index.model().data(index, QtCore.Qt.EditRole)
+
+        if type(editor) is QtWidgets.QSpinBox:
+            editor.setValue(value)
+
+        if type(editor) is QtWidgets.QLineEdit:
+            editor.setText(value)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex()) -> bool:
-        editor.interpretText()
-        value: int = editor.value()
-        return model.setData(index, value, int(QtCore.Qt.EditRole))
+        if type(editor) is QtWidgets.QSpinBox:
+            editor.interpretText()
+            value: int = editor.value()
+            return model.setData(index, value, int(QtCore.Qt.EditRole))
+
+        if type(editor) is QtWidgets.QLineEdit:
+            value: str = editor.text()
+            return model.setData(index, value, int(QtCore.Qt.EditRole))
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex()) -> None:

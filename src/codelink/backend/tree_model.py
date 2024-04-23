@@ -37,7 +37,7 @@ from container_item import ContainerItem
 from property_item import PropertyItem
 
 from undo_cmds import PropertyEditCommand
-from delegates import SpinBoxDelegate
+from delegates import TreeViewDelegate
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -280,7 +280,7 @@ if __name__ == "__main__":
     tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     tree_view.setModel(model)
     tree_view.setAlternatingRowColors(True)
-    tree_view.setItemDelegate(SpinBoxDelegate())
+    tree_view.setItemDelegate(TreeViewDelegate())
     model.rowsInserted.connect(
         lambda: tree_view.expandRecursively(QtCore.QModelIndex())
     )
