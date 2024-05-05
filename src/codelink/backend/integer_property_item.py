@@ -36,7 +36,7 @@ class IntegerPropertyItem(PropertyItem):
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                      index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
+                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
         editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
         editor.setFrame(False)
         return editor

@@ -36,8 +36,8 @@ class TreeItem(object):
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                      index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
-        return QtWidgets.QWidget()
+                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
+        return None
 
     @staticmethod
     def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
