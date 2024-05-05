@@ -25,11 +25,33 @@
 from __future__ import annotations
 from typing import Optional, Any
 
+import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
+
 
 class TreeItem(object):
     def __init__(self, parent: Optional[TreeItem] = None) -> None:
         self._parent: Optional[TreeItem] = parent
         self._children: list[TreeItem] = []
+
+    @staticmethod
+    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                      index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
+        return QtWidgets.QWidget()
+
+    @staticmethod
+    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                       index: QtCore.QModelIndex()) -> bool:
+        return False
+
+    @staticmethod
+    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                               index: QtCore.QModelIndex()) -> None:
+        pass
 
     @property
     def parent(self) -> Optional[TreeItem]:

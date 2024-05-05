@@ -22,31 +22,38 @@
 # *                                                                         *
 # ***************************************************************************
 
+from typing import Any, Optional
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from tree_item import TreeItem
+from property_item import PropertyItem
 
 
-class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+class IntegerPropertyItem(PropertyItem):
+    def __init__(self, key: str, value: int, parent: Optional[PropertyItem] = None) -> None:
+        super().__init__(key, value, parent)
 
-    def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                     index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
-        data_item: TreeItem = index.model().get_item(index)
-        return data_item.create_editor(parent, option, index)
+    @staticmethod
+    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                      index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
+        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
+        editor.setFrame(False)
+        return editor
 
-    def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        data_item: TreeItem = index.model().get_item(index)
-        data_item.set_editor_data(editor, index)
+    @staticmethod
+    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
+        value: Any = index.model().data(index, QtCore.Qt.EditRole)
+        editor.setValue(value)
 
-    def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
-                     index: QtCore.QModelIndex()) -> bool:
-        data_item: TreeItem = index.model().get_item(index)
-        return data_item.set_model_data(editor, model, index)
+    @staticmethod
+    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                       index: QtCore.QModelIndex()) -> bool:
+        editor.interpretText()
+        value: int = editor.value()
+        return model.setData(index, value, int(QtCore.Qt.EditRole))
 
-    def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                             index: QtCore.QModelIndex()) -> None:
-        data_item: TreeItem = index.model().get_item(index)
-        data_item.update_editor_geometry(editor, option, index)
+    @staticmethod
+    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                               index: QtCore.QModelIndex()) -> None:
+        editor.setGeometry(option.rect)

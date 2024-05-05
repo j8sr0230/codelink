@@ -11,17 +11,17 @@
                     "value": "",
                     "children": [
                         {
-                            "type": "PropertyItem",
+                            "type": "IntegerPropertyItem",
                             "key": "X",
                             "value": 1
                         },
                         {
-                            "type": "PropertyItem",
+                            "type": "IntegerPropertyItem",
                             "key": "Y",
                             "value": 0
                         },
                         {
-                            "type": "PropertyItem",
+                            "type": "IntegerPropertyItem",
                             "key": "Z",
                             "value": 0
                         }

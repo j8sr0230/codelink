@@ -35,6 +35,7 @@ from tree_item import TreeItem
 from root_item import RootItem
 from container_item import ContainerItem
 from property_item import PropertyItem
+from integer_property_item import IntegerPropertyItem
 
 from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
@@ -120,7 +121,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 0:
                     return container_item.name
 
-            if type(tree_item) is PropertyItem:
+            if isinstance(tree_item, PropertyItem):
                 property_item: PropertyItem = cast(PropertyItem, tree_item)
                 if index.column() == 0:
                     return property_item.key
@@ -140,7 +141,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         tree_item: TreeItem = self.get_item(index)
 
-        if type(tree_item) is PropertyItem and index.column() == 1:
+        if isinstance(tree_item, PropertyItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
             return True
 
@@ -151,7 +152,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         tree_item: Optional[TreeItem] = self.get_item(index)
-        if type(tree_item) is PropertyItem:
+        if isinstance(tree_item, PropertyItem):
             if index.column() == 0:
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
             if index.column() == 1:
@@ -295,13 +296,13 @@ if __name__ == "__main__":
     vector_item: PropertyItem = PropertyItem(key="Vector", value="")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
-    x_component: PropertyItem = PropertyItem(key="X", value=1)
+    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=1)
     model.append_item(x_component, vect_idx)
 
-    z_component: PropertyItem = PropertyItem(key="Z", value=0)
+    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=0)
     model.append_item(z_component, vect_idx)
 
-    y_component: PropertyItem = PropertyItem(key="Y", value=0)
+    y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, vect_idx)
 
     edge_container: ContainerItem = ContainerItem(name="Edges")
