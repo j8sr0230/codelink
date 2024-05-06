@@ -2,7 +2,7 @@
     "type": "RootItem",
     "children": [
         {
-            "type": "ContainerItem",
+            "type": "SeperatorItem",
             "name": "Nodes",
             "children": [
                 {
@@ -30,11 +30,11 @@
             ]
         },
         {
-            "type": "ContainerItem",
+            "type": "SeperatorItem",
             "name": "Edges"
         },
         {
-            "type": "ContainerItem",
+            "type": "SeperatorItem",
             "name": "Frames"
         }
     ]

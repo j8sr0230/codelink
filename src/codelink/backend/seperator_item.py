@@ -31,19 +31,11 @@ import PySide2.QtWidgets as QtWidgets
 from tree_item import TreeItem
 
 
-class ContainerItem(TreeItem):
+class SeperatorItem(TreeItem):
     def __init__(self, name: str, parent: Optional[TreeItem] = None) -> None:
         super().__init__(parent)
 
         self._name: str = name
-
-    @staticmethod
-    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        brush: QtGui.QBrush = QtGui.QBrush(QtGui.QColor("#ccc"))
-
-        painter.save()
-        painter.fillRect(option.rect, brush)
-        painter.restore()
 
     @property
     def name(self) -> str:
@@ -59,6 +51,6 @@ class ContainerItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<container_item.ContainerItem at 0x{id(self):x}"
+        result: str = f"<container_item.SeperatorItem at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

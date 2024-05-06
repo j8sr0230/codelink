@@ -33,7 +33,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from tree_item import TreeItem
 from root_item import RootItem
-from container_item import ContainerItem
+from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 
@@ -107,18 +107,17 @@ class TreeModel(QtCore.QAbstractItemModel):
         return 2
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
-        print(role)
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole:
+        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole:
             return None
 
         tree_item: TreeItem = self.get_item(index)
 
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if type(tree_item) is ContainerItem:
-                container_item: ContainerItem = cast(ContainerItem, tree_item)
+            if type(tree_item) is SeperatorItem:
+                container_item: SeperatorItem = cast(SeperatorItem, tree_item)
                 if index.column() == 0:
                     return container_item.name
 
@@ -130,8 +129,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     return property_item.value
 
         if role == QtCore.Qt.BackgroundColorRole:
-            print("Background", role)
-            if type(tree_item) is ContainerItem:
+            if type(tree_item) is SeperatorItem:
                 return QtGui.QColor("#ccc")
 
     def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
@@ -304,8 +302,8 @@ if __name__ == "__main__":
 
     second_tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     second_tree_view.setModel(model)
-    # second_tree_view.setAlternatingRowColors(True)
-    # second_tree_view.setItemDelegate(TreeViewDelegate())
+    second_tree_view.setAlternatingRowColors(True)
+    second_tree_view.setItemDelegate(TreeViewDelegate())
 
     main_tree_view.selectionModel().selectionChanged.connect(
         lambda current, previous: second_tree_view.setRootIndex(cast(QtCore.QItemSelection, current).indexes()[0])
@@ -319,8 +317,8 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_container: ContainerItem = ContainerItem(name="Nodes")
-    nodes_idx: QtCore.QModelIndex = model.append_item(node_container, QtCore.QModelIndex())
+    node_sep: SeperatorItem = SeperatorItem(name="Nodes")
+    nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
     vector_item: PropertyItem = PropertyItem(key="Vector", value="")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
@@ -334,11 +332,11 @@ if __name__ == "__main__":
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, vect_idx)
 
-    edge_container: ContainerItem = ContainerItem(name="Edges")
-    edges_idx: QtCore.QModelIndex = model.append_item(edge_container, QtCore.QModelIndex())
+    edge_sep: SeperatorItem = SeperatorItem(name="Edges")
+    edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
 
-    frame_container: ContainerItem = ContainerItem(name="Frames")
-    frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
+    frame_sep: SeperatorItem = SeperatorItem(name="Frames")
+    frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
     # Set focus of inspection window
     # second_tree_view.setRootIndex(nodes_idx)
