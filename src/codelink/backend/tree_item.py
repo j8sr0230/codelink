@@ -35,29 +35,6 @@ class TreeItem(object):
         self._parent: Optional[TreeItem] = parent
         self._children: list[TreeItem] = []
 
-    @staticmethod
-    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
-        return None
-
-    @staticmethod
-    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        pass
-
-    @staticmethod
-    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
-                       index: QtCore.QModelIndex()) -> bool:
-        return False
-
-    @staticmethod
-    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                               index: QtCore.QModelIndex()) -> None:
-        pass
-
-    @staticmethod
-    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        pass
-
     @property
     def parent(self) -> Optional[TreeItem]:
         return self._parent
@@ -101,6 +78,29 @@ class TreeItem(object):
         if self._parent is not None:
             return self._parent.children.index(self)
         return 0
+
+    @staticmethod
+    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
+        return None
+
+    @staticmethod
+    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                       index: QtCore.QModelIndex()) -> bool:
+        return False
+
+    @staticmethod
+    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                               index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
+        pass
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict = {
