@@ -36,6 +36,7 @@ from root_item import RootItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
+from index_property_item import IndexPropertyItem
 
 from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
@@ -123,10 +124,16 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if isinstance(tree_item, PropertyItem):
                 property_item: PropertyItem = cast(PropertyItem, tree_item)
-                if index.column() == 0:
-                    return property_item.key
-                if index.column() == 1:
-                    return property_item.value
+                if type(property_item) is IndexPropertyItem:
+                    if index.column() == 0:
+                        return property_item.key
+                    if index.column() == 1:
+                        return str(property_item.value)
+                else:
+                    if index.column() == 0:
+                        return property_item.key
+                    if index.column() == 1:
+                        return property_item.value
 
         if role == QtCore.Qt.BackgroundColorRole:
             if type(tree_item) is SeperatorItem:
@@ -334,6 +341,9 @@ if __name__ == "__main__":
 
     edge_sep: SeperatorItem = SeperatorItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
+
+    source_item: IndexPropertyItem = IndexPropertyItem(key="Source", value=vect_idx)
+    source_idx: QtCore.QModelIndex = model.append_item(source_item, edges_idx)
 
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
