@@ -267,27 +267,54 @@ if __name__ == "__main__":
     )
 
     # Setup ui
+    # Main window
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
+    main_window.setWindowTitle("Main Window")
+    main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
+    main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+    main_window.addAction(main_undo_action)
+    main_redo_action: QtWidgets.QAction = model.undo_stack.createRedoAction(main_window, "Redo")
+    main_redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+    main_window.addAction(main_redo_action)
 
-    undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
-    undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-    main_window.addAction(undo_action)
+    main_tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
+    main_tree_view.setModel(model)
+    main_tree_view.setAlternatingRowColors(True)
+    main_tree_view.setItemDelegate(TreeViewDelegate())
 
-    redo_action: QtWidgets.QAction = model.undo_stack.createRedoAction(main_window, "Redo")
-    redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-    main_window.addAction(redo_action)
-
-    tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
-    tree_view.setModel(model)
-    tree_view.setAlternatingRowColors(True)
-    tree_view.setItemDelegate(TreeViewDelegate())
     model.rowsInserted.connect(
-        lambda: tree_view.expandRecursively(QtCore.QModelIndex())
+        lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
     )
 
-    main_window.setCentralWidget(tree_view)
+    main_window.setCentralWidget(main_tree_view)
     main_window.show()
+
+    # Inspection window
+    inspection_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
+    inspection_window.setWindowTitle("Inspection Window")
+    inspection_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(inspection_window, "Undo")
+    inspection_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+    inspection_window.addAction(main_undo_action)
+    inspection_redo_action: QtWidgets.QAction = model.undo_stack.createRedoAction(inspection_window, "Redo")
+    inspection_redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+    inspection_window.addAction(main_redo_action)
+
+    second_tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
+    second_tree_view.setModel(model)
+    second_tree_view.setAlternatingRowColors(True)
+    second_tree_view.setItemDelegate(TreeViewDelegate())
+
+    main_tree_view.selectionModel().selectionChanged.connect(
+        lambda current, previous: second_tree_view.setRootIndex(cast(QtCore.QItemSelection, current).indexes()[0])
+    )
+
+    model.rowsInserted.connect(
+        lambda: second_tree_view.expandRecursively(QtCore.QModelIndex())
+    )
+
+    inspection_window.setCentralWidget(second_tree_view)
+    inspection_window.show()
 
     # Populate tree model with tree items
     node_container: ContainerItem = ContainerItem(name="Nodes")
@@ -310,6 +337,9 @@ if __name__ == "__main__":
 
     frame_container: ContainerItem = ContainerItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_container, QtCore.QModelIndex())
+
+    # Set focus of inspection window
+    # second_tree_view.setRootIndex(nodes_idx)
 
     # Serialize tree mode
     serialized: dict[str, Any] = model.to_dict()
