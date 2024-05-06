@@ -36,7 +36,7 @@
                 {
                     "type": "IndexPropertyItem",
                     "key": "Source",
-                    "value": "<PySide2.QtCore.QModelIndex(0,0,0x1f122e3b970,TreeModel(0x1f1229a63a0)) at 0x000001F122E62600>"
+                    "value": "<PySide2.QtCore.QModelIndex(0,0,0x1f95888b970,TreeModel(0x1f958446d60)) at 0x000001F9588B2600>"
                 }
             ]
         },
