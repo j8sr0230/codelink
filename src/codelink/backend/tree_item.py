@@ -27,6 +27,7 @@ from typing import Optional, Any
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
 
 
 class TreeItem(object):
@@ -51,6 +52,10 @@ class TreeItem(object):
     @staticmethod
     def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                                index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
         pass
 
     @property

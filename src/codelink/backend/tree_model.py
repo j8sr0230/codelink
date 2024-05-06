@@ -107,6 +107,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return 2
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
+        print(role)
         if not index.isValid():
             return None
 
@@ -129,6 +130,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     return property_item.value
 
         if role == QtCore.Qt.BackgroundColorRole:
+            print("Background", role)
             if type(tree_item) is ContainerItem:
                 return QtGui.QColor("#ccc")
 
@@ -302,8 +304,8 @@ if __name__ == "__main__":
 
     second_tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     second_tree_view.setModel(model)
-    second_tree_view.setAlternatingRowColors(True)
-    second_tree_view.setItemDelegate(TreeViewDelegate())
+    # second_tree_view.setAlternatingRowColors(True)
+    # second_tree_view.setItemDelegate(TreeViewDelegate())
 
     main_tree_view.selectionModel().selectionChanged.connect(
         lambda current, previous: second_tree_view.setRootIndex(cast(QtCore.QItemSelection, current).indexes()[0])

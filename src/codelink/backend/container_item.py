@@ -24,6 +24,10 @@
 
 from typing import Optional, Any
 
+import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
+import PySide2.QtWidgets as QtWidgets
+
 from tree_item import TreeItem
 
 
@@ -32,6 +36,14 @@ class ContainerItem(TreeItem):
         super().__init__(parent)
 
         self._name: str = name
+
+    @staticmethod
+    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
+        brush: QtGui.QBrush = QtGui.QBrush(QtGui.QColor("#ccc"))
+
+        painter.save()
+        painter.fillRect(option.rect, brush)
+        painter.restore()
 
     @property
     def name(self) -> str:

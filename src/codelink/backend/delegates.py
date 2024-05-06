@@ -24,6 +24,7 @@
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
 
 from tree_item import TreeItem
 
@@ -50,3 +51,8 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                              index: QtCore.QModelIndex()) -> None:
         data_item: TreeItem = index.model().get_item(index)
         data_item.update_editor_geometry(editor, option, index)
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
+        data_item: TreeItem = index.model().get_item(index)
+        data_item.paint(painter, option, index)
+        super().paint(painter, option, index)
