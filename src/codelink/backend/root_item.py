@@ -24,8 +24,6 @@
 
 from typing import Optional
 
-import PySide2.QtCore as QtCore
-
 from tree_item import TreeItem
 
 

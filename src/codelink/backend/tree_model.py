@@ -218,13 +218,20 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return self.root_item
 
-    def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
+    def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
-            self.index(0, 1, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
+            self.index(0, column, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
             QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
         )
         if len(index_list) > 0:
             return cast(QtCore.QModelIndex, index_list[0])
+
+        return None
+
+    def item_from_uuid(self, uuid: str) -> Optional[TreeItem]:
+        index: Optional[QtCore.QModelIndex] = self.index_from_uuid(uuid)
+        if index:
+            return self.item_from_index(index)
 
         return None
 
@@ -372,10 +379,8 @@ if __name__ == "__main__":
         restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
         restored_vector_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_node_idx)
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
-
-        restored_z_uuid_idx: QtCore.QModelIndex = restored_model.index_from_uuid(
-            restored_model.data(restored_z_idx, UUID_ROLE)
-        )
-        print(restored_z_uuid_idx.data(int(QtCore.Qt.DisplayRole)))
+        restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
+        restored_item: PropertyItem = cast(PropertyItem, restored_model.item_from_uuid(restored_z_uuid))
+        print(restored_item.key, restored_item.value)
 
     sys.exit(app.exec_())
