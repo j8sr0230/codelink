@@ -220,7 +220,8 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
-            QtCore.QModelIndex(), UUID_ROLE, uuid, 1, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive
+            self.index(0, 0, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
+            QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
         )
         print(index_list)
         if len(index_list) > 0:
