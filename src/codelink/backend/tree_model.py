@@ -41,6 +41,9 @@ from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
 
 
+UUID_ROLE: int = QtCore.Qt.UserRole + 1
+
+
 class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
         super().__init__(parent)
@@ -110,7 +113,8 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole:
+        if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
+                and role != UUID_ROLE):
             return None
 
         tree_item: TreeItem = self.get_item(index)
@@ -127,6 +131,9 @@ class TreeModel(QtCore.QAbstractItemModel):
                     return property_item.key
                 if index.column() == 1:
                     return property_item.value
+
+        if role == UUID_ROLE:
+            return tree_item.uuid
 
         if role == QtCore.Qt.BackgroundColorRole:
             if type(tree_item) is SeperatorItem:
@@ -342,6 +349,10 @@ if __name__ == "__main__":
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
+    print()
+    print("Frame UUID", model.data(frame_idx, UUID_ROLE))
+    print()
+
     # (De-)Serialisation
     print(model)
     with open("./data.json", "w", encoding="utf-8") as f:
@@ -351,5 +362,7 @@ if __name__ == "__main__":
         deserialized: dict[str, Any] = json.load(f)
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
+
+        print("Frame UUID", restored_model.data(frame_idx, UUID_ROLE))
 
     sys.exit(app.exec_())
