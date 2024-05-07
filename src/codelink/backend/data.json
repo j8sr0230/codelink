@@ -1,33 +1,33 @@
 {
     "type": "RootItem",
-    "uuid": "{1bbe39cd-38a8-420e-a410-669699e63299}",
+    "uuid": "{7b85061d-2f3c-4ff6-9ba6-2f52f3ed0467}",
     "children": [
         {
             "type": "SeperatorItem",
-            "uuid": "{7daa61d5-d8fa-4009-81e7-8912d98a0fde}",
+            "uuid": "{f73dd27a-10c4-425b-936f-c4c0b71d7f13}",
             "name": "Nodes",
             "children": [
                 {
                     "type": "PropertyItem",
-                    "uuid": "{a03f8506-d9d6-4c15-ad42-0be3f75a761f}",
+                    "uuid": "{06f8dd48-5662-4d72-a4f6-1a04d7ec29c2}",
                     "key": "Vector",
                     "value": "",
                     "children": [
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{bed898cc-2ff1-4800-884c-afd5887b6913}",
+                            "uuid": "{293ad696-95a8-4121-9e7c-01ac76dca95a}",
                             "key": "X",
                             "value": 5
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{2a24ed22-a447-45d9-bbfc-1f220e768a89}",
+                            "uuid": "{a45dd42e-97aa-4c75-8746-6047a8cff209}",
                             "key": "Y",
                             "value": 0
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{7e83715f-7431-45b9-a334-12e6b1a4e4cd}",
+                            "uuid": "{5f11e8a3-c3dd-4ab6-8dee-c3b02be54ac1}",
                             "key": "Z",
                             "value": 99
                         }
@@ -37,12 +37,12 @@
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{3304e52f-dd5a-4ff1-b18f-7945f7cdae5f}",
+            "uuid": "{9533c3c8-91a2-4e33-9ed0-daf9ea391dc5}",
             "name": "Edges"
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{ec4d86ee-fd5f-4a05-ad79-c246ae5b8877}",
+            "uuid": "{375ceba6-7196-4c3e-bfb6-f11da92fe3e7}",
             "name": "Frames"
         }
     ]
