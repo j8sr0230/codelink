@@ -31,8 +31,9 @@ from property_item import PropertyItem
 
 
 class IntegerPropertyItem(PropertyItem):
-    def __init__(self, key: str, value: int, parent: Optional[PropertyItem] = None) -> None:
-        super().__init__(key, value, parent)
+    def __init__(self, key: str, value: int, uuid: Optional[str] = None,
+                 parent: Optional[PropertyItem] = None) -> None:
+        super().__init__(key, value, uuid, parent)
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
@@ -59,6 +60,6 @@ class IntegerPropertyItem(PropertyItem):
         editor.setGeometry(option.rect)
 
     def __repr__(self) -> str:
-        result: str = f"<integer_property_item.IntegerPropertyItem at 0x{id(self):x}"
+        result: str = f"<integer_property_item.IntegerPropertyItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

@@ -36,7 +36,6 @@ from root_item import RootItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
-from index_property_item import IndexPropertyItem
 
 from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
@@ -124,16 +123,10 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if isinstance(tree_item, PropertyItem):
                 property_item: PropertyItem = cast(PropertyItem, tree_item)
-                if type(property_item) is IndexPropertyItem:
-                    if index.column() == 0:
-                        return property_item.key
-                    if index.column() == 1:
-                        return str(property_item.value)
-                else:
-                    if index.column() == 0:
-                        return property_item.key
-                    if index.column() == 1:
-                        return property_item.value
+                if index.column() == 0:
+                    return property_item.key
+                if index.column() == 1:
+                    return property_item.value
 
         if role == QtCore.Qt.BackgroundColorRole:
             if type(tree_item) is SeperatorItem:
@@ -240,6 +233,10 @@ class TreeModel(QtCore.QAbstractItemModel):
     def from_dict(self, state: dict[str, Any]) -> TreeItem:
         values: list[Any] = list(state.values())
         cls_name: str = values.pop(0)
+
+        if "children" in state.keys():
+            values.pop()
+        values.append(values.pop(0))
         tree_item: TreeItem = eval(cls_name)(*values)
 
         if "children" in state.keys():
@@ -342,23 +339,17 @@ if __name__ == "__main__":
     edge_sep: SeperatorItem = SeperatorItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
 
-    source_item: IndexPropertyItem = IndexPropertyItem(key="Source", value=vect_idx)
-    source_idx: QtCore.QModelIndex = model.append_item(source_item, edges_idx)
-
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
-    # Set focus of inspection window
-    # second_tree_view.setRootIndex(nodes_idx)
-
-    # Serialize tree mode
-    serialized: dict[str, Any] = model.to_dict()
-    restored_model: TreeModel = TreeModel(serialized)
-    json_str: str = json.dumps(restored_model.to_dict(), indent=4)
-
+    # (De-)Serialisation
+    print(model)
     with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(restored_model.to_dict(), f, ensure_ascii=False, indent=4)
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
-    print(restored_model)
+    with open("./data.json", "r", encoding="utf-8") as f:
+        deserialized: dict[str, Any] = json.load(f)
+        restored_model: TreeModel = TreeModel(deserialized)
+        print(restored_model)
 
     sys.exit(app.exec_())

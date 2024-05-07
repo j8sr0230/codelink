@@ -1,27 +1,33 @@
 {
     "type": "RootItem",
+    "uuid": "{45d909c2-2b2e-40ee-9ba3-7f9c6d4b7130}",
     "children": [
         {
             "type": "SeperatorItem",
+            "uuid": "{71dac220-b1b6-48cd-ad27-870c04303c96}",
             "name": "Nodes",
             "children": [
                 {
                     "type": "PropertyItem",
+                    "uuid": "{cefaf326-75f3-46ec-91d1-f20defdf038d}",
                     "key": "Vector",
                     "value": "",
                     "children": [
                         {
                             "type": "IntegerPropertyItem",
+                            "uuid": "{7b260b9a-7e89-41c8-ab77-628089611ba2}",
                             "key": "X",
                             "value": 1
                         },
                         {
                             "type": "IntegerPropertyItem",
+                            "uuid": "{8b94283b-70fe-48f4-b440-1ebf9dee0817}",
                             "key": "Y",
                             "value": 0
                         },
                         {
                             "type": "IntegerPropertyItem",
+                            "uuid": "{ad6b2b96-9180-4775-be91-c2dbe825882b}",
                             "key": "Z",
                             "value": 0
                         }
@@ -31,17 +37,12 @@
         },
         {
             "type": "SeperatorItem",
-            "name": "Edges",
-            "children": [
-                {
-                    "type": "IndexPropertyItem",
-                    "key": "Source",
-                    "value": "<PySide2.QtCore.QModelIndex(0,0,0x1f95888b970,TreeModel(0x1f958446d60)) at 0x000001F9588B2600>"
-                }
-            ]
+            "uuid": "{a5adb8c1-1360-4954-885e-1d71746a2846}",
+            "name": "Edges"
         },
         {
             "type": "SeperatorItem",
+            "uuid": "{54dc2fbf-9703-454a-9a1e-945b99dd7945}",
             "name": "Frames"
         }
     ]

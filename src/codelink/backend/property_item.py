@@ -28,8 +28,9 @@ from tree_item import TreeItem
 
 
 class PropertyItem(TreeItem):
-    def __init__(self, key: str, value: Any, parent: Optional[TreeItem] = None) -> None:
-        super().__init__(parent)
+    def __init__(self, key: str, value: Any, uuid: Optional[str] = None,
+                 parent: Optional[TreeItem] = None) -> None:
+        super().__init__(uuid, parent)
 
         self._key: str = key
         self._value: Any = value
@@ -57,6 +58,6 @@ class PropertyItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<property_item.PropertyItem at 0x{id(self):x}"
+        result: str = f"<property_item.PropertyItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

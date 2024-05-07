@@ -32,8 +32,8 @@ from tree_item import TreeItem
 
 
 class SeperatorItem(TreeItem):
-    def __init__(self, name: str, parent: Optional[TreeItem] = None) -> None:
-        super().__init__(parent)
+    def __init__(self, name: str, uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
+        super().__init__(uuid, parent)
 
         self._name: str = name
 
@@ -51,6 +51,6 @@ class SeperatorItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<container_item.SeperatorItem at 0x{id(self):x}"
+        result: str = f"<container_item.SeperatorItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

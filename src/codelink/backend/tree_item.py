@@ -31,9 +31,18 @@ import PySide2.QtGui as QtGui
 
 
 class TreeItem(object):
-    def __init__(self, parent: Optional[TreeItem] = None) -> None:
+    def __init__(self, uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
+        self._uuid: str = uuid if uuid else QtCore.QUuid.createUuid().toString()
         self._parent: Optional[TreeItem] = parent
         self._children: list[TreeItem] = []
+
+    @property
+    def uuid(self) -> str:
+        return self._uuid
+
+    @uuid.setter
+    def uuid(self, value: str) -> None:
+        self._uuid: str = value
 
     @property
     def parent(self) -> Optional[TreeItem]:
@@ -104,11 +113,12 @@ class TreeItem(object):
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict = {
-            "type": self.__class__.__name__
+            "type": self.__class__.__name__,
+            "uuid": self._uuid
         }
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<tree_item.TreeItem at 0x{id(self):x}"
+        result: str = f"<tree_item.TreeItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result
