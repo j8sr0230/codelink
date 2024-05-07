@@ -218,6 +218,16 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return self.root_item
 
+    def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
+        index_list: list[int] = self.match(
+            QtCore.QModelIndex(), UUID_ROLE, uuid, 1, QtCore.Qt.MatchExactly | QtCore.Qt.MatchRecursive
+        )
+        print(index_list)
+        if len(index_list) > 0:
+            return cast(QtCore.QModelIndex, index_list[0])
+
+        return None
+
     def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         return self.removeRow(row, parent)
 
@@ -354,9 +364,9 @@ if __name__ == "__main__":
     print()
 
     # (De-)Serialisation
-    print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    # print(model)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -364,5 +374,6 @@ if __name__ == "__main__":
         print(restored_model)
 
         print("Frame UUID", restored_model.data(frame_idx, UUID_ROLE))
+        restored_model.index_from_uuid("{70b976e2-a50d-452b-906f-76a437163361}")
 
     sys.exit(app.exec_())
