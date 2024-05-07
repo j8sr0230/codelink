@@ -36,6 +36,7 @@ from root_item import RootItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
+from connection_item import ConnectionItem
 
 from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
@@ -131,6 +132,14 @@ class TreeModel(QtCore.QAbstractItemModel):
                     return property_item.key
                 if index.column() == 1:
                     return property_item.value
+
+            if isinstance(tree_item, ConnectionItem):
+                connection_item: ConnectionItem = cast(ConnectionItem, tree_item)
+                if index.column() == 0:
+                    return "Edge"
+                if index.column() == 1:
+                    if hasattr(connection_item.source, "key") and hasattr(connection_item.destination, "key"):
+                        return connection_item.source.key + "->" + connection_item.destination.key
 
         if role == UUID_ROLE:
             return tree_item.uuid
@@ -261,7 +270,11 @@ class TreeModel(QtCore.QAbstractItemModel):
         if "children" in state.keys():
             values.pop()
         values.append(values.pop(0))
-        tree_item: TreeItem = eval(cls_name)(*values)
+
+        if eval(cls_name) is ConnectionItem:
+            tree_item: TreeItem = ConnectionItem(model.item_from_uuid(values[0]), model.item_from_uuid(values[1]))
+        else:
+            tree_item: TreeItem = eval(cls_name)(*values)
 
         if "children" in state.keys():
             for child_data in state["children"]:
@@ -362,6 +375,8 @@ if __name__ == "__main__":
 
     edge_sep: SeperatorItem = SeperatorItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
+    edge_1: ConnectionItem = ConnectionItem(x_component, y_component)
+    edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
 
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
@@ -382,5 +397,17 @@ if __name__ == "__main__":
         restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
         restored_item: PropertyItem = cast(PropertyItem, restored_model.item_from_uuid(restored_z_uuid))
         print(restored_item.key, restored_item.value)
+
+        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+        restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
+        restored_edge: TreeItem = model.item_from_index(restored_edge_1_idx)
+        restored_edge: ConnectionItem = cast(ConnectionItem, restored_edge)
+        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge.source)
+        restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge.destination)
+        print(restored_edge)
+        print(
+            restored_source.key, ":", restored_source.value, "->",
+            restored_destination.key, ":", restored_destination.value
+        )
 
     sys.exit(app.exec_())
