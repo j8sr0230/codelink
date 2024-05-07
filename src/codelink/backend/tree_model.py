@@ -71,7 +71,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if parent.isValid() and parent.column() != 0:
             return QtCore.QModelIndex()
 
-        parent_item: TreeItem = self.get_item(parent)
+        parent_item: TreeItem = self.item_from_index(parent)
         if not parent_item:
             return QtCore.QModelIndex()
 
@@ -85,7 +85,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.QModelIndex()
 
-        child_item: TreeItem = self.get_item(index)
+        child_item: TreeItem = self.item_from_index(index)
         if child_item:
             parent_item: Optional[TreeItem] = child_item.parent
         else:
@@ -100,7 +100,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if parent.isValid() and parent.column() > 0:
             return 0
 
-        parent_item: TreeItem = self.get_item(parent)
+        parent_item: TreeItem = self.item_from_index(parent)
         if not parent_item:
             return 0
 
@@ -117,7 +117,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                 and role != UUID_ROLE):
             return None
 
-        tree_item: TreeItem = self.get_item(index)
+        tree_item: TreeItem = self.item_from_index(index)
 
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
             if type(tree_item) is SeperatorItem:
@@ -146,7 +146,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if role != QtCore.Qt.EditRole:
             return False
 
-        tree_item: TreeItem = self.get_item(index)
+        tree_item: TreeItem = self.item_from_index(index)
 
         if isinstance(tree_item, PropertyItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
@@ -158,7 +158,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
-        tree_item: Optional[TreeItem] = self.get_item(index)
+        tree_item: Optional[TreeItem] = self.item_from_index(index)
         if isinstance(tree_item, PropertyItem):
             if index.column() == 0:
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -181,7 +181,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     return "The value of the property"
 
     def removeRow(self, row: int, parent=QtCore.QModelIndex()) -> bool:
-        parent_item: TreeItem = self.get_item(parent)
+        parent_item: TreeItem = self.item_from_index(parent)
         if not parent_item:
             return False
 
@@ -195,7 +195,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return False
 
     def insert_item(self, row: int, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
-        parent_item: TreeItem = self.get_item(parent)
+        parent_item: TreeItem = self.item_from_index(parent)
 
         if parent_item == self.root_item or not parent_item:
             parent_index: QtCore.QModelIndex = QtCore.QModelIndex()
@@ -210,7 +210,7 @@ class TreeModel(QtCore.QAbstractItemModel):
     def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
         return self.insert_item(self.rowCount(parent), tree_item, parent)
 
-    def get_item(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> TreeItem:
+    def item_from_index(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> TreeItem:
         if index.isValid():
             item: TreeItem = cast(TreeItem, index.internalPointer())
             if item:
@@ -220,10 +220,9 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
-            self.index(0, 0, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
+            self.index(0, 1, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
             QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
         )
-        print(index_list)
         if len(index_list) > 0:
             return cast(QtCore.QModelIndex, index_list[0])
 
@@ -233,7 +232,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.removeRow(row, parent)
 
     def to_dict(self, parent_index: QtCore.QModelIndex = QtCore.QModelIndex()) -> dict[str, Any]:
-        parent_item: TreeItem = self.get_item(parent_index)
+        parent_item: TreeItem = self.item_from_index(parent_index)
         state: dict[str, Any] = parent_item.__getstate__()
 
         if self.hasChildren(parent_index):
@@ -345,10 +344,10 @@ if __name__ == "__main__":
     vector_item: PropertyItem = PropertyItem(key="Vector", value="")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
-    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=1)
+    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
     model.append_item(x_component, vect_idx)
 
-    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=0)
+    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
     model.append_item(z_component, vect_idx)
 
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
@@ -360,21 +359,23 @@ if __name__ == "__main__":
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
-    print()
-    print("Frame UUID", model.data(frame_idx, UUID_ROLE))
-    print()
-
     # (De-)Serialisation
-    # print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    print(model)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
 
-        print("Frame UUID", restored_model.data(frame_idx, UUID_ROLE))
-        restored_model.index_from_uuid("{70b976e2-a50d-452b-906f-76a437163361}")
+        restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
+        restored_vector_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_node_idx)
+        restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
+
+        restored_z_uuid_idx: QtCore.QModelIndex = restored_model.index_from_uuid(
+            restored_model.data(restored_z_idx, UUID_ROLE)
+        )
+        print(restored_z_uuid_idx.data(int(QtCore.Qt.DisplayRole)))
 
     sys.exit(app.exec_())

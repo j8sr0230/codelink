@@ -37,7 +37,7 @@ class PropertyEditCommand(QtWidgets.QUndoCommand):
         self._value: Any = value
         self._model: QtCore.QAbstractItemModel = model
         # noinspection PyUnresolvedReferences
-        self._prev_value: Any = self._model.get_item(index).value
+        self._prev_value: Any = self._model.item_from_index(index).value
 
     @property
     def index(self) -> QtCore.QModelIndex:
@@ -51,11 +51,11 @@ class PropertyEditCommand(QtWidgets.QUndoCommand):
         return 10
 
     def undo(self) -> None:
-        self._model.get_item(self._index).value: Any = self._prev_value
+        self._model.item_from_index(self._index).value: Any = self._prev_value
         self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
 
     def redo(self) -> None:
-        self._model.get_item(self._index).value: Any = self._value
+        self._model.item_from_index(self._index).value: Any = self._value
         self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
 
     def mergeWith(self, other: QtWidgets.QUndoCommand) -> bool:
@@ -69,5 +69,5 @@ class PropertyEditCommand(QtWidgets.QUndoCommand):
             return False
 
         # noinspection PyUnresolvedReferences
-        self._value: Any = other_model.get_item(other.index).value
+        self._value: Any = other_model.item_from_index(other.index).value
         return True

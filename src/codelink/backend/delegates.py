@@ -35,24 +35,24 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex()) -> QtWidgets.QWidget:
-        data_item: TreeItem = index.model().get_item(index)
+        data_item: TreeItem = index.model().item_from_index(index)
         return data_item.create_editor(parent, option, index)
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        data_item: TreeItem = index.model().get_item(index)
+        data_item: TreeItem = index.model().item_from_index(index)
         data_item.set_editor_data(editor, index)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex()) -> bool:
-        data_item: TreeItem = index.model().get_item(index)
+        data_item: TreeItem = index.model().item_from_index(index)
         return data_item.set_model_data(editor, model, index)
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex()) -> None:
-        data_item: TreeItem = index.model().get_item(index)
+        data_item: TreeItem = index.model().item_from_index(index)
         data_item.update_editor_geometry(editor, option, index)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        data_item: TreeItem = index.model().get_item(index)
+        data_item: TreeItem = index.model().item_from_index(index)
         data_item.paint(painter, option, index)
         super().paint(painter, option, index)
