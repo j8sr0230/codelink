@@ -24,31 +24,14 @@
 
 from typing import Optional, Any
 
-import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
-import PySide2.QtWidgets as QtWidgets
-
 from tree_item import TreeItem
+from data_item import DataItem
 
 
-class SeperatorItem(TreeItem):
-    def __init__(self, name: str, uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
-        super().__init__(uuid, parent)
-
-        self._name: str = name
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, value: str) -> None:
-        self._name: str = value
-
-    def __getstate__(self) -> dict[str, Any]:
-        state: dict[str, Any] = super().__getstate__()
-        state["name"] = self._name
-        return state
+class SeperatorItem(DataItem):
+    def __init__(self, name: str, value: Any = None, uuid: Optional[str] = None,
+                 parent: Optional[TreeItem] = None) -> None:
+        super().__init__(name, value, uuid, parent)
 
     def __repr__(self) -> str:
         result: str = f"<seperator_item.SeperatorItem {self._uuid} at 0x{id(self):x}"

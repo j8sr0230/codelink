@@ -273,7 +273,8 @@ class TreeModel(QtCore.QAbstractItemModel):
         values.append(values.pop(0))
 
         if eval(cls_name) is ConnectionItem:
-            tree_item: TreeItem = ConnectionItem(model.item_from_uuid(values[0]), model.item_from_uuid(values[1]))
+            tree_item: ConnectionItem = ConnectionItem(model.item_from_uuid(values[0]), model.item_from_uuid(values[1]),
+                                                       values[2])
         else:
             tree_item: TreeItem = eval(cls_name)(*values)
 
@@ -386,8 +387,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -408,6 +409,7 @@ if __name__ == "__main__":
         restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.source)
         restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.destination)
         print(restored_edge_1)
+        print(restored_destination)
         print(
             restored_source.name, ":", restored_source.value, "->",
             restored_destination.name, ":", restored_destination.value
