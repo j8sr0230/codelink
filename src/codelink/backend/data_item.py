@@ -27,21 +27,21 @@ from typing import Any, Optional
 from tree_item import TreeItem
 
 
-class PropertyItem(TreeItem):
-    def __init__(self, key: str, value: Any, uuid: Optional[str] = None,
+class DataItem(TreeItem):
+    def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(uuid, parent)
 
-        self._key: str = key
+        self._name: str = name
         self._value: Any = value
 
     @property
-    def key(self) -> str:
-        return self._key
+    def name(self) -> str:
+        return self._name
 
-    @key.setter
-    def key(self, value: str) -> None:
-        self._key: str = value
+    @name.setter
+    def name(self, value: str) -> None:
+        self._name: str = value
 
     @property
     def value(self) -> Any:
@@ -53,11 +53,11 @@ class PropertyItem(TreeItem):
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict[str, Any] = super().__getstate__()
-        state["key"] = self._key
+        state["name"] = self._name
         state["value"] = self._value
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<property_item.PropertyItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<data_item.DataItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

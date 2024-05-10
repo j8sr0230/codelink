@@ -51,6 +51,6 @@ class SeperatorItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<container_item.SeperatorItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<seperator_item.SeperatorItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

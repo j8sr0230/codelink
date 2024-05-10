@@ -34,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 from tree_item import TreeItem
 from root_item import RootItem
 from seperator_item import SeperatorItem
-from property_item import PropertyItem
+from data_item import DataItem
 from integer_property_item import IntegerPropertyItem
 from connection_item import ConnectionItem
 
@@ -126,10 +126,10 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 0:
                     return container_item.name
 
-            if isinstance(tree_item, PropertyItem):
-                property_item: PropertyItem = cast(PropertyItem, tree_item)
+            if isinstance(tree_item, DataItem):
+                property_item: DataItem = cast(DataItem, tree_item)
                 if index.column() == 0:
-                    return property_item.key
+                    return property_item.name
                 if index.column() == 1:
                     return property_item.value
 
@@ -157,7 +157,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         tree_item: TreeItem = self.item_from_index(index)
 
-        if isinstance(tree_item, PropertyItem) and index.column() == 1:
+        if isinstance(tree_item, DataItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
             return True
 
@@ -168,7 +168,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         tree_item: Optional[TreeItem] = self.item_from_index(index)
-        if isinstance(tree_item, PropertyItem):
+        if isinstance(tree_item, DataItem):
             if index.column() == 0:
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
             if index.column() == 1:
@@ -180,7 +180,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
                 if role == QtCore.Qt.DisplayRole:
-                    return "Property"
+                    return "Name"
                 if role == QtCore.Qt.ToolTipRole:
                     return "The name of the property"
             if section == 1:
@@ -361,16 +361,16 @@ if __name__ == "__main__":
     node_sep: SeperatorItem = SeperatorItem(name="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
-    vector_item: PropertyItem = PropertyItem(key="Vector", value="")
+    vector_item: DataItem = DataItem(name="Vector", value="")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
-    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
+    x_component: IntegerPropertyItem = IntegerPropertyItem(name="X", value=5)
     model.append_item(x_component, vect_idx)
 
-    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
+    z_component: IntegerPropertyItem = IntegerPropertyItem(name="Z", value=99)
     model.append_item(z_component, vect_idx)
 
-    y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
+    y_component: IntegerPropertyItem = IntegerPropertyItem(name="Y", value=0)
     model.insert_item(1, y_component, vect_idx)
 
     edge_sep: SeperatorItem = SeperatorItem(name="Edges")
@@ -395,8 +395,8 @@ if __name__ == "__main__":
         restored_vector_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_node_idx)
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
         restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
-        restored_item: PropertyItem = cast(PropertyItem, restored_model.item_from_uuid(restored_z_uuid))
-        print(restored_item.key, restored_item.value)
+        restored_item: DataItem = cast(DataItem, restored_model.item_from_uuid(restored_z_uuid))
+        print(restored_item.name, restored_item.value)
 
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
@@ -406,8 +406,8 @@ if __name__ == "__main__":
         restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge.destination)
         print(restored_edge)
         print(
-            restored_source.key, ":", restored_source.value, "->",
-            restored_destination.key, ":", restored_destination.value
+            restored_source.name, ":", restored_source.value, "->",
+            restored_destination.name, ":", restored_destination.value
         )
 
     sys.exit(app.exec_())

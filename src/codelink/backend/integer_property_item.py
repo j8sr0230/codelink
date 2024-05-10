@@ -27,13 +27,13 @@ from typing import Any, Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from property_item import PropertyItem
+from data_item import DataItem
 
 
-class IntegerPropertyItem(PropertyItem):
-    def __init__(self, key: str, value: int, uuid: Optional[str] = None,
-                 parent: Optional[PropertyItem] = None) -> None:
-        super().__init__(key, value, uuid, parent)
+class IntegerPropertyItem(DataItem):
+    def __init__(self, name: str, value: int, uuid: Optional[str] = None,
+                 parent: Optional[DataItem] = None) -> None:
+        super().__init__(name, value, uuid, parent)
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
