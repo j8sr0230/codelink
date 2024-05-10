@@ -138,8 +138,8 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 0:
                     return "Edge"
                 if index.column() == 1:
-                    if hasattr(connection_item.source, "key") and hasattr(connection_item.destination, "key"):
-                        return connection_item.source.key + "->" + connection_item.destination.key
+                    if hasattr(connection_item.source, "name") and hasattr(connection_item.destination, "name"):
+                        return connection_item.source.name + "->" + connection_item.destination.name
 
         if role == UUID_ROLE:
             return tree_item.uuid
@@ -377,6 +377,8 @@ if __name__ == "__main__":
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
     edge_1: ConnectionItem = ConnectionItem(x_component, y_component)
     edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
+    edge_2: ConnectionItem = ConnectionItem(y_component, vector_item)
+    edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
 
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
@@ -400,11 +402,22 @@ if __name__ == "__main__":
 
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        restored_edge: TreeItem = model.item_from_index(restored_edge_1_idx)
-        restored_edge: ConnectionItem = cast(ConnectionItem, restored_edge)
-        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge.source)
-        restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge.destination)
-        print(restored_edge)
+        restored_edge_1: TreeItem = model.item_from_index(restored_edge_1_idx)
+        restored_edge_1: ConnectionItem = cast(ConnectionItem, restored_edge_1)
+        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.source)
+        restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.destination)
+        print(restored_edge_1)
+        print(
+            restored_source.name, ":", restored_source.value, "->",
+            restored_destination.name, ":", restored_destination.value
+        )
+
+        restored_edge_2_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_edges_idx)
+        restored_edge_2: TreeItem = model.item_from_index(restored_edge_2_idx)
+        restored_edge_2: ConnectionItem = cast(ConnectionItem, restored_edge_2)
+        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_2.source)
+        restored_destination: DataItem = cast(DataItem, restored_edge_2.destination)
+        print(restored_edge_1)
         print(
             restored_source.name, ":", restored_source.value, "->",
             restored_destination.name, ":", restored_destination.value
