@@ -1,34 +1,34 @@
 {
     "type": "RootItem",
-    "uuid": "{f54d76e6-398b-4975-8b09-f638f466904c}",
+    "uuid": "{e7595a39-d921-4320-8442-3f187301edf0}",
     "children": [
         {
             "type": "SeperatorItem",
-            "uuid": "{e09b3ed8-62ea-49e0-b262-a149029963bf}",
+            "uuid": "{c17296aa-1426-4b1f-9425-36dd3163a158}",
             "name": "Nodes",
             "value": null,
             "children": [
                 {
                     "type": "PropertyItem",
-                    "uuid": "{45782539-ffe8-46ca-9bdb-1e42f9cc2a0a}",
+                    "uuid": "{6641ef8e-3dcd-4b64-be0c-b4ab2e23b13b}",
                     "name": "Vector",
                     "value": "[...]",
                     "children": [
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{8e4f0da5-04bb-4276-a1ee-f3077e1e0310}",
+                            "uuid": "{7d89dc01-8395-4206-a19a-e8cc557ce602}",
                             "name": "X",
                             "value": 5
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{2926f7f1-0fdb-437f-8616-dc4c42e2d969}",
+                            "uuid": "{77641fde-87d6-43a9-b098-17d5b47d5382}",
                             "name": "Y",
                             "value": 0
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{e95e96a1-742c-4ff1-8506-24bcc82e74e4}",
+                            "uuid": "{0c23b5ea-0ee4-468f-bf2c-ef3981852bf5}",
                             "name": "Z",
                             "value": 99
                         }
@@ -38,27 +38,27 @@
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{d880e93b-fffe-49ee-abf9-342dec5fbdfa}",
+            "uuid": "{cb0a1f5c-cf70-4b5f-9756-e48ea88d088d}",
             "name": "Edges",
             "value": null,
             "children": [
                 {
                     "type": "ConnectionItem",
-                    "uuid": "{b23516ec-464f-421c-b3ca-fbc1910b8024}",
-                    "source": "{8e4f0da5-04bb-4276-a1ee-f3077e1e0310}",
-                    "destination": "{2926f7f1-0fdb-437f-8616-dc4c42e2d969}"
+                    "uuid": "{5ad5a234-1c3a-4602-8c1e-6de0d1a1538b}",
+                    "source": "{7d89dc01-8395-4206-a19a-e8cc557ce602}",
+                    "destination": "{77641fde-87d6-43a9-b098-17d5b47d5382}"
                 },
                 {
                     "type": "ConnectionItem",
-                    "uuid": "{5a5e0d88-5e99-499c-9af1-c6b3992c3e25}",
-                    "source": "{2926f7f1-0fdb-437f-8616-dc4c42e2d969}",
-                    "destination": "{45782539-ffe8-46ca-9bdb-1e42f9cc2a0a}"
+                    "uuid": "{0365be3e-49aa-4388-86fb-0c7c8b76b53f}",
+                    "source": "{77641fde-87d6-43a9-b098-17d5b47d5382}",
+                    "destination": "{6641ef8e-3dcd-4b64-be0c-b4ab2e23b13b}"
                 }
             ]
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{dfe2db6e-ba2e-4aec-9fb2-1e543d442847}",
+            "uuid": "{a2c27abb-0182-4710-af7f-34556b1d052d}",
             "name": "Frames",
             "value": null
         }

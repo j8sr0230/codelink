@@ -28,33 +28,33 @@ from tree_item import TreeItem
 
 
 class ConnectionItem(TreeItem):
-    def __init__(self, source: TreeItem, destination: TreeItem, uuid: Optional[str] = None,
+    def __init__(self, source_uuid: str, destination_uuid: str, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(uuid, parent)
 
-        self._source: TreeItem = source
-        self._destination: TreeItem = destination
+        self._source_uuid: str = source_uuid
+        self._destination_uuid: str = destination_uuid
 
     @property
-    def source(self) -> TreeItem:
-        return self._source
+    def source_uuid(self) -> str:
+        return self._source_uuid
 
-    @source.setter
-    def source(self, value: TreeItem) -> None:
-        self._source: TreeItem = value
+    @source_uuid.setter
+    def source_uuid(self, value: str) -> None:
+        self._source_uuid: str = value
 
     @property
-    def destination(self) -> TreeItem:
-        return self._destination
+    def destination_uuid(self) -> str:
+        return self._destination_uuid
 
-    @destination.setter
-    def destination(self, value: TreeItem) -> None:
-        self._destination: TreeItem = value
+    @destination_uuid.setter
+    def destination_uuid(self, value: str) -> None:
+        self._destination_uuid: str = value
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict[str, Any] = super().__getstate__()
-        state["source"] = self._source.uuid
-        state["destination"] = self._destination.uuid
+        state["source"] = self._source_uuid
+        state["destination"] = self._destination_uuid
         return state
 
     def __repr__(self) -> str:

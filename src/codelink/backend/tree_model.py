@@ -139,8 +139,10 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 0:
                     return "Edge"
                 if index.column() == 1:
-                    if hasattr(connection_item.source, "name") and hasattr(connection_item.destination, "name"):
-                        return connection_item.source.name + "->" + connection_item.destination.name
+                    source: TreeItem = self.item_from_uuid(connection_item.source_uuid)
+                    destination: TreeItem = self.item_from_uuid(connection_item.destination_uuid)
+                    if hasattr(source, "name") and hasattr(destination, "name"):
+                        return source.name + "->" + destination.name
 
         if role == UUID_ROLE:
             return tree_item.uuid
@@ -226,7 +228,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             if item:
                 return item
 
-        return self.root_item
+        return self._root_item
 
     def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
@@ -272,11 +274,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             values.pop()
         values.append(values.pop(0))
 
-        if eval(cls_name) is ConnectionItem:
-            tree_item: ConnectionItem = ConnectionItem(model.item_from_uuid(values[0]), model.item_from_uuid(values[1]),
-                                                       values[2])
-        else:
-            tree_item: TreeItem = eval(cls_name)(*values)
+        tree_item: TreeItem = eval(cls_name)(*values)
 
         if "children" in state.keys():
             for child_data in state["children"]:
@@ -377,16 +375,16 @@ if __name__ == "__main__":
 
     edge_sep: SeperatorItem = SeperatorItem(name="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
-    edge_1: ConnectionItem = ConnectionItem(x_component, y_component)
+    edge_1: ConnectionItem = ConnectionItem(x_component.uuid, y_component.uuid)
     edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
-    edge_2: ConnectionItem = ConnectionItem(y_component, vector_item)
+    edge_2: ConnectionItem = ConnectionItem(y_component.uuid, vector_item.uuid)
     edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
 
     frame_sep: SeperatorItem = SeperatorItem(name="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
     # (De-)Serialisation
-    print(model)
+    # print(model)
     # with open("./data.json", "w", encoding="utf-8") as f:
     #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
@@ -406,8 +404,12 @@ if __name__ == "__main__":
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
         restored_edge_1: TreeItem = model.item_from_index(restored_edge_1_idx)
         restored_edge_1: ConnectionItem = cast(ConnectionItem, restored_edge_1)
-        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.source)
-        restored_destination: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_1.destination)
+        restored_source: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_1.source_uuid)
+        )
+        restored_destination: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_1.destination_uuid)
+        )
         print(restored_edge_1)
         print(restored_destination)
         print(
@@ -418,8 +420,10 @@ if __name__ == "__main__":
         restored_edge_2_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_edges_idx)
         restored_edge_2: TreeItem = model.item_from_index(restored_edge_2_idx)
         restored_edge_2: ConnectionItem = cast(ConnectionItem, restored_edge_2)
-        restored_source: IntegerPropertyItem = cast(IntegerPropertyItem, restored_edge_2.source)
-        restored_destination: DataItem = cast(DataItem, restored_edge_2.destination)
+        restored_source: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_2.source_uuid)
+        )
+        restored_destination: DataItem = cast(DataItem, restored_model.item_from_uuid(restored_edge_2.destination_uuid))
         print(restored_edge_1)
         print(
             restored_source.name, ":", restored_source.value, "->",
