@@ -1,0 +1,7 @@
+@startuml classes
+set namespaceSeparator none
+class "DataItem" as codelink.backend.data_item.DataItem {
+  name
+  value
+}
+@enduml
