@@ -1,0 +1,44 @@
+@startuml packages
+set namespaceSeparator none
+package "codelink.backend" as codelink.backend {
+}
+package "codelink.backend.connection_item" as codelink.backend.connection_item {
+}
+package "codelink.backend.data_item" as codelink.backend.data_item {
+}
+package "codelink.backend.delegates" as codelink.backend.delegates {
+}
+package "codelink.backend.integer_property_item" as codelink.backend.integer_property_item {
+}
+package "codelink.backend.property_item" as codelink.backend.property_item {
+}
+package "codelink.backend.root_item" as codelink.backend.root_item {
+}
+package "codelink.backend.seperator_item" as codelink.backend.seperator_item {
+}
+package "codelink.backend.tree_item" as codelink.backend.tree_item {
+}
+package "codelink.backend.tree_model" as codelink.backend.tree_model {
+}
+package "codelink.backend.undo_cmds" as codelink.backend.undo_cmds {
+}
+codelink.backend.connection_item --> codelink.backend.tree_item
+codelink.backend.data_item --> codelink.backend.tree_item
+codelink.backend.delegates --> codelink.backend.tree_item
+codelink.backend.integer_property_item --> codelink.backend.property_item
+codelink.backend.integer_property_item --> codelink.backend.tree_item
+codelink.backend.property_item --> codelink.backend.data_item
+codelink.backend.property_item --> codelink.backend.tree_item
+codelink.backend.root_item --> codelink.backend.tree_item
+codelink.backend.seperator_item --> codelink.backend.data_item
+codelink.backend.seperator_item --> codelink.backend.tree_item
+codelink.backend.tree_model --> codelink.backend.connection_item
+codelink.backend.tree_model --> codelink.backend.data_item
+codelink.backend.tree_model --> codelink.backend.delegates
+codelink.backend.tree_model --> codelink.backend.integer_property_item
+codelink.backend.tree_model --> codelink.backend.property_item
+codelink.backend.tree_model --> codelink.backend.root_item
+codelink.backend.tree_model --> codelink.backend.seperator_item
+codelink.backend.tree_model --> codelink.backend.tree_item
+codelink.backend.tree_model --> codelink.backend.undo_cmds
+@enduml

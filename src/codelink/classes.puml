@@ -1,0 +1,75 @@
+@startuml classes
+set namespaceSeparator none
+class "ConnectionItem" as codelink.backend.connection_item.ConnectionItem {
+  destination_uuid
+  source_uuid
+}
+class "DataItem" as codelink.backend.data_item.DataItem {
+  name
+  value
+}
+class "IntegerPropertyItem" as codelink.backend.integer_property_item.IntegerPropertyItem {
+  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
+  set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
+}
+class "PropertyEditCommand" as codelink.backend.undo_cmds.PropertyEditCommand {
+  index
+  model
+  id() -> int
+  mergeWith(other: QtWidgets.QUndoCommand) -> bool
+  redo() -> None
+  undo() -> None
+}
+class "PropertyItem" as codelink.backend.property_item.PropertyItem {
+}
+class "RootItem" as codelink.backend.root_item.RootItem {
+}
+class "SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
+}
+class "TreeItem" as codelink.backend.tree_item.TreeItem {
+  children
+  parent
+  uuid
+  append_child(child: TreeItem) -> bool
+  child(row: int) -> Optional[TreeItem]
+  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
+  insert_child(row: int, child: TreeItem) -> bool
+  {abstract}paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
+  remove_child(row: int) -> bool
+  row() -> int
+  {abstract}set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  {abstract}update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
+}
+class "TreeModel" as codelink.backend.tree_model.TreeModel {
+  root_item
+  undo_stack
+  append_item(tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  columnCount(parent: QtCore.QModelIndex) -> int
+  data(index: QtCore.QModelIndex, role: int) -> Any
+  flags(index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags
+  from_dict(state: dict[str, Any]) -> TreeItem
+  hasChildren(parent: QtCore.QModelIndex) -> bool
+  headerData(section: int, orientation: QtCore.Qt.Orientation, role) -> Any
+  index(row: int, column: int, parent: QtCore.QModelIndex) -> QtCore.QModelIndex
+  index_from_uuid(uuid: str, column: int) -> Optional[QtCore.QModelIndex]
+  insert_item(row: int, tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  item_from_index(index: QtCore.QModelIndex) -> TreeItem
+  item_from_uuid(uuid: str) -> Optional[TreeItem]
+  parent(index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  removeRow(row: int, parent) -> bool
+  remove_item(row: int, parent) -> bool
+  rowCount(parent) -> int
+  setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
+  to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
+}
+class "TreeViewDelegate" as codelink.backend.delegates.TreeViewDelegate {
+  createEditor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> QtWidgets.QWidget
+  paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
+  setEditorData(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  setModelData(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  updateEditorGeometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
+}
+@enduml
