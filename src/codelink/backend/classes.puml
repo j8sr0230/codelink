@@ -10,9 +10,29 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
   update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
-class "codelink.backend.root_item.RootItem" as codelink.backend.root_item.RootItem {
-}
 class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
+}
+class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
+  root_item
+  undo_stack
+  append_item(tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  columnCount(parent: QtCore.QModelIndex) -> int
+  data(index: QtCore.QModelIndex, role: int) -> Any
+  flags(index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags
+  from_dict(state: dict[str, Any]) -> TreeItem
+  hasChildren(parent: QtCore.QModelIndex) -> bool
+  headerData(section: int, orientation: QtCore.Qt.Orientation, role) -> Any
+  index(row: int, column: int, parent: QtCore.QModelIndex) -> QtCore.QModelIndex
+  index_from_uuid(uuid: str, column: int) -> Optional[QtCore.QModelIndex]
+  insert_item(row: int, tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  item_from_index(index: QtCore.QModelIndex) -> TreeItem
+  item_from_uuid(uuid: str) -> Optional[TreeItem]
+  parent(index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  removeRow(row: int, parent) -> bool
+  remove_item(row: int, parent) -> bool
+  rowCount(parent) -> int
+  setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
+  to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
 }
 class "data_item.DataItem" as data_item.DataItem {
   name
@@ -37,8 +57,8 @@ class "tree_item.TreeItem" as tree_item.TreeItem {
 }
 codelink.backend.connection_item.ConnectionItem --|> tree_item.TreeItem
 codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
-codelink.backend.root_item.RootItem --|> tree_item.TreeItem
 codelink.backend.seperator_item.SeperatorItem --|> data_item.DataItem
 data_item.DataItem --|> tree_item.TreeItem
 property_item.PropertyItem --|> data_item.DataItem
+tree_item.TreeItem --* codelink.backend.tree_model.TreeModel : _root_item
 @enduml

@@ -32,9 +32,8 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from tree_item import TreeItem
-from root_item import RootItem
-from seperator_item import SeperatorItem
 from data_item import DataItem
+from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 from connection_item import ConnectionItem
@@ -51,19 +50,19 @@ class TreeModel(QtCore.QAbstractItemModel):
         super().__init__(parent)
 
         if data:
-            self._root_item: RootItem = cast(RootItem, self.from_dict(data))
+            self._root_item: TreeItem = self.from_dict(data)
         else:
-            self._root_item: RootItem = RootItem()
+            self._root_item: TreeItem = TreeItem()
 
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     @property
-    def root_item(self) -> RootItem:
+    def root_item(self) -> TreeItem:
         return self._root_item
 
     @root_item.setter
-    def root_item(self, value: RootItem) -> None:
-        self._root_item: RootItem = value
+    def root_item(self, value: TreeItem) -> None:
+        self._root_item: TreeItem = value
 
     @property
     def undo_stack(self) -> QtWidgets.QUndoStack:
