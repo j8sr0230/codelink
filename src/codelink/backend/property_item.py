@@ -24,43 +24,16 @@
 
 from typing import Any, Optional
 
-import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
-
 from tree_item import TreeItem
-from property_item import PropertyItem
+from data_item import DataItem
 
 
-class IntegerPropertyItem(PropertyItem):
-    def __init__(self, name: str, value: int, uuid: Optional[str] = None,
+class PropertyItem(DataItem):
+    def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(name, value, uuid, parent)
 
-    @staticmethod
-    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
-        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
-        editor.setFrame(False)
-        return editor
-
-    @staticmethod
-    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        value: Any = index.model().data(index, QtCore.Qt.EditRole)
-        editor.setValue(value)
-
-    @staticmethod
-    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
-                       index: QtCore.QModelIndex()) -> bool:
-        editor.interpretText()
-        value: int = editor.value()
-        return model.setData(index, value, int(QtCore.Qt.EditRole))
-
-    @staticmethod
-    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                               index: QtCore.QModelIndex()) -> None:
-        editor.setGeometry(option.rect)
-
     def __repr__(self) -> str:
-        result: str = f"<integer_property_item.IntegerPropertyItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<property_item.PropertyItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

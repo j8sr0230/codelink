@@ -35,6 +35,7 @@ from tree_item import TreeItem
 from root_item import RootItem
 from seperator_item import SeperatorItem
 from data_item import DataItem
+from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 from connection_item import ConnectionItem
 
@@ -361,7 +362,7 @@ if __name__ == "__main__":
     node_sep: SeperatorItem = SeperatorItem(name="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
-    vector_item: DataItem = DataItem(name="Vector", value="")
+    vector_item: PropertyItem = PropertyItem(name="Vector", value="[...]")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
     x_component: IntegerPropertyItem = IntegerPropertyItem(name="X", value=5)
