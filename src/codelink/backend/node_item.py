@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, Any
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -35,11 +35,6 @@ class NodeItem(BaseItem):
     def __init__(self, key: str, value: str, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
-
-    def __repr__(self) -> str:
-        result: str = f"<node_item.NodeItem {self._uuid} at 0x{id(self):x}"
-        result += f", {len(self._children)} children>"
-        return result
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
@@ -66,6 +61,6 @@ class NodeItem(BaseItem):
         editor.setGeometry(option.rect)
 
     def __repr__(self) -> str:
-        result: str = f"<integer_property_item.IntegerPropertyItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<node_item.NodeItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result
