@@ -122,12 +122,19 @@ class TreeModel(QtCore.QAbstractItemModel):
         tree_item: TreeItem = self.item_from_index(index)
 
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if isinstance(tree_item, BaseItem):
-                property_item: BaseItem = cast(BaseItem, tree_item)
+            if isinstance(tree_item, NodeItem):
+                node_item: NodeItem = cast(NodeItem, tree_item)
                 if index.column() == 0:
-                    return property_item.key
+                    return node_item.value
                 if index.column() == 1:
-                    return property_item.value
+                    return None
+
+            if isinstance(tree_item, BaseItem):
+                base_item: BaseItem = cast(BaseItem, tree_item)
+                if index.column() == 0:
+                    return base_item.key
+                if index.column() == 1:
+                    return base_item.value
 
             if isinstance(tree_item, EdgeItem):
                 connection_item: EdgeItem = cast(EdgeItem, tree_item)
@@ -154,6 +161,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             return False
 
         tree_item: TreeItem = self.item_from_index(index)
+        if isinstance(tree_item, NodeItem) and index.column() == 1:
+            self._undo_stack.push(PropertyEditCommand(index, value, self))
 
         if isinstance(tree_item, BaseItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))

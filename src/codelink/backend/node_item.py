@@ -24,6 +24,9 @@
 
 from typing import Optional
 
+import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
+
 from tree_item import TreeItem
 from base_item import BaseItem
 
@@ -35,5 +38,34 @@ class NodeItem(BaseItem):
 
     def __repr__(self) -> str:
         result: str = f"<node_item.NodeItem {self._uuid} at 0x{id(self):x}"
+        result += f", {len(self._children)} children>"
+        return result
+
+    @staticmethod
+    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
+        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
+        editor.setFrame(False)
+        return editor
+
+    @staticmethod
+    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
+        value: Any = index.model().data(index, QtCore.Qt.EditRole)
+        editor.setValue(value)
+
+    @staticmethod
+    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                       index: QtCore.QModelIndex()) -> bool:
+        editor.interpretText()
+        value: int = editor.value()
+        return model.setData(index, value, int(QtCore.Qt.EditRole))
+
+    @staticmethod
+    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                               index: QtCore.QModelIndex()) -> None:
+        editor.setGeometry(option.rect)
+
+    def __repr__(self) -> str:
+        result: str = f"<integer_property_item.IntegerPropertyItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result
