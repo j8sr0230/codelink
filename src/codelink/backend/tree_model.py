@@ -32,6 +32,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from tree_item import TreeItem
+from root_item import RootItem
 from base_item import BaseItem
 from backend.node_item import NodeItem
 from seperator_item import SeperatorItem
@@ -51,19 +52,19 @@ class TreeModel(QtCore.QAbstractItemModel):
         super().__init__(parent)
 
         if data:
-            self._root_item: TreeItem = self.from_dict(data)
+            self._root_item: RootItem = cast(RootItem, self.from_dict(data))
         else:
-            self._root_item: TreeItem = TreeItem()
+            self._root_item: RootItem = RootItem()
 
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     @property
-    def root_item(self) -> TreeItem:
+    def root_item(self) -> RootItem:
         return self._root_item
 
     @root_item.setter
-    def root_item(self, value: TreeItem) -> None:
-        self._root_item: TreeItem = value
+    def root_item(self, value: RootItem) -> None:
+        self._root_item: RootItem = value
 
     @property
     def undo_stack(self) -> QtWidgets.QUndoStack:
@@ -122,13 +123,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         tree_item: TreeItem = self.item_from_index(index)
 
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if isinstance(tree_item, NodeItem):
-                node_item: NodeItem = cast(NodeItem, tree_item)
-                if index.column() == 0:
-                    return node_item.value
-                if index.column() == 1:
-                    return None
-
             if isinstance(tree_item, BaseItem):
                 base_item: BaseItem = cast(BaseItem, tree_item)
                 if index.column() == 0:
@@ -161,12 +155,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             return False
 
         tree_item: TreeItem = self.item_from_index(index)
-        if isinstance(tree_item, NodeItem) and index.column() == 0:
-            index: QtCore.QModelIndex = model.createIndex(index.row(), 1, index.internalPointer())
-            self._undo_stack.push(BaseItemEditCommand(index, value))
-            return True
 
-        if isinstance(tree_item, BaseItem) and index.column() == 1:
+        if isinstance(tree_item, BaseItem):
             self._undo_stack.push(BaseItemEditCommand(index, value))
             return True
 
@@ -177,16 +167,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         tree_item: Optional[TreeItem] = self.item_from_index(index)
-        if isinstance(tree_item, NodeItem):
-            if index.column() == 0:
-                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
-            if index.column() == 1:
-                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
-
         if isinstance(tree_item, BaseItem):
-            if index.column() == 0:
-                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
-            if index.column() == 1:
+            if index.column() in (0, 1):
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
 
         return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -315,7 +297,7 @@ if __name__ == "__main__":
     )
     model.dataChanged.connect(
         lambda top_left_idx, bottom_right_idx, roles: print(
-            "Changed at:", top_left_idx.row(), 1, "to:", cast(BaseItem, model.item_from_index(top_left_idx)).value)
+            "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:", top_left_idx.data())
     )
 
     # Setup ui
@@ -372,7 +354,7 @@ if __name__ == "__main__":
     node_sep: SeperatorItem = SeperatorItem(key="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
-    node_item_1: NodeItem = NodeItem("Name", "Test Node")
+    node_item_1: NodeItem = NodeItem("Test Node")
     node_item_1_idx: QtCore.QModelIndex = model.append_item(node_item_1, nodes_idx)
 
     vector_item: PropertyItem = PropertyItem(key="Vector", value="[...]")
@@ -399,8 +381,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)

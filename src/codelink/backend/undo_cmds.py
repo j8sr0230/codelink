@@ -33,12 +33,15 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
         super().__init__(parent)
 
         self._index: QtCore.QModelIndex = index
-        self._from_index: QtCore.QModelIndex = index.model().createIndex(index.row(), 0, index.internalPointer())
-        self._to_index: QtCore.QModelIndex = index.model().createIndex(index.row(), 1, index.internalPointer())
         self._value: Any = value
         self._model: QtCore.QAbstractItemModel = index.model()
         # noinspection PyUnresolvedReferences
-        self._prev_value: Any = self._model.item_from_index(index).value
+
+        if index.column() == 0:
+            self._prev_value: Any = self._model.item_from_index(index).key
+
+        if index.column() == 1:
+            self._prev_value: Any = self._model.item_from_index(index).value
 
     @property
     def index(self) -> QtCore.QModelIndex:
@@ -52,12 +55,22 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
         return 10
 
     def undo(self) -> None:
-        self._model.item_from_index(self._index).value: Any = self._prev_value
-        self._model.dataChanged.emit(self._from_index, self._to_index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+        if self._index.column() == 0:
+            self._model.item_from_index(self._index).key: Any = self._prev_value
+
+        if self._index.column() == 1:
+            self._model.item_from_index(self._index).value: Any = self._prev_value
+
+        self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
 
     def redo(self) -> None:
-        self._model.item_from_index(self._index).value: Any = self._value
-        self._model.dataChanged.emit(self._from_index, self._to_index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+        if self._index.column() == 0:
+            self._model.item_from_index(self._index).key: Any = self._value
+
+        if self._index.column() == 1:
+            self._model.item_from_index(self._index).value: Any = self._value
+
+        self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
 
     def mergeWith(self, other: QtWidgets.QUndoCommand) -> bool:
         other_model: QtCore.QAbstractItemModel = other.model

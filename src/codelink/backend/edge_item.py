@@ -56,8 +56,3 @@ class EdgeItem(TreeItem):
         state["source"] = self._source_uuid
         state["destination"] = self._destination_uuid
         return state
-
-    def __repr__(self) -> str:
-        result: str = f"<connection_item.EdgeItem {self._uuid} at 0x{id(self):x}"
-        result += f", {len(self._children)} children>"
-        return result

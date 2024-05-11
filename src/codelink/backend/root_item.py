@@ -22,13 +22,11 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, Any
+from typing import Optional
 
 from tree_item import TreeItem
-from base_item import BaseItem
 
 
-class NodeItem(BaseItem):
-    def __init__(self, key: str, value: Any = None, uuid: Optional[str] = None,
-                 parent: Optional[TreeItem] = None) -> None:
-        super().__init__(key, value, uuid, parent)
+class RootItem(TreeItem):
+    def __init__(self, uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
+        super().__init__(uuid, parent)

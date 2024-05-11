@@ -17,13 +17,8 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
   create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
   set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
-  update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
-  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
-  set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
-  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
-  update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
 class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
 }
@@ -51,6 +46,8 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
 }
 class "property_item.PropertyItem" as property_item.PropertyItem {
 }
+class "root_item.RootItem" as root_item.RootItem {
+}
 class "tree_item.TreeItem" as tree_item.TreeItem {
   children
   parent
@@ -67,5 +64,6 @@ codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.Pr
 codelink.backend.node_item.NodeItem --|> base_item.BaseItem
 codelink.backend.seperator_item.SeperatorItem --|> base_item.BaseItem
 property_item.PropertyItem --|> base_item.BaseItem
-tree_item.TreeItem --* codelink.backend.tree_model.TreeModel : _root_item
+root_item.RootItem --|> tree_item.TreeItem
+root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
 @enduml

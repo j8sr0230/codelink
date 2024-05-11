@@ -54,13 +54,3 @@ class IntegerPropertyItem(PropertyItem):
         editor.interpretText()
         value: int = editor.value()
         return model.setData(index, value, int(QtCore.Qt.EditRole))
-
-    @staticmethod
-    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
-                               index: QtCore.QModelIndex()) -> None:
-        editor.setGeometry(option.rect)
-
-    def __repr__(self) -> str:
-        result: str = f"<integer_property_item.IntegerPropertyItem {self._uuid} at 0x{id(self):x}"
-        result += f", {len(self._children)} children>"
-        return result

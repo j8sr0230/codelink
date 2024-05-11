@@ -94,6 +94,6 @@ class TreeItem(object):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<tree_item.TreeItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<{type(self).__name__} {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result
