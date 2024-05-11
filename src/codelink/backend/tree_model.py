@@ -379,8 +379,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
