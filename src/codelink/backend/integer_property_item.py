@@ -32,9 +32,9 @@ from property_item import PropertyItem
 
 
 class IntegerPropertyItem(PropertyItem):
-    def __init__(self, name: str, value: int, uuid: Optional[str] = None,
+    def __init__(self, key: str, value: int, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
-        super().__init__(name, value, uuid, parent)
+        super().__init__(key, value, uuid, parent)
 
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,

@@ -124,7 +124,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             if isinstance(tree_item, BaseItem):
                 property_item: BaseItem = cast(BaseItem, tree_item)
                 if index.column() == 0:
-                    return property_item.name
+                    return property_item.key
                 if index.column() == 1:
                     return property_item.value
 
@@ -135,8 +135,8 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 1:
                     source: TreeItem = self.item_from_uuid(connection_item.source_uuid)
                     destination: TreeItem = self.item_from_uuid(connection_item.destination_uuid)
-                    if hasattr(source, "name") and hasattr(destination, "name"):
-                        return source.name + "->" + destination.name
+                    if hasattr(source, "key") and hasattr(destination, "key"):
+                        return source.key + "->" + destination.key
 
         if role == UUID_ROLE:
             return tree_item.uuid
@@ -352,35 +352,35 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_sep: SeperatorItem = SeperatorItem(name="Nodes")
+    node_sep: SeperatorItem = SeperatorItem(key="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
-    vector_item: PropertyItem = PropertyItem(name="Vector", value="[...]")
+    vector_item: PropertyItem = PropertyItem(key="Vector", value="[...]")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
-    x_component: IntegerPropertyItem = IntegerPropertyItem(name="X", value=5)
+    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
     model.append_item(x_component, vect_idx)
 
-    z_component: IntegerPropertyItem = IntegerPropertyItem(name="Z", value=99)
+    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
     model.append_item(z_component, vect_idx)
 
-    y_component: IntegerPropertyItem = IntegerPropertyItem(name="Y", value=0)
+    y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, vect_idx)
 
-    edge_sep: SeperatorItem = SeperatorItem(name="Edges")
+    edge_sep: SeperatorItem = SeperatorItem(key="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
     edge_1: ConnectionItem = ConnectionItem(x_component.uuid, y_component.uuid)
     edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
     edge_2: ConnectionItem = ConnectionItem(y_component.uuid, vector_item.uuid)
     edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
 
-    frame_sep: SeperatorItem = SeperatorItem(name="Frames")
+    frame_sep: SeperatorItem = SeperatorItem(key="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -392,7 +392,7 @@ if __name__ == "__main__":
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
         restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
         restored_item: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_z_uuid))
-        print(restored_item.name, restored_item.value)
+        print(restored_item.key, restored_item.value)
 
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
@@ -407,8 +407,8 @@ if __name__ == "__main__":
         print(restored_edge_1)
         print(restored_destination)
         print(
-            restored_source.name, ":", restored_source.value, "->",
-            restored_destination.name, ":", restored_destination.value
+            restored_source.key, ":", restored_source.value, "->",
+            restored_destination.key, ":", restored_destination.value
         )
 
         restored_edge_2_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_edges_idx)
@@ -420,8 +420,8 @@ if __name__ == "__main__":
         restored_destination: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_edge_2.destination_uuid))
         print(restored_edge_1)
         print(
-            restored_source.name, ":", restored_source.value, "->",
-            restored_destination.name, ":", restored_destination.value
+            restored_source.key, ":", restored_source.value, "->",
+            restored_destination.key, ":", restored_destination.value
         )
 
     sys.exit(app.exec_())

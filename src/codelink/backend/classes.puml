@@ -1,7 +1,7 @@
 @startuml classes
 set namespaceSeparator none
 class "base_item.BaseItem" as base_item.BaseItem {
-  name
+  key
   value
   create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
   {abstract}paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None

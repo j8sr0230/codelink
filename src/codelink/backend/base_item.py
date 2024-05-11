@@ -32,20 +32,20 @@ from tree_item import TreeItem
 
 
 class BaseItem(TreeItem):
-    def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
+    def __init__(self, key: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(uuid, parent)
 
-        self._name: str = name
+        self._key: str = key
         self._value: Any = value
 
     @property
-    def name(self) -> str:
-        return self._name
+    def key(self) -> str:
+        return self._key
 
-    @name.setter
-    def name(self, value: str) -> None:
-        self._name: str = value
+    @key.setter
+    def key(self, value: str) -> None:
+        self._key: str = value
 
     @property
     def value(self) -> Any:
@@ -80,7 +80,7 @@ class BaseItem(TreeItem):
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict[str, Any] = super().__getstate__()
-        state["name"] = self._name
+        state["key"] = self._key
         state["value"] = self._value
         return state
 

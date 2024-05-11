@@ -29,9 +29,9 @@ from base_item import BaseItem
 
 
 class PropertyItem(BaseItem):
-    def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
+    def __init__(self, key: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
-        super().__init__(name, value, uuid, parent)
+        super().__init__(key, value, uuid, parent)
 
     def __repr__(self) -> str:
         result: str = f"<property_item.PropertyItem {self._uuid} at 0x{id(self):x}"
