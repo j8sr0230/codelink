@@ -39,7 +39,7 @@ from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
 
-from undo_cmds import PropertyEditCommand
+from undo_cmds import BaseItemEditCommand
 from delegates import TreeViewDelegate
 
 
@@ -162,11 +162,12 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         tree_item: TreeItem = self.item_from_index(index)
         if isinstance(tree_item, NodeItem) and index.column() == 0:
-            self._undo_stack.push(PropertyEditCommand(index, value, self))
+            index: QtCore.QModelIndex = model.createIndex(index.row(), 1, index.internalPointer())
+            self._undo_stack.push(BaseItemEditCommand(index, value))
             return True
 
         if isinstance(tree_item, BaseItem) and index.column() == 1:
-            self._undo_stack.push(PropertyEditCommand(index, value, self))
+            self._undo_stack.push(BaseItemEditCommand(index, value))
             return True
 
         return False
@@ -176,6 +177,12 @@ class TreeModel(QtCore.QAbstractItemModel):
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         tree_item: Optional[TreeItem] = self.item_from_index(index)
+        if isinstance(tree_item, NodeItem):
+            if index.column() == 0:
+                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsEditable
+            if index.column() == 1:
+                return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
+
         if isinstance(tree_item, BaseItem):
             if index.column() == 0:
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
@@ -188,7 +195,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
                 if role == QtCore.Qt.DisplayRole:
-                    return "Name"
+                    return "Key"
                 if role == QtCore.Qt.ToolTipRole:
                     return "The name of the property"
             if section == 1:
@@ -308,8 +315,7 @@ if __name__ == "__main__":
     )
     model.dataChanged.connect(
         lambda top_left_idx, bottom_right_idx, roles: print(
-            "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:", model.data(top_left_idx)
-        )
+            "Changed at:", top_left_idx.row(), 1, "to:", cast(BaseItem, model.item_from_index(top_left_idx)).value)
     )
 
     # Setup ui

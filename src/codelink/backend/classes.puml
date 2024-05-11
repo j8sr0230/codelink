@@ -20,6 +20,10 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
   update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
+  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
+  set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
 class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
 }

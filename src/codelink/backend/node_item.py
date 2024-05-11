@@ -39,20 +39,18 @@ class NodeItem(BaseItem):
     @staticmethod
     def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                       index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
-        editor: QtWidgets.QSpinBox = QtWidgets.QSpinBox(parent)
-        editor.setFrame(False)
+        editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
         return editor
 
     @staticmethod
     def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
         value: Any = index.model().data(index, QtCore.Qt.EditRole)
-        editor.setValue(value)
+        editor.setText(value)
 
     @staticmethod
     def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                        index: QtCore.QModelIndex()) -> bool:
-        editor.interpretText()
-        value: int = editor.value()
+        value: str = editor.text()
         return model.setData(index, value, int(QtCore.Qt.EditRole))
 
     @staticmethod
