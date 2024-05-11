@@ -161,8 +161,9 @@ class TreeModel(QtCore.QAbstractItemModel):
             return False
 
         tree_item: TreeItem = self.item_from_index(index)
-        if isinstance(tree_item, NodeItem) and index.column() == 1:
+        if isinstance(tree_item, NodeItem) and index.column() == 0:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
+            return True
 
         if isinstance(tree_item, BaseItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
