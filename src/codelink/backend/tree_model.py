@@ -208,7 +208,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             parent_index: QtCore.QModelIndex = parent
 
-        self.beginInsertRows(parent, row, row)
+        self.beginInsertRows(parent_index, row, row)
         parent_item.insert_child(row, tree_item)
         self.endInsertRows()
         return self.index(row, 0, parent_index)
