@@ -25,10 +25,10 @@
 from typing import Any, Optional
 
 from tree_item import TreeItem
-from data_item import DataItem
+from base_item import BaseItem
 
 
-class PropertyItem(DataItem):
+class PropertyItem(BaseItem):
     def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(name, value, uuid, parent)

@@ -32,7 +32,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from tree_item import TreeItem
-from data_item import DataItem
+from base_item import BaseItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
@@ -121,13 +121,8 @@ class TreeModel(QtCore.QAbstractItemModel):
         tree_item: TreeItem = self.item_from_index(index)
 
         if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if type(tree_item) is SeperatorItem:
-                container_item: SeperatorItem = cast(SeperatorItem, tree_item)
-                if index.column() == 0:
-                    return container_item.name
-
-            if isinstance(tree_item, DataItem):
-                property_item: DataItem = cast(DataItem, tree_item)
+            if isinstance(tree_item, BaseItem):
+                property_item: BaseItem = cast(BaseItem, tree_item)
                 if index.column() == 0:
                     return property_item.name
                 if index.column() == 1:
@@ -159,7 +154,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         tree_item: TreeItem = self.item_from_index(index)
 
-        if isinstance(tree_item, DataItem) and index.column() == 1:
+        if isinstance(tree_item, BaseItem) and index.column() == 1:
             self._undo_stack.push(PropertyEditCommand(index, value, self))
             return True
 
@@ -170,7 +165,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return QtCore.Qt.NoItemFlags | QtCore.Qt.NoItemFlags
 
         tree_item: Optional[TreeItem] = self.item_from_index(index)
-        if isinstance(tree_item, DataItem):
+        if isinstance(tree_item, BaseItem):
             if index.column() == 0:
                 return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
             if index.column() == 1:
@@ -383,7 +378,7 @@ if __name__ == "__main__":
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
     # (De-)Serialisation
-    # print(model)
+    print(model)
     # with open("./data.json", "w", encoding="utf-8") as f:
     #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
@@ -396,7 +391,7 @@ if __name__ == "__main__":
         restored_vector_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_node_idx)
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
         restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
-        restored_item: DataItem = cast(DataItem, restored_model.item_from_uuid(restored_z_uuid))
+        restored_item: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_z_uuid))
         print(restored_item.name, restored_item.value)
 
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
@@ -422,7 +417,7 @@ if __name__ == "__main__":
         restored_source: IntegerPropertyItem = cast(
             IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_2.source_uuid)
         )
-        restored_destination: DataItem = cast(DataItem, restored_model.item_from_uuid(restored_edge_2.destination_uuid))
+        restored_destination: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_edge_2.destination_uuid))
         print(restored_edge_1)
         print(
             restored_source.name, ":", restored_source.value, "->",

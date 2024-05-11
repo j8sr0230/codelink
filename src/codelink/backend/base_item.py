@@ -24,10 +24,14 @@
 
 from typing import Any, Optional
 
+import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
+
 from tree_item import TreeItem
 
 
-class DataItem(TreeItem):
+class BaseItem(TreeItem):
     def __init__(self, name: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(uuid, parent)
@@ -51,6 +55,29 @@ class DataItem(TreeItem):
     def value(self, value: Any) -> None:
         self._value: Any = value
 
+    @staticmethod
+    def create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
+        return None
+
+    @staticmethod
+    def set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
+                       index: QtCore.QModelIndex()) -> bool:
+        return False
+
+    @staticmethod
+    def update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
+                               index: QtCore.QModelIndex()) -> None:
+        pass
+
+    @staticmethod
+    def paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
+        pass
+
     def __getstate__(self) -> dict[str, Any]:
         state: dict[str, Any] = super().__getstate__()
         state["name"] = self._name
@@ -58,6 +85,6 @@ class DataItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<data_item.DataItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<base_item.BaseItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

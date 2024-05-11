@@ -1,5 +1,14 @@
 @startuml classes
 set namespaceSeparator none
+class "base_item.BaseItem" as base_item.BaseItem {
+  name
+  value
+  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
+  {abstract}paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
+  {abstract}set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  {abstract}update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
+}
 class "codelink.backend.connection_item.ConnectionItem" as codelink.backend.connection_item.ConnectionItem {
   destination_uuid
   source_uuid
@@ -34,10 +43,6 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
   to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
 }
-class "data_item.DataItem" as data_item.DataItem {
-  name
-  value
-}
 class "property_item.PropertyItem" as property_item.PropertyItem {
 }
 class "tree_item.TreeItem" as tree_item.TreeItem {
@@ -46,19 +51,14 @@ class "tree_item.TreeItem" as tree_item.TreeItem {
   uuid
   append_child(child: TreeItem) -> bool
   child(row: int) -> Optional[TreeItem]
-  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
   insert_child(row: int, child: TreeItem) -> bool
-  {abstract}paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
   remove_child(row: int) -> bool
   row() -> int
-  {abstract}set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
-  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
-  {abstract}update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
+base_item.BaseItem --|> tree_item.TreeItem
 codelink.backend.connection_item.ConnectionItem --|> tree_item.TreeItem
 codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
-codelink.backend.seperator_item.SeperatorItem --|> data_item.DataItem
-data_item.DataItem --|> tree_item.TreeItem
-property_item.PropertyItem --|> data_item.DataItem
+codelink.backend.seperator_item.SeperatorItem --|> base_item.BaseItem
+property_item.PropertyItem --|> base_item.BaseItem
 tree_item.TreeItem --* codelink.backend.tree_model.TreeModel : _root_item
 @enduml
