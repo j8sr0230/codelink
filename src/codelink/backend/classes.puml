@@ -19,6 +19,8 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
   update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
+class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
+}
 class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
 }
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
@@ -58,6 +60,7 @@ class "tree_item.TreeItem" as tree_item.TreeItem {
 base_item.BaseItem --|> tree_item.TreeItem
 codelink.backend.edge_item.EdgeItem --|> tree_item.TreeItem
 codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
+codelink.backend.node_item.NodeItem --|> base_item.BaseItem
 codelink.backend.seperator_item.SeperatorItem --|> base_item.BaseItem
 property_item.PropertyItem --|> base_item.BaseItem
 tree_item.TreeItem --* codelink.backend.tree_model.TreeModel : _root_item

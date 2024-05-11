@@ -33,6 +33,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from tree_item import TreeItem
 from base_item import BaseItem
+from backend.node_item import NodeItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
@@ -355,6 +356,9 @@ if __name__ == "__main__":
     node_sep: SeperatorItem = SeperatorItem(key="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
+    node_item_1: NodeItem = NodeItem("Name", "Test Node")
+    node_item_1_idx: QtCore.QModelIndex = model.append_item(node_item_1, nodes_idx)
+
     vector_item: PropertyItem = PropertyItem(key="Vector", value="[...]")
     vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
 
@@ -388,7 +392,7 @@ if __name__ == "__main__":
         print(restored_model)
 
         restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
-        restored_vector_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_node_idx)
+        restored_vector_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_node_idx)
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
         restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
         restored_item: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_z_uuid))
