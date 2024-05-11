@@ -1,40 +1,40 @@
 {
     "type": "RootItem",
-    "uuid": "{55ab78d8-858f-4753-a7c4-0709a8b2e21f}",
+    "uuid": "{ef5ddc29-8bee-47c3-b677-2374ae2146a4}",
     "children": [
         {
             "type": "SeperatorItem",
-            "uuid": "{fb3c0a71-493f-41cf-98fd-1b2c3f3d6756}",
+            "uuid": "{e27a6669-95a2-4b58-a3eb-44580669ac04}",
             "key": "Nodes",
             "value": null,
             "children": [
                 {
                     "type": "NodeItem",
-                    "uuid": "{6ba54767-2848-44c9-b983-d555d49e0bae}",
+                    "uuid": "{3eab9361-1ef2-4ac4-988c-621e3646a0e6}",
                     "key": "Test Node",
                     "value": null
                 },
                 {
                     "type": "PropertyItem",
-                    "uuid": "{58db03c0-bbe3-4221-8344-f71b2a83c7b0}",
+                    "uuid": "{e9a3a551-e01f-45a1-bb36-44706bfb9cff}",
                     "key": "Vector",
                     "value": "[...]",
                     "children": [
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{2c47a11d-a402-443f-98ad-06711f2a1e90}",
+                            "uuid": "{0c688c02-e2ae-4bcc-a825-b5dd728a6883}",
                             "key": "X",
                             "value": 5
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{02d5221a-a504-47dc-93bd-b0a4536d3d47}",
+                            "uuid": "{5b871444-818b-4be8-95e5-d45524e26e18}",
                             "key": "Y",
                             "value": 0
                         },
                         {
                             "type": "IntegerPropertyItem",
-                            "uuid": "{55dc1614-15b7-4172-ace0-43eab7292287}",
+                            "uuid": "{91bfc874-ec35-4e2d-a594-f50fdc04cd3d}",
                             "key": "Z",
                             "value": 99
                         }
@@ -44,27 +44,27 @@
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{3f79c9b4-292d-4eea-83eb-a2a60803757e}",
+            "uuid": "{e8571c00-6eba-4df5-974b-7c7c7d125c98}",
             "key": "Edges",
             "value": null,
             "children": [
                 {
                     "type": "EdgeItem",
-                    "uuid": "{52238813-f149-46bd-85d0-31ca44c627b0}",
-                    "source": "{2c47a11d-a402-443f-98ad-06711f2a1e90}",
-                    "destination": "{02d5221a-a504-47dc-93bd-b0a4536d3d47}"
+                    "uuid": "{a7eacd9d-39c6-41d0-9209-7a695b561265}",
+                    "source": "{0c688c02-e2ae-4bcc-a825-b5dd728a6883}",
+                    "destination": "{5b871444-818b-4be8-95e5-d45524e26e18}"
                 },
                 {
                     "type": "EdgeItem",
-                    "uuid": "{ef97a221-f3ee-4f79-b3cf-ea93d19a355d}",
-                    "source": "{02d5221a-a504-47dc-93bd-b0a4536d3d47}",
-                    "destination": "{58db03c0-bbe3-4221-8344-f71b2a83c7b0}"
+                    "uuid": "{dd93cfe3-50a3-487d-a631-1981fed4397b}",
+                    "source": "{5b871444-818b-4be8-95e5-d45524e26e18}",
+                    "destination": "{e9a3a551-e01f-45a1-bb36-44706bfb9cff}"
                 }
             ]
         },
         {
             "type": "SeperatorItem",
-            "uuid": "{7dfd1a89-3e55-42ab-8e15-fcf6197b74cd}",
+            "uuid": "{abf1a43c-006d-4364-93a2-85176853f58a}",
             "key": "Frames",
             "value": null
         }

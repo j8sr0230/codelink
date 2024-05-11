@@ -82,6 +82,10 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
         if other_index != self._index:
             return False
 
-        # noinspection PyUnresolvedReferences
-        self._value: Any = other_model.item_from_index(other.index).value
+        if self._index.column() == 0:
+            self._value: Any = other_model.item_from_index(other.index).key
+
+        if self._index.column() == 1:
+            self._value: Any = other_model.item_from_index(other.index).value
+
         return True
