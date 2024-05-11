@@ -36,7 +36,7 @@ from base_item import BaseItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
-from connection_item import ConnectionItem
+from backend.edge_item import EdgeItem
 
 from undo_cmds import PropertyEditCommand
 from delegates import TreeViewDelegate
@@ -128,8 +128,8 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 1:
                     return property_item.value
 
-            if isinstance(tree_item, ConnectionItem):
-                connection_item: ConnectionItem = cast(ConnectionItem, tree_item)
+            if isinstance(tree_item, EdgeItem):
+                connection_item: EdgeItem = cast(EdgeItem, tree_item)
                 if index.column() == 0:
                     return "Edge"
                 if index.column() == 1:
@@ -369,9 +369,9 @@ if __name__ == "__main__":
 
     edge_sep: SeperatorItem = SeperatorItem(key="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
-    edge_1: ConnectionItem = ConnectionItem(x_component.uuid, y_component.uuid)
+    edge_1: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
     edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
-    edge_2: ConnectionItem = ConnectionItem(y_component.uuid, vector_item.uuid)
+    edge_2: EdgeItem = EdgeItem(y_component.uuid, vector_item.uuid)
     edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
 
     frame_sep: SeperatorItem = SeperatorItem(key="Frames")
@@ -379,8 +379,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -397,7 +397,7 @@ if __name__ == "__main__":
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
         restored_edge_1: TreeItem = model.item_from_index(restored_edge_1_idx)
-        restored_edge_1: ConnectionItem = cast(ConnectionItem, restored_edge_1)
+        restored_edge_1: EdgeItem = cast(EdgeItem, restored_edge_1)
         restored_source: IntegerPropertyItem = cast(
             IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_1.source_uuid)
         )
@@ -413,7 +413,7 @@ if __name__ == "__main__":
 
         restored_edge_2_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_edges_idx)
         restored_edge_2: TreeItem = model.item_from_index(restored_edge_2_idx)
-        restored_edge_2: ConnectionItem = cast(ConnectionItem, restored_edge_2)
+        restored_edge_2: EdgeItem = cast(EdgeItem, restored_edge_2)
         restored_source: IntegerPropertyItem = cast(
             IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_2.source_uuid)
         )

@@ -27,7 +27,7 @@ from typing import Any, Optional
 from tree_item import TreeItem
 
 
-class ConnectionItem(TreeItem):
+class EdgeItem(TreeItem):
     def __init__(self, source_uuid: str, destination_uuid: str, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(uuid, parent)
@@ -58,6 +58,6 @@ class ConnectionItem(TreeItem):
         return state
 
     def __repr__(self) -> str:
-        result: str = f"<connection_item.ConnectionItem {self._uuid} at 0x{id(self):x}"
+        result: str = f"<connection_item.EdgeItem {self._uuid} at 0x{id(self):x}"
         result += f", {len(self._children)} children>"
         return result

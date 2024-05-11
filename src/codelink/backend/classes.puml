@@ -9,7 +9,7 @@ class "base_item.BaseItem" as base_item.BaseItem {
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
   {abstract}update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
-class "codelink.backend.connection_item.ConnectionItem" as codelink.backend.connection_item.ConnectionItem {
+class "codelink.backend.edge_item.EdgeItem" as codelink.backend.edge_item.EdgeItem {
   destination_uuid
   source_uuid
 }
@@ -56,7 +56,7 @@ class "tree_item.TreeItem" as tree_item.TreeItem {
   row() -> int
 }
 base_item.BaseItem --|> tree_item.TreeItem
-codelink.backend.connection_item.ConnectionItem --|> tree_item.TreeItem
+codelink.backend.edge_item.EdgeItem --|> tree_item.TreeItem
 codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
 codelink.backend.seperator_item.SeperatorItem --|> base_item.BaseItem
 property_item.PropertyItem --|> base_item.BaseItem
