@@ -124,13 +124,15 @@ if __name__ == "__main__":
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
 
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        restored_source_idx: QtCore.QModelIndex = restored_model.data(restored_edge_1_idx, UserRoles.SRC)
-        restored_destination_idx: QtCore.QModelIndex = restored_model.data(restored_edge_1_idx, UserRoles.DEST)
+        restored_source: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
+        )
+        restored_destination: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
+        )
         print(
-            restored_model.data(restored_source_idx, UserRoles.KEY), ":",
-            restored_model.data(restored_source_idx, UserRoles.VALUE), "->",
-            restored_model.data(restored_destination_idx, UserRoles.KEY), ":",
-            restored_model.data(restored_destination_idx, UserRoles.VALUE)
+            restored_source.key, ":", restored_source.value, "->",
+            restored_destination.key, ":", restored_destination.value
         )
 
     sys.exit(app.exec_())
