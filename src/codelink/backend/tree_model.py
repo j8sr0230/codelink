@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 from typing import cast, Any, Optional
+from enum import IntEnum
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -41,7 +42,8 @@ from backend.edge_item import EdgeItem
 from undo_cmds import BaseItemEditCommand
 
 
-UUID_ROLE: int = QtCore.Qt.UserRole + 1
+class UserRoles(IntEnum):
+    UUID: int = QtCore.Qt.UserRole + 1
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -114,7 +116,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             return None
 
         if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
-                and role != UUID_ROLE):
+                and role != UserRoles.UUID):
             return None
 
         tree_item: TreeItem = self.item_from_index(index)
@@ -137,7 +139,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     if hasattr(source, "key") and hasattr(destination, "key"):
                         return source.key + "->" + destination.key
 
-        if role == UUID_ROLE:
+        if role == UserRoles.UUID:
             return tree_item.uuid
 
         if role == QtCore.Qt.BackgroundColorRole:
@@ -223,7 +225,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
-            self.index(0, column, QtCore.QModelIndex()), UUID_ROLE, uuid, 1,
+            self.index(0, column, QtCore.QModelIndex()), UserRoles.UUID, uuid, 1,
             QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
         )
         if len(index_list) > 0:

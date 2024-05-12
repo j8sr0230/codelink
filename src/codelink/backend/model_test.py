@@ -6,7 +6,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from tree_model import TreeModel
+from tree_model import UserRoles, TreeModel
 from tree_item import TreeItem
 from base_item import BaseItem
 from backend.node_item import NodeItem
@@ -16,9 +16,6 @@ from integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
 
 from delegates import TreeViewDelegate
-
-
-UUID_ROLE: int = QtCore.Qt.UserRole + 1
 
 
 if __name__ == "__main__":
@@ -127,7 +124,7 @@ if __name__ == "__main__":
         restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
         restored_vector_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_node_idx)
         restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
-        restored_z_uuid: str = restored_model.data(restored_z_idx, UUID_ROLE)
+        restored_z_uuid: str = restored_model.data(restored_z_idx, UserRoles.UUID)
         restored_item: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_z_uuid))
         print(restored_item.key, restored_item.value)
 
