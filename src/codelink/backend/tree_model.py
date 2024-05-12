@@ -43,7 +43,10 @@ from undo_cmds import BaseItemEditCommand
 
 
 class UserRoles(IntEnum):
-    UUID: int = QtCore.Qt.UserRole + 1
+    TYPE: int = QtCore.Qt.UserRole + 1
+    UUID: int = QtCore.Qt.UserRole + 2
+    SRC: int = QtCore.Qt.UserRole + 3
+    DEST: int = QtCore.Qt.UserRole + 4
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -116,28 +119,41 @@ class TreeModel(QtCore.QAbstractItemModel):
             return None
 
         if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
-                and role != UserRoles.UUID):
+                and role != UserRoles.TYPE and role != UserRoles.UUID and role != UserRoles.SRC
+                and role != UserRoles.DEST):
             return None
 
         tree_item: TreeItem = self.item_from_index(index)
 
-        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-            if isinstance(tree_item, BaseItem):
-                base_item: BaseItem = cast(BaseItem, tree_item)
+        if isinstance(tree_item, BaseItem):
+            base_item: BaseItem = cast(BaseItem, tree_item)
+            if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
                 if index.column() == 0:
                     return base_item.key
+
                 if index.column() == 1:
                     return base_item.value
 
-            if isinstance(tree_item, EdgeItem):
-                connection_item: EdgeItem = cast(EdgeItem, tree_item)
+        if type(tree_item) is EdgeItem:
+            edge_item: EdgeItem = cast(EdgeItem, tree_item)
+            if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
                 if index.column() == 0:
                     return "Edge"
+
                 if index.column() == 1:
-                    source: TreeItem = self.item_from_uuid(connection_item.source_uuid)
-                    destination: TreeItem = self.item_from_uuid(connection_item.destination_uuid)
+                    source: TreeItem = self.item_from_uuid(edge_item.source_uuid)
+                    destination: TreeItem = self.item_from_uuid(edge_item.destination_uuid)
                     if hasattr(source, "key") and hasattr(destination, "key"):
                         return source.key + "->" + destination.key
+
+            if role == UserRoles.SRC:
+                return self.item_from_uuid(edge_item.source_uuid)
+
+            if role == UserRoles.DEST:
+                return self.item_from_uuid(edge_item.destination_uuid)
+
+        if role == UserRoles.TYPE:
+            return type(tree_item)
 
         if role == UserRoles.UUID:
             return tree_item.uuid

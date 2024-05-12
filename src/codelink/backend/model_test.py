@@ -7,8 +7,6 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from tree_model import UserRoles, TreeModel
-from tree_item import TreeItem
-from base_item import BaseItem
 from backend.node_item import NodeItem
 from seperator_item import SeperatorItem
 from property_item import PropertyItem
@@ -123,36 +121,15 @@ if __name__ == "__main__":
 
         restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
         restored_vector_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_node_idx)
-        restored_z_idx: QtCore.QModelIndex = restored_model.index(2, 0, restored_vector_idx)
-        restored_z_uuid: str = restored_model.data(restored_z_idx, UserRoles.UUID)
-        restored_item: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_z_uuid))
-        print(restored_item.key, restored_item.value)
-
         restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        restored_edge_1: TreeItem = model.item_from_index(restored_edge_1_idx)
-        restored_edge_1: EdgeItem = cast(EdgeItem, restored_edge_1)
         restored_source: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_1.source_uuid)
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
         )
         restored_destination: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_1.destination_uuid)
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
         )
-        print(restored_edge_1)
-        print(restored_destination)
-        print(
-            restored_source.key, ":", restored_source.value, "->",
-            restored_destination.key, ":", restored_destination.value
-        )
-
-        restored_edge_2_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_edges_idx)
-        restored_edge_2: TreeItem = model.item_from_index(restored_edge_2_idx)
-        restored_edge_2: EdgeItem = cast(EdgeItem, restored_edge_2)
-        restored_source: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.item_from_uuid(restored_edge_2.source_uuid)
-        )
-        restored_destination: BaseItem = cast(BaseItem, restored_model.item_from_uuid(restored_edge_2.destination_uuid))
-        print(restored_edge_1)
         print(
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
