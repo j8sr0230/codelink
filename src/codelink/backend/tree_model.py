@@ -45,8 +45,10 @@ from undo_cmds import BaseItemEditCommand
 class UserRoles(IntEnum):
     TYPE: int = QtCore.Qt.UserRole + 1
     UUID: int = QtCore.Qt.UserRole + 2
-    SRC: int = QtCore.Qt.UserRole + 3
-    DEST: int = QtCore.Qt.UserRole + 4
+    KEY: int = QtCore.Qt.UserRole + 3
+    VALUE: int = QtCore.Qt.UserRole + 4
+    SRC: int = QtCore.Qt.UserRole + 5
+    DEST: int = QtCore.Qt.UserRole + 6
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -134,6 +136,12 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if index.column() == 1:
                     return base_item.value
 
+            if role == UserRoles.KEY:
+                return base_item.key
+
+            if role == UserRoles.VALUE:
+                return base_item.value
+
         if type(tree_item) is EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, tree_item)
             if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
@@ -152,15 +160,15 @@ class TreeModel(QtCore.QAbstractItemModel):
             if role == UserRoles.DEST:
                 return self.item_from_uuid(edge_item.destination_uuid)
 
+        if type(tree_item) is SeperatorItem:
+            if role == QtCore.Qt.BackgroundColorRole:
+                return QtGui.QColor("#ccc")
+
         if role == UserRoles.TYPE:
             return type(tree_item)
 
         if role == UserRoles.UUID:
             return tree_item.uuid
-
-        if role == QtCore.Qt.BackgroundColorRole:
-            if type(tree_item) is SeperatorItem:
-                return QtGui.QColor("#ccc")
 
     def hasChildren(self, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
         return self.rowCount(parent) > 0
