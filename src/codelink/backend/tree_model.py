@@ -121,8 +121,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             return None
 
         if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
-                and role != UserRoles.TYPE and role != UserRoles.UUID and role != UserRoles.SRC
-                and role != UserRoles.DEST):
+                and role != UserRoles.TYPE and role != UserRoles.UUID and role != UserRoles.KEY
+                and role != UserRoles.VALUE and role != UserRoles.SRC  and role != UserRoles.DEST):
             return None
 
         tree_item: TreeItem = self.item_from_index(index)
@@ -155,10 +155,10 @@ class TreeModel(QtCore.QAbstractItemModel):
                         return source.key + "->" + destination.key
 
             if role == UserRoles.SRC:
-                return self.item_from_uuid(edge_item.source_uuid)
+                return self.index_from_uuid(edge_item.source_uuid)
 
             if role == UserRoles.DEST:
-                return self.item_from_uuid(edge_item.destination_uuid)
+                return self.index_from_uuid(edge_item.destination_uuid)
 
         if type(tree_item) is SeperatorItem:
             if role == QtCore.Qt.BackgroundColorRole:

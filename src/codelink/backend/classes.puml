@@ -44,6 +44,9 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
   to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
 }
+class "codelink.backend.tree_model.UserRoles" as codelink.backend.tree_model.UserRoles {
+  name
+}
 class "property_item.PropertyItem" as property_item.PropertyItem {
 }
 class "root_item.RootItem" as root_item.RootItem {
