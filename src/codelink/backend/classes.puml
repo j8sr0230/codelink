@@ -21,9 +21,13 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
 }
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
+  edges_index
+  frames_index
+  nodes_index
   root_item
   undo_stack
   append_item(tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  append_node(node_item: NodeItem) -> QtCore.QModelIndex
   columnCount(parent: QtCore.QModelIndex) -> int
   data(index: QtCore.QModelIndex, role: int) -> Any
   flags(index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags
@@ -31,6 +35,7 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   hasChildren(parent: QtCore.QModelIndex) -> bool
   headerData(section: int, orientation: QtCore.Qt.Orientation, role) -> Any
   index(row: int, column: int, parent: QtCore.QModelIndex) -> QtCore.QModelIndex
+  index_from_key(key: str, parent: QtCore.QModelIndex) -> Optional[QtCore.QModelIndex]
   index_from_uuid(uuid: str, column: int) -> Optional[QtCore.QModelIndex]
   insert_item(row: int, tree_item: TreeItem, parent) -> QtCore.QModelIndex
   item_from_index(index: QtCore.QModelIndex) -> TreeItem

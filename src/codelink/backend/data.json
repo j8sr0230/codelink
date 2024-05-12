@@ -1,62 +1,56 @@
 {
     "type": "RootItem",
-    "uuid": "{7a521dfb-94c8-4689-91a6-26c18d8b6d39}",
+    "uuid": "{19609a14-2525-45cc-933e-8a9cd8dc78a8}",
     "children": [
         {
             "type": "TreeSeperatorItem",
-            "uuid": "{fed57e79-3eb9-41a4-a960-c425e7d5cfd9}",
+            "uuid": "{6e24c6e0-299b-4d0c-8516-d6ad4c92c209}",
             "key": "Nodes",
             "value": null,
             "children": [
                 {
                     "type": "NodeItem",
-                    "uuid": "{8d39ae79-4297-4523-aeae-0ead8e976b1a}",
+                    "uuid": "{4a250a8e-9790-446d-a3fd-33b3b82f9ba0}",
                     "key": "Test Node",
                     "value": null,
                     "children": [
                         {
                             "type": "SeperatorItem",
-                            "uuid": "{a608cb6f-7563-4831-9689-5499e19f13a9}",
+                            "uuid": "{7294a0e6-5166-4d78-b494-7a23d305877c}",
                             "key": "Properties",
-                            "value": null
+                            "value": null,
+                            "children": [
+                                {
+                                    "type": "IntegerPropertyItem",
+                                    "uuid": "{615d2e85-55e8-4dff-bccb-a05537771abf}",
+                                    "key": "X",
+                                    "value": 5
+                                },
+                                {
+                                    "type": "IntegerPropertyItem",
+                                    "uuid": "{f84e5d59-c7fa-4320-ba99-d606428c2c59}",
+                                    "key": "Y",
+                                    "value": 0
+                                },
+                                {
+                                    "type": "IntegerPropertyItem",
+                                    "uuid": "{4b1249c5-446d-4a75-a6e9-c63b1fa7437b}",
+                                    "key": "Z",
+                                    "value": 99
+                                }
+                            ]
                         },
                         {
                             "type": "SeperatorItem",
-                            "uuid": "{907062da-0560-4882-adec-c743c2b6a93d}",
+                            "uuid": "{a2348995-ec52-45c7-8f35-fe4b681daae6}",
                             "key": "Inputs",
                             "value": null
                         },
                         {
                             "type": "SeperatorItem",
-                            "uuid": "{f0c846e6-72fc-46f8-87b7-1708bce91a34}",
+                            "uuid": "{1b01b11c-057d-48d0-b39c-91cdab3b54a7}",
                             "key": "Outputs",
                             "value": null
-                        }
-                    ]
-                },
-                {
-                    "type": "PropertyItem",
-                    "uuid": "{ed83344b-7d84-4514-91b1-51f013aa1272}",
-                    "key": "Vector",
-                    "value": "[...]",
-                    "children": [
-                        {
-                            "type": "IntegerPropertyItem",
-                            "uuid": "{69dc35c5-e04c-496d-b52d-b8d26edbef16}",
-                            "key": "X",
-                            "value": 5
-                        },
-                        {
-                            "type": "IntegerPropertyItem",
-                            "uuid": "{92a91f76-33da-4bbf-a374-5b7c9326c8c1}",
-                            "key": "Y",
-                            "value": 0
-                        },
-                        {
-                            "type": "IntegerPropertyItem",
-                            "uuid": "{63079b40-267f-41cb-9d26-8e9a3350e1c4}",
-                            "key": "Z",
-                            "value": 99
                         }
                     ]
                 }
@@ -64,27 +58,21 @@
         },
         {
             "type": "TreeSeperatorItem",
-            "uuid": "{0ded4e82-3037-40e3-bfbb-536fe156a14d}",
+            "uuid": "{eefdf03c-3a10-46dc-aa5e-fcc6ee8c68f0}",
             "key": "Edges",
             "value": null,
             "children": [
                 {
                     "type": "EdgeItem",
-                    "uuid": "{dc9d3992-d803-4820-8a66-7d4fa52bb3ab}",
-                    "source": "{69dc35c5-e04c-496d-b52d-b8d26edbef16}",
-                    "destination": "{92a91f76-33da-4bbf-a374-5b7c9326c8c1}"
-                },
-                {
-                    "type": "EdgeItem",
-                    "uuid": "{3137ae22-fb8a-4748-ab77-4f659a19fc7d}",
-                    "source": "{92a91f76-33da-4bbf-a374-5b7c9326c8c1}",
-                    "destination": "{ed83344b-7d84-4514-91b1-51f013aa1272}"
+                    "uuid": "{518375eb-9915-439a-9c9c-f1a53a56bf4c}",
+                    "source": "{615d2e85-55e8-4dff-bccb-a05537771abf}",
+                    "destination": "{f84e5d59-c7fa-4320-ba99-d606428c2c59}"
                 }
             ]
         },
         {
             "type": "TreeSeperatorItem",
-            "uuid": "{43c6a5af-d3d3-4751-8c27-6fb0af9fb4ea}",
+            "uuid": "{5c983986-54dd-457b-805b-f1b6dce2001e}",
             "key": "Frames",
             "value": null
         }

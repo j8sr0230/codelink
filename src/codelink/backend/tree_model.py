@@ -58,8 +58,14 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         if data:
             self._root_item: RootItem = cast(RootItem, self.from_dict(data))
+            self._nodes_index: QtCore.QModelIndex = self.index_from_key("Nodes")
+            self._edges_index: QtCore.QModelIndex = self.index_from_key("Edges")
+            self._frames_index: QtCore.QModelIndex = self.index_from_key("Frames")
         else:
             self._root_item: RootItem = RootItem()
+            self._nodes_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Nodes"), QtCore.QModelIndex())
+            self._edges_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Edges"), QtCore.QModelIndex())
+            self._frames_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Frames"), QtCore.QModelIndex())
 
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
@@ -70,6 +76,18 @@ class TreeModel(QtCore.QAbstractItemModel):
     @root_item.setter
     def root_item(self, value: RootItem) -> None:
         self._root_item: RootItem = value
+
+    @property
+    def nodes_index(self) -> QtCore.QModelIndex:
+        return self._nodes_index
+
+    @property
+    def edges_index(self) -> QtCore.QModelIndex:
+        return self._edges_index
+
+    @property
+    def frames_index(self) -> QtCore.QModelIndex:
+        return self._frames_index
 
     @property
     def undo_stack(self) -> QtWidgets.QUndoStack:
@@ -240,13 +258,11 @@ class TreeModel(QtCore.QAbstractItemModel):
     def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:
         return self.insert_item(self.rowCount(parent), tree_item, parent)
 
-    def item_from_index(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> TreeItem:
-        if index.isValid():
-            item: TreeItem = cast(TreeItem, index.internalPointer())
-            if item:
-                return item
-
-        return self._root_item
+    def append_node(self, node_item: NodeItem) -> QtCore.QModelIndex:
+        node_item.append_child(SeperatorItem("Properties"))
+        node_item.append_child(SeperatorItem("Inputs"))
+        node_item.append_child(SeperatorItem("Outputs"))
+        return self.append_item(node_item, self._nodes_index)
 
     def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
@@ -257,6 +273,26 @@ class TreeModel(QtCore.QAbstractItemModel):
             return cast(QtCore.QModelIndex, index_list[0])
 
         return None
+
+    def index_from_key(
+            self, key: str, parent: QtCore.QModelIndex = QtCore.QModelIndex()
+    ) -> Optional[QtCore.QModelIndex]:
+        index_list: list[int] = self.match(
+            self.index(0, 0, parent), UserRoles.KEY, key, 1,
+            QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
+        )
+        if len(index_list) > 0:
+            return cast(QtCore.QModelIndex, index_list[0])
+
+        return None
+
+    def item_from_index(self, index: QtCore.QModelIndex = QtCore.QModelIndex()) -> TreeItem:
+        if index.isValid():
+            item: TreeItem = cast(TreeItem, index.internalPointer())
+            if item:
+                return item
+
+        return self._root_item
 
     def item_from_uuid(self, uuid: str) -> Optional[TreeItem]:
         index: Optional[QtCore.QModelIndex] = self.index_from_uuid(uuid)

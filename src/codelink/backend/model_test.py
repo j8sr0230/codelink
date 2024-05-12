@@ -8,8 +8,6 @@ import PySide2.QtWidgets as QtWidgets
 
 from tree_model import UserRoles, TreeModel
 from backend.node_item import NodeItem
-from tree_seperator_item import TreeSeperatorItem
-from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
 
@@ -81,38 +79,25 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_sep: TreeSeperatorItem = TreeSeperatorItem(key="Nodes")
-    nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
-
-    node_item_1: NodeItem = NodeItem("Test Node")
-    node_item_1_idx: QtCore.QModelIndex = model.append_item(node_item_1, nodes_idx)
-
-    vector_item: PropertyItem = PropertyItem(key="Vector", value="[...]")
-    vect_idx: QtCore.QModelIndex = model.append_item(vector_item, nodes_idx)
+    node_item: NodeItem = NodeItem("Test Node")
+    node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
+    print("Outputs index:", model.index_from_key("Outputs", node_item_idx))
+    print()
 
     x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
-    model.append_item(x_component, vect_idx)
-
+    model.append_item(x_component, model.index(0, 0, node_item_idx))
     z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
-    model.append_item(z_component, vect_idx)
-
+    model.append_item(z_component, model.index(0, 0, node_item_idx))
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
-    model.insert_item(1, y_component, vect_idx)
+    model.insert_item(1, y_component, model.index(0, 0, node_item_idx))
 
-    edge_sep: TreeSeperatorItem = TreeSeperatorItem(key="Edges")
-    edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
-    edge_1: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
-    edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
-    edge_2: EdgeItem = EdgeItem(y_component.uuid, vector_item.uuid)
-    edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
-
-    frame_sep: TreeSeperatorItem = TreeSeperatorItem(key="Frames")
-    frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
+    edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
+    edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
 
     # (De-)Serialisation
     print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
