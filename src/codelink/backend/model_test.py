@@ -8,7 +8,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from tree_model import UserRoles, TreeModel
 from backend.node_item import NodeItem
-from seperator_item import SeperatorItem
+from tree_seperator_item import TreeSeperatorItem
 from property_item import PropertyItem
 from integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_sep: SeperatorItem = SeperatorItem(key="Nodes")
+    node_sep: TreeSeperatorItem = TreeSeperatorItem(key="Nodes")
     nodes_idx: QtCore.QModelIndex = model.append_item(node_sep, QtCore.QModelIndex())
 
     node_item_1: NodeItem = NodeItem("Test Node")
@@ -99,20 +99,20 @@ if __name__ == "__main__":
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, vect_idx)
 
-    edge_sep: SeperatorItem = SeperatorItem(key="Edges")
+    edge_sep: TreeSeperatorItem = TreeSeperatorItem(key="Edges")
     edges_idx: QtCore.QModelIndex = model.append_item(edge_sep, QtCore.QModelIndex())
     edge_1: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
     edge_1_idx: QtCore.QModelIndex = model.append_item(edge_1, edges_idx)
     edge_2: EdgeItem = EdgeItem(y_component.uuid, vector_item.uuid)
     edge_2_idx: QtCore.QModelIndex = model.append_item(edge_2, edges_idx)
 
-    frame_sep: SeperatorItem = SeperatorItem(key="Frames")
+    frame_sep: TreeSeperatorItem = TreeSeperatorItem(key="Frames")
     frame_idx: QtCore.QModelIndex = model.append_item(frame_sep, QtCore.QModelIndex())
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)

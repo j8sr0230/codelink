@@ -25,17 +25,10 @@
 from typing import Optional, Any
 
 from tree_item import TreeItem
-from base_item import BaseItem
-
 from seperator_item import SeperatorItem
 
 
-class NodeItem(BaseItem):
+class TreeSeperatorItem(SeperatorItem):
     def __init__(self, key: str, value: Any = None, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
-
-        self.append_child(SeperatorItem("Properties"))
-        self.append_child(SeperatorItem("Inputs"))
-        self.append_child(SeperatorItem("Outputs"))
-

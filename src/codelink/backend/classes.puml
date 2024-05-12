@@ -20,8 +20,6 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
 }
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
 }
-class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
-}
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
   root_item
   undo_stack
@@ -47,9 +45,13 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
 class "codelink.backend.tree_model.UserRoles" as codelink.backend.tree_model.UserRoles {
   name
 }
+class "codelink.backend.tree_seperator_item.TreeSeperatorItem" as codelink.backend.tree_seperator_item.TreeSeperatorItem {
+}
 class "property_item.PropertyItem" as property_item.PropertyItem {
 }
 class "root_item.RootItem" as root_item.RootItem {
+}
+class "seperator_item.SeperatorItem" as seperator_item.SeperatorItem {
 }
 class "tree_item.TreeItem" as tree_item.TreeItem {
   children
@@ -65,8 +67,9 @@ base_item.BaseItem --|> tree_item.TreeItem
 codelink.backend.edge_item.EdgeItem --|> tree_item.TreeItem
 codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
 codelink.backend.node_item.NodeItem --|> base_item.BaseItem
-codelink.backend.seperator_item.SeperatorItem --|> base_item.BaseItem
+codelink.backend.tree_seperator_item.TreeSeperatorItem --|> seperator_item.SeperatorItem
 property_item.PropertyItem --|> base_item.BaseItem
 root_item.RootItem --|> tree_item.TreeItem
+seperator_item.SeperatorItem --|> base_item.BaseItem
 root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
 @enduml

@@ -41,7 +41,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
         tree_item: TreeItem = index.model().item_from_index(index)
 
-        if isinstance(tree_item, BaseItem) and not type(tree_item) is SeperatorItem:
+        if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             if index.column() == 0:
                 editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
                 return editor
@@ -66,7 +66,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                      index: QtCore.QModelIndex()) -> bool:
         tree_item: TreeItem = index.model().item_from_index(index)
 
-        if isinstance(tree_item, BaseItem) and not type(tree_item) is SeperatorItem:
+        if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             if index.column() == 0:
                 value: str = editor.text()
                 return model.setData(index, value, int(QtCore.Qt.EditRole))
@@ -83,7 +83,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
         tree_item: TreeItem = index.model().item_from_index(index)
 
-        if isinstance(tree_item, BaseItem) and not type(tree_item) is SeperatorItem:
+        if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             tree_item.paint(painter, option, index)
 
         super().paint(painter, option, index)

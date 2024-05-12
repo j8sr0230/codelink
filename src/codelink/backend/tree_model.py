@@ -34,7 +34,8 @@ from tree_item import TreeItem
 from root_item import RootItem
 from base_item import BaseItem
 from backend.node_item import NodeItem  # noqa
-from seperator_item import SeperatorItem
+from seperator_item import SeperatorItem  # noqa
+from tree_seperator_item import TreeSeperatorItem
 from property_item import PropertyItem  # noqa
 from integer_property_item import IntegerPropertyItem  # noqa
 from backend.edge_item import EdgeItem
@@ -160,7 +161,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             if role == UserRoles.DEST:
                 return self.index_from_uuid(edge_item.destination_uuid)
 
-        if type(tree_item) is SeperatorItem:
+        if type(tree_item) is TreeSeperatorItem:
             if role == QtCore.Qt.BackgroundColorRole:
                 return QtGui.QColor("#ccc")
 
