@@ -34,6 +34,16 @@ class NodeItem(BaseItem):
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
 
+        self._pos: tuple[float, float] = (0, 0)
+
+    @property
+    def pos(self) -> tuple[float, float]:
+        return self._pos
+
+    @pos.setter
+    def pos(self, value: tuple[float, float]) -> None:
+        self._pos: tuple[float, float] = value
+
     def setup_children(self) -> None:
         self.append_child(SeperatorItem("Base"))
         self.append_child(SeperatorItem("Inputs"))
