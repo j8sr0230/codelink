@@ -19,6 +19,8 @@ class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.b
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
 }
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
+  pos
+  setup_children() -> None
 }
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
   edges_index
@@ -47,9 +49,6 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
   to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
 }
-class "codelink.backend.tree_model.UserRoles" as codelink.backend.tree_model.UserRoles {
-  name
-}
 class "codelink.backend.tree_seperator_item.TreeSeperatorItem" as codelink.backend.tree_seperator_item.TreeSeperatorItem {
 }
 class "property_item.PropertyItem" as property_item.PropertyItem {
@@ -67,6 +66,7 @@ class "tree_item.TreeItem" as tree_item.TreeItem {
   insert_child(row: int, child: TreeItem) -> bool
   remove_child(row: int) -> bool
   row() -> int
+  {abstract}setup_children() -> None
 }
 base_item.BaseItem --|> tree_item.TreeItem
 codelink.backend.edge_item.EdgeItem --|> tree_item.TreeItem

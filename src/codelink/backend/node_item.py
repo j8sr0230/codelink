@@ -30,22 +30,22 @@ from seperator_item import SeperatorItem
 
 
 class NodeItem(BaseItem):
-    def __init__(self, key: str, value: Any = None, pos: Optional[list[float, float]] = None,
+    def __init__(self, key: str, value: Any = None, pos: Optional[list[int]] = None,
                  uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
 
         if pos is None:
-            pos = [0, 0]
+            pos: list[int] = [0, 0]
 
-        self._pos: list[float, float] = pos
+        self._pos: list[int] = pos
 
     @property
-    def pos(self) -> list[float, float]:
+    def pos(self) -> list[int]:
         return self._pos
 
     @pos.setter
-    def pos(self, value: list[float, float]) -> None:
-        self._pos: list[float, float] = value
+    def pos(self, value: list[int]) -> None:
+        self._pos: list[int] = value
 
     def setup_children(self) -> None:
         self.append_child(SeperatorItem("Base"))
