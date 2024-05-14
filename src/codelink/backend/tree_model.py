@@ -259,9 +259,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.insert_item(self.rowCount(parent), tree_item, parent)
 
     def append_node(self, node_item: NodeItem) -> QtCore.QModelIndex:
-        node_item.append_child(SeperatorItem("Properties"))
-        node_item.append_child(SeperatorItem("Inputs"))
-        node_item.append_child(SeperatorItem("Outputs"))
+        node_item.setup_children()
         return self.append_item(node_item, self._nodes_index)
 
     def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:

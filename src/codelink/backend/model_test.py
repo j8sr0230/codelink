@@ -64,6 +64,7 @@ if __name__ == "__main__":
 
     second_tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView()
     second_tree_view.setModel(model)
+    second_tree_view.setIndentation(0)
     second_tree_view.setAlternatingRowColors(True)
     second_tree_view.setItemDelegate(TreeViewDelegate())
 

@@ -67,6 +67,9 @@ class TreeItem(object):
     def append_child(self, child: TreeItem) -> bool:
         return self.insert_child(len(self._children), child)
 
+    def setup_children(self) -> None:
+        pass
+
     def child(self, row: int) -> Optional[TreeItem]:
         if 0 <= row < len(self._children):
             return self._children[row]
