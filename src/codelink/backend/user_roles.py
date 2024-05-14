@@ -22,37 +22,16 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, Any
+from enum import IntEnum
 
-from tree_item import TreeItem
-from base_item import BaseItem
-from seperator_item import SeperatorItem
+import PySide2.QtCore as QtCore
 
 
-class NodeItem(BaseItem):
-    def __init__(self, key: str, value: Any = None, pos: Optional[list[float, float]] = None,
-                 uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
-        super().__init__(key, value, uuid, parent)
-
-        if pos is None:
-            pos = [0, 0]
-
-        self._pos: list[float, float] = pos
-
-    @property
-    def pos(self) -> list[float, float]:
-        return self._pos
-
-    @pos.setter
-    def pos(self, value: list[float, float]) -> None:
-        self._pos: list[float, float] = value
-
-    def setup_children(self) -> None:
-        self.append_child(SeperatorItem("Base"))
-        self.append_child(SeperatorItem("Inputs"))
-        self.append_child(SeperatorItem("Outputs"))
-
-    def __getstate__(self) -> dict[str, Any]:
-        state: dict[str, Any] = super().__getstate__()
-        state["pos"] = self._pos
-        return state
+class UserRoles(IntEnum):
+    TYPE: int = QtCore.Qt.UserRole + 1
+    UUID: int = QtCore.Qt.UserRole + 2
+    KEY: int = QtCore.Qt.UserRole + 3
+    VALUE: int = QtCore.Qt.UserRole + 4
+    POS: int= QtCore.Qt.UserRole + 5
+    SRC: int = QtCore.Qt.UserRole + 6
+    DEST: int = QtCore.Qt.UserRole + 7

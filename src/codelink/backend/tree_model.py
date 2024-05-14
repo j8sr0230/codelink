@@ -24,12 +24,12 @@
 
 from __future__ import annotations
 from typing import cast, Any, Optional
-from enum import IntEnum
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from user_roles import UserRoles
 from tree_item import TreeItem
 from root_item import RootItem
 from base_item import BaseItem
@@ -39,17 +39,7 @@ from tree_seperator_item import TreeSeperatorItem
 from property_item import PropertyItem  # noqa
 from integer_property_item import IntegerPropertyItem  # noqa
 from backend.edge_item import EdgeItem
-
 from undo_cmds import BaseItemEditCommand
-
-
-class UserRoles(IntEnum):
-    TYPE: int = QtCore.Qt.UserRole + 1
-    UUID: int = QtCore.Qt.UserRole + 2
-    KEY: int = QtCore.Qt.UserRole + 3
-    VALUE: int = QtCore.Qt.UserRole + 4
-    SRC: int = QtCore.Qt.UserRole + 5
-    DEST: int = QtCore.Qt.UserRole + 6
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -139,9 +129,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
-                and role != UserRoles.TYPE and role != UserRoles.UUID and role != UserRoles.KEY
-                and role != UserRoles.VALUE and role != UserRoles.SRC  and role != UserRoles.DEST):
+        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role not in [role for role in UserRoles]:
             return None
 
         tree_item: TreeItem = self.item_from_index(index)
@@ -160,6 +148,11 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if role == UserRoles.VALUE:
                 return base_item.value
+
+            if isinstance(tree_item, NodeItem):
+                node_item: NodeItem = cast(NodeItem, tree_item)
+                if role == UserRoles.POS:
+                    return node_item.pos
 
         if type(tree_item) is EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, tree_item)
@@ -193,13 +186,13 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.rowCount(parent) > 0
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
-        if role != QtCore.Qt.EditRole:
+        if role != QtCore.Qt.EditRole and role != UserRoles.POS and role not in [role for role in UserRoles]:
             return False
 
         tree_item: TreeItem = self.item_from_index(index)
 
         if isinstance(tree_item, BaseItem):
-            self._undo_stack.push(BaseItemEditCommand(index, value))
+            self._undo_stack.push(BaseItemEditCommand(index, value, role))
             return True
 
         return False

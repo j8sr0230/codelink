@@ -27,21 +27,28 @@ from typing import Any, Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
+from user_roles import UserRoles
+
 
 class BaseItemEditCommand(QtWidgets.QUndoCommand):
-    def __init__(self, index: QtCore.QModelIndex, value: Any, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+    def __init__(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole,
+                 parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
         super().__init__(parent)
 
         self._index: QtCore.QModelIndex = index
         self._value: Any = value
+        self._role: int = role
         self._model: QtCore.QAbstractItemModel = index.model()
-        # noinspection PyUnresolvedReferences
 
-        if index.column() == 0:
-            self._prev_value: Any = self._model.item_from_index(index).key
+        if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
+            if index.column() == 0:
+                self._prev_value: Any = self._model.item_from_index(index).key
 
-        if index.column() == 1:
-            self._prev_value: Any = self._model.item_from_index(index).value
+            if index.column() == 1:
+                self._prev_value: Any = self._model.item_from_index(index).value
+
+        if role == UserRoles.POS and hasattr(self._model.item_from_index(index), "pos"):
+            self._prev_value: Any = self._model.item_from_index(index).pos
 
     @property
     def index(self) -> QtCore.QModelIndex:
@@ -55,22 +62,32 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
         return 10
 
     def undo(self) -> None:
-        if self._index.column() == 0:
-            self._model.item_from_index(self._index).key: Any = self._prev_value
+        if self._role == QtCore.Qt.DisplayRole or self._role == QtCore.Qt.EditRole:
+            if self._index.column() == 0:
+                self._model.item_from_index(self._index).key: Any = self._prev_value
 
-        if self._index.column() == 1:
-            self._model.item_from_index(self._index).value: Any = self._prev_value
+            if self._index.column() == 1:
+                self._model.item_from_index(self._index).value: Any = self._prev_value
 
-        self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+            self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+
+        if self._role == UserRoles.POS and hasattr(self._model.item_from_index(self._index), "pos"):
+            self._model.item_from_index(self._index).pos = self._prev_value
+            self._model.dataChanged.emit(self._index, self._index, [UserRoles.POS])
 
     def redo(self) -> None:
-        if self._index.column() == 0:
-            self._model.item_from_index(self._index).key: Any = self._value
+        if self._role == QtCore.Qt.DisplayRole or self._role == QtCore.Qt.EditRole:
+            if self._index.column() == 0:
+                self._model.item_from_index(self._index).key: Any = self._value
 
-        if self._index.column() == 1:
-            self._model.item_from_index(self._index).value: Any = self._value
+            if self._index.column() == 1:
+                self._model.item_from_index(self._index).value: Any = self._value
 
-        self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+            self._model.dataChanged.emit(self._index, self._index, [QtCore.Qt.DisplayRole, QtCore.Qt.EditRole])
+
+        if self._role == UserRoles.POS and hasattr(self._model.item_from_index(self._index), "pos"):
+            self._model.item_from_index(self._index).pos = self._value
+            self._model.dataChanged.emit(self._index, self._index, [UserRoles.POS])
 
     def mergeWith(self, other: QtWidgets.QUndoCommand) -> bool:
         other_model: QtCore.QAbstractItemModel = other.model
@@ -82,10 +99,14 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
         if other_index != self._index:
             return False
 
-        if self._index.column() == 0:
-            self._value: Any = other_model.item_from_index(other.index).key
+        if self._role == QtCore.Qt.DisplayRole or self._role == QtCore.Qt.EditRole:
+            if self._index.column() == 0:
+                self._value: Any = other_model.item_from_index(other.index).key
 
-        if self._index.column() == 1:
-            self._value: Any = other_model.item_from_index(other.index).value
+            if self._index.column() == 1:
+                self._value: Any = other_model.item_from_index(other.index).value
+
+        if self._role == UserRoles.POS and hasattr(self._model.item_from_index(self._index), "pos"):
+            self._value: Any = other_model.item_from_index(other.index).pos
 
         return True

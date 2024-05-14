@@ -10,7 +10,6 @@ from tree_model import UserRoles, TreeModel
 from backend.node_item import NodeItem
 from integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
-
 from delegates import TreeViewDelegate
 
 
@@ -25,7 +24,8 @@ if __name__ == "__main__":
     )
     model.dataChanged.connect(
         lambda top_left_idx, bottom_right_idx, roles: print(
-            "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:", top_left_idx.data())
+            "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:",
+            top_left_idx.data(roles[0]) if len(roles) > 0 else None)
     )
 
     # Setup ui
@@ -82,6 +82,11 @@ if __name__ == "__main__":
     # Populate tree model with tree items
     node_item: NodeItem = NodeItem("Test Node")
     node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
+
+    print(model.data(node_item_idx, UserRoles.POS))
+    model.setData(node_item_idx, [5, 5], UserRoles.POS)
+    print(model.data(node_item_idx, UserRoles.POS))
+
     print("Outputs index:", model.index_from_key("Outputs", node_item_idx))
     print()
 
@@ -105,10 +110,11 @@ if __name__ == "__main__":
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
 
-        restored_node_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
-        restored_vector_idx: QtCore.QModelIndex = restored_model.index(1, 0, restored_node_idx)
-        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+        restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
+        restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
+        print(restored_node_1_idx.data(UserRoles.POS))
 
+        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
         restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
         restored_source: IntegerPropertyItem = cast(
             IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
