@@ -1,0 +1,114 @@
+{
+    "type": "codelink.backend.root_item.RootItem",
+    "uuid": "{74953b71-d2aa-4086-96a6-3cfbfdcbfcc2}",
+    "children": [
+        {
+            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{fe12a62b-8e6f-49b9-b68a-e7f1b398e478}",
+            "key": "Nodes",
+            "value": null,
+            "children": [
+                {
+                    "type": "codelink.backend.node_item_.NodeItem",
+                    "uuid": "{273ab806-ea68-4641-98f8-e1eed3a2855d}",
+                    "key": "Node",
+                    "value": null,
+                    "pos": [
+                        5,
+                        5
+                    ],
+                    "children": [
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{603331ce-6a92-4116-b506-30dbf8a67dd4}",
+                            "key": "Base",
+                            "value": null,
+                            "children": [
+                                {
+                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{cf430f43-447f-4117-926c-35ced791d72e}",
+                                    "key": "X",
+                                    "value": 5
+                                },
+                                {
+                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{94627d0d-dacf-48d5-99c8-963863e56dcc}",
+                                    "key": "Y",
+                                    "value": 0
+                                },
+                                {
+                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{f2b5fa8c-cf68-4837-af6e-7410c922d4b6}",
+                                    "key": "Z",
+                                    "value": 99
+                                }
+                            ]
+                        },
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{d83eb56e-bbe8-49e2-bb69-374449405479}",
+                            "key": "Inputs",
+                            "value": null
+                        },
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{0fd32c1e-02ad-491c-b77f-a10035064fea}",
+                            "key": "Outputs",
+                            "value": null
+                        }
+                    ]
+                },
+                {
+                    "type": "nodes_.node_package.node_category.node_sub_category.test_node_item.TestNodeItem",
+                    "uuid": "{0777aa66-1c3a-4c1d-8b4e-d2e439ed8f1e}",
+                    "key": "Test Node",
+                    "value": "",
+                    "pos": [
+                        100,
+                        100
+                    ],
+                    "children": [
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{f883b4fb-6833-4e9b-a7d4-ca35dbeec737}",
+                            "key": "Base",
+                            "value": null
+                        },
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{7f872572-a494-4985-b7d1-edbe9ae96f42}",
+                            "key": "Inputs",
+                            "value": null
+                        },
+                        {
+                            "type": "codelink.backend.seperator_item.SeperatorItem",
+                            "uuid": "{09996cd2-68b1-45de-99a5-1678ef8f6c43}",
+                            "key": "Outputs",
+                            "value": null
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{b5c01469-29c4-47ef-a8ae-7c2fefc205b2}",
+            "key": "Edges",
+            "value": null,
+            "children": [
+                {
+                    "type": "codelink.backend.edge_item.EdgeItem",
+                    "uuid": "{f79fd3f6-eb34-41bc-87ba-3db521baf1cc}",
+                    "source": "{cf430f43-447f-4117-926c-35ced791d72e}",
+                    "destination": "{94627d0d-dacf-48d5-99c8-963863e56dcc}"
+                }
+            ]
+        },
+        {
+            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{63f4301b-7e77-4b8c-af0f-05d11bed8b6c}",
+            "key": "Frames",
+            "value": null
+        }
+    ]
+}

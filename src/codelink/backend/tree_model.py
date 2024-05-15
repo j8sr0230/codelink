@@ -36,7 +36,7 @@ from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item_ import NodeItem
 from codelink.backend.tree_seperator_item import TreeSeperatorItem
-from codelink.backend.edge_item_ import EdgeItem
+from codelink.backend.edge_item import EdgeItem
 from codelink.backend.undo_cmds import BaseItemEditCommand
 
 
