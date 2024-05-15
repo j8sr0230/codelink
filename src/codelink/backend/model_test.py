@@ -16,6 +16,8 @@ from codelink.backend.properties.integer_property_item import IntegerPropertyIte
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
+from codelink.backend.nodes.node_package.node_category.node_sub_category.test_node_item import TestNodeItem
+
 
 if __name__ == "__main__":
     # Setup tree model
@@ -101,35 +103,15 @@ if __name__ == "__main__":
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, model.index(0, 0, node_item_idx))
 
+    model.append_node(TestNodeItem("Test Node"))
+
     edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
     edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
 
-    print()
-    print("Inspect folder for node modules and import them")
-    modules: list = []
-    for dir_path, dir_names, file_names in os.walk(os.path.join("", "nodes_")):
-        for file_name in file_names:
-            if file_name.endswith(".py") and not file_name.startswith("__init__"):
-                file_string: str = str(os.path.join(dir_path, file_name))
-                print("Module string:", file_string)
-                module_string: str = file_string[:-3].replace(os.sep, ".")
-                modules.append(importlib.import_module(module_string))
-
-    print()
-    print("Instantiate class from imported node modules")
-    for module in modules:
-        for name, obj in inspect.getmembers(module):
-            if inspect.isclass(obj):
-                if str(obj).__contains__(module.__name__):
-                    loaded_node: NodeItem = obj("Test Node", "", (100, 100))
-                    node_item_idx: QtCore.QModelIndex = model.append_node(loaded_node)
-                    print(type(loaded_node), loaded_node.key, "at", loaded_node.pos)
-        print()
-
     # (De-)Serialisation
     print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -152,5 +134,24 @@ if __name__ == "__main__":
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
         )
+
+        print()
+        print("Inspect folder for node modules and import them")
+
+        root: str = "nodes"
+        for dir_path, dir_names, file_names in os.walk(root):
+            for file_name in file_names:
+                if file_name.endswith(".py") and not file_name.startswith("__init__"):
+                    menu_path: str = os.path.join(dir_path[len(root) + 1:], file_name[:-3])
+                    print(menu_path)
+
+                    file_path: str = os.path.join("codelink", "backend", dir_path, file_name)
+                    module_path: str = file_path[:-3].replace(os.sep, ".")
+                    module = importlib.import_module(module_path)
+                    for name, obj in inspect.getmembers(module):
+                        if inspect.isclass(obj):
+                            if str(obj).__contains__(module.__name__):
+                                class_name: str = str(obj).split(".")[-1][:-2]
+                                print(class_name)
 
     sys.exit(app.exec_())
