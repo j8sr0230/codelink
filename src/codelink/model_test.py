@@ -9,17 +9,12 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-for i in sys.path:
-    print(i)
-
 from backend.user_roles import UserRoles
 from backend.tree_model import TreeModel
 from backend.node_item_ import NodeItem
 from backend.integer_property_item import IntegerPropertyItem
 from backend.edge_item_ import EdgeItem
 from backend.delegates import TreeViewDelegate
-
-
 
 
 if __name__ == "__main__":
@@ -141,21 +136,21 @@ if __name__ == "__main__":
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
 
-        # restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
-        # restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
-        # print(restored_node_1_idx.data(UserRoles.POS))
-        #
-        # restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
-        # restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        # restored_source: IntegerPropertyItem = cast(
-        #     IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
-        # )
-        # restored_destination: IntegerPropertyItem = cast(
-        #     IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
-        # )
-        # print(
-        #     restored_source.key, ":", restored_source.value, "->",
-        #     restored_destination.key, ":", restored_destination.value
-        # )
+        restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
+        restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
+        print(restored_node_1_idx.data(UserRoles.POS))
+
+        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+        restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
+        restored_source: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
+        )
+        restored_destination: IntegerPropertyItem = cast(
+            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
+        )
+        print(
+            restored_source.key, ":", restored_source.value, "->",
+            restored_destination.key, ":", restored_destination.value
+        )
 
     sys.exit(app.exec_())
