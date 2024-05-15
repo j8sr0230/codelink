@@ -1,0 +1,114 @@
+{
+    "type": "root_item.RootItem",
+    "uuid": "{6cbdaa6e-671a-4d84-8da0-69e5996f7818}",
+    "children": [
+        {
+            "type": "tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{28c09823-062f-4f2a-9939-32ccda05c9b8}",
+            "key": "Nodes",
+            "value": null,
+            "children": [
+                {
+                    "type": "backend.node_item_.NodeItem",
+                    "uuid": "{01a6c411-5ef2-4c92-8a0a-f8cfc45b6ac1}",
+                    "key": "Node",
+                    "value": null,
+                    "pos": [
+                        5,
+                        5
+                    ],
+                    "children": [
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{dfcd1902-7527-4f4c-928e-847679966ad8}",
+                            "key": "Base",
+                            "value": null,
+                            "children": [
+                                {
+                                    "type": "backend.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{5aa4e0cd-c68d-46d4-ab28-c2500227ce0b}",
+                                    "key": "X",
+                                    "value": 5
+                                },
+                                {
+                                    "type": "backend.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{7291a1f6-33c9-495a-94c6-bf6db19d4681}",
+                                    "key": "Y",
+                                    "value": 0
+                                },
+                                {
+                                    "type": "backend.integer_property_item.IntegerPropertyItem",
+                                    "uuid": "{4ea300bc-2733-4a9b-b07f-4f2a07bcf0b2}",
+                                    "key": "Z",
+                                    "value": 99
+                                }
+                            ]
+                        },
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{0d3624fa-83ee-4dc7-8c64-0e5693df120d}",
+                            "key": "Inputs",
+                            "value": null
+                        },
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{d8249b17-b9dd-484f-a39a-4c782612ab64}",
+                            "key": "Outputs",
+                            "value": null
+                        }
+                    ]
+                },
+                {
+                    "type": "nodes_.node_package.node_category.node_sub_category.test_node_item.TestNodeItem",
+                    "uuid": "{27fa2370-e1ea-451e-b240-f96d928ff05c}",
+                    "key": "Test Node",
+                    "value": "",
+                    "pos": [
+                        100,
+                        100
+                    ],
+                    "children": [
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{7c40f4dd-daad-457d-8cdb-f59b66b7c304}",
+                            "key": "Base",
+                            "value": null
+                        },
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{d7764e38-7d10-4366-8933-1685a047f321}",
+                            "key": "Inputs",
+                            "value": null
+                        },
+                        {
+                            "type": "seperator_item.SeperatorItem",
+                            "uuid": "{cfa81b60-bd3e-4e0c-87f4-9c988e26b80e}",
+                            "key": "Outputs",
+                            "value": null
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{ae613c7e-72ca-4335-a24b-05dc31e0ec79}",
+            "key": "Edges",
+            "value": null,
+            "children": [
+                {
+                    "type": "backend.edge_item_.EdgeItem",
+                    "uuid": "{06ae0784-2351-42e9-91a8-7192e7b9f64d}",
+                    "source": "{5aa4e0cd-c68d-46d4-ab28-c2500227ce0b}",
+                    "destination": "{7291a1f6-33c9-495a-94c6-bf6db19d4681}"
+                }
+            ]
+        },
+        {
+            "type": "tree_seperator_item.TreeSeperatorItem",
+            "uuid": "{fbc818f2-2509-4f6d-8966-b631b3b5a9ad}",
+            "key": "Frames",
+            "value": null
+        }
+    ]
+}
