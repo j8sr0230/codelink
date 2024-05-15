@@ -9,12 +9,17 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+for i in sys.path:
+    print(i)
+
 from backend.user_roles import UserRoles
 from backend.tree_model import TreeModel
 from backend.node_item_ import NodeItem
 from backend.integer_property_item import IntegerPropertyItem
 from backend.edge_item_ import EdgeItem
 from backend.delegates import TreeViewDelegate
+
+
 
 
 if __name__ == "__main__":

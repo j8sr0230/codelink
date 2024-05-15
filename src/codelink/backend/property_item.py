@@ -24,8 +24,8 @@
 
 from typing import Any, Optional
 
-from tree_item import TreeItem
-from base_item import BaseItem
+from backend.tree_item import TreeItem
+from backend.base_item import BaseItem
 
 
 class PropertyItem(BaseItem):

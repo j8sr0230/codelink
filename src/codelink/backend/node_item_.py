@@ -24,9 +24,9 @@
 
 from typing import Optional, Any
 
-from tree_item import TreeItem
-from base_item import BaseItem
-from seperator_item import SeperatorItem
+from backend.tree_item import TreeItem
+from backend.base_item import BaseItem
+from backend.seperator_item import SeperatorItem
 
 
 class NodeItem(BaseItem):

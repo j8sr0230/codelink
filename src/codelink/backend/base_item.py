@@ -28,7 +28,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from tree_item import TreeItem
+from backend.tree_item import TreeItem
 
 
 class BaseItem(TreeItem):

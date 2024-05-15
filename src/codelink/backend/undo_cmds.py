@@ -27,7 +27,7 @@ from typing import Any, Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from user_roles import UserRoles
+from backend.user_roles import UserRoles
 
 
 class BaseItemEditCommand(QtWidgets.QUndoCommand):
