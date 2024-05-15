@@ -135,8 +135,12 @@ if __name__ == "__main__":
             restored_destination.key, ":", restored_destination.value
         )
 
+        def populate_dict(path: list[str], menu: dict) -> None:
+            pass
+
         print()
         root: str = "nodes"
+        menus: dict = dict()
         for dir_path, dir_names, file_names in os.walk(root):
             for file_name in file_names:
                 if file_name.endswith(".py") and not file_name.startswith("__init__"):
@@ -151,5 +155,7 @@ if __name__ == "__main__":
                             if str(obj).__contains__(module.__name__):
                                 class_name: str = str(obj).split(".")[-1][:-2]
                                 print(class_name)
+
+
 
     sys.exit(app.exec_())
