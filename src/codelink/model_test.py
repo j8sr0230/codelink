@@ -9,12 +9,12 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from backend.user_roles import UserRoles
-from backend.tree_model import TreeModel
-from backend.node_item_ import NodeItem
-from backend.integer_property_item import IntegerPropertyItem
-from backend.edge_item_ import EdgeItem
-from backend.delegates import TreeViewDelegate
+from codelink.backend.user_roles import UserRoles
+from codelink.backend.tree_model import TreeModel
+from codelink.backend.node_item_ import NodeItem
+from codelink.backend.integer_property_item import IntegerPropertyItem
+from codelink.backend.edge_item_ import EdgeItem
+from codelink.backend.delegates import TreeViewDelegate
 
 
 if __name__ == "__main__":
@@ -128,8 +128,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)

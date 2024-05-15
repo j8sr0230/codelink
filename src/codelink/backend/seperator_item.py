@@ -24,8 +24,8 @@
 
 from typing import Optional, Any
 
-from backend.tree_item import TreeItem
-from backend.base_item import BaseItem
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.base_item import BaseItem
 
 
 class SeperatorItem(BaseItem):

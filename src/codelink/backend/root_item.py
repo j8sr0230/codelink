@@ -24,7 +24,7 @@
 
 from typing import Optional
 
-from backend.tree_item import TreeItem
+from codelink.backend.tree_item import TreeItem
 
 
 class RootItem(TreeItem):

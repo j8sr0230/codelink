@@ -28,9 +28,9 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
-from backend.tree_item import TreeItem
-from backend.base_item import BaseItem
-from backend.seperator_item import SeperatorItem
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.base_item import BaseItem
+from codelink.backend.seperator_item import SeperatorItem
 
 
 class TreeViewDelegate(QtWidgets.QStyledItemDelegate):

@@ -27,8 +27,8 @@ from typing import Any, Optional
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
-from backend.tree_item import TreeItem
-from backend.property_item import PropertyItem
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.property_item import PropertyItem
 
 
 class IntegerPropertyItem(PropertyItem):

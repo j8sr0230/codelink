@@ -30,14 +30,14 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from backend.user_roles import UserRoles
-from backend.tree_item import TreeItem
-from backend.root_item import RootItem
-from backend.base_item import BaseItem
-from backend.node_item_ import NodeItem
-from backend.tree_seperator_item import TreeSeperatorItem
-from backend.edge_item_ import EdgeItem
-from backend.undo_cmds import BaseItemEditCommand
+from codelink.backend.user_roles import UserRoles
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.root_item import RootItem
+from codelink.backend.base_item import BaseItem
+from codelink.backend.node_item_ import NodeItem
+from codelink.backend.tree_seperator_item import TreeSeperatorItem
+from codelink.backend.edge_item_ import EdgeItem
+from codelink.backend.undo_cmds import BaseItemEditCommand
 
 
 class TreeModel(QtCore.QAbstractItemModel):
