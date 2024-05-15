@@ -16,7 +16,7 @@ from codelink.backend.properties.integer_property_item import IntegerPropertyIte
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
-from codelink.backend.nodes.node_package.node_category.node_sub_category.test_node_item import TestNodeItem
+from codelink.backend.nodes.node_package.node_category.node_sub_category_1.test_node_item import TestNodeItem
 
 
 if __name__ == "__main__":
@@ -110,8 +110,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -140,8 +140,8 @@ if __name__ == "__main__":
         for dir_path, dir_names, file_names in os.walk(root):
             for file_name in file_names:
                 if file_name.endswith(".py") and not file_name.startswith("__init__"):
-                    menu_path: str = os.path.join(dir_path[len(root) + 1:], file_name[:-3])
-                    print(menu_path)
+                    menu_path: str = dir_path[len(root) + 1:]
+                    print(menu_path.split(os.sep))
 
                     file_path: str = os.path.join("codelink", "backend", dir_path, file_name)
                     module_path: str = file_path[:-3].replace(os.sep, ".")
