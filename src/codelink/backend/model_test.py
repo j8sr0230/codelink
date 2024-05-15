@@ -136,8 +136,6 @@ if __name__ == "__main__":
         )
 
         print()
-        print("Inspect folder for node modules and import them")
-
         root: str = "nodes"
         for dir_path, dir_names, file_names in os.walk(root):
             for file_name in file_names:
