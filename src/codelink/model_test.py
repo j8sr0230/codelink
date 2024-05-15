@@ -9,11 +9,12 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from tree_model import UserRoles, TreeModel
+from backend.user_roles import UserRoles
+from backend.tree_model import TreeModel
 from backend.node_item import NodeItem
-from integer_property_item import IntegerPropertyItem
+from backend.integer_property_item import IntegerPropertyItem
 from backend.edge_item import EdgeItem
-from delegates import TreeViewDelegate
+from backend.delegates import TreeViewDelegate
 
 
 if __name__ == "__main__":
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     # with open("./data.json", "w", encoding="utf-8") as f:
     #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
-    with open("./data.json", "r", encoding="utf-8") as f:
+    with open("backend/data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
@@ -133,12 +134,12 @@ if __name__ == "__main__":
         print()
         print("Inspect folder for node modules and import them")
         modules: list = []
-        for dir_path, dir_names, file_names in os.walk(os.path.join("..", "nodes_")):
+        for dir_path, dir_names, file_names in os.walk(os.path.join("", "nodes_")):
             for file_name in file_names:
                 if file_name.endswith(".py") and not file_name.startswith("__init__"):
                     file_string: str = str(os.path.join(dir_path, file_name))
                     print("Module string:", file_string)
-                    module_string: str = file_string[3:-3].replace(os.sep, ".")
+                    module_string: str = file_string[:-3].replace(os.sep, ".")
                     modules.append(importlib.import_module(module_string))
 
         print()
