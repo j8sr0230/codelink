@@ -129,7 +129,8 @@ class TreeModel(QtCore.QAbstractItemModel):
         if not index.isValid():
             return None
 
-        if role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role not in [role for role in UserRoles]:
+        if (role != QtCore.Qt.DisplayRole and role != QtCore.Qt.EditRole and role != QtCore.Qt.BackgroundColorRole
+                and role not in [role for role in UserRoles]):
             return None
 
         tree_item: TreeItem = self.item_from_index(index)

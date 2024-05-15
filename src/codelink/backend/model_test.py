@@ -1,6 +1,9 @@
 from typing import cast, Any
+import os
 import sys
 import json
+import importlib
+import inspect
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -126,5 +129,26 @@ if __name__ == "__main__":
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
         )
+
+        print()
+        print("Inspect folder for node modules and import them")
+        modules: list = []
+        for dir_path, dir_names, file_names in os.walk(os.path.join("..", "nodes_")):
+            for file_name in file_names:
+                if file_name.endswith(".py") and not file_name.startswith("__init__"):
+                    file_string: str = str(os.path.join(dir_path, file_name))
+                    print("Module string:", file_string)
+                    module_string: str = file_string[3:-3].replace(os.sep, ".")
+                    modules.append(importlib.import_module(module_string))
+
+        print()
+        print("Instantiate class from imported node modules")
+        for module in modules:
+            for name, obj in inspect.getmembers(module):
+                if inspect.isclass(obj):
+                    if str(obj).__contains__(module.__name__):
+                        loaded_node: NodeItem = obj("Test Node", "", (100, 100))
+                        print(type(loaded_node), loaded_node.key, "at", loaded_node.pos)
+            print()
 
     sys.exit(app.exec_())
