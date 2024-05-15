@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 from typing import cast, Any, Optional
+import importlib
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -33,12 +34,9 @@ from user_roles import UserRoles
 from tree_item import TreeItem
 from root_item import RootItem
 from base_item import BaseItem
-from backend.node_item import NodeItem  # noqa
-from seperator_item import SeperatorItem  # noqa
+from node_item_ import NodeItem
 from tree_seperator_item import TreeSeperatorItem
-from property_item import PropertyItem  # noqa
-from integer_property_item import IntegerPropertyItem  # noqa
-from backend.edge_item import EdgeItem
+from edge_item_ import EdgeItem
 from undo_cmds import BaseItemEditCommand
 
 
@@ -314,13 +312,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
     def from_dict(self, state: dict[str, Any]) -> TreeItem:
         values: list[Any] = list(state.values())
-        cls_name: str = values.pop(0)
+        type_name: str = values.pop(0)
 
         if "children" in state.keys():
             values.pop()
         values.append(values.pop(0))
 
-        tree_item: TreeItem = eval(cls_name)(*values)
+        class_name: str = type_name.split(".")[-1]
+        module_name: str = type_name[:-len(class_name) - 1]
+        tree_item: TreeItem =  getattr(importlib.import_module(module_name), class_name)(*values)
 
         if "children" in state.keys():
             for child_data in state["children"]:

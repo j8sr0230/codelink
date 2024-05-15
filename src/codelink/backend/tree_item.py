@@ -91,7 +91,7 @@ class TreeItem(object):
 
     def __getstate__(self) -> dict[str, Any]:
         state: dict = {
-            "type": self.__class__.__name__,
+            "type": self.__class__.__module__ + "." + self.__class__.__name__,
             "uuid": self._uuid
         }
         return state

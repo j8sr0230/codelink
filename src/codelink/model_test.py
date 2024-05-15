@@ -11,9 +11,9 @@ import PySide2.QtWidgets as QtWidgets
 
 from backend.user_roles import UserRoles
 from backend.tree_model import TreeModel
-from backend.node_item import NodeItem
+from backend.node_item_ import NodeItem
 from backend.integer_property_item import IntegerPropertyItem
-from backend.edge_item import EdgeItem
+from backend.edge_item_ import EdgeItem
 from backend.delegates import TreeViewDelegate
 
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_item: NodeItem = NodeItem("Test Node")
+    node_item: NodeItem = NodeItem("Node")
     node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
 
     print(model.data(node_item_idx, UserRoles.POS))
@@ -104,52 +104,53 @@ if __name__ == "__main__":
     edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
     edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
 
+    print()
+    print("Inspect folder for node modules and import them")
+    modules: list = []
+    for dir_path, dir_names, file_names in os.walk(os.path.join("", "nodes_")):
+        for file_name in file_names:
+            if file_name.endswith(".py") and not file_name.startswith("__init__"):
+                file_string: str = str(os.path.join(dir_path, file_name))
+                print("Module string:", file_string)
+                module_string: str = file_string[:-3].replace(os.sep, ".")
+                modules.append(importlib.import_module(module_string))
+
+    print()
+    print("Instantiate class from imported node modules")
+    for module in modules:
+        for name, obj in inspect.getmembers(module):
+            if inspect.isclass(obj):
+                if str(obj).__contains__(module.__name__):
+                    loaded_node: NodeItem = obj("Test Node", "", (100, 100))
+                    node_item_idx: QtCore.QModelIndex = model.append_node(loaded_node)
+                    print(type(loaded_node), loaded_node.key, "at", loaded_node.pos)
+        print()
+
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
-    with open("backend/data.json", "r", encoding="utf-8") as f:
+    with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
 
-        restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
-        restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
-        print(restored_node_1_idx.data(UserRoles.POS))
-
-        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
-        restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        restored_source: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
-        )
-        restored_destination: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
-        )
-        print(
-            restored_source.key, ":", restored_source.value, "->",
-            restored_destination.key, ":", restored_destination.value
-        )
-
-        print()
-        print("Inspect folder for node modules and import them")
-        modules: list = []
-        for dir_path, dir_names, file_names in os.walk(os.path.join("", "nodes_")):
-            for file_name in file_names:
-                if file_name.endswith(".py") and not file_name.startswith("__init__"):
-                    file_string: str = str(os.path.join(dir_path, file_name))
-                    print("Module string:", file_string)
-                    module_string: str = file_string[:-3].replace(os.sep, ".")
-                    modules.append(importlib.import_module(module_string))
-
-        print()
-        print("Instantiate class from imported node modules")
-        for module in modules:
-            for name, obj in inspect.getmembers(module):
-                if inspect.isclass(obj):
-                    if str(obj).__contains__(module.__name__):
-                        loaded_node: NodeItem = obj("Test Node", "", (100, 100))
-                        print(type(loaded_node), loaded_node.key, "at", loaded_node.pos)
-            print()
+        # restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
+        # restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
+        # print(restored_node_1_idx.data(UserRoles.POS))
+        #
+        # restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+        # restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
+        # restored_source: IntegerPropertyItem = cast(
+        #     IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
+        # )
+        # restored_destination: IntegerPropertyItem = cast(
+        #     IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
+        # )
+        # print(
+        #     restored_source.key, ":", restored_source.value, "->",
+        #     restored_destination.key, ":", restored_destination.value
+        # )
 
     sys.exit(app.exec_())

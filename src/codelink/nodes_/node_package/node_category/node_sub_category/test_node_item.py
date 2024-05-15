@@ -24,8 +24,8 @@
 
 from typing import Optional, Any
 
-from backend.tree_item import TreeItem
-from backend.node_item import NodeItem
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.node_item_ import NodeItem
 
 
 class TestNodeItem(NodeItem):
