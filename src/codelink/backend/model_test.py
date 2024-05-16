@@ -18,17 +18,18 @@ from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
 
-def menu_from_path(path: str, trim_length: int = 0) -> None:
+def load_nodes_from_path(path: str, menu: QtWidgets.QMenu, parent: QtWidgets.QWidget) -> None:
     try:
         sub_paths: list[str] = os.listdir(path)
         for sub_path in sub_paths:
             abs_sub_path: str = os.path.join(path, sub_path)
-            rel_path_items: list[str] = abs_sub_path[trim_length:].split(os.sep)
+            rel_path_items: list[str] = abs_sub_path.split(os.sep)
 
             if len(rel_path_items) > 0 and not rel_path_items[-1].startswith("__"):
                 if os.path.isdir(abs_sub_path):
-                    print("Menu structure:", rel_path_items[-1])
-                    menu_from_path(abs_sub_path, trim_length)
+                    sub_menu: QtWidgets.QMenu = QtWidgets.QMenu(rel_path_items[-1])
+                    menu.addMenu(sub_menu)
+                    load_nodes_from_path(abs_sub_path, sub_menu, parent)
                 else:
                     module_name: str = rel_path_items[-1][:-3]
                     module_spec = importlib.util.spec_from_file_location(rel_path_items[-1][:-3], abs_sub_path)
@@ -39,9 +40,11 @@ def menu_from_path(path: str, trim_length: int = 0) -> None:
                     for name, item in inspect.getmembers(module):
                         if inspect.isclass(item):
                             if str(item).__contains__(module.__name__):
-                                obj: object = item()
-                                print(name, "->", obj.key if hasattr(obj, "key") else obj)
-
+                                # noinspection PyUnusedLocal
+                                cls: type = item
+                                action: QtWidgets.QAction = QtWidgets.QAction(name, parent)
+                                action.triggered.connect(lambda: model.append_node(cast(NodeItem, cls())))
+                                menu.addAction(action)
     except FileNotFoundError as e:
         print(e)
 
@@ -66,6 +69,11 @@ if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: QtWidgets.QMainWindow = QtWidgets.QMainWindow()
     main_window.setWindowTitle("Main Window")
+
+    menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
+    nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("Nodes")
+    load_nodes_from_path(str(Path("./nodes").resolve()), nodes_menu, main_window)
+
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
     main_window.addAction(main_undo_action)
@@ -159,10 +167,5 @@ if __name__ == "__main__":
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
         )
-
-        # Load node packages and build menu
-        print()
-        nodes_path: Path = Path("./nodes")
-        menu_from_path(str(nodes_path.resolve()), len(str(nodes_path.resolve())) + 1)
 
     sys.exit(app.exec_())
