@@ -23,16 +23,16 @@ def load_nodes_from_path(path: str, menu: QtWidgets.QMenu, parent: QtWidgets.QWi
         sub_paths: list[str] = os.listdir(path)
         for sub_path in sub_paths:
             abs_sub_path: str = os.path.join(path, sub_path)
-            rel_path_items: list[str] = abs_sub_path.split(os.sep)
+            path_items: list[str] = abs_sub_path.split(os.sep)
 
-            if len(rel_path_items) > 0 and not rel_path_items[-1].startswith("__"):
+            if len(path_items) > 0 and not path_items[-1].startswith("__"):
                 if os.path.isdir(abs_sub_path):
-                    sub_menu: QtWidgets.QMenu = QtWidgets.QMenu(rel_path_items[-1])
+                    sub_menu: QtWidgets.QMenu = QtWidgets.QMenu(path_items[-1].replace("_", " ").title())
                     menu.addMenu(sub_menu)
                     load_nodes_from_path(abs_sub_path, sub_menu, parent)
                 else:
-                    module_name: str = rel_path_items[-1][:-3]
-                    module_spec = importlib.util.spec_from_file_location(rel_path_items[-1][:-3], abs_sub_path)
+                    module_name: str = path_items[-1][:-3]
+                    module_spec = importlib.util.spec_from_file_location(path_items[-1][:-3], abs_sub_path)
                     module = importlib.util.module_from_spec(module_spec)
                     sys.modules[module_name] = module
                     module_spec.loader.exec_module(module)
