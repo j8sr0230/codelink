@@ -2,8 +2,8 @@ from typing import cast, Any
 import os
 import sys
 import json
-import pathlib
-import importlib
+from pathlib import Path
+import importlib.util
 import inspect
 
 import PySide2.QtCore as QtCore
@@ -17,7 +17,33 @@ from codelink.backend.properties.integer_property_item import IntegerPropertyIte
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
-from codelink.backend.nodes.node_package.node_category.node_sub_category_1.test_node_item import TestNodeItem
+
+def menu_from_path(path: str, trim_length: int = 0) -> None:
+    try:
+        sub_paths: list[str] = os.listdir(path)
+        for sub_path in sub_paths:
+            abs_sub_path: str = os.path.join(path, sub_path)
+            rel_path_items: list[str] = abs_sub_path[trim_length:].split(os.sep)
+
+            if len(rel_path_items) > 0 and not rel_path_items[-1].startswith("__"):
+                if os.path.isdir(abs_sub_path):
+                    print("Menu structure:", rel_path_items[-1])
+                    menu_from_path(abs_sub_path, trim_length)
+                else:
+                    module_name: str = rel_path_items[-1][:-3]
+                    module_spec = importlib.util.spec_from_file_location(rel_path_items[-1][:-3], abs_sub_path)
+                    module = importlib.util.module_from_spec(module_spec)
+                    sys.modules[module_name] = module
+                    module_spec.loader.exec_module(module)
+
+                    for name, item in inspect.getmembers(module):
+                        if inspect.isclass(item):
+                            if str(item).__contains__(module.__name__):
+                                obj: object = item()
+                                print(name, "->", obj.key if hasattr(obj, "key") else obj)
+
+    except FileNotFoundError as e:
+        print(e)
 
 
 if __name__ == "__main__":
@@ -104,8 +130,6 @@ if __name__ == "__main__":
     y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
     model.insert_item(1, y_component, model.index(0, 0, node_item_idx))
 
-    model.append_node(TestNodeItem("Test Node"))
-
     edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
     edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
 
@@ -136,35 +160,9 @@ if __name__ == "__main__":
             restored_destination.key, ":", restored_destination.value
         )
 
-        def traverse_nodes_dir(directory: str) -> None:
-            sub_dir: list[str] = os.listdir(directory)
-            print(sub_dir)
-            for sub in sub_dir:
-                if os.path.isdir(sub):
-                    traverse_nodes_dir(os.path.join(directory, sub))
-                else:
-                    pass  # print(sub)
-
-        traverse_nodes_dir("." + os.sep + "nodes")
-
-        # print()
-        # root: str = "nodes"
-        # menus: dict = dict()
-        # for dir_path, dir_names, file_names in os.walk(root):
-        #     for file_name in file_names:
-        #         if file_name.endswith(".py") and not file_name.startswith("__init__"):
-        #             menu_path: str = dir_path[len(root) + 1:]
-        #             print(menu_path.split(os.sep))
-        #
-        #             file_path: str = os.path.join("codelink", "backend", dir_path, file_name)
-        #             module_path: str = file_path[:-3].replace(os.sep, ".")
-        #             module = importlib.import_module(module_path)
-        #             for name, obj in inspect.getmembers(module):
-        #                 if inspect.isclass(obj):
-        #                     if str(obj).__contains__(module.__name__):
-        #                         class_name: str = str(obj).split(".")[-1][:-2]
-        #                         print(class_name)
-
-
+        # Load node packages and build menu
+        print()
+        nodes_path: Path = Path("./nodes")
+        menu_from_path(str(nodes_path.resolve()), len(str(nodes_path.resolve())) + 1)
 
     sys.exit(app.exec_())
