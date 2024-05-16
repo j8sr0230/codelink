@@ -1,6 +1,6 @@
 @startuml classes
 set namespaceSeparator none
-class "base_item.BaseItem" as base_item.BaseItem {
+class "codelink.backend.base_item.BaseItem" as codelink.backend.base_item.BaseItem {
   key
   value
   create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
@@ -13,14 +13,26 @@ class "codelink.backend.edge_item.EdgeItem" as codelink.backend.edge_item.EdgeIt
   destination_uuid
   source_uuid
 }
-class "codelink.backend.integer_property_item.IntegerPropertyItem" as codelink.backend.integer_property_item.IntegerPropertyItem {
-  create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
-  set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
-  set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
-}
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
   pos
   setup_children() -> None
+}
+class "codelink.backend.property_item.PropertyItem" as codelink.backend.property_item.PropertyItem {
+}
+class "codelink.backend.root_item.RootItem" as codelink.backend.root_item.RootItem {
+}
+class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
+}
+class "codelink.backend.tree_item.TreeItem" as codelink.backend.tree_item.TreeItem {
+  children
+  parent
+  uuid
+  append_child(child: TreeItem) -> bool
+  child(row: int) -> Optional[TreeItem]
+  insert_child(row: int, child: TreeItem) -> bool
+  remove_child(row: int) -> bool
+  row() -> int
+  {abstract}setup_children() -> None
 }
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
   edges_index
@@ -51,30 +63,12 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
 }
 class "codelink.backend.tree_seperator_item.TreeSeperatorItem" as codelink.backend.tree_seperator_item.TreeSeperatorItem {
 }
-class "property_item.PropertyItem" as property_item.PropertyItem {
-}
-class "root_item.RootItem" as root_item.RootItem {
-}
-class "seperator_item.SeperatorItem" as seperator_item.SeperatorItem {
-}
-class "tree_item.TreeItem" as tree_item.TreeItem {
-  children
-  parent
-  uuid
-  append_child(child: TreeItem) -> bool
-  child(row: int) -> Optional[TreeItem]
-  insert_child(row: int, child: TreeItem) -> bool
-  remove_child(row: int) -> bool
-  row() -> int
-  {abstract}setup_children() -> None
-}
-base_item.BaseItem --|> tree_item.TreeItem
-codelink.backend.edge_item.EdgeItem --|> tree_item.TreeItem
-codelink.backend.integer_property_item.IntegerPropertyItem --|> property_item.PropertyItem
-codelink.backend.node_item.NodeItem --|> base_item.BaseItem
-codelink.backend.tree_seperator_item.TreeSeperatorItem --|> seperator_item.SeperatorItem
-property_item.PropertyItem --|> base_item.BaseItem
-root_item.RootItem --|> tree_item.TreeItem
-seperator_item.SeperatorItem --|> base_item.BaseItem
-root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
+codelink.backend.base_item.BaseItem --|> codelink.backend.tree_item.TreeItem
+codelink.backend.edge_item.EdgeItem --|> codelink.backend.tree_item.TreeItem
+codelink.backend.node_item.NodeItem --|> codelink.backend.base_item.BaseItem
+codelink.backend.property_item.PropertyItem --|> codelink.backend.base_item.BaseItem
+codelink.backend.root_item.RootItem --|> codelink.backend.tree_item.TreeItem
+codelink.backend.seperator_item.SeperatorItem --|> codelink.backend.base_item.BaseItem
+codelink.backend.tree_seperator_item.TreeSeperatorItem --|> codelink.backend.seperator_item.SeperatorItem
+codelink.backend.root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
 @enduml
