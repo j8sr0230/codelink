@@ -34,7 +34,7 @@ from codelink.backend.user_roles import UserRoles
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
-from codelink.backend.node_item_ import NodeItem
+from codelink.backend.node_item import NodeItem
 from codelink.backend.tree_seperator_item import TreeSeperatorItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.undo_cmds import BaseItemEditCommand

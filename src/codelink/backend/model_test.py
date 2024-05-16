@@ -12,7 +12,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.tree_model import TreeModel
-from codelink.backend.node_item_ import NodeItem
+from codelink.backend.node_item import NodeItem
 from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
