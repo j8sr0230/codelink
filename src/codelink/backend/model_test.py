@@ -2,6 +2,7 @@ from typing import cast, Any
 import os
 import sys
 import json
+import pathlib
 import importlib
 import inspect
 
@@ -135,26 +136,34 @@ if __name__ == "__main__":
             restored_destination.key, ":", restored_destination.value
         )
 
-        def populate_dict(path: list[str], menu: dict) -> None:
-            pass
+        def traverse_nodes_dir(directory: str) -> None:
+            sub_dir: list[str] = os.listdir(directory)
+            print(sub_dir)
+            for sub in sub_dir:
+                if os.path.isdir(sub):
+                    traverse_nodes_dir(os.path.join(directory, sub))
+                else:
+                    pass  # print(sub)
 
-        print()
-        root: str = "nodes"
-        menus: dict = dict()
-        for dir_path, dir_names, file_names in os.walk(root):
-            for file_name in file_names:
-                if file_name.endswith(".py") and not file_name.startswith("__init__"):
-                    menu_path: str = dir_path[len(root) + 1:]
-                    print(menu_path.split(os.sep))
+        traverse_nodes_dir("." + os.sep + "nodes")
 
-                    file_path: str = os.path.join("codelink", "backend", dir_path, file_name)
-                    module_path: str = file_path[:-3].replace(os.sep, ".")
-                    module = importlib.import_module(module_path)
-                    for name, obj in inspect.getmembers(module):
-                        if inspect.isclass(obj):
-                            if str(obj).__contains__(module.__name__):
-                                class_name: str = str(obj).split(".")[-1][:-2]
-                                print(class_name)
+        # print()
+        # root: str = "nodes"
+        # menus: dict = dict()
+        # for dir_path, dir_names, file_names in os.walk(root):
+        #     for file_name in file_names:
+        #         if file_name.endswith(".py") and not file_name.startswith("__init__"):
+        #             menu_path: str = dir_path[len(root) + 1:]
+        #             print(menu_path.split(os.sep))
+        #
+        #             file_path: str = os.path.join("codelink", "backend", dir_path, file_name)
+        #             module_path: str = file_path[:-3].replace(os.sep, ".")
+        #             module = importlib.import_module(module_path)
+        #             for name, obj in inspect.getmembers(module):
+        #                 if inspect.isclass(obj):
+        #                     if str(obj).__contains__(module.__name__):
+        #                         class_name: str = str(obj).split(".")[-1][:-2]
+        #                         print(class_name)
 
 
 
