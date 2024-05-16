@@ -75,6 +75,7 @@ if __name__ == "__main__":
     menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
     nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("&Nodes")
     load_nodes(str(Path("./nodes").resolve()), nodes_menu, main_window)
+    load_nodes(str(Path("./nodes").resolve()), nodes_menu, main_window)
 
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
