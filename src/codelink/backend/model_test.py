@@ -1,10 +1,6 @@
-from typing import cast, Any, Optional
-import os
+from typing import cast, Any
 import sys
 import json
-from pathlib import Path
-import importlib.util
-import inspect
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -18,39 +14,6 @@ from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
 from codelink.backend.node_factory import NodeFactory
-
-
-def load_nodes(path: str, menu: Optional[QtWidgets.QMenu] = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
-    try:
-        sub_dirs: list[str] = os.listdir(path)
-        for sub_dir in sub_dirs:
-            sub_path: str = os.path.join(path, sub_dir)
-            path_items: list[str] = sub_path.split(os.sep)
-
-            if len(path_items) > 0 and not path_items[-1].startswith("__"):
-                if os.path.isdir(sub_path):
-                    sub_menu: QtWidgets.QMenu = QtWidgets.QMenu(path_items[-1].replace("_", " ").title())
-                    if menu:
-                        menu.addMenu(sub_menu)
-                    load_nodes(sub_path, sub_menu, parent)
-                else:
-                    module_name: str = path_items[-1][:-3]
-                    module_spec = importlib.util.spec_from_file_location(path_items[-1][:-3], sub_path)
-                    module = importlib.util.module_from_spec(module_spec)
-                    sys.modules[module_name] = module
-                    module_spec.loader.exec_module(module)
-
-                    if menu and parent:
-                        for name, item in inspect.getmembers(module):
-                            if inspect.isclass(item):
-                                if str(item).__contains__(module.__name__):
-                                    # noinspection PyUnusedLocal
-                                    cls: type = item
-                                    action: QtWidgets.QAction = QtWidgets.QAction(name, parent)
-                                    action.triggered.connect(lambda: model.append_node(cast(NodeItem, cls())))
-                                    menu.addAction(action)
-    except FileNotFoundError as e:
-        print(e)
 
 
 if __name__ == "__main__":
@@ -68,6 +31,26 @@ if __name__ == "__main__":
             top_left_idx.data(roles[0]) if len(roles) > 0 else None)
     )
 
+    # Load nodes from directory
+    node_factory: NodeFactory = NodeFactory()
+    node_factory.load_nodes("./nodes")
+    print(json.dumps(node_factory.structure, indent=4))
+    print(node_factory.modules)
+    print()
+
+    def populate_menu(node_structure: dict, factory: NodeFactory, menu: QtWidgets.QMenu,
+                      parent: QtWidgets.QWidget) -> None:
+        for key, value in node_structure.items():
+            if isinstance(value, dict):
+                if value.items():
+                    next_menu: QtWidgets.QMenu = QtWidgets.QMenu(key)
+                    menu.addMenu(next_menu)
+                    populate_menu(value, factory, next_menu, parent)
+                else:
+                    action: QtWidgets.QAction = QtWidgets.QAction(key, parent)
+                    action.triggered.connect(lambda: model.append_node(factory.create_node(key)))
+                    menu.addAction(action)
+
     # Setup ui
     # Main window
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
@@ -76,8 +59,7 @@ if __name__ == "__main__":
 
     menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
     nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("&Nodes")
-    load_nodes(str(Path("./nodes").resolve()), nodes_menu, main_window)
-    load_nodes(str(Path("./nodes").resolve()), nodes_menu, main_window)
+    populate_menu(node_factory.structure, node_factory, nodes_menu, main_window)
 
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
@@ -126,7 +108,7 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_item: NodeItem = NodeItem("Node")
+    node_item: NodeItem = node_factory.create_node("TestNodeItem1")
     node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
 
     print(model.data(node_item_idx, UserRoles.POS))
@@ -148,8 +130,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
@@ -172,11 +154,5 @@ if __name__ == "__main__":
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
         )
-
-    node_factory: NodeFactory = NodeFactory()
-    node_factory.load_nodes("./nodes")
-    node_factory.load_nodes("./nodes")
-    print(json.dumps(node_factory.nodes_structure, indent=4))
-    print(list(node_factory.nodes_map.keys()))
 
     sys.exit(app.exec_())
