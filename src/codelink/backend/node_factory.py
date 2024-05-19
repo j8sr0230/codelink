@@ -47,26 +47,25 @@ class NodeFactory:
             sub_dirs: list[str] = os.listdir(path)
             for sub_dir in sub_dirs:
                 sub_path: str = os.path.join(path, sub_dir)
-                path_items: list[str] = sub_path.split(os.sep)
 
-                if len(path_items) > 0 and not path_items[-1].startswith("__"):
-                    last_key: str = list(nodes_structure.keys())[-1]
+                if not sub_dir.startswith("__"):
+                    last_key: str = next(reversed(nodes_structure))
                     if os.path.isdir(sub_path):
-                        sub_menu: str = path_items[-1].replace("_", " ").title()
+                        sub_menu: str = sub_dir.replace("_", " ").title()
                         nodes_structure[last_key].append({sub_menu: []})
                         self._load_nodes(sub_path, nodes_structure[last_key][-1], nodes_modules)
                     else:
-                        module_name: str = os.path.splitext(path_items[-1])[0]
+                        module_name: str = os.path.splitext(sub_dir)[0]
                         module_spec: Any = importlib.util.spec_from_file_location(module_name, sub_path)
+
                         module: Any = importlib.util.module_from_spec(module_spec)
                         sys.modules[module_name] = module
                         module_spec.loader.exec_module(module)
 
                         for name, item in inspect.getmembers(module):
-                            if inspect.isclass(item):
-                                if str(item).__contains__(module.__name__):
-                                    nodes_modules[name] = item
-                                    nodes_structure[last_key].append(name)
+                            if inspect.isclass(item) and module.__name__ in str(item):
+                                nodes_modules[name] = item
+                                nodes_structure[last_key].append(name)
         except FileNotFoundError as e:
             print(e)
 
