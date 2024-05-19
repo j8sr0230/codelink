@@ -28,8 +28,8 @@ from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
 
 
-class TestNodeItem(NodeItem):
-    def __init__(self, key: str = "Test Node 2", value: Any = None, pos: Optional[list[int]] = None,
+class TestNodeItem2(NodeItem):
+    def __init__(self, key: str = "Test Node 1", value: Any = None, pos: Optional[list[int]] = None,
                  uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, pos, uuid, parent)
 

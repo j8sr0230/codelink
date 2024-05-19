@@ -17,6 +17,8 @@ from codelink.backend.properties.integer_property_item import IntegerPropertyIte
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
+from codelink.backend.node_factory import NodeFactory
+
 
 def load_nodes(path: str, menu: Optional[QtWidgets.QMenu] = None, parent: Optional[QtWidgets.QWidget] = None) -> None:
     try:
@@ -170,5 +172,11 @@ if __name__ == "__main__":
             restored_source.key, ":", restored_source.value, "->",
             restored_destination.key, ":", restored_destination.value
         )
+
+    node_factory: NodeFactory = NodeFactory()
+    node_factory.load_nodes("./nodes")
+    print(node_factory.nodes_structure)
+    print(node_factory.nodes_map)
+
 
     sys.exit(app.exec_())
