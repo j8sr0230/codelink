@@ -175,8 +175,8 @@ if __name__ == "__main__":
 
     node_factory: NodeFactory = NodeFactory()
     node_factory.load_nodes("./nodes")
-    print(node_factory.nodes_structure)
+    node_factory.load_nodes("./nodes")
+    print(json.dumps(node_factory.nodes_structure, indent=4))
     print(node_factory.nodes_map)
-
 
     sys.exit(app.exec_())

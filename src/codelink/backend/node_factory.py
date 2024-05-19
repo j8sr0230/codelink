@@ -56,9 +56,9 @@ class NodeFactory:
                         nodes_structure[last_key].append({sub_menu: []})
                         self._load_nodes(sub_path, nodes_structure[last_key][-1], nodes_modules)
                     else:
-                        module_name: str = os.path.splitext(path_items[-1])[0]  # path_items[-1][:-3]
-                        module_spec = importlib.util.spec_from_file_location(path_items[-1][:-3], sub_path)
-                        module = importlib.util.module_from_spec(module_spec)
+                        module_name: str = os.path.splitext(path_items[-1])[0]
+                        module_spec: Any = importlib.util.spec_from_file_location(module_name, sub_path)
+                        module: Any = importlib.util.module_from_spec(module_spec)
                         sys.modules[module_name] = module
                         module_spec.loader.exec_module(module)
 
@@ -66,7 +66,7 @@ class NodeFactory:
                             if inspect.isclass(item):
                                 if str(item).__contains__(module.__name__):
                                     nodes_modules[name] = item
-                                    nodes_structure[list(nodes_structure.keys())[-1]].append(name)
+                                    nodes_structure[last_key].append(name)
         except FileNotFoundError as e:
             print(e)
 
