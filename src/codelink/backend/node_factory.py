@@ -50,12 +50,13 @@ class NodeFactory:
                 path_items: list[str] = sub_path.split(os.sep)
 
                 if len(path_items) > 0 and not path_items[-1].startswith("__"):
+                    last_key: str = list(nodes_structure.keys())[-1]
                     if os.path.isdir(sub_path):
                         sub_menu: str = path_items[-1].replace("_", " ").title()
-                        nodes_structure[list(nodes_structure.keys())[-1]].append({sub_menu: []})
-                        self._load_nodes(sub_path, nodes_structure[list(nodes_structure.keys())[-1]][-1], nodes_modules)
+                        nodes_structure[last_key].append({sub_menu: []})
+                        self._load_nodes(sub_path, nodes_structure[last_key][-1], nodes_modules)
                     else:
-                        module_name: str = path_items[-1][:-3]
+                        module_name: str = os.path.splitext(path_items[-1])[0]  # path_items[-1][:-3]
                         module_spec = importlib.util.spec_from_file_location(path_items[-1][:-3], sub_path)
                         module = importlib.util.module_from_spec(module_spec)
                         sys.modules[module_name] = module
