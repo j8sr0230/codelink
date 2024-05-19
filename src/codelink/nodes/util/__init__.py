@@ -32,7 +32,7 @@ from node_item import NodeItem
 
 package_dir: str = str(Path(__file__).resolve().parent)
 for (_, module_name, _) in iter_modules([package_dir]):
-    # Iterates through the modules in the current package
+    # Iterates through the classes in the current package
 
     module: Any = import_module(f"{__name__}.{module_name}")  # Imports the module and ...
     # print("Registered packages:", module)

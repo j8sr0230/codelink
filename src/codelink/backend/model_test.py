@@ -35,7 +35,7 @@ if __name__ == "__main__":
     node_factory: NodeFactory = NodeFactory()
     node_factory.load_nodes("./nodes")
     print(json.dumps(node_factory.structure, indent=4))
-    print(node_factory.modules)
+    print(node_factory.classes)
     print()
 
     def populate_menu(node_structure: dict, factory: NodeFactory, menu: QtWidgets.QMenu,

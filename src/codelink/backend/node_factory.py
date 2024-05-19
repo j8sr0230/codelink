@@ -34,17 +34,17 @@ from codelink.backend.node_item import NodeItem
 class NodeFactory:
     def __init__(self) -> None:
         self._structure: dict[str, dict] = {}
-        self._modules: dict[str, type] = {}
+        self._classes: dict[str, type] = {}
 
     @property
     def structure(self) -> dict[str, dict]:
         return self._structure
 
     @property
-    def modules(self) -> dict[str, type]:
-        return self._modules
+    def classes(self) -> dict[str, type]:
+        return self._classes
 
-    def _load_nodes(self, path: str, structure: dict[str, dict], modules: dict[str, type]) -> None:
+    def _load_nodes(self, path: str, structure: dict[str, dict], classes: dict[str, type]) -> None:
         try:
             sub_dirs: list[str] = os.listdir(path)
             for sub_dir in sub_dirs:
@@ -54,29 +54,37 @@ class NodeFactory:
                     if os.path.isdir(sub_path):
                         sub: str = sub_dir.replace("_", " ").title()
                         structure[sub] = dict()
-                        self._load_nodes(sub_path, structure[sub], modules)
+                        self._load_nodes(sub_path, structure[sub], classes)
                     else:
                         module_name: str = os.path.splitext(sub_dir)[0]
                         module_spec: Any = importlib.util.spec_from_file_location(module_name, sub_path)
                         module: Any = importlib.util.module_from_spec(module_spec)
+
+                        if module_name in sys.modules:
+                            raise ValueError("Modul <" + module_name + "> not unique!")
+
                         sys.modules[module_name] = module
                         module_spec.loader.exec_module(module)
 
                         for name, item in inspect.getmembers(module):
                             if inspect.isclass(item) and module.__name__ in str(item):
                                 structure[name] = dict()
-                                modules[name] = item
+
+                                if name in classes:
+                                    raise ValueError("Class <" + name + "> not unique!")
+
+                                classes[name] = item
 
         except FileNotFoundError as e:
             print(e)
 
     def load_nodes(self, path: str) -> None:
-        self._load_nodes(path, self._structure, self._modules)
+        self._load_nodes(path, self._structure, self._classes)
 
     def create_node(self, name: str) -> Optional[NodeItem]:
-        if name in self._modules.keys():
-            return self._modules[name]()
+        if name in self._classes.keys():
+            return self._classes[name]()
 
     def reset(self) -> None:
         self._structure: dict[str, list] = {}
-        self._modules: dict[str, type] = {}
+        self._classes: dict[str, type] = {}
