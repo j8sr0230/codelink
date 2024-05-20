@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Any, Optional, Union, cast
+from typing import Any, Optional
 import os
 import sys
 import importlib.util
@@ -33,51 +33,45 @@ from codelink.backend.node_item import NodeItem
 
 class NodeFactory:
     def __init__(self) -> None:
-        self._nodes_structure: dict[str, Union[dict, str]] = {}
-        self._nodes: dict[str, NodeItem] = {}
+        self._nodes: dict[str, type] = {}
 
     @property
-    def nodes_structure(self) -> dict[str, Union[dict, str]]:
-        return self._nodes_structure
-
-    @property
-    def nodes(self) -> dict[str, NodeItem]:
+    def nodes(self) -> dict[str, type]:
         return self._nodes
 
-    def _load_nodes(self, path: str, name_space: str, structure: dict[str, Union[dict, str]]) -> None:
-        try:
-            sub_dirs: list[str] = os.listdir(path)
-            for sub_dir in sub_dirs:
-                path: str = os.path.join(path, sub_dir)
+    # def _load_nodes(self, path: str, name_space: str, structure: dict[str, Union[dict, str]]) -> None:
+    #     try:
+    #         sub_dirs: list[str] = os.listdir(path)
+    #         for sub_dir in sub_dirs:
+    #             path: str = os.path.join(path, sub_dir)
+    #
+    #             if not sub_dir.startswith("__"):
+    #                 if os.path.isdir(path):
+    #                     structure[sub_dir] = dict()
+    #                     name_space: str = os.path.join(name_space, sub_dir)
+    #                     self._load_nodes(path, name_space, structure[sub_dir])
+    #                 else:
+    #                     name_space: str = name_space.replace(os.sep, ".") + os.path.splitext(sub_dir)[0]
+    #                     module_spec: Any = importlib.util.spec_from_file_location(name_space, path)
+    #                     module: Any = importlib.util.module_from_spec(module_spec)
+    #                     sys.modules[name_space] = module
+    #                     module_spec.loader.exec_module(module)
+    #
+    #                     for name, item in inspect.getmembers(module):
+    #                         print(name)
+    #                         # if inspect.isclass(item) and module.__name__ in str(item):
+    #                         #     self._nodes[name] = cast(NodeItem, item)
+    #
+    #     except FileNotFoundError as e:
+    #         print(e)
 
-                if not sub_dir.startswith("__"):
-                    if os.path.isdir(path):
-                        structure[sub_dir] = dict()
-                        name_space: str = os.path.join(name_space, sub_dir)
-                        self._load_nodes(path, name_space, structure[sub_dir])
-                    else:
-                        name_space: str = name_space.replace(os.sep, ".") + os.path.splitext(sub_dir)[0]
-                        module_spec: Any = importlib.util.spec_from_file_location(name_space, path)
-                        module: Any = importlib.util.module_from_spec(module_spec)
-                        sys.modules[name_space] = module
-                        module_spec.loader.exec_module(module)
-
-                        for name, item in inspect.getmembers(module):
-                            print(name)
-                            # if inspect.isclass(item) and module.__name__ in str(item):
-                            #     self._nodes[name] = cast(NodeItem, item)
-
-        except FileNotFoundError as e:
-            print(e)
-
-    def load_nodes(self, nodes_path: str, name_space: str = "my_nodes") -> None:
-        for root, dirs, files in os.walk(nodes_path):
+    def load_nodes(self, path: str, name_space: str = "my_nodes") -> None:
+        for root, directories, files in os.walk(path):
             for name in files:
                 if not name.startswith("__") and name.endswith(".py"):
                     module_path: str = os.path.join(root, name)
-                    prefix_len: int = len(os.path.commonprefix([nodes_path, module_path]))
+                    prefix_len: int = len(path)
                     module_name: str = (name_space + module_path[prefix_len:-3]).replace(os.sep, ".")
-
                     module_spec: Any = importlib.util.spec_from_file_location(module_name, module_path)
                     module: Any = importlib.util.module_from_spec(module_spec)
                     sys.modules[module_name] = module
@@ -85,13 +79,11 @@ class NodeFactory:
 
                     for item_name, item in inspect.getmembers(module):
                         if inspect.isclass(item) and module.__name__ in str(item):
-                            self._nodes[module.__name__ + "." + item.__name__] = cast(NodeItem, item)
+                            self._nodes[module.__name__ + "." + item.__name__] = item
 
     def create_node(self, name: str) -> Optional[NodeItem]:
-        print(sys.modules[name[:-1]])
-        if name in self._node_classes.keys():
-            return self._node_classes[name]()
+        if name in self._nodes.keys():
+            return self._nodes[name]()
 
     def reset(self) -> None:
-        self._nodes_structure: dict[str, list] = {}
-        self._node_classes: dict[str, type] = {}
+        self._nodes: dict[str, type] = {}

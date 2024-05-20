@@ -1,18 +1,18 @@
-import os.path
-from typing import cast, Any
+# import os.path
+from typing import cast  # , Any
 import sys
-import json
+# import json
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from codelink.backend.user_roles import UserRoles
+# from codelink.backend.user_roles import UserRoles
 from codelink.backend.tree_model import TreeModel
-from codelink.backend.node_item import NodeItem
-from codelink.backend.properties.integer_property_item import IntegerPropertyItem
-from codelink.backend.edge_item import EdgeItem
+# from codelink.backend.node_item import NodeItem
+# from codelink.backend.properties.integer_property_item import IntegerPropertyItem
+# from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
 from codelink.backend.node_factory import NodeFactory
@@ -37,7 +37,8 @@ if __name__ == "__main__":
     node_factory: NodeFactory = NodeFactory()
     node_factory.load_nodes(str(Path("./nodes").resolve()))
     # print(json.dumps(node_factory.nodes_structure, indent=4))
-    print(node_factory.nodes)
+    for k, v in list(node_factory.nodes.items()):
+        print(k, "->", v)
 
     def populate_menu(node_structure: dict, factory: NodeFactory, menu: QtWidgets.QMenu,
                       parent: QtWidgets.QWidget) -> None:
@@ -60,7 +61,7 @@ if __name__ == "__main__":
 
     menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
     nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("&Nodes")
-    populate_menu(node_factory.nodes_structure, node_factory, nodes_menu, main_window)
+    # populate_menu(node_factory.nodes_structure, node_factory, nodes_menu, main_window)
 
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
