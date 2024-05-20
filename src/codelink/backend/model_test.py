@@ -1,6 +1,8 @@
+import os.path
 from typing import cast, Any
 import sys
 import json
+from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -33,10 +35,9 @@ if __name__ == "__main__":
 
     # Load nodes from directory
     node_factory: NodeFactory = NodeFactory()
-    node_factory.load_nodes("./nodes")
-    print(json.dumps(node_factory.nodes_structure, indent=4))
-    print(node_factory.node_classes)
-    print()
+    node_factory.load_nodes(str(Path("./nodes").resolve()))
+    # print(json.dumps(node_factory.nodes_structure, indent=4))
+    print(node_factory.nodes)
 
     def populate_menu(node_structure: dict, factory: NodeFactory, menu: QtWidgets.QMenu,
                       parent: QtWidgets.QWidget) -> None:
@@ -108,51 +109,51 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_item: NodeItem = node_factory.create_node(list(node_factory.node_classes.keys())[0])
-    node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
-
-    print(model.data(node_item_idx, UserRoles.POS))
-    model.setData(node_item_idx, [5, 5], UserRoles.POS)
-    print(model.data(node_item_idx, UserRoles.POS))
-
-    print("Outputs index:", model.index_from_key("Outputs", node_item_idx))
-    print()
-
-    x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
-    model.append_item(x_component, model.index(0, 0, node_item_idx))
-    z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
-    model.append_item(z_component, model.index(0, 0, node_item_idx))
-    y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
-    model.insert_item(1, y_component, model.index(0, 0, node_item_idx))
-
-    edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
-    edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
-
-    # (De-)Serialisation
-    print(model)
-    with open("./data.json", "w", encoding="utf-8") as f:
-        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
-
-    with open("./data.json", "r", encoding="utf-8") as f:
-        deserialized: dict[str, Any] = json.load(f)
-        restored_model: TreeModel = TreeModel(deserialized)
-        print(restored_model)
-
-        restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
-        restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
-        print(restored_node_1_idx.data(UserRoles.POS))
-
-        restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
-        restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
-        restored_source: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
-        )
-        restored_destination: IntegerPropertyItem = cast(
-            IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
-        )
-        print(
-            restored_source.key, ":", restored_source.value, "->",
-            restored_destination.key, ":", restored_destination.value
-        )
+    # node_item: NodeItem = node_factory.create_node(list(node_factory.node_classes.keys())[0])
+    # node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
+    #
+    # print(model.data(node_item_idx, UserRoles.POS))
+    # model.setData(node_item_idx, [5, 5], UserRoles.POS)
+    # print(model.data(node_item_idx, UserRoles.POS))
+    #
+    # print("Outputs index:", model.index_from_key("Outputs", node_item_idx))
+    # print()
+    #
+    # x_component: IntegerPropertyItem = IntegerPropertyItem(key="X", value=5)
+    # model.append_item(x_component, model.index(0, 0, node_item_idx))
+    # z_component: IntegerPropertyItem = IntegerPropertyItem(key="Z", value=99)
+    # model.append_item(z_component, model.index(0, 0, node_item_idx))
+    # y_component: IntegerPropertyItem = IntegerPropertyItem(key="Y", value=0)
+    # model.insert_item(1, y_component, model.index(0, 0, node_item_idx))
+    #
+    # edge: EdgeItem = EdgeItem(x_component.uuid, y_component.uuid)
+    # edge_idx: QtCore.QModelIndex = model.append_item(edge, model.edges_index)
+    #
+    # # (De-)Serialisation
+    # print(model)
+    # with open("./data.json", "w", encoding="utf-8") as f:
+    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    #
+    # with open("./data.json", "r", encoding="utf-8") as f:
+    #     deserialized: dict[str, Any] = json.load(f)
+    #     restored_model: TreeModel = TreeModel(deserialized)
+    #     print(restored_model)
+    #
+    #     restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
+    #     restored_node_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_nodes_idx)
+    #     print(restored_node_1_idx.data(UserRoles.POS))
+    #
+    #     restored_edges_idx: QtCore.QModelIndex = restored_model.index(1, 0, QtCore.QModelIndex())
+    #     restored_edge_1_idx: QtCore.QModelIndex = restored_model.index(0, 0, restored_edges_idx)
+    #     restored_source: IntegerPropertyItem = cast(
+    #         IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.SRC)
+    #     )
+    #     restored_destination: IntegerPropertyItem = cast(
+    #         IntegerPropertyItem, restored_model.data(restored_edge_1_idx, UserRoles.DEST)
+    #     )
+    #     print(
+    #         restored_source.key, ":", restored_source.value, "->",
+    #         restored_destination.key, ":", restored_destination.value
+    #     )
 
     sys.exit(app.exec_())
