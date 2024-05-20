@@ -35,4 +35,3 @@ class TestNodeItem1(NodeItem):
 
     def setup_children(self) -> None:
         super().setup_children()
-        print("First node 1")

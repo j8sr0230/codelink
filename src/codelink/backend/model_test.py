@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # Load nodes from directory
     node_factory: NodeFactory = NodeFactory()
     node_factory.load_nodes("./nodes")
-    print(json.dumps(node_factory.structure, indent=4))
-    print(node_factory.classes)
+    print(json.dumps(node_factory.nodes_structure, indent=4))
+    print(node_factory.node_classes)
     print()
 
     def populate_menu(node_structure: dict, factory: NodeFactory, menu: QtWidgets.QMenu,
@@ -47,7 +47,7 @@ if __name__ == "__main__":
                     menu.addMenu(next_menu)
                     populate_menu(value, factory, next_menu, parent)
                 else:
-                    action: QtWidgets.QAction = QtWidgets.QAction(key, parent)
+                    action: QtWidgets.QAction = QtWidgets.QAction(key.split(".")[-1], parent)
                     action.triggered.connect(lambda: model.append_node(factory.create_node(key)))
                     menu.addAction(action)
 
@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
     nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("&Nodes")
-    populate_menu(node_factory.structure, node_factory, nodes_menu, main_window)
+    populate_menu(node_factory.nodes_structure, node_factory, nodes_menu, main_window)
 
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     inspection_window.show()
 
     # Populate tree model with tree items
-    node_item: NodeItem = node_factory.create_node("TestNodeItem1")
+    node_item: NodeItem = node_factory.create_node(list(node_factory.node_classes.keys())[0])
     node_item_idx: QtCore.QModelIndex = model.append_node(node_item)
 
     print(model.data(node_item_idx, UserRoles.POS))
@@ -130,8 +130,8 @@ if __name__ == "__main__":
 
     # (De-)Serialisation
     print(model)
-    # with open("./data.json", "w", encoding="utf-8") as f:
-    #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
+    with open("./data.json", "w", encoding="utf-8") as f:
+        json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
     with open("./data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
