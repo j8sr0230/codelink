@@ -39,32 +39,6 @@ class NodeFactory:
     def nodes(self) -> dict[str, type]:
         return self._nodes
 
-    # def _load_nodes(self, path: str, name_space: str, structure: dict[str, Union[dict, str]]) -> None:
-    #     try:
-    #         sub_dirs: list[str] = os.listdir(path)
-    #         for sub_dir in sub_dirs:
-    #             path: str = os.path.join(path, sub_dir)
-    #
-    #             if not sub_dir.startswith("__"):
-    #                 if os.path.isdir(path):
-    #                     structure[sub_dir] = dict()
-    #                     name_space: str = os.path.join(name_space, sub_dir)
-    #                     self._load_nodes(path, name_space, structure[sub_dir])
-    #                 else:
-    #                     name_space: str = name_space.replace(os.sep, ".") + os.path.splitext(sub_dir)[0]
-    #                     module_spec: Any = importlib.util.spec_from_file_location(name_space, path)
-    #                     module: Any = importlib.util.module_from_spec(module_spec)
-    #                     sys.modules[name_space] = module
-    #                     module_spec.loader.exec_module(module)
-    #
-    #                     for name, item in inspect.getmembers(module):
-    #                         print(name)
-    #                         # if inspect.isclass(item) and module.__name__ in str(item):
-    #                         #     self._nodes[name] = cast(NodeItem, item)
-    #
-    #     except FileNotFoundError as e:
-    #         print(e)
-
     def load_nodes(self, path: str, name_space: str = "my_nodes") -> None:
         for root, directories, files in os.walk(path):
             for name in files:
