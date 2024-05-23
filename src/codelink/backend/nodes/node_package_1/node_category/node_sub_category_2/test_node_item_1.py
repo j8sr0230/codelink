@@ -32,7 +32,6 @@ class TestNodeItem1(NodeItem):
     def __init__(self, key: str = "Test Node 1", value: Any = None, pos: Optional[list[int]] = None,
                  uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, pos, uuid, parent)
-        print("C")
 
     def setup_children(self) -> None:
         super().setup_children()

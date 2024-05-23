@@ -31,12 +31,15 @@ def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu, parent: QtWi
         parent_menu: QtWidgets.QMenu = menu
 
         menu_titles: list[str] = key.split(".")[1:]
-        for idx, new_menu_title in enumerate(menu_titles):
-            if new_menu_title not in [action.text() for action in parent_menu.actions()]:
+        pretty_titles: list[str] = [menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]]
+        pretty_titles.append(menu_titles[-1])
+
+        for idx, pretty_title in enumerate(pretty_titles):
+            if pretty_title not in [action.text() for action in parent_menu.actions()]:
                 if idx < len(menu_titles) - 2:
-                    parent_menu: QtWidgets.QMenu = parent_menu.addMenu(new_menu_title)
+                    parent_menu: QtWidgets.QMenu = parent_menu.addMenu(pretty_title)
                 elif idx == len(menu_titles) - 1:
-                    add_action: QtWidgets.QAction = QtWidgets.QAction(new_menu_title, parent)
+                    add_action: QtWidgets.QAction = QtWidgets.QAction(pretty_title, parent)
                     add_action.setData(key)
                     actions.append(add_action)
                     parent_menu.addAction(add_action)
