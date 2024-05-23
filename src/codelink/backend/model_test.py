@@ -9,16 +9,54 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 # from codelink.backend.user_roles import UserRoles
+from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
 # from codelink.backend.node_item import NodeItem
 # from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 # from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
 
-from codelink.backend.node_factory import NodeFactory
+
+def find_sub_menu(menu_name: str, menu: QtWidgets.QMenu) -> Optional[QtWidgets.QMenu]:
+        if menu.title() == menu_name:
+            return menu
+
+        for action in menu.actions():
+            if action.menu():
+                return find_sub_menu(menu_name, action.menu())
+
+
+def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu, parent: QtWidgets.QWidget) -> None:
+    actions: list[QtWidgets.QAction] = []
+
+    for key in node_factory.nodes.keys():
+        parent_menu: QtWidgets.QMenu = menu
+
+        menu_titles: list[str] = key.split(".")[1:]
+        for idx, new_menu_title in enumerate(menu_titles):
+            if new_menu_title not in [action.text() for action in parent_menu.actions()]:
+                if idx < len(menu_titles) - 2:
+                    parent_menu: QtWidgets.QMenu = parent_menu.addMenu(new_menu_title)
+
+                elif idx == len(menu_titles) - 1:
+                    add_action: QtWidgets.QAction = QtWidgets.QAction(new_menu_title, parent)
+                    add_action.setData(key)
+                    actions.append(add_action)
+                    parent_menu.addAction(add_action)
+
+            else:
+                parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
+                parent_menu: QtWidgets.QMenu = parent_action.menu()
+
+    for i in range(len(actions)):
+        actions[i].triggered.connect(lambda check, a=i: print(actions[a].data()))
 
 
 if __name__ == "__main__":
+    # Load nodes
+    node_fac: NodeFactory = NodeFactory()
+    node_fac.load_nodes(str(Path("./nodes").resolve()))
+
     # Setup tree model
     model: TreeModel = TreeModel()
     model.rowsInserted.connect(
@@ -33,74 +71,6 @@ if __name__ == "__main__":
             top_left_idx.data(roles[0]) if len(roles) > 0 else None)
     )
 
-    # Load nodes from directory
-    node_fac: NodeFactory = NodeFactory()
-    node_fac.load_nodes(str(Path("./nodes").resolve()))
-    # print(json.dumps(node_factory.nodes_structure, indent=4))
-    # for k, v in list(node_factory.nodes.items()):
-    #     print(k, "->", v)
-
-    def find_sub_menu(menu_name: str, menu: QtWidgets.QMenu) -> Optional[QtWidgets.QMenu]:
-        if menu.title() == menu_name:
-            return menu
-
-        for action in menu.actions():
-            if action.menu():
-                return find_sub_menu(menu_name, action.menu())
-
-    def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu) -> None:
-        for key, value in node_factory.nodes.items():
-            sub_menu_names: list[str] = key.split(".")[1:]
-            for menu_name in sub_menu_names:
-                has_menu: bool = True is find_sub_menu(menu_name, menu) else False
-
-                print(has_menu)
-
-
-
-
-                    print("dfgh")
-                # parent_menu: QtWidgets.QMenu = current_menu.parentWidget() if current_menu else menu
-                #
-                # if not current_menu and parent_menu:
-                #     new_menu: QtWidgets.QMenu = QtWidgets.QMenu(menu_name)
-                #     parent_menu.addMenu(new_menu)
-                #     parent_menu: QtWidgets.QMenu = new_menu
-
-
-                # if not current_menu:
-                #     if idx < len(sub_menu_names) - 1:
-                #         new_menu: QtWidgets.QMenu = QtWidgets.QMenu(menu_name)
-                #         last_menu.addMenu(new_menu)
-                #         last_menu: QtWidgets.QMenu = new_menu
-                #     else:
-                #         # Add action
-                #         last_menu: QtWidgets.QMenu = menu
-
-
-
-            #     if sub_menu is not None and hasattr(sub_menu, "parentWidget"):
-            #         parent_menu: QtWidgets.QMenu = sub_menu.parentWidget()
-            #     else:
-            #         parent_menu: QtWidgets.QMenu = menu
-            #
-            #     print(parent_menu)
-            #
-            #     if idx < len(key.split(".")[1:]) - 2:
-            #         parent_menu.addMenu(menu_name)
-            #     else:
-            #         parent_menu.addAction(menu_name)
-
-            # if isinstance(value, dict):
-            #     if value.items():
-            #         next_menu: QtWidgets.QMenu = QtWidgets.QMenu(key)
-            #         menu.addMenu(next_menu)
-            #         populate_menu(value, factory, next_menu, parent)
-            #     else:
-            #         action: QtWidgets.QAction = QtWidgets.QAction(key.split(".")[-1], parent)
-            #         action.triggered.connect(lambda: model.append_node(factory.create_node(key)))
-            #         menu.addAction(action)
-
     # Setup ui
     # Main window
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
@@ -109,8 +79,7 @@ if __name__ == "__main__":
 
     menu_bar: QtWidgets.QMenuBar = main_window.menuBar()
     nodes_menu: QtWidgets.QMenu = menu_bar.addMenu("&Nodes")
-    populate_menu(node_fac, nodes_menu)
-    # print("fff", find_sub_menu("Nodes", nodes_menu).title())
+    populate_menu(node_fac, nodes_menu, main_window)
 
     main_undo_action: QtWidgets.QAction = model.undo_stack.createUndoAction(main_window, "Undo")
     main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
