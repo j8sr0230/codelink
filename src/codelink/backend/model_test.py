@@ -1,9 +1,9 @@
 # import os.path
-from typing import cast, Optional  # , Any
+from typing import cast  # , Any
 import sys
 # import json
-from pathlib import Path
 from functools import partial
+from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -16,15 +16,6 @@ from codelink.backend.node_item import NodeItem
 # from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 # from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
-
-
-def find_sub_menu(menu_name: str, menu: QtWidgets.QMenu) -> Optional[QtWidgets.QMenu]:
-        if menu.title() == menu_name:
-            return menu
-
-        for action in menu.actions():
-            if action.menu():
-                return find_sub_menu(menu_name, action.menu())
 
 
 def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu, parent: QtWidgets.QWidget) -> None:
