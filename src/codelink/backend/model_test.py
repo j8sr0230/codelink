@@ -3,6 +3,7 @@ from typing import cast, Optional  # , Any
 import sys
 # import json
 from pathlib import Path
+from functools import partial
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -11,7 +12,7 @@ import PySide2.QtWidgets as QtWidgets
 # from codelink.backend.user_roles import UserRoles
 from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
-# from codelink.backend.node_item import NodeItem
+from codelink.backend.node_item import NodeItem
 # from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 # from codelink.backend.edge_item import EdgeItem
 from codelink.backend.delegates import TreeViewDelegate
@@ -27,6 +28,12 @@ def find_sub_menu(menu_name: str, menu: QtWidgets.QMenu) -> Optional[QtWidgets.Q
 
 
 def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu, parent: QtWidgets.QWidget) -> None:
+
+    def create_node(node_cls: str) -> NodeItem:
+        node: NodeItem = node_factory.create_node(node_cls)
+        print(node)
+        return node
+
     actions: list[QtWidgets.QAction] = []
 
     for key in node_factory.nodes.keys():
@@ -37,19 +44,17 @@ def populate_menu(node_factory: NodeFactory, menu: QtWidgets.QMenu, parent: QtWi
             if new_menu_title not in [action.text() for action in parent_menu.actions()]:
                 if idx < len(menu_titles) - 2:
                     parent_menu: QtWidgets.QMenu = parent_menu.addMenu(new_menu_title)
-
                 elif idx == len(menu_titles) - 1:
                     add_action: QtWidgets.QAction = QtWidgets.QAction(new_menu_title, parent)
                     add_action.setData(key)
                     actions.append(add_action)
                     parent_menu.addAction(add_action)
-
             else:
                 parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                 parent_menu: QtWidgets.QMenu = parent_action.menu()
 
-    for i in range(len(actions)):
-        actions[i].triggered.connect(lambda check, a=i: print(actions[a].data()))
+    for action in actions:
+        action.triggered.connect(partial(create_node, action.data()))
 
 
 if __name__ == "__main__":
