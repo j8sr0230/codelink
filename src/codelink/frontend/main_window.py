@@ -17,6 +17,7 @@ from tree_view import TreeView
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+
         self.setWindowTitle("CodeLink")
 
         # Load nodes
@@ -76,14 +77,16 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif idx == len(menu_titles) - 1:
                         add_action: QtWidgets.QAction = QtWidgets.QAction(pretty_title, parent)
                         add_action.setData(key)
+                        add_action.triggered.connect(partial(create_node, key))
                         actions.append(add_action)
                         parent_menu.addAction(add_action)
                 else:
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
 
-        for action in actions:
-            action.triggered.connect(partial(create_node, action.data()))
+        # for action in actions:
+        #     action.triggered.connect(partial(create_node, action.data()))
+
 
     def create_dock_windows(self):
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main Tree", self)
