@@ -53,7 +53,7 @@ def populate_menu(node_factory: NodeFactory, data_model: TreeModel, menu: QtWidg
 if __name__ == "__main__":
     # Load nodes
     node_fac: NodeFactory = NodeFactory()
-    node_fac.load_nodes(str(Path("./nodes").resolve()))
+    node_fac.load_nodes(str(Path("../backend/nodes").resolve()))
 
     # Setup tree model
     model: TreeModel = TreeModel()
@@ -151,7 +151,7 @@ if __name__ == "__main__":
     # with open("./data.json", "w", encoding="utf-8") as f:
     #     json.dump(model.to_dict(), f, ensure_ascii=False, indent=4)
 
-    with open("./data.json", "r", encoding="utf-8") as f:
+    with open("../backend/data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
         restored_model: TreeModel = TreeModel(deserialized)
         print(restored_model)
