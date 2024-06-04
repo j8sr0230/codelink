@@ -50,6 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # UI
         self.setWindowTitle("CodeLink")
         self.create_menu()
+
         self._graphics_view: QtWidgets.QGraphicsView = self.create_graphics_view()
         self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
         self._inspection_view: QtWidgets.QTreeView = self.create_inspection_view()
@@ -135,31 +136,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        tree_view: TreeView = TreeView()
-        tree_view.setModel(self._model)
-        # tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        main_tree_view: TreeView = TreeView()
+        main_tree_view.setModel(self._model)
+        # main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self._model.rowsInserted.connect(
-            lambda: tree_view.expandRecursively(QtCore.QModelIndex())
+            lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
         )
-        dock.setWidget(tree_view)
+        dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-        return tree_view
-
-        # dock = QtWidgets.QDockWidget("Inspection View", self)
-        # inspection_tree_view: TreeView = TreeView()
-        # inspection_tree_view.setModel(self._model)
-        # inspection_tree_view.setIndentation(0)
-        # main_tree_view.selectionModel().selectionChanged.connect(
-        #     lambda current, previous: inspection_tree_view.setRootIndex(
-        #         cast(QtCore.QItemSelection, current).indexes()[0]
-        #     )
-        # )
-        # self._model.rowsInserted.connect(
-        #     lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
-        # )
-        # dock.setWidget(inspection_tree_view)
-        # self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        return main_tree_view
 
     def create_inspection_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Inspection View", self)
@@ -189,6 +175,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
-    main_win = MainWindow()
-    main_win.show()
+    main_window: MainWindow = MainWindow()
+    main_window.show()
     sys.exit(app.exec_())
