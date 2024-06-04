@@ -31,13 +31,13 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
+from codelink.backend.undo_cmds import BaseItemEditCommand, TreeItemInsertCommand
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item import NodeItem
 from codelink.backend.tree_seperator_item import TreeSeperatorItem
 from codelink.backend.edge_item import EdgeItem
-from codelink.backend.undo_cmds import BaseItemEditCommand
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -243,9 +243,13 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             parent_index: QtCore.QModelIndex = parent
 
-        self.beginInsertRows(parent_index, row, row)
-        parent_item.insert_child(row, tree_item)
-        self.endInsertRows()
+        if isinstance(tree_item, TreeSeperatorItem):
+            self.beginInsertRows(parent_index, row, row)
+            parent_item.insert_child(row, tree_item)
+            self.endInsertRows()
+        else:
+            self._undo_stack.push(TreeItemInsertCommand(self, parent_index, tree_item, row))
+
         return self.index(row, 0, parent_index)
 
     def append_item(self, tree_item: TreeItem, parent=QtCore.QModelIndex()) -> QtCore.QModelIndex:

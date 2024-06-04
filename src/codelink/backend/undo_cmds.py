@@ -110,3 +110,26 @@ class BaseItemEditCommand(QtWidgets.QUndoCommand):
             self._value: Any = other_model.item_from_index(other.index).pos
 
         return True
+
+
+class TreeItemInsertCommand(QtWidgets.QUndoCommand):
+    def __init__(self, model: QtCore.QAbstractItemModel, parent_index: QtCore.QModelIndex, item: Any, row: int,
+                 parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
+        super().__init__(parent)
+
+        self._model: QtCore.QAbstractItemModel = model
+        self._parent_index: QtCore.QModelIndex = parent_index
+        self._item: Any = item
+        self._row: int = row
+
+        self._parent: Any = self._model.item_from_index(self._parent_index)
+
+    def undo(self) -> None:
+        self._model.beginRemoveRows(self._parent_index, self._row, self._row)
+        self._parent.remove_child(self._row)
+        self._model.endRemoveRows()
+
+    def redo(self) -> None:
+        self._model.beginInsertRows(self._parent_index, self._row, self._row)
+        self._parent.insert_child(self._row, self._item)
+        self._model.endInsertRows()
