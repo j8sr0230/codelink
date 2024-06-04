@@ -325,7 +325,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         class_name: str = type_name.split(".")[-1]
         module_name: str = type_name[:-len(class_name) - 1]
-        tree_item: TreeItem =  getattr(importlib.import_module(module_name), class_name)(*values)
+        tree_item: TreeItem = getattr(importlib.import_module(module_name), class_name)(*values)
 
         if "children" in state.keys():
             for child_data in state["children"]:
