@@ -41,8 +41,11 @@ from codelink.backend.undo_cmds import BaseItemEditCommand
 
 
 class TreeModel(QtCore.QAbstractItemModel):
-    def __init__(self, data: Optional[dict[str, Any]] = None, parent: QtCore.QObject = None):
+    def __init__(self, undo_stack: QtWidgets.QUndoStack, data: Optional[dict[str, Any]] = None,
+                 parent: QtCore.QObject = None):
         super().__init__(parent)
+
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack
 
         if data:
             self._root_item: RootItem = cast(RootItem, self.from_dict(data))
@@ -54,8 +57,6 @@ class TreeModel(QtCore.QAbstractItemModel):
             self._nodes_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Nodes"), QtCore.QModelIndex())
             self._edges_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Edges"), QtCore.QModelIndex())
             self._frames_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Frames"), QtCore.QModelIndex())
-
-        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
     @property
     def root_item(self) -> RootItem:

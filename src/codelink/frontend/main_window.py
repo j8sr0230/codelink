@@ -1,3 +1,27 @@
+#!/usr/bin/env python
+
+# -*- coding: utf-8 -*-
+# ***************************************************************************
+# *   Copyright (c) 2024 Ronny Scharf-W. <ronny.scharf08@gmail.com>         *
+# *                                                                         *
+# *   This program is free software; you can redistribute it and/or modify  *
+# *   it under the terms of the GNU Lesser General Public License (LGPL)    *
+# *   as published by the Free Software Foundation; either version 2 of     *
+# *   the License, or (at your option) any later version.                   *
+# *   for detail see the LICENCE text file.                                 *
+# *                                                                         *
+# *   This program is distributed in the hope that it will be useful,       *
+# *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+# *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+# *   GNU Library General Public License for more details.                  *
+# *                                                                         *
+# *   You should have received a copy of the GNU Library General Public     *
+# *   License along with this program; if not, write to the Free Software   *
+# *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  *
+# *   USA                                                                   *
+# *                                                                         *
+# ***************************************************************************
+
 from typing import cast
 import sys
 from pathlib import Path
@@ -18,12 +42,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # Undo stack
+        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+
         # Load nodes
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
 
         # Setup model
-        self._model: TreeModel = TreeModel()
+        self._model: TreeModel = TreeModel(undo_stack=self._undo_stack)
         self._model.rowsInserted.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
         )
@@ -39,11 +66,18 @@ class MainWindow(QtWidgets.QMainWindow):
         # Init UI
         self.setWindowTitle("CodeLink")
 
+        main_undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
+        main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+        self.addAction(main_undo_action)
+        main_redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+        main_redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(main_redo_action)
+
         self._file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
         self._save_action: QtWidgets.QAction = self._file_menu.addAction("&Save")
         self._save_action.triggered.connect(lambda: print("Save"))
         self._nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
-        self.populate_nodes_menu(self._nodes_menu)
+        self.populate_nodes_menu()
 
         self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
         self._graphics_scene: QtWidgets.QGraphicsScene = QtWidgets.QGraphicsScene()
@@ -55,13 +89,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.create_dock_windows()
 
-    def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
+    def populate_nodes_menu(self) -> None:
         def create_node(node_cls: str) -> None:
             node: NodeItem = self._node_factory.create_node(node_cls)
             self._model.append_node(node)
 
         for key in self._node_factory.nodes.keys():
-            parent_menu: QtWidgets.QMenu = nodes_menu
+            parent_menu: QtWidgets.QMenu = self._nodes_menu
 
             menu_titles: list[str] = key.split(".")[1:]
             pretty_titles: list[str] = [menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]]

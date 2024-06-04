@@ -1,6 +1,6 @@
 import PySide2.QtWidgets as QtWidgets
 
-from codelink.backend.delegates import TreeViewDelegate
+from codelink.frontend.delegates import TreeViewDelegate
 
 
 class TreeView(QtWidgets.QTreeView):
