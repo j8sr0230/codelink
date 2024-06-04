@@ -168,6 +168,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._current_selection = current
         self._previous_selection = previous
 
+        print(self._current_selection.indexes())
+
     def delete_selection(self) -> None:
         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, self._current_selection.indexes()[0])
         self._model.removeRow(index.row(), index.parent())
