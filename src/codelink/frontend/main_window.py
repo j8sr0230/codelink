@@ -71,11 +71,19 @@ class MainWindow(QtWidgets.QMainWindow):
         save_action.triggered.connect(lambda: print("Save"))
 
         edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
-        undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
+
+        del_action: QtWidgets.QAction = edit_menu.addAction("&Delete")
+        del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
+        self.addAction(del_action)
+        edit_menu.addAction(del_action)
+        del_action.triggered.connect(self.delete_selection)
+
+        undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "&Undo")
         undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
         self.addAction(undo_action)
         edit_menu.addAction(undo_action)
-        redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+
+        redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "&Redo")
         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(redo_action)
         edit_menu.addAction(redo_action)
@@ -145,6 +153,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dock.setWidget(inspection_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+
+    def on_selection_changed(self, current, previous) -> None:
+        pass
+
+    @staticmethod
+    def delete_selection() -> None:
+        print("Delete selection")
 
 
 if __name__ == "__main__":
