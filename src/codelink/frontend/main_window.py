@@ -42,31 +42,35 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
-
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
+        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+        self._model: TreeModel = self.create_tree_model()
 
-        self._model: TreeModel = TreeModel(undo_stack=self._undo_stack)
-        self._model.rowsInserted.connect(
+        # UI
+        self.setWindowTitle("CodeLink")
+        self.create_menu()
+        self._graphics_view: QtWidgets.QGraphicsView = self.create_graphics_view()
+        self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
+        self._inspection_view: QtWidgets.QTreeView = self.create_inspection_view()
+
+        self._current_selection: Optional[QtCore.QItemSelection] = None
+        self._previous_selection: Optional[QtCore.QItemSelection] = None
+
+    def create_tree_model(self) -> QtCore.QAbstractItemModel:
+        model: TreeModel = TreeModel(undo_stack=self._undo_stack)
+        model.rowsInserted.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
         )
-        self._model.rowsRemoved.connect(
+        model.rowsRemoved.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Removed at:", first_row_idx)
         )
-        self._model.dataChanged.connect(
+        model.dataChanged.connect(
             lambda top_left_idx, bottom_right_idx, roles: print(
                 "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:",
                 top_left_idx.data(roles[0]) if len(roles) > 0 else None)
         )
-
-        self.setWindowTitle("CodeLink")
-        self.create_menu()
-        self.create_central_widget()
-        self.create_dock_widgets()
-
-        self._current_selection: Optional[QtCore.QItemSelection] = None
-        self._previous_selection: Optional[QtCore.QItemSelection] = None
+        return model
 
     def create_menu(self) -> None:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
@@ -118,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
 
-    def create_central_widget(self) -> None:
+    def create_graphics_view(self) -> QtWidgets.QGraphicsView:
         graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
         graphics_scene: QtWidgets.QGraphicsScene = QtWidgets.QGraphicsScene()
         graphics_view.setScene(graphics_scene)
@@ -126,34 +130,53 @@ class MainWindow(QtWidgets.QMainWindow):
             QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#000"), QtGui.QBrush("#fff")
         )
         self.setCentralWidget(graphics_view)
+        return graphics_view
 
-    def create_dock_widgets(self) -> None:
+    def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        main_tree_view: TreeView = TreeView()
-        main_tree_view.setModel(self._model)
-        # main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        tree_view: TreeView = TreeView()
+        tree_view.setModel(self._model)
+        # tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self._model.rowsInserted.connect(
-            lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
+            lambda: tree_view.expandRecursively(QtCore.QModelIndex())
         )
-
-        dock.setWidget(main_tree_view)
+        dock.setWidget(tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        return tree_view
+
+        # dock = QtWidgets.QDockWidget("Inspection View", self)
+        # inspection_tree_view: TreeView = TreeView()
+        # inspection_tree_view.setModel(self._model)
+        # inspection_tree_view.setIndentation(0)
+        # main_tree_view.selectionModel().selectionChanged.connect(
+        #     lambda current, previous: inspection_tree_view.setRootIndex(
+        #         cast(QtCore.QItemSelection, current).indexes()[0]
+        #     )
+        # )
+        # self._model.rowsInserted.connect(
+        #     lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
+        # )
+        # dock.setWidget(inspection_tree_view)
+        # self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+
+    def create_inspection_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Inspection View", self)
-        inspection_tree_view: TreeView = TreeView()
-        inspection_tree_view.setModel(self._model)
-        inspection_tree_view.setIndentation(0)
-        main_tree_view.selectionModel().selectionChanged.connect(
-            lambda current, previous: inspection_tree_view.setRootIndex(
+        inspection_view: TreeView = TreeView()
+        inspection_view.setModel(self._model)
+        inspection_view.setIndentation(0)
+        self._main_tree_view.selectionModel().selectionChanged.connect(
+            lambda current, previous: inspection_view.setRootIndex(
                 cast(QtCore.QItemSelection, current).indexes()[0]
             )
         )
         self._model.rowsInserted.connect(
-            lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
+            lambda: inspection_view.expandRecursively(QtCore.QModelIndex())
         )
-        dock.setWidget(inspection_tree_view)
+        dock.setWidget(inspection_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        return inspection_view
 
     def on_selection_changed(self, current, previous) -> None:
         self._current_selection = current
