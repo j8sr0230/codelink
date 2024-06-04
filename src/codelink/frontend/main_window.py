@@ -42,14 +42,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        # Undo stack
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
-        # Load nodes
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
 
-        # Setup model
         self._model: TreeModel = TreeModel(undo_stack=self._undo_stack)
         self._model.rowsInserted.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
@@ -63,39 +60,36 @@ class MainWindow(QtWidgets.QMainWindow):
                 top_left_idx.data(roles[0]) if len(roles) > 0 else None)
         )
 
-        # Init UI
         self.setWindowTitle("CodeLink")
+        self.create_menu()
+        self.create_central_widget()
+        self.create_dock_widgets()
 
-        main_undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
-        main_undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-        self.addAction(main_undo_action)
-        main_redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
-        main_redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-        self.addAction(main_redo_action)
+    def create_menu(self) -> None:
+        file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
+        save_action: QtWidgets.QAction = file_menu.addAction("&Save")
+        save_action.triggered.connect(lambda: print("Save"))
 
-        self._file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
-        self._save_action: QtWidgets.QAction = self._file_menu.addAction("&Save")
-        self._save_action.triggered.connect(lambda: print("Save"))
-        self._nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
-        self.populate_nodes_menu()
+        edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
+        undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "Undo")
+        undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+        self.addAction(undo_action)
+        edit_menu.addAction(undo_action)
+        redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "Redo")
+        redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(redo_action)
+        edit_menu.addAction(redo_action)
 
-        self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        self._graphics_scene: QtWidgets.QGraphicsScene = QtWidgets.QGraphicsScene()
-        self._graphics_view.setScene(self._graphics_scene)
-        self._graphics_scene.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#000"), QtGui.QBrush("#fff")
-        )
-        self.setCentralWidget(self._graphics_view)
+        nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
+        self.populate_nodes_menu(nodes_menu)
 
-        self.create_dock_windows()
-
-    def populate_nodes_menu(self) -> None:
+    def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
         def create_node(node_cls: str) -> None:
             node: NodeItem = self._node_factory.create_node(node_cls)
             self._model.append_node(node)
 
         for key in self._node_factory.nodes.keys():
-            parent_menu: QtWidgets.QMenu = self._nodes_menu
+            parent_menu: QtWidgets.QMenu = nodes_menu
 
             menu_titles: list[str] = key.split(".")[1:]
             pretty_titles: list[str] = [menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]]
@@ -113,16 +107,25 @@ class MainWindow(QtWidgets.QMainWindow):
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
 
-    def create_dock_windows(self):
+    def create_central_widget(self) -> None:
+        graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+        graphics_scene: QtWidgets.QGraphicsScene = QtWidgets.QGraphicsScene()
+        graphics_view.setScene(graphics_scene)
+        graphics_scene.addRect(
+            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#000"), QtGui.QBrush("#fff")
+        )
+        self.setCentralWidget(graphics_view)
+
+    def create_dock_widgets(self) -> None:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        mein_tree_view: TreeView = TreeView()
-        mein_tree_view.setModel(self._model)
+        main_tree_view: TreeView = TreeView()
+        main_tree_view.setModel(self._model)
         self._model.rowsInserted.connect(
-            lambda: mein_tree_view.expandRecursively(QtCore.QModelIndex())
+            lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
         )
 
-        dock.setWidget(mein_tree_view)
+        dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
 
         dock = QtWidgets.QDockWidget("Inspection View", self)
@@ -130,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
         inspection_tree_view.setModel(self._model)
         inspection_tree_view.setIndentation(0)
 
-        mein_tree_view.selectionModel().selectionChanged.connect(
+        main_tree_view.selectionModel().selectionChanged.connect(
             lambda current, previous: inspection_tree_view.setRootIndex(
                 cast(QtCore.QItemSelection, current).indexes()[0]
             )
