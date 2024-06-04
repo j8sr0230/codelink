@@ -22,9 +22,10 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import cast, Optional
+from typing import cast, Optional, Any
 import sys
 from pathlib import Path
+import json
 from functools import partial
 
 import PySide2.QtCore as QtCore
@@ -44,9 +45,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self) -> None:
         super().__init__()
 
+        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
-        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+
         self._model: TreeModel = self.create_tree_model()
 
         # UI
@@ -61,8 +64,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def model(self) -> TreeModel:
         return self._model
 
-    def create_tree_model(self) -> QtCore.QAbstractItemModel:
-        model: TreeModel = TreeModel(undo_stack=self._undo_stack)
+    def create_tree_model(self, file: Optional[str] = None) -> QtCore.QAbstractItemModel:
+        state: Optional[dict[str, Any]] = None
+
+        if file:
+            with open(str(Path(file).resolve()), "r", encoding="utf-8") as f:
+                state: dict[str, Any] = json.load(f)
+
+        model: TreeModel = TreeModel(undo_stack=self._undo_stack, data=state)
         model.rowsInserted.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
         )
@@ -78,6 +87,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_menu(self) -> None:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
+
+        open_action: QtWidgets.QAction = file_menu.addAction("&Open")
+        open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
+        self.addAction(open_action)
+        file_menu.addAction(open_action)
+        open_action.triggered.connect(self.open_file)
+
         save_action: QtWidgets.QAction = file_menu.addAction("&Save")
         save_action.triggered.connect(lambda: print("Save"))
 
@@ -169,6 +185,11 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._inspection_view.setRootIndex(QtCore.QModelIndex())
 
+    def open_file(self) -> None:
+        file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Open file", "./", "Json files (*.json);;All files (*.*)"
+        )
+        print(file_name)
 
     def delete_selection(self) -> None:
         selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()
