@@ -33,6 +33,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
+from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
 
 from tree_view import TreeView
@@ -55,8 +56,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
         self._inspection_view: QtWidgets.QTreeView = self.create_inspection_view()
 
-        self._current_selection: Optional[QtCore.QItemSelection] = None
-        self._previous_selection: Optional[QtCore.QItemSelection] = None
+    @property
+    def model(self) -> TreeModel:
+        return self._model
 
     def create_tree_model(self) -> QtCore.QAbstractItemModel:
         model: TreeModel = TreeModel(undo_stack=self._undo_stack)
@@ -100,7 +102,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.populate_nodes_menu(nodes_menu)
 
     def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
-        def create_node(node_cls: str) -> None:
+        def add_node(node_cls: str) -> None:
             node: NodeItem = self._node_factory.create_node(node_cls)
             self._model.append_node(node)
 
@@ -117,7 +119,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         parent_menu: QtWidgets.QMenu = parent_menu.addMenu(pretty_title)
                     elif idx == len(menu_titles) - 1:
                         add_action: QtWidgets.QAction = QtWidgets.QAction(pretty_title, self)
-                        add_action.triggered.connect(partial(create_node, key))
+                        add_action.triggered.connect(partial(add_node, key))
                         parent_menu.addAction(add_action)
                 else:
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
@@ -138,8 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         main_tree_view: TreeView = TreeView()
         main_tree_view.setModel(self._model)
-        # main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
-        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+        main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         self._model.rowsInserted.connect(
             lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
         )
@@ -155,6 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_tree_view.selectionModel().selectionChanged.connect(
             lambda current, previous: inspection_view.setRootIndex(
                 cast(QtCore.QItemSelection, current).indexes()[0]
+                if len(current.indexes()) > 0 else QtCore.QModelIndex()
             )
         )
         self._model.rowsInserted.connect(
@@ -164,19 +166,24 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return inspection_view
 
-    def on_selection_changed(self, current, previous) -> None:
-        self._current_selection = current
-        self._previous_selection = previous
-
-        print(self._current_selection.indexes())
-
     def delete_selection(self) -> None:
-        index: QtCore.QModelIndex = cast(QtCore.QModelIndex, self._current_selection.indexes()[0])
-        self._model.removeRow(index.row(), index.parent())
+        selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()
+        while selected_indexes:
+            selected_index: QtCore.QModelIndex = selected_indexes.pop()
+            if selected_index.column() == 0:
+                tree_item: Optional[TreeItem] = self._model.item_from_index(selected_index)
+                if isinstance(tree_item, NodeItem):
+                    index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
+                    self._model.removeRow(index.row(), index.parent())
 
 
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: MainWindow = MainWindow()
+
+    main_window.model.append_node(NodeItem("Node 1"))
+    main_window.model.append_node(NodeItem("Node 2"))
+    main_window.model.append_node(NodeItem("Node 3"))
+
     main_window.show()
     sys.exit(app.exec_())

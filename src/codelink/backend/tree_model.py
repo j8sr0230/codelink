@@ -228,15 +228,8 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         child_item: Optional[TreeItem] = parent_item.child(row)
         if child_item:
-            if not isinstance(child_item, SeperatorItem):
-                self._undo_stack.push(TreeItemRemoveCommand(self, parent, child_item, row))
-                return True
-            else:
-                pass
-                # self.beginRemoveRows(parent, row, row)
-                # parent_item.remove_child(row)
-                # self.endRemoveRows()
-                # return True
+            self._undo_stack.push(TreeItemRemoveCommand(self, parent, child_item, row))
+            return True
 
         return False
 
@@ -248,12 +241,12 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             parent_index: QtCore.QModelIndex = parent
 
-        if not isinstance(tree_item, SeperatorItem):
-            self._undo_stack.push(TreeItemInsertCommand(self, parent_index, tree_item, row))
-        else:
+        if isinstance(tree_item, SeperatorItem):
             self.beginInsertRows(parent_index, row, row)
             parent_item.insert_child(row, tree_item)
             self.endInsertRows()
+        else:
+            self._undo_stack.push(TreeItemInsertCommand(self, parent_index, tree_item, row))
 
         return self.index(row, 0, parent_index)
 
