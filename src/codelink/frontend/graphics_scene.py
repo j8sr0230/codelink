@@ -21,6 +21,8 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
+from typing import Optional
+import math
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -31,6 +33,31 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self) -> None:
         super().__init__()
 
+        self._background_brush: QtGui.QBrush = QtGui.QBrush(QtGui.QColor("#d7d6d5"))
+        self._grid_pen: QtGui.QPen = QtGui.QPen(QtGui.QColor("#aeadac"))
+        self._grid_pen.setWidth(5)
+        self._grid_spacing: int = 50
+
         self.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#000"), QtGui.QBrush("#fff")
+            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#1d1d1d")
         )
+
+    def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
+        super().drawBackground(painter, rect)
+        self.setBackgroundBrush(self._background_brush)
+
+        bound_box_left: int = int(math.floor(rect.left()))
+        bound_box_right: int = int(math.ceil(rect.right()))
+        bound_box_top: int = int(math.floor(rect.top()))
+        bound_box_bottom: int = int(math.ceil(rect.bottom()))
+
+        first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
+        first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
+
+        points: list[Optional[QtCore.QPoint]] = []
+        for x in range(first_left, bound_box_right, self._grid_spacing):
+            for y in range(first_top, bound_box_bottom, self._grid_spacing):
+                points.append(QtCore.QPoint(x, y))
+
+        painter.setPen(self._grid_pen)
+        painter.drawPoints(points)
