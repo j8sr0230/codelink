@@ -186,10 +186,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self._inspection_view.setRootIndex(QtCore.QModelIndex())
 
     def open_file(self) -> None:
-        file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
+        file_name: str = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "./", "Json files (*.json);;All files (*.*)"
-        )
-        print(file_name)
+        )[0]
+
+        try:
+            self._model: TreeModel = self.create_tree_model(file=file_name)
+            self.setWindowTitle(file_name)
+            self._main_tree_view.setModel(self._model)
+            self._main_tree_view.expandAll()
+            self._inspection_view.setModel(self._model)
+            self._inspection_view.expandAll()
+
+        except json.decoder.JSONDecodeError:
+            print("File reading error")
+
+        except ValueError:
+            print("File reading error")
 
     def delete_selection(self) -> None:
         selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()
