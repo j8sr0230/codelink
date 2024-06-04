@@ -31,12 +31,12 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
-from codelink.backend.undo_cmds import BaseItemEditCommand, TreeItemInsertCommand
+from codelink.backend.undo_cmds import BaseItemEditCommand, TreeItemInsertCommand, TreeItemRemoveCommand
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.tree_seperator_item import TreeSeperatorItem
+from codelink.backend.tree_seperator_item import SeperatorItem, TreeSeperatorItem
 from codelink.backend.edge_item import EdgeItem
 
 
@@ -228,10 +228,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         child_item: Optional[TreeItem] = parent_item.child(row)
         if child_item:
-            self.beginRemoveRows(parent, row, row)
-            parent_item.remove_child(row)
-            self.endRemoveRows()
-            return True
+            if not isinstance(child_item, SeperatorItem):
+                self._undo_stack.push(TreeItemRemoveCommand(self, parent, child_item, row))
+                return True
+            else:
+                pass
+                # self.beginRemoveRows(parent, row, row)
+                # parent_item.remove_child(row)
+                # self.endRemoveRows()
+                # return True
 
         return False
 
@@ -243,12 +248,12 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             parent_index: QtCore.QModelIndex = parent
 
-        if isinstance(tree_item, TreeSeperatorItem):
+        if not isinstance(tree_item, SeperatorItem):
+            self._undo_stack.push(TreeItemInsertCommand(self, parent_index, tree_item, row))
+        else:
             self.beginInsertRows(parent_index, row, row)
             parent_item.insert_child(row, tree_item)
             self.endInsertRows()
-        else:
-            self._undo_stack.push(TreeItemInsertCommand(self, parent_index, tree_item, row))
 
         return self.index(row, 0, parent_index)
 

@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import cast
+from typing import cast, Optional
 import sys
 from pathlib import Path
 from functools import partial
@@ -64,6 +64,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.create_menu()
         self.create_central_widget()
         self.create_dock_widgets()
+
+        self._current_selection: Optional[QtCore.QItemSelection] = None
+        self._previous_selection: Optional[QtCore.QItemSelection] = None
 
     def create_menu(self) -> None:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
@@ -129,37 +132,36 @@ class MainWindow(QtWidgets.QMainWindow):
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         main_tree_view: TreeView = TreeView()
         main_tree_view.setModel(self._model)
+        # main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
+        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self._model.rowsInserted.connect(
             lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
         )
 
         dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-
         dock = QtWidgets.QDockWidget("Inspection View", self)
         inspection_tree_view: TreeView = TreeView()
         inspection_tree_view.setModel(self._model)
         inspection_tree_view.setIndentation(0)
-
         main_tree_view.selectionModel().selectionChanged.connect(
             lambda current, previous: inspection_tree_view.setRootIndex(
                 cast(QtCore.QItemSelection, current).indexes()[0]
             )
         )
-
         self._model.rowsInserted.connect(
             lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
         )
-
         dock.setWidget(inspection_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
 
     def on_selection_changed(self, current, previous) -> None:
-        pass
+        self._current_selection = current
+        self._previous_selection = previous
 
-    @staticmethod
-    def delete_selection() -> None:
-        print("Delete selection")
+    def delete_selection(self) -> None:
+        index: QtCore.QModelIndex = cast(QtCore.QModelIndex, self._current_selection.indexes()[0])
+        self._model.removeRow(index.row(), index.parent())
 
 
 if __name__ == "__main__":
