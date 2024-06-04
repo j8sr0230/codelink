@@ -34,7 +34,7 @@ from codelink.backend.seperator_item import SeperatorItem
 
 
 class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,

@@ -42,7 +42,7 @@ from codelink.backend.edge_item import EdgeItem
 
 class TreeModel(QtCore.QAbstractItemModel):
     def __init__(self, undo_stack: QtWidgets.QUndoStack, data: Optional[dict[str, Any]] = None,
-                 parent: QtCore.QObject = None):
+                 parent: QtCore.QObject = None) -> None:
         super().__init__(parent)
 
         self._undo_stack: QtWidgets.QUndoStack = undo_stack

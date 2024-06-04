@@ -36,11 +36,12 @@ from codelink.backend.tree_model import TreeModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
 
-from tree_view import TreeView
+from codelink.frontend.tree_view import TreeView
+from codelink.frontend.graphics_scene import GraphicsScene
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self._node_factory: NodeFactory = NodeFactory()
@@ -127,11 +128,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_graphics_view(self) -> QtWidgets.QGraphicsView:
         graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        graphics_scene: QtWidgets.QGraphicsScene = QtWidgets.QGraphicsScene()
+        graphics_scene: GraphicsScene = GraphicsScene()
         graphics_view.setScene(graphics_scene)
-        graphics_scene.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#000"), QtGui.QBrush("#fff")
-        )
         self.setCentralWidget(graphics_view)
         return graphics_view
 
@@ -144,6 +142,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._model.rowsInserted.connect(
             lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
         )
+        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return main_tree_view
@@ -153,18 +152,23 @@ class MainWindow(QtWidgets.QMainWindow):
         inspection_view: TreeView = TreeView()
         inspection_view.setModel(self._model)
         inspection_view.setIndentation(0)
-        self._main_tree_view.selectionModel().selectionChanged.connect(
-            lambda current, previous: inspection_view.setRootIndex(
-                cast(QtCore.QItemSelection, current).indexes()[0]
-                if len(current.indexes()) > 0 else QtCore.QModelIndex()
-            )
-        )
         self._model.rowsInserted.connect(
             lambda: inspection_view.expandRecursively(QtCore.QModelIndex())
         )
         dock.setWidget(inspection_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return inspection_view
+
+    # noinspection PyUnusedLocal
+    def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        if len(current.indexes()) > 0:
+            index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
+            tree_item: TreeItem = self._model.item_from_index(index)
+            if isinstance(tree_item, NodeItem):
+                self._inspection_view.setRootIndex(index)
+        else:
+            self._inspection_view.setRootIndex(QtCore.QModelIndex())
+
 
     def delete_selection(self) -> None:
         selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()

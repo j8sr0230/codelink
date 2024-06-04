@@ -4,7 +4,7 @@ from codelink.frontend.delegates import TreeViewDelegate
 
 
 class TreeView(QtWidgets.QTreeView):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.setAlternatingRowColors(True)
