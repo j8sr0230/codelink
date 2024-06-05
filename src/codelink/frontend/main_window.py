@@ -82,6 +82,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_menu(self) -> None:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
+        new_action: QtWidgets.QAction = file_menu.addAction("&New")
+        new_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.New))
+        self.addAction(new_action)
+        file_menu.addAction(new_action)
+        new_action.triggered.connect(self.new)
+
         open_action: QtWidgets.QAction = file_menu.addAction("&Open")
         open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
         self.addAction(open_action)
@@ -211,22 +217,27 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._inspection_view.setRootIndex(QtCore.QModelIndex())
 
+    def _new(self, file: Optional[str]) -> None:
+        self._model: TreeModel = self.create_tree_model(file=file)
+        self._file_name: Optional[str] = file
+        window_title: str = file if file else "CodeLink"
+        self.setWindowTitle(window_title)
+        self._main_tree_view.setModel(self._model)
+        self._main_tree_view.expandAll()
+        self._inspection_view.setModel(self._model)
+        self._inspection_view.expandAll()
+        self._undo_stack.clear()
+
+    def new(self) -> None:
+        self._new(file=None)
+
     def open(self) -> None:
         file_name: str = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "./", "Json files (*.json);;All files (*.*)"
         )[0]
 
         try:
-            self._model: TreeModel = self.create_tree_model(file=file_name)
-
-            self._file_name: str = file_name
-            self.setWindowTitle(file_name)
-            self._main_tree_view.setModel(self._model)
-            self._main_tree_view.expandAll()
-            self._inspection_view.setModel(self._model)
-            self._inspection_view.expandAll()
-            self._undo_stack.clear()
-
+            self._new(file=file_name)
         except (FileNotFoundError, json.decoder.JSONDecodeError, IndexError, ValueError, AttributeError):
             print("File loading error")
 
@@ -269,9 +280,9 @@ if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: MainWindow = MainWindow()
 
-    main_window.model.append_node(NodeItem("Node 1"))
-    main_window.model.append_node(NodeItem("Node 2"))
-    main_window.model.append_node(NodeItem("Node 3"))
+    # main_window.model.append_node(NodeItem("Node 1"))
+    # main_window.model.append_node(NodeItem("Node 2"))
+    # main_window.model.append_node(NodeItem("Node 3"))
 
     main_window.show()
     sys.exit(app.exec_())
