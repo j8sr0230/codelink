@@ -31,6 +31,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
+from codelink.frontend.color_palette import ColorPalette
 from codelink.backend.undo_cmds import BaseItemEditCommand, TreeItemInsertCommand, TreeItemRemoveCommand
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
@@ -172,9 +173,9 @@ class TreeModel(QtCore.QAbstractItemModel):
             if role == UserRoles.DEST:
                 return self.item_from_uuid(edge_item.destination_uuid)
 
-        if type(tree_item) is TreeSeperatorItem:
+        if type(tree_item) is SeperatorItem or type(tree_item) is TreeSeperatorItem:
             if role == QtCore.Qt.BackgroundColorRole:
-                return QtGui.QColor("#d7d6d5")
+                return QtGui.QColor(ColorPalette.PALEGRAY)
 
         if role == UserRoles.TYPE:
             return type(tree_item)
