@@ -49,10 +49,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
-        self._model: TreeModel = self.create_tree_model()
+        self._model: TreeModel = self.create_tree_model(file=None)
+
+        self._file_name: Optional[str] = None
 
         # UI
         self.setWindowTitle("CodeLink")
+        self.resize(1280, 800)
         self.create_menu()
 
         self._graphics_view: QtWidgets.QGraphicsView = self.create_graphics_view()
@@ -71,17 +74,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 state: dict[str, Any] = json.load(f)
 
         model: TreeModel = TreeModel(data=state, undo_stack=self._undo_stack)
-        model.rowsInserted.connect(
-            lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
-        )
-        model.rowsRemoved.connect(
-            lambda parent_idx, first_row_idx, last_row_idx: print("Removed at:", first_row_idx)
-        )
-        model.dataChanged.connect(
-            lambda top_left_idx, bottom_right_idx, roles: print(
-                "Changed at:", top_left_idx.row(), top_left_idx.column(), "to:",
-                top_left_idx.data(roles[0]) if len(roles) > 0 else None)
-        )
+        model.rowsInserted.connect(self.on_model_row_changed)
+        model.rowsRemoved.connect(self.on_model_row_changed)
+        model.dataChanged.connect(self.on_model_data_changed)
         return model
 
     def create_menu(self) -> None:
@@ -91,10 +86,23 @@ class MainWindow(QtWidgets.QMainWindow):
         open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
         self.addAction(open_action)
         file_menu.addAction(open_action)
-        open_action.triggered.connect(self.open_file)
+        open_action.triggered.connect(self.open)
+
+        save_as_action: QtWidgets.QAction = file_menu.addAction("Save &As")
+        save_as_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.SaveAs))
+        self.addAction(save_as_action)
+        file_menu.addAction(save_as_action)
+        save_as_action.triggered.connect(self.save_as)
 
         save_action: QtWidgets.QAction = file_menu.addAction("&Save")
-        save_action.triggered.connect(lambda: print("Save"))
+        save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
+        self.addAction(save_action)
+        file_menu.addAction(save_action)
+        save_action.triggered.connect(self.save)
+
+        exit_action: QtWidgets.QAction = file_menu.addAction("E&xit")
+        file_menu.addAction(exit_action)
+        exit_action.triggered.connect(QtWidgets.QApplication.quit)
 
         edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
 
@@ -159,7 +167,7 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(main_tree_view)
-        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
         return main_tree_view
 
     def create_inspection_view(self) -> QtWidgets.QTreeView:
@@ -175,6 +183,25 @@ class MainWindow(QtWidgets.QMainWindow):
         return inspection_view
 
     # noinspection PyUnusedLocal
+    def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
+                              roles: list[int]) -> None:
+        window_title: str = self.windowTitle()
+        if not window_title.endswith("*"):
+            self.setWindowTitle(window_title + "*")
+
+        print("Changed at:", top_left.row(), top_left.column(), "to:",
+              top_left.data(roles[0]) if len(roles) > 0 else None)
+
+    # noinspection PyUnusedLocal
+    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: QtCore.QModelIndex,
+                             last_row: QtCore.QModelIndex) -> None:
+        window_title: str = self.windowTitle()
+        if not window_title.endswith("*"):
+            self.setWindowTitle(window_title + "*")
+
+        print("Inserted/Removed at:", first_row)
+
+    # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
@@ -184,21 +211,48 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._inspection_view.setRootIndex(QtCore.QModelIndex())
 
-    def open_file(self) -> None:
+    def open(self) -> None:
         file_name: str = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "./", "Json files (*.json);;All files (*.*)"
         )[0]
 
         try:
             self._model: TreeModel = self.create_tree_model(file=file_name)
+
+            self._file_name: str = file_name
             self.setWindowTitle(file_name)
             self._main_tree_view.setModel(self._model)
             self._main_tree_view.expandAll()
             self._inspection_view.setModel(self._model)
             self._inspection_view.expandAll()
+            self._undo_stack.clear()
 
-        except (json.decoder.JSONDecodeError, IndexError, ValueError, AttributeError):
-            print("File reading error")
+        except (FileNotFoundError, json.decoder.JSONDecodeError, IndexError, ValueError, AttributeError):
+            print("File loading error")
+
+    def _save(self, file: str) -> None:
+        try:
+            with open(file, "w", encoding="utf-8") as f:
+                json.dump(self._model.to_dict(), f, ensure_ascii=False, indent=4)
+
+            self._file_name: str = file
+            self.setWindowTitle(file)
+
+        except (FileNotFoundError, json.decoder.JSONDecodeError):
+            print("File saving error")
+
+    def save_as(self) -> None:
+        file_name: str = QtWidgets.QFileDialog.getSaveFileName(
+            self, "Save file", "./", "Json files (*.json);;All files (*.*)"
+        )[0]
+
+        self._save(file_name)
+
+    def save(self) -> None:
+        if self._file_name:
+            self._save(self._file_name)
+        else:
+            self.save_as()
 
     def delete_selection(self) -> None:
         selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()
