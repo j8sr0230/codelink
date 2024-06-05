@@ -314,22 +314,30 @@ class TreeModel(QtCore.QAbstractItemModel):
         return state
 
     def from_dict(self, state: dict[str, Any]) -> TreeItem:
-        values: list[Any] = list(state.values())
-        type_name: str = values.pop(0)
+        try:
+            values: list[Any] = list(state.values())
+            type_name: str = values.pop(0)
 
-        if "children" in state.keys():
-            values.pop()
-        values.append(values.pop(0))
+            if "children" in state.keys():
+                values.pop()
+            values.append(values.pop(0))
 
-        class_name: str = type_name.split(".")[-1]
-        module_name: str = type_name[:-len(class_name) - 1]
-        tree_item: TreeItem = getattr(importlib.import_module(module_name), class_name)(*values)
+            class_name: str = type_name.split(".")[-1]
+            module_name: str = type_name[:-len(class_name) - 1]
+            tree_item: TreeItem = getattr(importlib.import_module(module_name), class_name)(*values)
 
-        if "children" in state.keys():
-            for child_data in state["children"]:
-                tree_item.append_child(self.from_dict(child_data))
+            if "children" in state.keys():
+                for child_data in state["children"]:
+                    tree_item.append_child(self.from_dict(child_data))
 
-        return tree_item
+            return tree_item
+
+        except (IndexError, ValueError, AttributeError, Exception):
+            root_item: RootItem = RootItem()
+            root_item.append_child(TreeSeperatorItem("Nodes"))
+            root_item.append_child(TreeSeperatorItem("Edges"))
+            root_item.append_child(TreeSeperatorItem("Frames"))
+            return root_item
 
     def _repr_recursion(self, tree_item: TreeItem, indent: int = 0) -> str:
         result: str = " " * indent + repr(tree_item) + "\n"
