@@ -21,22 +21,24 @@
 # *   USA                                                                   *
 # *                                                                         *
 # ***************************************************************************
-from typing import Optional
+
 import math
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from codelink.frontend.color_palette import ColorPalette
+
 
 class GraphicsScene(QtWidgets.QGraphicsScene):
     def __init__(self) -> None:
         super().__init__()
 
-        self._background_color: QtGui.QColor = QtGui.QColor("#d7d6d5")
+        self._background_color: QtGui.QColor = QtGui.QColor(ColorPalette.PALEGRAY)
         self._background_brush: QtGui.QBrush = QtGui.QBrush(self._background_color)
 
-        self._grid_color: QtGui.QColor = QtGui.QColor("#aeadac")
+        self._grid_color: QtGui.QColor = QtGui.QColor(ColorPalette.LIGHTGRAY)
         self._grid_brush: QtGui.QBrush = QtGui.QBrush(self._grid_color)
         self._grid_pen: QtGui.QPen = QtGui.QPen(self._grid_color)
         self._grid_pen.setWidth(0)
@@ -44,7 +46,7 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
         self._grid_radius: int = 2
 
         self.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#5d5b59")
+            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen(ColorPalette.MEDIUMGRAY)
         )
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:

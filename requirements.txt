@@ -1,8 +1,9 @@
 PySide2>=5.15.8
-networkx>=3.1
-dask>=2023.7.1
-awkward>=2.4.2
-numpy>=1.25.2
-scipy>=1.11.1
+networkx>=3.2.1
+dask>=2023.12.1
+awkward>=2.5.2
+numpy>=1.26.3
+scipy>=1.11.4
 ikpy>=3.3.4
-matplotlib>=3.7.2
+matplotlib>=3.8.2
+StrEnum>=0.4.15
