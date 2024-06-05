@@ -184,12 +184,12 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_inspection_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Inspection View", self)
         inspection_tree_view: TreeView = TreeView()
-        inspection_tree_view.setModel(self._tree_model)
+        # inspection_tree_view.setModel(self._tree_model)
         inspection_tree_view.setIndentation(0)
         # self._tree_model.rowsInserted.connect(
         #     lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
         # )
-        inspection_tree_view.expandAll()
+        # inspection_tree_view.expandAll()
         dock.setWidget(inspection_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return inspection_tree_view
@@ -219,9 +219,13 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
             tree_item: TreeItem = self._tree_model.item_from_index(index)
             if isinstance(tree_item, NodeItem):
+                self._inspection_tree_view.setModel(self._tree_model)
                 self._inspection_tree_view.setRootIndex(index)
+                self._inspection_tree_view.expandAll()
+            else:
+                self._inspection_tree_view.setModel(None)
         else:
-            self._inspection_tree_view.setRootIndex(QtCore.QModelIndex())
+            self._inspection_tree_view.setModel(None)
 
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
@@ -235,10 +239,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._main_tree_view.expand(self._tree_model.edges_index)
         self._main_tree_view.expand(self._tree_model.frames_index)
 
-        self._inspection_tree_view.setModel(self._tree_model)
-        self._inspection_tree_view.expand(self._tree_model.nodes_index)
-        self._inspection_tree_view.expand(self._tree_model.edges_index)
-        self._inspection_tree_view.expand(self._tree_model.frames_index)
+        # self._inspection_tree_view.setModel(self._tree_model)
+        self._inspection_tree_view.setModel(None)
+        # self._inspection_tree_view.expand(self._tree_model.nodes_index)
+        # self._inspection_tree_view.expand(self._tree_model.edges_index)
+        # self._inspection_tree_view.expand(self._tree_model.frames_index)
         self._undo_stack.clear()
 
     def new(self) -> None:
