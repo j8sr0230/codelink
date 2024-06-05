@@ -254,13 +254,18 @@ class MainWindow(QtWidgets.QMainWindow):
             self, "Open file", "./", "Json files (*.json);;All files (*.*)"
         )
 
+        QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+
         if file_name[0]:
             self._new(file=file_name[0])
         else:
             print("No file selected")
 
+        QtGui.QGuiApplication.restoreOverrideCursor()
 
     def _save(self, file: str) -> None:
+        QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
+
         try:
             with open(file, "w", encoding="utf-8") as f:
                 json.dump(self._tree_model.to_dict(), f, ensure_ascii=False, indent=4)
@@ -270,6 +275,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             print("File saving error")
+
+        QtGui.QGuiApplication.restoreOverrideCursor()
 
     def save_as(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getSaveFileName(
