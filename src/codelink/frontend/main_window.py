@@ -157,6 +157,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_graphics_view(self) -> QtWidgets.QGraphicsView:
         graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+        graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
         graphics_scene: GraphicsScene = GraphicsScene()
         graphics_view.setScene(graphics_scene)
         self.setCentralWidget(graphics_view)
