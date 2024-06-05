@@ -49,7 +49,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
-
         self._model: TreeModel = self.create_tree_model()
 
         # UI
@@ -71,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
             with open(str(Path(file).resolve()), "r", encoding="utf-8") as f:
                 state: dict[str, Any] = json.load(f)
 
-        model: TreeModel = TreeModel(undo_stack=self._undo_stack, data=state)
+        model: TreeModel = TreeModel(data=state, undo_stack=self._undo_stack)
         model.rowsInserted.connect(
             lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
         )
@@ -198,10 +197,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._inspection_view.setModel(self._model)
             self._inspection_view.expandAll()
 
-        except json.decoder.JSONDecodeError:
-            print("File reading error")
-
-        except ValueError:
+        except (json.decoder.JSONDecodeError, IndexError, ValueError, AttributeError):
             print("File reading error")
 
     def delete_selection(self) -> None:

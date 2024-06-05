@@ -27,7 +27,6 @@ import json
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.node_factory import NodeFactory
@@ -43,7 +42,7 @@ if __name__ == "__main__":
     node_fac.load_nodes(str(Path("nodes").resolve()))
 
     # Setup tree model
-    model: TreeModel = TreeModel(undo_stack=QtWidgets.QUndoStack())
+    model: TreeModel = TreeModel()
     model.rowsInserted.connect(
         lambda parent_idx, first_row_idx, last_row_idx: print("Inserted at:", first_row_idx)
     )
@@ -84,7 +83,7 @@ if __name__ == "__main__":
 
     with open("../frontend/data.json", "r", encoding="utf-8") as f:
         deserialized: dict[str, Any] = json.load(f)
-        restored_model: TreeModel = TreeModel(QtWidgets.QUndoStack(), deserialized)
+        restored_model: TreeModel = TreeModel(data=deserialized)
         print(restored_model)
 
         restored_nodes_idx: QtCore.QModelIndex = restored_model.index(0, 0, QtCore.QModelIndex())
