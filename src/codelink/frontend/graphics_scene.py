@@ -44,7 +44,7 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
         self._grid_radius: int = 2
 
         self.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#1d1d1d")
+            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen("#5d5b59")
         )
 
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:

@@ -224,6 +224,7 @@ class MainWindow(QtWidgets.QMainWindow):
         window_title: str = file if file else "CodeLink"
         self.setWindowTitle(window_title)
         self._main_tree_view.setModel(self._model)
+        self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         self._main_tree_view.expandAll()
         self._inspection_view.setModel(self._model)
         self._inspection_view.expandAll()
@@ -281,9 +282,9 @@ if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
     main_window: MainWindow = MainWindow()
 
-    # main_window.model.append_node(NodeItem("Node 1"))
-    # main_window.model.append_node(NodeItem("Node 2"))
-    # main_window.model.append_node(NodeItem("Node 3"))
+    main_window.model.append_node(NodeItem("Node 1"))
+    main_window.model.append_node(NodeItem("Node 2"))
+    main_window.model.append_node(NodeItem("Node 3"))
 
     main_window.show()
     sys.exit(app.exec_())
