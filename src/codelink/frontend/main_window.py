@@ -251,7 +251,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open file", "./", "Json files (*.json);;All files (*.*)"
+            self, "Open file", "./", "Json files (*.json);;All files (*.*)",
+            options=QtWidgets.QFileDialog.DontUseNativeDialog | QtWidgets.QFileDialog.DontUseNativeDialog
         )
 
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
@@ -280,7 +281,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def save_as(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Save file", "./", "Json files (*.json);;All files (*.*)"
+            self, "Save file", "./", "Json files (*.json);;All files (*.*)",
+            options=QtWidgets.QFileDialog.DontUseNativeDialog | QtWidgets.QFileDialog.DontUseNativeDialog
         )
 
         if file_name[0]:
