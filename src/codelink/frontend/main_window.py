@@ -36,7 +36,7 @@ from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.depth_filter_proxy_tree_model import DepthFilterProxyTreeModel
+from codelink.backend.depth_proxy_model import DepthProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.graphics_scene import GraphicsScene
@@ -170,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: DepthFilterProxyTreeModel = DepthFilterProxyTreeModel()
+        proxy_model: DepthProxyModel = DepthProxyModel()
         proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
         # main_tree_view.setModel(self._tree_model)
