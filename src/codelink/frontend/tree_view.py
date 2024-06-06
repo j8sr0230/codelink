@@ -9,3 +9,4 @@ class TreeView(QtWidgets.QTreeView):
 
         self.setAlternatingRowColors(True)
         self.setItemDelegate(TreeViewDelegate())
+        self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)

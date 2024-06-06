@@ -61,7 +61,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._graphics_view: QtWidgets.QGraphicsView = self.create_graphics_view()
         self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
-        self._inspection_tree_view: QtWidgets.QTreeView = self.create_inspection_tree_view()
+        self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
+        self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
     @property
     def tree_model(self) -> TreeModel:
@@ -168,35 +169,47 @@ class MainWindow(QtWidgets.QMainWindow):
         return graphics_view
 
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
-        dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
+        dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         proxy_model: ProxyTreeModel = ProxyTreeModel()
         proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
-        # main_tree_view.setModel(self._tree_model)
-        main_tree_view.setModel(proxy_model)
-        main_tree_view.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        # self._tree_model.rowsInserted.connect(
-        #     lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
-        # )
-        main_tree_view.expandAll()
+        main_tree_view.setModel(self._tree_model)
+        self._tree_model.rowsInserted.connect(
+            lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
+        )
         main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
         return main_tree_view
 
-    def create_inspection_tree_view(self) -> QtWidgets.QTreeView:
-        dock = QtWidgets.QDockWidget("Inspection View", self)
-        inspection_tree_view: TreeView = TreeView()
+    def create_item_tree_view(self) -> QtWidgets.QTreeView:
+        dock = QtWidgets.QDockWidget("Item View", self)
+        dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
+        proxy_model: ProxyTreeModel = ProxyTreeModel()
+        proxy_model.setSourceModel(self._tree_model)
+        item_view: TreeView = TreeView()
+        item_view.setModel(proxy_model)
+        self._tree_model.rowsInserted.connect(
+            lambda: item_view.expandRecursively(QtCore.QModelIndex())
+        )
+        dock.setWidget(item_view)
+        self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
+        return item_view
+
+
+    def create_detail_tree_view(self) -> QtWidgets.QTreeView:
+        dock = QtWidgets.QDockWidget("Detail View", self)
+        detail_view: TreeView = TreeView()
         # inspection_tree_view.setModel(self._tree_model)
-        inspection_tree_view.setIndentation(0)
+        # inspection_tree_view.setIndentation(0)
         # self._tree_model.rowsInserted.connect(
         #     lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
         # )
         # inspection_tree_view.expandAll()
-        dock.setWidget(inspection_tree_view)
+        dock.setWidget(detail_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-        return inspection_tree_view
+        return detail_view
 
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
@@ -226,13 +239,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
             tree_item: TreeItem = self._tree_model.item_from_index(index)
             if isinstance(tree_item, NodeItem):
-                self._inspection_tree_view.setModel(self._tree_model)
-                self._inspection_tree_view.setRootIndex(index)
-                self._inspection_tree_view.expandAll()
+                proxy_model: ProxyTreeModel = ProxyTreeModel()
+                proxy_model.setSourceModel(self._tree_model)
+
+                self._detail_tree_view.setModel(proxy_model)
+                self._detail_tree_view.setRootIndex(index)
+                self._detail_tree_view.expandAll()
             else:
-                self._inspection_tree_view.setModel(None)
+                self._detail_tree_view.setModel(None)
         else:
-            self._inspection_tree_view.setModel(None)
+            self._detail_tree_view.setModel(None)
 
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
