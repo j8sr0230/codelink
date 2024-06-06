@@ -243,7 +243,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 proxy_model.setSourceModel(self._tree_model)
 
                 self._detail_tree_view.setModel(proxy_model)
-                self._detail_tree_view.setRootIndex(index)
+                self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
                 self._detail_tree_view.expandAll()
             else:
                 self._detail_tree_view.setModel(None)
