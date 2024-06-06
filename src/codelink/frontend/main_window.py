@@ -36,6 +36,7 @@ from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
+from codelink.backend.edge_item import EdgeItem
 from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
 from codelink.frontend.tree_view import TreeView
@@ -233,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 index: QtCore.QModelIndex = index.model().mapToSource(index)
 
             tree_item: TreeItem = self._tree_model.item_from_index(index)
-            if isinstance(tree_item, NodeItem):
+            if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
                 proxy_model: Level4ProxyModel = Level4ProxyModel()
                 proxy_model.setSourceModel(self._tree_model)
                 self._detail_tree_view.setModel(proxy_model)
