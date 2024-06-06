@@ -36,7 +36,7 @@ from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.depth_proxy_model import DepthProxyModel
+from codelink.backend.proxy_tree_model import ProxyTreeModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.graphics_scene import GraphicsScene
@@ -170,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Graph View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: DepthProxyModel = DepthProxyModel()
+        proxy_model: ProxyTreeModel = ProxyTreeModel()
         proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
         # main_tree_view.setModel(self._tree_model)
@@ -221,7 +221,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
-            index: QtCore.QModelIndex = index.model().mapToSource(index)
+            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+                index: QtCore.QModelIndex = index.model().mapToSource(index)
 
             tree_item: TreeItem = self._tree_model.item_from_index(index)
             if isinstance(tree_item, NodeItem):

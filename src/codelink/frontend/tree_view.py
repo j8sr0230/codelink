@@ -8,4 +8,4 @@ class TreeView(QtWidgets.QTreeView):
         super().__init__()
 
         self.setAlternatingRowColors(True)
-        # self.setItemDelegate(TreeViewDelegate())
+        self.setItemDelegate(TreeViewDelegate())

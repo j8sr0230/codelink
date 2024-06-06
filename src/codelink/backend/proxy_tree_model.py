@@ -25,7 +25,7 @@
 import PySide2.QtCore as QtCore
 
 
-class DepthProxyModel(QtCore.QSortFilterProxyModel):
+class ProxyTreeModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 

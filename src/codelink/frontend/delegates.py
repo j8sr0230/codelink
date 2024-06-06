@@ -39,8 +39,10 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
-        tree_item: TreeItem = index.model().item_from_index(index)
+        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+            index: QtCore.QModelIndex = index.model().mapToSource(index)
 
+        tree_item: TreeItem = index.model().item_from_index(index)
         if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             if index.column() == 0:
                 editor: QtWidgets.QLineEdit = QtWidgets.QLineEdit(parent)
@@ -52,8 +54,10 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
         return None
 
     def setEditorData(self, editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None:
-        tree_item: TreeItem = index.model().item_from_index(index)
+        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+            index: QtCore.QModelIndex = index.model().mapToSource(index)
 
+        tree_item: TreeItem = index.model().item_from_index(index)
         if isinstance(tree_item, BaseItem) and not type(tree_item) is SeperatorItem:
             if index.column() == 0:
                 value: Any = index.model().data(index, QtCore.Qt.EditRole)
@@ -64,12 +68,14 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex()) -> bool:
-        tree_item: TreeItem = index.model().item_from_index(index)
+        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+            index: QtCore.QModelIndex = index.model().mapToSource(index)
 
+        tree_item: TreeItem = index.model().item_from_index(index)
         if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             if index.column() == 0:
                 value: str = editor.text()
-                return model.setData(index, value, int(QtCore.Qt.EditRole))
+                return index.model().setData(index, value, int(QtCore.Qt.EditRole))
 
             if index.column() == 1:
                 return tree_item.set_model_data(editor, model, index)
@@ -81,8 +87,10 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        tree_item: TreeItem = index.model().item_from_index(index)
+        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+            index: QtCore.QModelIndex = index.model().mapToSource(index)
 
+        tree_item: TreeItem = index.model().item_from_index(index)
         if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
             tree_item.paint(painter, option, index)
 
