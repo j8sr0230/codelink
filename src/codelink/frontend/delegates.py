@@ -78,7 +78,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 return index.model().setData(index, value, int(QtCore.Qt.EditRole))
 
             if index.column() == 1:
-                return tree_item.set_model_data(editor, model, index)
+                return tree_item.set_model_data(editor, index.model(), index)
 
         return False
 
