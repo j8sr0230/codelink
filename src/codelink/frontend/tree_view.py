@@ -48,7 +48,9 @@ class TreeView(QtWidgets.QTreeView):
         if not next_index.isValid():
             next_index: QtCore.QModelIndex = self.model().index(0, current_index.column(), self.rootIndex())
 
-        selection_model.select(next_index, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows)
+        # selection_model.select(
+        #     next_index, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows
+        # )
         self.setCurrentIndex(next_index)
         self.edit(self.currentIndex())
         return True

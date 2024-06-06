@@ -323,14 +323,20 @@ class MainWindow(QtWidgets.QMainWindow):
             self.save_as()
 
     def delete_selection(self) -> None:
-        selected_indexes: list[QtCore.QModelIndex] = self._main_tree_view.selectionModel().selectedIndexes()
-        while selected_indexes:
-            selected_index: QtCore.QModelIndex = selected_indexes.pop()
-            if selected_index.column() == 0:
-                tree_item: Optional[TreeItem] = self._tree_model.item_from_index(selected_index)
-                if isinstance(tree_item, NodeItem):
-                    index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                    self._tree_model.removeRow(index.row(), index.parent())
+        current_widget: QtWidgets.QWidget = QtWidgets.QApplication.focusWidget()
+        if isinstance(QtWidgets.QApplication.focusWidget(), TreeView):
+            selected_indexes: list[QtCore.QModelIndex] = current_widget.selectionModel().selectedIndexes()
+
+            while selected_indexes:
+                selected_index: QtCore.QModelIndex = selected_indexes.pop()
+                if isinstance(selected_index.model(), QtCore.QSortFilterProxyModel):
+                    selected_index: QtCore.QModelIndex = selected_index.model().mapToSource(selected_index)
+
+                if selected_index.column() == 0:
+                    tree_item: Optional[TreeItem] = self._tree_model.item_from_index(selected_index)
+                    if isinstance(tree_item, NodeItem):
+                        index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
+                        self._tree_model.removeRow(index.row(), index.parent())
 
 
 if __name__ == "__main__":
