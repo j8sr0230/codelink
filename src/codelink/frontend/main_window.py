@@ -193,6 +193,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._tree_model.rowsInserted.connect(
             lambda: item_tree_view.expandRecursively(QtCore.QModelIndex())
         )
+        item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(item_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return item_tree_view
@@ -201,12 +202,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_detail_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Detail View", self)
         detail_view: TreeView = TreeView()
-        # inspection_tree_view.setModel(self._tree_model)
-        # inspection_tree_view.setIndentation(0)
-        # self._tree_model.rowsInserted.connect(
-        #     lambda: inspection_tree_view.expandRecursively(QtCore.QModelIndex())
-        # )
-        # inspection_tree_view.expandAll()
         dock.setWidget(detail_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return detail_view
@@ -234,6 +229,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
+            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+                index: QtCore.QModelIndex = index.model().mapToSource(index)
 
             tree_item: TreeItem = self._tree_model.item_from_index(index)
             if isinstance(tree_item, NodeItem):
@@ -268,6 +265,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._tree_model.rowsInserted.connect(
             lambda: self._item_tree_view.expandRecursively(QtCore.QModelIndex())
         )
+        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
         self._detail_tree_view.setModel(None)
 
