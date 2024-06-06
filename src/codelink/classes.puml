@@ -27,6 +27,16 @@ class "codelink.backend.properties.integer_property_item.IntegerPropertyItem" as
 }
 class "codelink.backend.property_item.PropertyItem" as codelink.backend.property_item.PropertyItem {
 }
+class "codelink.backend.proxy_models.Level2ProxyModel" as codelink.backend.proxy_models.Level2ProxyModel {
+  filterAcceptsRow(source_row: int, source_parent: QtCore.QModelIndex) -> bool
+  mapFromSource(source_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  mapToSource(proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+}
+class "codelink.backend.proxy_models.Level4ProxyModel" as codelink.backend.proxy_models.Level4ProxyModel {
+  filterAcceptsRow(source_row: int, source_parent: QtCore.QModelIndex) -> bool
+  mapFromSource(source_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  mapToSource(proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+}
 class "codelink.backend.root_item.RootItem" as codelink.backend.root_item.RootItem {
 }
 class "codelink.backend.seperator_item.SeperatorItem" as codelink.backend.seperator_item.SeperatorItem {
