@@ -22,12 +22,8 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import  cast
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
-
-from codelink.backend.tree_model import TreeModel
 
 from codelink.frontend.delegates import TreeViewDelegate
 
@@ -39,34 +35,15 @@ class TreeView(QtWidgets.QTreeView):
         self.setAlternatingRowColors(True)
         self.setItemDelegate(TreeViewDelegate())
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def focusNextPrevChild(self, forward: bool) -> bool:
-        index: QtCore.QModelIndex = self.selectionModel().currentIndex()
-        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-            source_index: QtCore.QModelIndex = index.model().mapToSource(index)
-            source_model: TreeModel =  cast(TreeModel, self.model().sourceModel())
-        else:
-            source_index: QtCore.QModelIndex = index
-            source_model: TreeModel = cast(TreeModel, self.model())
+        selection_model: QtCore.QItemSelectionModel = self.selectionModel()
+        current_index: QtCore.QModelIndex = selection_model.currentIndex()
 
-        parent_index: QtCore.QModelIndex = source_index.parent()
-        if source_model.hasChildren(source_index):
-            print("Step down")
-        elif source_model.index(source_index.row() + 1, 0, parent_index).isValid():
-            print("Increment")
-        else:
-            print("Step up")
+        next_index: QtCore.QModelIndex = self.indexBelow(current_index)
+        if not next_index.isValid():
+            next_index: QtCore.QModelIndex = self.model().index(0, 0, self.rootIndex())
 
-        # if input_widget == QtWidgets.QApplication.focusWidget():
-        #     return False
-
-        # socket_idx: int = self.parent_node.input_socket_widgets.index(input_widget.parent())
-        # next_idx: int = 0
-        # for idx in range(socket_idx + 1, len(self.parent_node.input_socket_widgets)):
-        #     if self.parent_node.input_socket_widgets[idx].input_widget.focusPolicy() == QtCore.Qt.StrongFocus:
-        #         next_idx: int = idx
-        #         break
-        #
-        # self.parent_node.input_socket_widgets[next_idx].setFocus(QtCore.Qt.TabFocusReason)
+        selection_model.select(next_index, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows)
+        self.setCurrentIndex(next_index)
         return True
