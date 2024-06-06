@@ -25,7 +25,7 @@
 import PySide2.QtCore as QtCore
 
 
-class ProxyTreeModel(QtCore.QSortFilterProxyModel):
+class Level2ProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
@@ -37,3 +37,17 @@ class ProxyTreeModel(QtCore.QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
         return not source_parent.parent().isValid()
+
+
+class Level4ProxyModel(QtCore.QSortFilterProxyModel):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        return super().mapFromSource(source_index)
+
+    def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        return super().mapToSource(proxy_index)
+
+    def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
+        return not source_parent.parent().parent().parent().isValid()

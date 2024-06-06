@@ -36,7 +36,7 @@ from codelink.backend.node_factory import NodeFactory
 from codelink.backend.tree_model import TreeModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.proxy_tree_model import ProxyTreeModel
+from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.graphics_scene import GraphicsScene
@@ -171,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: ProxyTreeModel = ProxyTreeModel()
+        proxy_model: Level2ProxyModel = Level2ProxyModel()
         proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
         main_tree_view.setModel(self._tree_model)
@@ -186,16 +186,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_item_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Item View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: ProxyTreeModel = ProxyTreeModel()
+        proxy_model: Level2ProxyModel = Level2ProxyModel()
         proxy_model.setSourceModel(self._tree_model)
-        item_view: TreeView = TreeView()
-        item_view.setModel(proxy_model)
+        item_tree_view: TreeView = TreeView()
+        item_tree_view.setModel(proxy_model)
         self._tree_model.rowsInserted.connect(
-            lambda: item_view.expandRecursively(QtCore.QModelIndex())
+            lambda: item_tree_view.expandRecursively(QtCore.QModelIndex())
         )
-        dock.setWidget(item_view)
+        dock.setWidget(item_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
-        return item_view
+        return item_tree_view
 
 
     def create_detail_tree_view(self) -> QtWidgets.QTreeView:
@@ -234,14 +234,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
-            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-                index: QtCore.QModelIndex = index.model().mapToSource(index)
 
             tree_item: TreeItem = self._tree_model.item_from_index(index)
             if isinstance(tree_item, NodeItem):
-                proxy_model: ProxyTreeModel = ProxyTreeModel()
+                proxy_model: Level4ProxyModel = Level4ProxyModel()
                 proxy_model.setSourceModel(self._tree_model)
-
                 self._detail_tree_view.setModel(proxy_model)
                 self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
                 self._detail_tree_view.expandAll()
@@ -253,20 +250,27 @@ class MainWindow(QtWidgets.QMainWindow):
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
         self._file_name: Optional[str] = file
+
         window_title: str = file if file else "CodeLink"
         self.setWindowTitle(window_title)
 
         self._main_tree_view.setModel(self._tree_model)
+        self._main_tree_view.expandRecursively(QtCore.QModelIndex())
+        self._tree_model.rowsInserted.connect(
+            lambda: self._main_tree_view.expandRecursively(QtCore.QModelIndex())
+        )
         self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-        self._main_tree_view.expand(self._tree_model.nodes_index)
-        self._main_tree_view.expand(self._tree_model.edges_index)
-        self._main_tree_view.expand(self._tree_model.frames_index)
 
-        # self._inspection_tree_view.setModel(self._tree_model)
-        self._inspection_tree_view.setModel(None)
-        # self._inspection_tree_view.expand(self._tree_model.nodes_index)
-        # self._inspection_tree_view.expand(self._tree_model.edges_index)
-        # self._inspection_tree_view.expand(self._tree_model.frames_index)
+        proxy_model: Level2ProxyModel = Level2ProxyModel()
+        proxy_model.setSourceModel(self._tree_model)
+        self._item_tree_view.setModel(proxy_model)
+        self._item_tree_view.expandRecursively(QtCore.QModelIndex())
+        self._tree_model.rowsInserted.connect(
+            lambda: self._item_tree_view.expandRecursively(QtCore.QModelIndex())
+        )
+
+        self._detail_tree_view.setModel(None)
+
         self._undo_stack.clear()
 
     def new(self) -> None:
