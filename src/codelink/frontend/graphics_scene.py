@@ -45,6 +45,9 @@ class GraphicsScene(QtWidgets.QGraphicsScene):
         self._grid_spacing: int = 50
         self._grid_radius: int = 2
 
+        self._scene_width: int = 32000
+        self.setSceneRect(-self._scene_width // 2, -self._scene_width // 2, self._scene_width, self._scene_width)
+
         self.addRect(
             QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen(ColorPalette.MEDIUMGRAY)
         )

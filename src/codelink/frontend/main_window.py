@@ -60,7 +60,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(1280, 800)
         self.create_menu()
 
-        self._graphics_view: QtWidgets.QGraphicsView = self.create_graphics_view()
+        self._mdi_area: QtWidgets.QMdiArea = self.create_mdi_area()
         self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
         self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
@@ -161,13 +161,27 @@ class MainWindow(QtWidgets.QMainWindow):
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
 
-    def create_graphics_view(self) -> QtWidgets.QGraphicsView:
-        graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
-        graphics_scene: GraphicsScene = GraphicsScene()
-        graphics_view.setScene(graphics_scene)
-        self.setCentralWidget(graphics_view)
-        return graphics_view
+    def create_mdi_area(self) -> QtWidgets.QMdiArea:
+        mdi_area: QtWidgets.QMdiArea = QtWidgets.QMdiArea()
+        mdi_area.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        mdi_area.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        mdi_area.setViewMode(QtWidgets.QMdiArea.TabbedView)
+        mdi_area.setDocumentMode(True)
+        mdi_area.setTabsClosable(True)
+        mdi_area.setTabsMovable(True)
+        self.setCentralWidget(mdi_area)
+
+        # Populate mdi area
+        for i in range(2):
+            graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+            graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
+            graphics_scene: GraphicsScene = GraphicsScene()
+            graphics_view.setScene(graphics_scene)
+            sub_wnd: QtWidgets.QMdiSubWindow = mdi_area.addSubWindow(graphics_view)
+            sub_wnd.showMaximized()
+            sub_wnd.setWindowTitle("Graph " + str(i + 1))
+
+        return mdi_area
 
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
@@ -263,6 +277,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def new(self) -> None:
         self._new(file=None)
+
+        # Populate mdi area
+        graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+        graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
+        graphics_scene: GraphicsScene = GraphicsScene()
+        graphics_view.setScene(graphics_scene)
+        sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(graphics_view)
+        sub_wnd.showMaximized()
 
     def open(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
