@@ -169,6 +169,9 @@ class MainWindow(QtWidgets.QMainWindow):
         mdi_area.setDocumentMode(True)
         mdi_area.setTabsClosable(True)
         mdi_area.setTabsMovable(True)
+
+        mdi_area.subWindowActivated.connect(self.on_sub_wnd_changed)
+
         self.setCentralWidget(mdi_area)
 
         # Populate mdi area
@@ -253,6 +256,10 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._detail_tree_view.setModel(None)
         else:
             self._detail_tree_view.setModel(None)
+
+    @staticmethod
+    def on_sub_wnd_changed(sub_wnd: QtWidgets.QMdiSubWindow) -> None:
+        print("Active sub window changed:", sub_wnd.windowTitle())
 
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
