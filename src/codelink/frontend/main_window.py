@@ -259,7 +259,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @staticmethod
     def on_sub_wnd_changed(sub_wnd: QtWidgets.QMdiSubWindow) -> None:
-        print("Active sub window changed:", sub_wnd.windowTitle())
+        if sub_wnd and hasattr(sub_wnd, "windowTitle"):
+            print("Active sub window changed:", sub_wnd.windowTitle())
 
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
@@ -359,6 +360,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
+
+    # app.setStyle("")
+    # palette: QtGui.QPalette = app.palette()
+    # palette.setColor(QtGui.QPalette.Window, QtGui.QColor(53, 53, 53))
+    # palette.setColor(QtGui.QPalette.WindowText, QtCore.Qt.white)
+    # palette.setColor(QtGui.QPalette.Base, QtGui.QColor(25, 25, 25))
+    # palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor(53, 53, 53))
+    # palette.setColor(QtGui.QPalette.ToolTipBase, QtCore.Qt.white)
+    # palette.setColor(QtGui.QPalette.ToolTipText, QtCore.Qt.white)
+    # palette.setColor(QtGui.QPalette.Text, QtCore.Qt.white)
+    # palette.setColor(QtGui.QPalette.Button, QtGui.QColor(53, 53, 53))
+    # palette.setColor(QtGui.QPalette.ButtonText, QtCore.Qt.white)
+    # palette.setColor(QtGui.QPalette.BrightText, QtCore.Qt.red)
+    # palette.setColor(QtGui.QPalette.Link, QtGui.QColor(42, 130, 218))
+    # palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor(42, 130, 218))
+    # palette.setColor(QtGui.QPalette.HighlightedText, QtCore.Qt.black)
+    # app.setPalette(palette)
+
     main_window: MainWindow = MainWindow()
 
     main_window.tree_model.append_node(NodeItem("Node 1"))
