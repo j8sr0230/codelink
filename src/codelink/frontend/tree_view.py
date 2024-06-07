@@ -23,6 +23,7 @@
 # ***************************************************************************
 
 import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.frontend.delegates import TreeViewDelegate
@@ -36,21 +37,18 @@ class TreeView(QtWidgets.QTreeView):
         self.setItemDelegate(TreeViewDelegate())
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-    def focusNextPrevChild(self, forward: bool) -> bool:
-        selection_model: QtCore.QItemSelectionModel = self.selectionModel()
-        current_index: QtCore.QModelIndex = selection_model.currentIndex()
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        super().keyPressEvent(event)
 
+    def focusNextPrevChild(self, forward: bool) -> bool:
         if forward:
-            next_index: QtCore.QModelIndex = self.indexBelow(current_index)
+            next_index: QtCore.QModelIndex = self.indexBelow(self.currentIndex())
         else:
-            next_index: QtCore.QModelIndex = self.indexAbove(current_index)
+            next_index: QtCore.QModelIndex = self.indexAbove(self.currentIndex())
 
         if not next_index.isValid():
-            next_index: QtCore.QModelIndex = self.model().index(0, current_index.column(), self.rootIndex())
+            next_index: QtCore.QModelIndex = self.model().index(0, self.currentIndex().column(), self.rootIndex())
 
-        # selection_model.select(
-        #     next_index, QtCore.QItemSelectionModel.ClearAndSelect | QtCore.QItemSelectionModel.Rows
-        # )
         self.setCurrentIndex(next_index)
-        self.edit(self.currentIndex())
+        self.edit(next_index)
         return True

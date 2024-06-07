@@ -176,9 +176,7 @@ class MainWindow(QtWidgets.QMainWindow):
         proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
         main_tree_view.setModel(self._tree_model)
-        self._tree_model.rowsInserted.connect(
-            lambda: main_tree_view.expandRecursively(QtCore.QModelIndex())
-        )
+        main_tree_view.expandAll()
         main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
@@ -191,14 +189,11 @@ class MainWindow(QtWidgets.QMainWindow):
         proxy_model.setSourceModel(self._tree_model)
         item_tree_view: TreeView = TreeView()
         item_tree_view.setModel(proxy_model)
-        self._tree_model.rowsInserted.connect(
-            lambda: item_tree_view.expandRecursively(QtCore.QModelIndex())
-        )
+        item_tree_view.expandAll()
         item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(item_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return item_tree_view
-
 
     def create_detail_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Detail View", self)
@@ -253,19 +248,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(window_title)
 
         self._main_tree_view.setModel(self._tree_model)
-        self._main_tree_view.expandRecursively(QtCore.QModelIndex())
-        self._tree_model.rowsInserted.connect(
-            lambda: self._main_tree_view.expandRecursively(QtCore.QModelIndex())
-        )
+        self._main_tree_view.expandAll()
         self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
         proxy_model: Level2ProxyModel = Level2ProxyModel()
         proxy_model.setSourceModel(self._tree_model)
         self._item_tree_view.setModel(proxy_model)
-        self._item_tree_view.expandRecursively(QtCore.QModelIndex())
-        self._tree_model.rowsInserted.connect(
-            lambda: self._item_tree_view.expandRecursively(QtCore.QModelIndex())
-        )
+        self._item_tree_view.expandAll()
         self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
         self._detail_tree_view.setModel(None)
