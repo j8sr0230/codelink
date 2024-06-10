@@ -217,20 +217,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self._detail_tree_view.setModel(None)
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
-        doc_ctrl: DocumentController = self._doc_ctrs[self._mdi_area.subWindowList().index(sub_wnd)]
-        doc_model: TreeModel = doc_ctrl.doc_model
-        # doc_view: DocumentView = doc_ctrl.doc_view
+        if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
+            doc_ctrl: DocumentController = self._doc_ctrs[self._mdi_area.subWindowList().index(sub_wnd)]
+            doc_model: TreeModel = doc_ctrl.doc_model
+            # doc_view: DocumentView = doc_ctrl.doc_view
 
-        self._main_tree_view.setModel(doc_model)
-        self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+            self._main_tree_view.setModel(doc_model)
+            self._main_tree_view.expandAll()
+            self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
-        proxy_model: Level2ProxyModel = Level2ProxyModel()
-        proxy_model.setSourceModel(doc_model)
-        self._item_tree_view.setModel(proxy_model)
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+            proxy_model: Level2ProxyModel = Level2ProxyModel()
+            proxy_model.setSourceModel(doc_model)
+            self._item_tree_view.setModel(proxy_model)
+            self._item_tree_view.expandAll()
+            self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
-        if sub_wnd and hasattr(sub_wnd, "windowTitle"):
-            print("Active sub window changed:", sub_wnd.windowTitle())
+            if sub_wnd and hasattr(sub_wnd, "windowTitle"):
+                print("Active sub window changed:", sub_wnd.windowTitle())
 
     def _new(self, file: Optional[str]) -> None:
         self._tree_model: TreeModel = self.create_tree_model(file=file)
