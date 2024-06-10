@@ -22,10 +22,9 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Any
+from typing import Optional
 
 import PySide2.QtCore as QtCore
-import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.tree_model import TreeModel
 from codelink.frontend.document_view import DocumentView
@@ -40,6 +39,8 @@ class DocumentController:
         self._doc_model.rowsRemoved.connect(self.on_model_row_changed)
         self._doc_model.dataChanged.connect(self.on_model_data_changed)
 
+        self._file_name: Optional[str] = None
+
     @property
     def doc_model(self) -> TreeModel:
         return self._doc_model
@@ -48,8 +49,13 @@ class DocumentController:
     def doc_view(self) -> DocumentView:
         return self._doc_view
 
-    def handle_input(self, data: Any) -> None:
-        self._doc_model.setData(QtCore.QModelIndex(), data)
+    @property
+    def file_name(self) -> Optional[str]:
+        return self._file_name
+
+    @file_name.setter
+    def file_name(self, value: Optional[str]) -> None:
+        self._file_name: Optional[str] = value
 
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
@@ -69,3 +75,6 @@ class DocumentController:
             self._doc_view.setWindowTitle(window_title + "*")
 
         print("Inserted/Removed at:", first_row)
+
+    def update_view(self):
+        self._doc_view.setWindowTitle(self._file_name if self._file_name else "untitled")

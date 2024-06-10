@@ -238,11 +238,12 @@ class MainWindow(QtWidgets.QMainWindow):
             redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
             self.addAction(redo_action)
 
-    def _new(self, file_name: str = "untitled") -> None:
-        self._tree_model: TreeModel = self.create_tree_model(file_name=file_name)
-
-        doc_view: DocumentView = DocumentView(file_name=file_name)
-        doc_ctr: DocumentController = DocumentController(model=self._tree_model, view=doc_view)
+    def _new(self, file_name: Optional[str] = None) -> None:
+        doc_model: TreeModel = self.create_tree_model(file_name=file_name)
+        doc_view: DocumentView = DocumentView()
+        doc_ctr: DocumentController = DocumentController(model=doc_model, view=doc_view)
+        doc_ctr.file_name = file_name
+        doc_ctr.update_view()
         self._doc_ctrs.append(doc_ctr)
 
         sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
