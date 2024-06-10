@@ -38,6 +38,10 @@ class DocumentController:
 
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
 
+        self._doc_model.rowsInserted.connect(self.on_model_row_changed)
+        self._doc_model.rowsRemoved.connect(self.on_model_row_changed)
+        self._doc_model.dataChanged.connect(self.on_model_data_changed)
+
     @property
     def doc_model(self) -> TreeModel:
         return self._doc_model

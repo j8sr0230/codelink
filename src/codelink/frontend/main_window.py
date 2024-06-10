@@ -82,9 +82,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 print("File loading error")
 
         tree_model: TreeModel = TreeModel(data=state, undo_stack=self._undo_stack)
-        tree_model.rowsInserted.connect(self.on_model_row_changed)
-        tree_model.rowsRemoved.connect(self.on_model_row_changed)
-        tree_model.dataChanged.connect(self.on_model_data_changed)
         return tree_model
 
     def create_menu(self) -> None:
@@ -173,19 +170,13 @@ class MainWindow(QtWidgets.QMainWindow):
         mdi_area.setTabsMovable(True)
 
         mdi_area.subWindowActivated.connect(self.on_sub_wnd_changed)
-
         self.setCentralWidget(mdi_area)
         return mdi_area
 
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: Level2ProxyModel = Level2ProxyModel()
-        proxy_model.setSourceModel(self._tree_model)
         main_tree_view: TreeView = TreeView()
-        main_tree_view.setModel(self._tree_model)
-        main_tree_view.expandAll()
-        main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(main_tree_view)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
         return main_tree_view
@@ -193,41 +184,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_item_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Item View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        proxy_model: Level2ProxyModel = Level2ProxyModel()
-        proxy_model.setSourceModel(self._tree_model)
         item_tree_view: TreeView = TreeView()
-        item_tree_view.setModel(proxy_model)
-        item_tree_view.expandAll()
-        item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
         dock.setWidget(item_tree_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return item_tree_view
 
     def create_detail_tree_view(self) -> QtWidgets.QTreeView:
         dock = QtWidgets.QDockWidget("Detail View", self)
+        dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         detail_view: TreeView = TreeView()
         dock.setWidget(detail_view)
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return detail_view
-
-    # noinspection PyUnusedLocal
-    def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
-                              roles: list[int]) -> None:
-        window_title: str = self.windowTitle()
-        if not window_title.endswith("*"):
-            self.setWindowTitle(window_title + "*")
-
-        print("Changed at:", top_left.row(), top_left.column(), "to:",
-              top_left.data(roles[0]) if len(roles) > 0 else None)
-
-    # noinspection PyUnusedLocal
-    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: QtCore.QModelIndex,
-                             last_row: QtCore.QModelIndex) -> None:
-        window_title: str = self.windowTitle()
-        if not window_title.endswith("*"):
-            self.setWindowTitle(window_title + "*")
-
-        print("Inserted/Removed at:", first_row)
 
     # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
@@ -248,8 +216,19 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._detail_tree_view.setModel(None)
 
-    @staticmethod
-    def on_sub_wnd_changed(sub_wnd: QtWidgets.QMdiSubWindow) -> None:
+    def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
+        doc_ctrl: DocumentController = self._doc_ctrs[self._mdi_area.subWindowList().index(sub_wnd)]
+        doc_model: TreeModel = doc_ctrl.doc_model
+        # doc_view: DocumentView = doc_ctrl.doc_view
+
+        self._main_tree_view.setModel(doc_model)
+        self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+
+        proxy_model: Level2ProxyModel = Level2ProxyModel()
+        proxy_model.setSourceModel(doc_model)
+        self._item_tree_view.setModel(proxy_model)
+        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+
         if sub_wnd and hasattr(sub_wnd, "windowTitle"):
             print("Active sub window changed:", sub_wnd.windowTitle())
 
@@ -258,27 +237,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self._file_name: Optional[str] = file
 
         doc_view: DocumentView = DocumentView()
-        sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
-        sub_wnd.showMaximized()
-
         doc_ctr: DocumentController = DocumentController(model=self._tree_model, view=doc_view)
         self._doc_ctrs.append(doc_ctr)
 
-        # window_title: str = file if file else "CodeLink"
-        # self.setWindowTitle(window_title)
-
-        self._main_tree_view.setModel(doc_ctr.doc_model)
-        self._main_tree_view.expandAll()
-        self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-
-        proxy_model: Level2ProxyModel = Level2ProxyModel()
-        proxy_model.setSourceModel(doc_ctr.doc_model)
-        self._item_tree_view.setModel(proxy_model)
-        self._item_tree_view.expandAll()
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-
-        # self._detail_tree_view.setModel(None)
-        # self._undo_stack.clear()
+        sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
+        sub_wnd.showMaximized()
 
     def new(self) -> None:
         self._new(file=None)
