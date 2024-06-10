@@ -38,6 +38,7 @@ class DocumentView(QtWidgets.QWidget):
 
         self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
         self._graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
+        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self._graphics_view.setScene(GraphicsScene())
 
         self.layout().addWidget(self._graphics_view)
