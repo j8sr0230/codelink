@@ -31,9 +31,10 @@ from codelink.frontend.graphics_scene import GraphicsScene
 
 
 class DocumentView(QtWidgets.QWidget):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
+    def __init__(self, file_name: str = "untitled", parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
+        self.setWindowTitle(file_name)
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()

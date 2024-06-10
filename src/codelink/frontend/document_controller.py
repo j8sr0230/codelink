@@ -36,8 +36,6 @@ class DocumentController:
         self._doc_model: TreeModel = model
         self._doc_view: DocumentView = view
 
-        self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
-
         self._doc_model.rowsInserted.connect(self.on_model_row_changed)
         self._doc_model.rowsRemoved.connect(self.on_model_row_changed)
         self._doc_model.dataChanged.connect(self.on_model_data_changed)
@@ -56,8 +54,6 @@ class DocumentController:
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
                               roles: list[int]) -> None:
-        self._doc_view.update(self._doc_model.data(QtCore.QModelIndex()))
-
         window_title: str = self._doc_view.windowTitle()
         if not window_title.endswith("*"):
             self._doc_view.setWindowTitle(window_title + "*")
