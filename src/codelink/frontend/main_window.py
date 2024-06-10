@@ -40,7 +40,6 @@ from codelink.backend.edge_item import EdgeItem
 from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
 from codelink.frontend.tree_view import TreeView
-from codelink.frontend.graphics_scene import GraphicsScene
 from codelink.frontend.document_view import DocumentView
 from codelink.frontend.document_controller import DocumentController
 
@@ -56,6 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._tree_model: TreeModel = self.create_tree_model(file=None)
 
         self._file_name: Optional[str] = None
+        self._doc_ctrs: list[DocumentController] = []
 
         # UI
         self.setWindowTitle("CodeLink")
@@ -175,17 +175,6 @@ class MainWindow(QtWidgets.QMainWindow):
         mdi_area.subWindowActivated.connect(self.on_sub_wnd_changed)
 
         self.setCentralWidget(mdi_area)
-
-        # Populate mdi area
-        for i in range(2):
-            graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-            graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
-            graphics_scene: GraphicsScene = GraphicsScene()
-            graphics_view.setScene(graphics_scene)
-            sub_wnd: QtWidgets.QMdiSubWindow = mdi_area.addSubWindow(graphics_view)
-            sub_wnd.showMaximized()
-            sub_wnd.setWindowTitle("Graph " + str(i + 1))
-
         return mdi_area
 
     def create_main_tree_view(self) -> QtWidgets.QTreeView:
@@ -268,36 +257,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self._tree_model: TreeModel = self.create_tree_model(file=file)
         self._file_name: Optional[str] = file
 
-        window_title: str = file if file else "CodeLink"
-        self.setWindowTitle(window_title)
+        doc_view: DocumentView = DocumentView()
+        sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
+        sub_wnd.showMaximized()
 
-        self._main_tree_view.setModel(self._tree_model)
+        doc_ctr: DocumentController = DocumentController(model=self._tree_model, view=doc_view)
+        self._doc_ctrs.append(doc_ctr)
+
+        # window_title: str = file if file else "CodeLink"
+        # self.setWindowTitle(window_title)
+
+        self._main_tree_view.setModel(doc_ctr.doc_model)
         self._main_tree_view.expandAll()
         self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
         proxy_model: Level2ProxyModel = Level2ProxyModel()
-        proxy_model.setSourceModel(self._tree_model)
+        proxy_model.setSourceModel(doc_ctr.doc_model)
         self._item_tree_view.setModel(proxy_model)
         self._item_tree_view.expandAll()
         self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
-        self._detail_tree_view.setModel(None)
-
-        self._undo_stack.clear()
-
-        doc_view: DocumentView = DocumentView()
-        doc_ctr: DocumentController = DocumentController(model=self._tree_model, view=doc_view)
+        # self._detail_tree_view.setModel(None)
+        # self._undo_stack.clear()
 
     def new(self) -> None:
         self._new(file=None)
-
-        # Populate mdi area
-        graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
-        graphics_scene: GraphicsScene = GraphicsScene()
-        graphics_view.setScene(graphics_scene)
-        sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(graphics_view)
-        sub_wnd.showMaximized()
 
     def open(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(

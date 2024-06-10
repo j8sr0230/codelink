@@ -24,14 +24,23 @@
 
 from typing import Optional, Any
 
-# import PySide2.QtCore as QtCore
-# import PySide2.QtGui as QtGui
+import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
+
+from codelink.frontend.graphics_scene import GraphicsScene
 
 
 class DocumentView(QtWidgets.QWidget):
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
+
+        self.setLayout(QtWidgets.QVBoxLayout())
+
+        self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+        self._graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
+        self._graphics_view.setScene(GraphicsScene())
+
+        self.layout().addWidget(self._graphics_view)
 
     @staticmethod
     def update_view(data: Any) -> None:

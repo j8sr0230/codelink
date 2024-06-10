@@ -22,23 +22,29 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, Any
-from pathlib import Path
-import json
+from typing import Any
 
 import PySide2.QtCore as QtCore
-# import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.tree_model import TreeModel
+from codelink.frontend.document_view import DocumentView
 
 
 class DocumentController:
-    def __init__(self, model: TreeModel, view: QtWidgets.QWidget) -> None:
+    def __init__(self, model: TreeModel, view: DocumentView) -> None:
         self._doc_model: TreeModel = model
-        self._doc_view: QtWidgets.QWidget = view
+        self._doc_view: DocumentView = view
 
         self._undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+
+    @property
+    def doc_model(self) -> TreeModel:
+        return self._doc_model
+
+    @property
+    def doc_view(self) -> DocumentView:
+        return self._doc_view
 
     def handle_input(self, data: Any) -> None:
         self._doc_model.setData(QtCore.QModelIndex(), data)
