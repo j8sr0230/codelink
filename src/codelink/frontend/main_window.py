@@ -41,6 +41,8 @@ from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.graphics_scene import GraphicsScene
+from codelink.frontend.document_view import DocumentView
+from codelink.frontend.document_controller import DocumentController
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -282,6 +284,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._detail_tree_view.setModel(None)
 
         self._undo_stack.clear()
+
+        doc_view: DocumentView = DocumentView()
+        doc_ctr: DocumentController = DocumentController(model=self._tree_model, view=doc_view)
 
     def new(self) -> None:
         self._new(file=None)
