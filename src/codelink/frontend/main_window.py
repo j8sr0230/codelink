@@ -226,9 +226,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self._item_tree_view.expandAll()
             self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
 
+            self._detail_tree_view.setModel(None)
+
             undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
             undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-            print(self.actions())
             self.addAction(undo_action)
 
             redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
@@ -290,8 +291,8 @@ class MainWindow(QtWidgets.QMainWindow):
             print("No file selected")
 
     def save(self) -> None:
-        if self._file_name:
-            self._save(self._file_name)
+        if self._active_doc_view.file_name:
+            self._save(self._active_doc_view.file_name)
         else:
             self.save_as()
 
@@ -302,14 +303,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
             while selected_indexes:
                 selected_index: QtCore.QModelIndex = selected_indexes.pop()
+
                 if isinstance(selected_index.model(), QtCore.QSortFilterProxyModel):
                     selected_index: QtCore.QModelIndex = selected_index.model().mapToSource(selected_index)
 
                 if selected_index.column() == 0:
-                    tree_item: Optional[TreeItem] = self._tree_model.item_from_index(selected_index)
+                    tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
                     if isinstance(tree_item, NodeItem):
                         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                        self._tree_model.removeRow(index.row(), index.parent())
+                        self._active_doc_model.removeRow(index.row(), index.parent())
 
 
 if __name__ == "__main__":
