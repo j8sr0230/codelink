@@ -41,7 +41,6 @@ from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.document_view import DocumentView
-from codelink.frontend.document_controller import DocumentController
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -51,7 +50,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
 
-        self._doc_ctrs: list[DocumentController] = []
         self._active_doc_model: Optional[TreeModel] = None
         self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
         self._active_doc_view: Optional[DocumentView] = None
@@ -214,10 +212,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
-            doc_ctrl: DocumentController = self._doc_ctrs[self._mdi_area.subWindowList().index(sub_wnd)]
-            self._active_doc_model: TreeModel = doc_ctrl.doc_model
-            self._active_undo_stack: QtWidgets.QUndoStack = doc_ctrl.doc_model.undo_stack
-            self._active_doc_view: DocumentView = doc_ctrl.doc_view
+            self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
+            self._active_doc_model: TreeModel = self._active_doc_view.model
+            self._active_undo_stack: QtWidgets.QUndoStack = self._active_doc_model.undo_stack
 
             self._main_tree_view.setModel(self._active_doc_model)
             self._main_tree_view.expandAll()
@@ -240,11 +237,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _new(self, file_name: Optional[str] = None) -> None:
         doc_model: TreeModel = self.create_tree_model(file_name=file_name)
-        doc_view: DocumentView = DocumentView()
-        doc_ctr: DocumentController = DocumentController(model=doc_model, view=doc_view)
-        doc_ctr.file_name = file_name
-        doc_ctr.update_view()
-        self._doc_ctrs.append(doc_ctr)
+        doc_view: DocumentView = DocumentView(doc_model)
+        doc_view.file_name = file_name
+        doc_view.update()
 
         sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
         sub_wnd.showMaximized()
@@ -267,15 +262,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         QtGui.QGuiApplication.restoreOverrideCursor()
 
-    def _save(self, file: str) -> None:
+    def _save(self, file_name: str) -> None:
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         try:
-            with open(file, "w", encoding="utf-8") as f:
-                json.dump(self._tree_model.to_dict(), f, ensure_ascii=False, indent=4)
+            with open(file_name, "w", encoding="utf-8") as f:
+                json.dump(self._active_doc_model.to_dict(), f, ensure_ascii=False, indent=4)
 
-            self._file_name: str = file
-            self.setWindowTitle(file)
+            self._active_doc_view.file_name = file_name
+            self._active_doc_view.is_modified = False
+            self._active_doc_view.update()
 
         except (FileNotFoundError, json.decoder.JSONDecodeError):
             print("File saving error")
