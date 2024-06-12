@@ -55,7 +55,6 @@ class DocumentModel(TreeModel):
     def is_modified(self, value: bool) -> None:
         self._is_modified: bool = value
 
-    def get_title(self) -> str:
+    def get_pretty_file_name(self) -> str:
         title: str = self._file_name if self._file_name else "untitled"
-        title: str = title + "*" if self._is_modified else title
         return title

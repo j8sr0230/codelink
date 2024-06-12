@@ -23,6 +23,7 @@
 # ***************************************************************************
 
 from typing import Optional
+from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -44,6 +45,8 @@ class DocumentView(QtWidgets.QWidget):
         self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self._graphics_view.setScene(DocumentScene())
         self.layout().addWidget(self._graphics_view)
+        self.layout().setMargin(0)
+        self.layout().setSpacing(0)
 
     @property
     def model(self) -> DocumentModel:
@@ -67,4 +70,19 @@ class DocumentView(QtWidgets.QWidget):
 
     def update(self) -> None:
         super().update()
-        self.setWindowTitle(self._model.get_title())
+        file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
+        title: str = file_name + "*" if self._model.is_modified else file_name
+        self.setWindowTitle(title)
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        if self._model.is_modified:
+            reply: QtWidgets.QMessageBox.StandardButton = QtWidgets.QMessageBox.question(
+                self, "Message", "Are you sure to quit? Any unsaved changes will be lost.",
+                QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel,
+                QtWidgets.QMessageBox.Cancel
+            )
+
+            if reply == QtWidgets.QMessageBox.Discard:
+                event.accept()
+            else:
+                event.ignore()

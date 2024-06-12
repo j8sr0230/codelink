@@ -71,6 +71,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
+        self.statusBar().showMessage("Ready ...")
+
     def create_file_menu(self) -> QtWidgets.QMenu:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
@@ -256,6 +258,9 @@ class MainWindow(QtWidgets.QMainWindow):
             save_as_act.setEnabled(True)
             save_act.setEnabled(True)
             nodes_act.setEnabled(True)
+
+            self.statusBar().showMessage(self._active_doc_model.get_pretty_file_name())
+
         else:
             self._active_doc_model: Optional[DocumentModel] = None
             self._active_doc_view: Optional[DocumentView] = None
@@ -357,6 +362,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
                         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                         self._active_doc_model.removeRow(index.row(), index.parent())
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        self._mdi_area.closeAllSubWindows()
+        if len(self._mdi_area.subWindowList()) > 0:
+            event.ignore()
+        else:
+            event.accept()
 
 
 if __name__ == "__main__":
