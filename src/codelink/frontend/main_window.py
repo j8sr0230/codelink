@@ -54,6 +54,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
         self._active_doc_view: Optional[DocumentView] = None
 
+        self._undo_group: QtWidgets.QUndoGroup = QtWidgets.QUndoGroup()
+
         # UI
         self.setWindowTitle("CodeLink")
         self.resize(1280, 800)
@@ -80,14 +82,6 @@ class MainWindow(QtWidgets.QMainWindow):
         return doc_model
 
     def create_menu(self) -> None:
-        def undo() -> None:
-            print(self._active_undo_stack)
-            self._active_undo_stack.undo()
-
-        def redo() -> None:
-            print(self._active_undo_stack)
-            self._active_undo_stack.redo()
-
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
         new_action: QtWidgets.QAction = file_menu.addAction("&New")
@@ -122,19 +116,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
 
-        undo_action: QtWidgets.QAction = QtWidgets.QAction("&Undo", self)
+        undo_action: QtWidgets.QAction = self._undo_group.createUndoAction(self, "&Undo")
         undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
         self.addAction(undo_action)
         edit_menu.addAction(undo_action)
-        undo_action.triggered.connect(partial(undo))
-        undo_action.setEnabled(False)
 
-        redo_action: QtWidgets.QAction = QtWidgets.QAction("&Redo", self)
+        redo_action: QtWidgets.QAction = self._undo_group.createRedoAction(self, "&Redo")
         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(redo_action)
         edit_menu.addAction(redo_action)
-        redo_action.triggered.connect(partial(redo))
-        redo_action.setEnabled(False)
 
         del_action: QtWidgets.QAction = edit_menu.addAction("&Delete")
         del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
@@ -170,40 +160,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
-
-    # def update_edit_menu(self) -> None:
-    #     action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
-    #     undo_act: QtWidgets.QAction = action_dict.get("&Undo")
-    #     redo_act: QtWidgets.QAction = action_dict.get("&Redo")
-    #     del_act: QtWidgets.QAction = action_dict.get("&Delete")
-    #
-    #     if self._active_undo_stack:
-    #         menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
-    #         edit_act: QtWidgets.QAction = menu_dict.get("&Edit")
-    #         nodes_act: QtWidgets.QAction = menu_dict.get("&Nodes")
-    #
-    #         self.removeAction(undo_act)
-    #         self.removeAction(redo_act)
-    #         self.menuBar().removeAction(edit_act)
-    #
-    #         edit_menu: QtWidgets.QAction = QtWidgets.QMenu("&Edit")
-    #
-    #         undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
-    #         undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-    #         self.addAction(undo_action)
-    #         edit_menu.addAction(undo_action)
-    #
-    #         redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
-    #         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-    #         self.addAction(redo_action)
-    #         edit_menu.addAction(redo_action)
-    #
-    #         edit_menu.addAction(del_act)
-    #         self.menuBar().insertMenu(nodes_act, edit_menu)
-    #     else:
-    #         undo_act.setEnabled(False)
-    #         redo_act.setEnabled(False)
-    #         del_act.setEnabled(False)
 
     def create_mdi_area(self) -> QtWidgets.QMdiArea:
         mdi_area: QtWidgets.QMdiArea = QtWidgets.QMdiArea()
@@ -282,6 +238,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
             self._active_doc_model: DocumentModel = self._active_doc_view.model
             self._active_undo_stack: QtWidgets.QUndoStack = self._active_doc_model.undo_stack
+            self._undo_group.setActiveStack(self._active_undo_stack)
 
             self._main_tree_view.setModel(self._active_doc_model)
             self._main_tree_view.expandAll()
@@ -320,6 +277,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _new(self, file_name: Optional[str] = None) -> None:
         doc_model: DocumentModel = self.create_doc_model(file_name=file_name)
+        self._undo_group.addStack(doc_model.undo_stack)
         doc_view: DocumentView = DocumentView(doc_model)
         doc_model.rowsInserted.connect(doc_view.on_model_row_changed)
         doc_model.rowsRemoved.connect(doc_view.on_model_row_changed)
