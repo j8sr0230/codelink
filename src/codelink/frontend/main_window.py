@@ -51,7 +51,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
 
         self._active_doc_model: Optional[DocumentModel] = None
-        self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
         self._active_doc_view: Optional[DocumentView] = None
 
         self._undo_group: QtWidgets.QUndoGroup = QtWidgets.QUndoGroup()
@@ -228,8 +227,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
             self._active_doc_model: DocumentModel = self._active_doc_view.model
-            self._active_undo_stack: QtWidgets.QUndoStack = self._active_doc_model.undo_stack
-            self._undo_group.setActiveStack(self._active_undo_stack)
+            self._undo_group.setActiveStack(self._active_doc_model.undo_stack)
 
             self._main_tree_view.setModel(self._active_doc_model)
             self._main_tree_view.expandAll()
@@ -249,7 +247,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._active_doc_model: Optional[DocumentModel] = None
             self._active_doc_view: Optional[DocumentView] = None
-            self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
 
             self._main_tree_view.setModel(None)
             self._item_tree_view.setModel(None)
