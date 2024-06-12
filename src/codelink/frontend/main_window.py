@@ -58,14 +58,20 @@ class MainWindow(QtWidgets.QMainWindow):
         # UI
         self.setWindowTitle("CodeLink")
         self.resize(1280, 800)
-        self.create_menu()
+        
+        self._file_menu: QtWidgets.QMenu = self.create_file_menu()
+        self._edit_menu: QtWidgets.QMenu = self.create_edit_menu()
+        self._nodes_menus: QtWidgets.QMenu = self.create_nodes_menu()
+
+        self._action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
+        self._menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
 
         self._mdi_area: QtWidgets.QMdiArea = self.create_mdi_area()
         self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
         self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
-    def create_menu(self) -> None:
+    def create_file_menu(self) -> QtWidgets.QMenu:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
         new_action: QtWidgets.QAction = file_menu.addAction("&New")
@@ -98,6 +104,9 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(exit_action)
         exit_action.triggered.connect(QtWidgets.QApplication.quit)
 
+        return file_menu
+
+    def create_edit_menu(self) -> QtWidgets.QMenu:
         edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
 
         undo_action: QtWidgets.QAction = self._undo_group.createUndoAction(self, "&Undo")
@@ -122,11 +131,16 @@ class MainWindow(QtWidgets.QMainWindow):
         pref_action: QtWidgets.QAction = edit_menu.addAction("&Preferences")
         self.addAction(pref_action)
         edit_menu.addAction(pref_action)
-        del_action.triggered.connect(lambda: print("Preferences"))
+        pref_action.triggered.connect(lambda: print("Preferences"))
 
+        return edit_menu
+
+    def create_nodes_menu(self) -> QtWidgets.QMenu:
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.populate_nodes_menu(nodes_menu)
         nodes_menu.menuAction().setEnabled(False)
+
+        return nodes_menu
 
     def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
         def add_node(node_cls: str) -> None:
@@ -190,8 +204,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
-        action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
-        del_act: QtWidgets.QAction = action_dict.get("&Delete")
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
 
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
@@ -214,13 +227,10 @@ class MainWindow(QtWidgets.QMainWindow):
             del_act.setEnabled(False)
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
-        action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
-        save_as_act: QtWidgets.QAction = action_dict.get("Save &As")
-        save_act: QtWidgets.QAction = action_dict.get("&Save")
-        del_act: QtWidgets.QAction = action_dict.get("&Delete")
-
-        menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
-        nodes_act: QtWidgets.QAction = menu_dict.get("&Nodes")
+        save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
+        save_act: QtWidgets.QAction = self._action_dict.get("&Save")
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        nodes_act: QtWidgets.QAction = self._menu_dict.get("&Nodes")
 
         del_act.setEnabled(False)
 
@@ -285,8 +295,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
-            self, "Open file", "./", "Json files (*.json);;All files (*.*)",
-            options=QtWidgets.QFileDialog.DontUseNativeDialog | QtWidgets.QFileDialog.DontUseNativeDialog
+            self, "Open file", "./", "Json files (*.json);;All files (*.*)"
         )
 
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
@@ -316,8 +325,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def save_as(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getSaveFileName(
-            self, "Save file", "./", "Json files (*.json);;All files (*.*)",
-            options=QtWidgets.QFileDialog.DontUseNativeDialog | QtWidgets.QFileDialog.DontUseNativeDialog
+            self, "Save file", "./", "Json files (*.json);;All files (*.*)"
         )
 
         if file_name[0]:
