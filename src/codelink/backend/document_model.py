@@ -22,49 +22,40 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from __future__ import annotations
+from typing import Any, Optional
 
 import PySide2.QtCore as QtCore
-import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from codelink.backend.document_model import DocumentModel
-from codelink.frontend.document_scene import DocumentScene
+from codelink.backend.tree_model import TreeModel
 
 
-class DocumentView(QtWidgets.QWidget):
-    def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
-        super().__init__(parent)
+class DocumentModel(TreeModel):
+    def __init__(self, data: Optional[dict[str, Any]] = None, undo_stack: Optional[QtWidgets.QUndoStack] = None,
+                 parent: QtCore.QObject = None) -> None:
+        super().__init__(data, undo_stack, parent)
 
-        self._model: DocumentModel = model
-
-        self.setLayout(QtWidgets.QVBoxLayout())
-        self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        self._graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
-        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        self._graphics_view.setScene(DocumentScene())
-        self.layout().addWidget(self._graphics_view)
+        self._file_name: Optional[str] = None
+        self._is_modified: bool = False
 
     @property
-    def model(self) -> DocumentModel:
-        return self._model
+    def file_name(self) -> Optional[str]:
+        return self._file_name
 
-    # noinspection PyUnusedLocal
-    def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
-                              roles: list[int]) -> None:
-        print("Changed at:", top_left.row(), top_left.column(), "to:",
-              top_left.data(roles[0]) if len(roles) > 0 else None)
+    @file_name.setter
+    def file_name(self, value: Optional[str]) -> None:
+        self._file_name: Optional[str] = value
 
-        self._model.is_modified = True
-        self.update()
+    @property
+    def is_modified(self) -> bool:
+        return self._is_modified
 
-    # noinspection PyUnusedLocal
-    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: QtCore.QModelIndex,
-                             last_row: QtCore.QModelIndex) -> None:
-        print("Inserted/Removed at:", first_row)
-        self._model.is_modified = True
-        self.update()
+    @is_modified.setter
+    def is_modified(self, value: bool) -> None:
+        self._is_modified: bool = value
 
-    def update(self) -> None:
-        super().update()
-        self.setWindowTitle(self._model.get_title())
+    def get_title(self) -> str:
+        title: str = self._file_name if self._file_name else "untitled"
+        title: str = title + "*" if self._is_modified else title
+        return title

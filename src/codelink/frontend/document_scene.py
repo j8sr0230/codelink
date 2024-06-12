@@ -31,7 +31,7 @@ import PySide2.QtWidgets as QtWidgets
 from codelink.frontend.color_palette import ColorPalette
 
 
-class GraphicsScene(QtWidgets.QGraphicsScene):
+class DocumentScene(QtWidgets.QGraphicsScene):
     def __init__(self) -> None:
         super().__init__()
 

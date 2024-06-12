@@ -33,7 +33,7 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.node_factory import NodeFactory
-from codelink.backend.tree_model import TreeModel
+from codelink.backend.document_model import DocumentModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
 from codelink.backend.edge_item import EdgeItem
@@ -50,7 +50,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._node_factory: NodeFactory = NodeFactory()
         self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
 
-        self._active_doc_model: Optional[TreeModel] = None
+        self._active_doc_model: Optional[DocumentModel] = None
         self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
         self._active_doc_view: Optional[DocumentView] = None
 
@@ -65,7 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
     @staticmethod
-    def create_tree_model(file_name: Optional[str] = None) -> QtCore.QAbstractItemModel:
+    def create_doc_model(file_name: Optional[str] = None) -> QtCore.QAbstractItemModel:
         state: Optional[dict[str, Any]] = None
 
         if file_name:
@@ -75,8 +75,9 @@ class MainWindow(QtWidgets.QMainWindow):
             except (FileNotFoundError, json.decoder.JSONDecodeError):
                 print("File loading error")
 
-        tree_model: TreeModel = TreeModel(data=state, undo_stack=QtWidgets.QUndoStack())
-        return tree_model
+        doc_model: DocumentModel = DocumentModel(data=state, undo_stack=QtWidgets.QUndoStack())
+        doc_model.file_name = file_name
+        return doc_model
 
     def create_menu(self) -> None:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
@@ -98,12 +99,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addAction(save_as_action)
         file_menu.addAction(save_as_action)
         save_as_action.triggered.connect(self.save_as)
+        save_as_action.setEnabled(False)
 
         save_action: QtWidgets.QAction = file_menu.addAction("&Save")
         save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
         self.addAction(save_action)
         file_menu.addAction(save_action)
         save_action.triggered.connect(self.save)
+        save_action.setEnabled(False)
 
         exit_action: QtWidgets.QAction = file_menu.addAction("E&xit")
         file_menu.addAction(exit_action)
@@ -111,24 +114,60 @@ class MainWindow(QtWidgets.QMainWindow):
 
         edit_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Edit")
 
+        undo_action: QtWidgets.QAction = QtWidgets.QAction("&Undo", self)
+        undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+        self.addAction(undo_action)
+        edit_menu.addAction(undo_action)
+        undo_action.setEnabled(False)
+
+        redo_action: QtWidgets.QAction = QtWidgets.QAction("&Redo", self)
+        redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+        self.addAction(redo_action)
+        edit_menu.addAction(redo_action)
+        redo_action.setEnabled(False)
+
         del_action: QtWidgets.QAction = edit_menu.addAction("&Delete")
         del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
         self.addAction(del_action)
         edit_menu.addAction(del_action)
         del_action.triggered.connect(self.delete_selection)
-
-        # undo_action: QtWidgets.QAction = self._undo_stack.createUndoAction(self, "&Undo")
-        # undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-        # self.addAction(undo_action)
-        # edit_menu.addAction(undo_action)
-
-        # redo_action: QtWidgets.QAction = self._undo_stack.createRedoAction(self, "&Redo")
-        # redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-        # self.addAction(redo_action)
-        # edit_menu.addAction(redo_action)
+        del_action.setEnabled(False)
 
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.populate_nodes_menu(nodes_menu)
+
+    def update_edit_menu(self) -> None:
+        undo_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Undo"][0]
+        redo_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Redo"][0]
+        del_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Delete"][0]
+
+        if self._active_undo_stack:
+            edit_act: QtWidgets.QAction = [menu for menu in self.menuWidget().actions() if menu.text() == "&Edit"][0]
+            nodes_act: QtWidgets.QAction = [menu for menu in self.menuWidget().actions() if menu.text() == "&Nodes"][0]
+
+            self.removeAction(undo_act)
+            self.removeAction(redo_act)
+            self.menuBar().removeAction(edit_act)
+
+            edit_menu: QtWidgets.QAction = QtWidgets.QMenu("&Edit")
+
+            undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
+            undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+            self.addAction(undo_action)
+            edit_menu.addAction(undo_action)
+
+            redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
+            redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+            self.addAction(redo_action)
+            edit_menu.addAction(redo_action)
+
+            edit_menu.addAction(del_act)
+            self.menuBar().insertMenu(nodes_act, edit_menu)
+
+        else:
+            undo_act.setEnabled(False)
+            redo_act.setEnabled(False)
+            del_act.setEnabled(False)
 
     def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
         def add_node(node_cls: str) -> None:
@@ -193,6 +232,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Delete"][0]
+
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
             if isinstance(index.model(), QtCore.QSortFilterProxyModel):
@@ -205,15 +246,21 @@ class MainWindow(QtWidgets.QMainWindow):
                 self._detail_tree_view.setModel(proxy_model)
                 self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
                 self._detail_tree_view.expandAll()
+                del_act.setEnabled(True)
             else:
                 self._detail_tree_view.setModel(None)
+                del_act.setEnabled(False)
         else:
             self._detail_tree_view.setModel(None)
+            del_act.setEnabled(False)
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
+        save_as_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "Save &As"][0]
+        save_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Save"][0]
+
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
-            self._active_doc_model: TreeModel = self._active_doc_view.model
+            self._active_doc_model: DocumentModel = self._active_doc_view.model
             self._active_undo_stack: QtWidgets.QUndoStack = self._active_doc_model.undo_stack
 
             self._main_tree_view.setModel(self._active_doc_model)
@@ -228,18 +275,29 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self._detail_tree_view.setModel(None)
 
-            undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
-            undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-            self.addAction(undo_action)
+            save_as_act.setEnabled(True)
+            save_act.setEnabled(True)
+            self.update_edit_menu()
 
-            redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
-            redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-            self.addAction(redo_action)
+        else:
+            self._active_doc_model: Optional[DocumentModel] = None
+            self._active_doc_view: Optional[DocumentView] = None
+            self._active_undo_stack: Optional[QtWidgets.QUndoStack] = None
+
+            self._main_tree_view.setModel(None)
+            self._item_tree_view.setModel(None)
+            self._detail_tree_view.setModel(None)
+
+            save_as_act.setEnabled(False)
+            save_act.setEnabled(False)
+            self.update_edit_menu()
 
     def _new(self, file_name: Optional[str] = None) -> None:
-        doc_model: TreeModel = self.create_tree_model(file_name=file_name)
+        doc_model: DocumentModel = self.create_doc_model(file_name=file_name)
         doc_view: DocumentView = DocumentView(doc_model)
-        doc_view.file_name = file_name
+        doc_model.rowsInserted.connect(doc_view.on_model_row_changed)
+        doc_model.rowsRemoved.connect(doc_view.on_model_row_changed)
+        doc_model.dataChanged.connect(doc_view.on_model_data_changed)
         doc_view.update()
 
         sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
@@ -270,8 +328,8 @@ class MainWindow(QtWidgets.QMainWindow):
             with open(file_name, "w", encoding="utf-8") as f:
                 json.dump(self._active_doc_model.to_dict(), f, ensure_ascii=False, indent=4)
 
-            self._active_doc_view.file_name = file_name
-            self._active_doc_view.is_modified = False
+            self._active_doc_model.file_name = file_name
+            self._active_doc_model.is_modified = False
             self._active_doc_view.update()
 
         except (FileNotFoundError, json.decoder.JSONDecodeError):
@@ -291,8 +349,8 @@ class MainWindow(QtWidgets.QMainWindow):
             print("No file selected")
 
     def save(self) -> None:
-        if self._active_doc_view.file_name:
-            self._save(self._active_doc_view.file_name)
+        if self._active_doc_model.file_name:
+            self._save(self._active_doc_model.file_name)
         else:
             self.save_as()
 
@@ -309,15 +367,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 if selected_index.column() == 0:
                     tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
-                    if isinstance(tree_item, NodeItem):
+                    if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
                         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                         self._active_doc_model.removeRow(index.row(), index.parent())
 
 
 if __name__ == "__main__":
     app: QtWidgets.QApplication = QtWidgets.QApplication(sys.argv)
-
     main_window: MainWindow = MainWindow()
-
     main_window.show()
     sys.exit(app.exec_())
