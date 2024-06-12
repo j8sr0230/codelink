@@ -59,9 +59,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("CodeLink")
         self.resize(1280, 800)
         
-        self._file_menu: QtWidgets.QMenu = self.create_file_menu()
-        self._edit_menu: QtWidgets.QMenu = self.create_edit_menu()
-        self._nodes_menus: QtWidgets.QMenu = self.create_nodes_menu()
+        self.create_file_menu()
+        self.create_edit_menu()
+        self.create_nodes_menu()
 
         self._action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
         self._menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
@@ -151,7 +151,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent_menu: QtWidgets.QMenu = nodes_menu
 
             menu_titles: list[str] = key.split(".")[1:]
-            pretty_titles: list[str] = [menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]]
+            pretty_titles: list[str] = [
+                menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]
+            ]
             pretty_titles.append(menu_titles[-1])
 
             for idx, pretty_title in enumerate(pretty_titles):
