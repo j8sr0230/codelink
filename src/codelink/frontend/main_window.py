@@ -65,7 +65,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
     @staticmethod
-    def create_doc_model(file_name: Optional[str] = None) -> QtCore.QAbstractItemModel:
+    def create_doc_model(file_name: Optional[str] = None) -> DocumentModel:
         state: Optional[dict[str, Any]] = None
 
         if file_name:
@@ -80,6 +80,14 @@ class MainWindow(QtWidgets.QMainWindow):
         return doc_model
 
     def create_menu(self) -> None:
+        def undo() -> None:
+            print(self._active_undo_stack)
+            self._active_undo_stack.undo()
+
+        def redo() -> None:
+            print(self._active_undo_stack)
+            self._active_undo_stack.redo()
+
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
         new_action: QtWidgets.QAction = file_menu.addAction("&New")
@@ -118,12 +126,14 @@ class MainWindow(QtWidgets.QMainWindow):
         undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
         self.addAction(undo_action)
         edit_menu.addAction(undo_action)
+        undo_action.triggered.connect(partial(undo))
         undo_action.setEnabled(False)
 
         redo_action: QtWidgets.QAction = QtWidgets.QAction("&Redo", self)
         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(redo_action)
         edit_menu.addAction(redo_action)
+        redo_action.triggered.connect(partial(redo))
         redo_action.setEnabled(False)
 
         del_action: QtWidgets.QAction = edit_menu.addAction("&Delete")
@@ -135,44 +145,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.populate_nodes_menu(nodes_menu)
-
-    def update_edit_menu(self) -> None:
-        undo_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Undo"][0]
-        redo_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Redo"][0]
-        del_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Delete"][0]
-
-        if self._active_undo_stack:
-            edit_act: QtWidgets.QAction = [menu for menu in self.menuWidget().actions() if menu.text() == "&Edit"][0]
-            nodes_act: QtWidgets.QAction = [menu for menu in self.menuWidget().actions() if menu.text() == "&Nodes"][0]
-
-            self.removeAction(undo_act)
-            self.removeAction(redo_act)
-            self.menuBar().removeAction(edit_act)
-
-            edit_menu: QtWidgets.QAction = QtWidgets.QMenu("&Edit")
-
-            undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
-            undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
-            self.addAction(undo_action)
-            edit_menu.addAction(undo_action)
-
-            redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
-            redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
-            self.addAction(redo_action)
-            edit_menu.addAction(redo_action)
-
-            edit_menu.addAction(del_act)
-            self.menuBar().insertMenu(nodes_act, edit_menu)
-
-        else:
-            undo_act.setEnabled(False)
-            redo_act.setEnabled(False)
-            del_act.setEnabled(False)
+        nodes_menu.menuAction().setEnabled(False)
 
     def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
         def add_node(node_cls: str) -> None:
             node: NodeItem = self._node_factory.create_node(node_cls)
-            self._tree_model.append_node(node)
+            self._active_doc_model.append_node(node)
 
         for key in self._node_factory.nodes.keys():
             parent_menu: QtWidgets.QMenu = nodes_menu
@@ -192,6 +170,40 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
                     parent_menu: QtWidgets.QMenu = parent_action.menu()
+
+    # def update_edit_menu(self) -> None:
+    #     action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
+    #     undo_act: QtWidgets.QAction = action_dict.get("&Undo")
+    #     redo_act: QtWidgets.QAction = action_dict.get("&Redo")
+    #     del_act: QtWidgets.QAction = action_dict.get("&Delete")
+    #
+    #     if self._active_undo_stack:
+    #         menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
+    #         edit_act: QtWidgets.QAction = menu_dict.get("&Edit")
+    #         nodes_act: QtWidgets.QAction = menu_dict.get("&Nodes")
+    #
+    #         self.removeAction(undo_act)
+    #         self.removeAction(redo_act)
+    #         self.menuBar().removeAction(edit_act)
+    #
+    #         edit_menu: QtWidgets.QAction = QtWidgets.QMenu("&Edit")
+    #
+    #         undo_action: QtWidgets.QAction = self._active_undo_stack.createUndoAction(self, "&Undo")
+    #         undo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Undo))
+    #         self.addAction(undo_action)
+    #         edit_menu.addAction(undo_action)
+    #
+    #         redo_action: QtWidgets.QAction = self._active_undo_stack.createRedoAction(self, "&Redo")
+    #         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
+    #         self.addAction(redo_action)
+    #         edit_menu.addAction(redo_action)
+    #
+    #         edit_menu.addAction(del_act)
+    #         self.menuBar().insertMenu(nodes_act, edit_menu)
+    #     else:
+    #         undo_act.setEnabled(False)
+    #         redo_act.setEnabled(False)
+    #         del_act.setEnabled(False)
 
     def create_mdi_area(self) -> QtWidgets.QMdiArea:
         mdi_area: QtWidgets.QMdiArea = QtWidgets.QMdiArea()
@@ -232,7 +244,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
-        del_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Delete"][0]
+        action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
+        del_act: QtWidgets.QAction = action_dict.get("&Delete")
 
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
@@ -255,8 +268,15 @@ class MainWindow(QtWidgets.QMainWindow):
             del_act.setEnabled(False)
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
-        save_as_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "Save &As"][0]
-        save_act: QtWidgets.QAction = [act for act in self.actions() if act.text() == "&Save"][0]
+        action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
+        save_as_act: QtWidgets.QAction = action_dict.get("Save &As")
+        save_act: QtWidgets.QAction = action_dict.get("&Save")
+        undo_act: QtWidgets.QAction = action_dict.get("&Undo")
+        redo_act: QtWidgets.QAction = action_dict.get("&Redo")
+        del_act: QtWidgets.QAction = action_dict.get("&Delete")
+
+        menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
+        nodes_act: QtWidgets.QAction = menu_dict.get("&Nodes")
 
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
@@ -277,8 +297,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             save_as_act.setEnabled(True)
             save_act.setEnabled(True)
-            self.update_edit_menu()
-
+            # self.update_edit_menu()
+            nodes_act.setEnabled(True)
         else:
             self._active_doc_model: Optional[DocumentModel] = None
             self._active_doc_view: Optional[DocumentView] = None
@@ -290,7 +310,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
             save_as_act.setEnabled(False)
             save_act.setEnabled(False)
-            self.update_edit_menu()
+            # self.update_edit_menu()
+
+            undo_act.setEnabled(False)
+            redo_act.setEnabled(False)
+            del_act.setEnabled(False)
+
+            nodes_act.setEnabled(False)
 
     def _new(self, file_name: Optional[str] = None) -> None:
         doc_model: DocumentModel = self.create_doc_model(file_name=file_name)
