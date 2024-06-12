@@ -9,6 +9,11 @@ class "codelink.backend.base_item.BaseItem" as codelink.backend.base_item.BaseIt
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
   {abstract}update_editor_geometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
 }
+class "codelink.backend.document_model.DocumentModel" as codelink.backend.document_model.DocumentModel {
+  file_name
+  is_modified
+  get_title() -> str
+}
 class "codelink.backend.edge_item.EdgeItem" as codelink.backend.edge_item.EdgeItem {
   destination_uuid
   source_uuid
@@ -82,6 +87,7 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
 class "codelink.backend.tree_seperator_item.TreeSeperatorItem" as codelink.backend.tree_seperator_item.TreeSeperatorItem {
 }
 codelink.backend.base_item.BaseItem --|> codelink.backend.tree_item.TreeItem
+codelink.backend.document_model.DocumentModel --|> codelink.backend.tree_model.TreeModel
 codelink.backend.edge_item.EdgeItem --|> codelink.backend.tree_item.TreeItem
 codelink.backend.node_item.NodeItem --|> codelink.backend.base_item.BaseItem
 codelink.backend.nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1 --|> codelink.backend.node_item.NodeItem
