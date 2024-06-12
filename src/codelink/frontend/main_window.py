@@ -273,6 +273,8 @@ class MainWindow(QtWidgets.QMainWindow):
             save_act.setEnabled(False)
             nodes_act.setEnabled(False)
 
+            self.statusBar().clearMessage()
+
     def _new(self, file_name: Optional[str] = None) -> None:
         state: Optional[dict[str, Any]] = None
         if file_name:
