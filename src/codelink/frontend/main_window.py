@@ -66,9 +66,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self._action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
         self._menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
 
-        self._mdi_area: QtWidgets.QMdiArea = self.create_mdi_area()
-        self._main_tree_view: QtWidgets.QTreeView = self.create_main_tree_view()
-        self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
+        self._mdi_area: TreeView = self.create_mdi_area()
+        self._main_tree_view: TreeView = self.create_main_tree_view()
+        self._item_tree_view: TreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
         self.statusBar().showMessage("Ready ...")
@@ -182,7 +182,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(mdi_area)
         return mdi_area
 
-    def create_main_tree_view(self) -> QtWidgets.QTreeView:
+    def create_main_tree_view(self) -> TreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         main_tree_view: TreeView = TreeView()
@@ -190,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
         return main_tree_view
 
-    def create_item_tree_view(self) -> QtWidgets.QTreeView:
+    def create_item_tree_view(self) -> TreeView:
         dock = QtWidgets.QDockWidget("Item View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         item_tree_view: TreeView = TreeView()
@@ -198,7 +198,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return item_tree_view
 
-    def create_detail_tree_view(self) -> QtWidgets.QTreeView:
+    def create_detail_tree_view(self) -> TreeView:
         dock = QtWidgets.QDockWidget("Detail View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
         detail_view: TreeView = TreeView()

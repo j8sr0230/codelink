@@ -12,7 +12,7 @@ class "codelink.backend.base_item.BaseItem" as codelink.backend.base_item.BaseIt
 class "codelink.backend.document_model.DocumentModel" as codelink.backend.document_model.DocumentModel {
   file_name
   is_modified
-  get_title() -> str
+  get_pretty_file_name() -> str
 }
 class "codelink.backend.edge_item.EdgeItem" as codelink.backend.edge_item.EdgeItem {
   destination_uuid

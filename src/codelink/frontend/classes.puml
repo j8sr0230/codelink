@@ -1,0 +1,103 @@
+@startuml classes
+set namespaceSeparator none
+class "codelink.backend.document_model.DocumentModel" as codelink.backend.document_model.DocumentModel {
+  file_name
+  is_modified
+  get_pretty_file_name() -> str
+}
+class "codelink.backend.node_factory.NodeFactory" as codelink.backend.node_factory.NodeFactory {
+  nodes
+  create_node(name: str) -> Optional[NodeItem]
+  load_nodes(path: str, name_space: str) -> None
+  reset() -> None
+}
+class "codelink.backend.root_item.RootItem" as codelink.backend.root_item.RootItem {
+}
+class "codelink.backend.tree_item.TreeItem" as codelink.backend.tree_item.TreeItem {
+  children
+  parent
+  uuid
+  append_child(child: TreeItem) -> bool
+  child(row: int) -> Optional[TreeItem]
+  insert_child(row: int, child: TreeItem) -> bool
+  remove_child(row: int) -> bool
+  row() -> int
+  {abstract}setup_children() -> None
+}
+class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
+  edges_index
+  frames_index
+  nodes_index
+  root_item
+  undo_stack
+  append_item(tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  append_node(node_item: NodeItem) -> QtCore.QModelIndex
+  columnCount(parent: QtCore.QModelIndex) -> int
+  data(index: QtCore.QModelIndex, role: int) -> Any
+  flags(index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags
+  from_dict(state: dict[str, Any]) -> TreeItem
+  hasChildren(parent: QtCore.QModelIndex) -> bool
+  headerData(section: int, orientation: QtCore.Qt.Orientation, role) -> Any
+  index(row: int, column: int, parent: QtCore.QModelIndex) -> QtCore.QModelIndex
+  index_from_key(key: str, parent: QtCore.QModelIndex) -> Optional[QtCore.QModelIndex]
+  index_from_uuid(uuid: str, column: int) -> Optional[QtCore.QModelIndex]
+  insert_item(row: int, tree_item: TreeItem, parent) -> QtCore.QModelIndex
+  item_from_index(index: QtCore.QModelIndex) -> TreeItem
+  item_from_uuid(uuid: str) -> Optional[TreeItem]
+  parent(index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  removeRow(row: int, parent) -> bool
+  remove_item(row: int, parent) -> bool
+  rowCount(parent) -> int
+  setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
+  to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
+}
+class "codelink.frontend.delegates.TreeViewDelegate" as codelink.frontend.delegates.TreeViewDelegate {
+  createEditor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
+  paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
+  setEditorData(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
+  setModelData(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
+  updateEditorGeometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
+}
+class "codelink.frontend.document_scene.DocumentScene" as codelink.frontend.document_scene.DocumentScene {
+  drawBackground(painter: QtGui.QPainter, rect: QtCore.QRectF) -> None
+}
+class "codelink.frontend.document_view.DocumentView" as codelink.frontend.document_view.DocumentView {
+  model
+  closeEvent(event: QtGui.QCloseEvent) -> None
+  on_model_data_changed(top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex, roles: list[int]) -> None
+  on_model_row_changed(parent: QtCore.QModelIndex, first_row: QtCore.QModelIndex, last_row: QtCore.QModelIndex) -> None
+  update() -> None
+}
+class "codelink.frontend.main_window.MainWindow" as codelink.frontend.main_window.MainWindow {
+  closeEvent(event: QtGui.QCloseEvent) -> None
+  create_detail_tree_view() -> TreeView
+  create_edit_menu() -> QtWidgets.QMenu
+  create_file_menu() -> QtWidgets.QMenu
+  create_item_tree_view() -> TreeView
+  create_main_tree_view() -> TreeView
+  create_mdi_area() -> QtWidgets.QMdiArea
+  create_nodes_menu() -> QtWidgets.QMenu
+  delete_selection() -> None
+  new() -> None
+  on_selection_changed(current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None
+  on_sub_wnd_changed(sub_wnd: QtWidgets.QMdiSubWindow) -> None
+  open() -> None
+  populate_nodes_menu(nodes_menu: QtWidgets.QMenu) -> None
+  save() -> None
+  save_as() -> None
+}
+class "codelink.frontend.tree_view.TreeView" as codelink.frontend.tree_view.TreeView {
+  focusNextPrevChild(forward: bool) -> bool
+  keyPressEvent(event: QtGui.QKeyEvent) -> None
+}
+codelink.backend.document_model.DocumentModel --|> codelink.backend.tree_model.TreeModel
+codelink.backend.root_item.RootItem --|> codelink.backend.tree_item.TreeItem
+codelink.backend.document_model.DocumentModel --* codelink.frontend.main_window.MainWindow : _active_doc_model
+codelink.backend.node_factory.NodeFactory --* codelink.frontend.main_window.MainWindow : _node_factory
+codelink.backend.root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
+codelink.frontend.document_view.DocumentView --* codelink.frontend.main_window.MainWindow : _active_doc_view
+codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _mdi_area
+codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _main_tree_view
+codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _item_tree_view
+codelink.backend.document_model.DocumentModel --o codelink.frontend.document_view.DocumentView : _model
+@enduml
