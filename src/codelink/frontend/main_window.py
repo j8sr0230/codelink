@@ -118,6 +118,13 @@ class MainWindow(QtWidgets.QMainWindow):
         del_action.triggered.connect(self.delete_selection)
         del_action.setEnabled(False)
 
+        edit_menu.addSeparator()
+
+        pref_action: QtWidgets.QAction = edit_menu.addAction("&Preferences")
+        self.addAction(pref_action)
+        edit_menu.addAction(pref_action)
+        del_action.triggered.connect(lambda: print("Preferences"))
+
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.populate_nodes_menu(nodes_menu)
         nodes_menu.menuAction().setEnabled(False)
@@ -154,7 +161,6 @@ class MainWindow(QtWidgets.QMainWindow):
         mdi_area.setDocumentMode(True)
         mdi_area.setTabsClosable(True)
         mdi_area.setTabsMovable(True)
-
         mdi_area.subWindowActivated.connect(self.on_sub_wnd_changed)
         self.setCentralWidget(mdi_area)
         return mdi_area
@@ -212,12 +218,12 @@ class MainWindow(QtWidgets.QMainWindow):
         action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
         save_as_act: QtWidgets.QAction = action_dict.get("Save &As")
         save_act: QtWidgets.QAction = action_dict.get("&Save")
-        undo_act: QtWidgets.QAction = action_dict.get("&Undo")
-        redo_act: QtWidgets.QAction = action_dict.get("&Redo")
         del_act: QtWidgets.QAction = action_dict.get("&Delete")
 
         menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
         nodes_act: QtWidgets.QAction = menu_dict.get("&Nodes")
+
+        del_act.setEnabled(False)
 
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
@@ -251,11 +257,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             save_as_act.setEnabled(False)
             save_act.setEnabled(False)
-
-            undo_act.setEnabled(False)
-            redo_act.setEnabled(False)
-            del_act.setEnabled(False)
-
             nodes_act.setEnabled(False)
 
     def _new(self, file_name: Optional[str] = None) -> None:
