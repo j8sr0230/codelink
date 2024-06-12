@@ -66,8 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._item_tree_view: QtWidgets.QTreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
-    @staticmethod
-    def create_doc_model(file_name: Optional[str] = None) -> DocumentModel:
+    def create_doc_model(self, file_name: Optional[str] = None) -> DocumentModel:
         state: Optional[dict[str, Any]] = None
 
         if file_name:
@@ -77,8 +76,12 @@ class MainWindow(QtWidgets.QMainWindow):
             except (FileNotFoundError, json.decoder.JSONDecodeError):
                 print("File loading error")
 
-        doc_model: DocumentModel = DocumentModel(data=state, undo_stack=QtWidgets.QUndoStack())
+        undo_stack: QtWidgets.QUndoStack = QtWidgets.QUndoStack()
+        self._undo_group.addStack(undo_stack)
+
+        doc_model: DocumentModel = DocumentModel(data=state, undo_stack=undo_stack)
         doc_model.file_name = file_name
+
         return doc_model
 
     def create_menu(self) -> None:
@@ -254,7 +257,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             save_as_act.setEnabled(True)
             save_act.setEnabled(True)
-            # self.update_edit_menu()
             nodes_act.setEnabled(True)
         else:
             self._active_doc_model: Optional[DocumentModel] = None
@@ -267,7 +269,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             save_as_act.setEnabled(False)
             save_act.setEnabled(False)
-            # self.update_edit_menu()
 
             undo_act.setEnabled(False)
             redo_act.setEnabled(False)
@@ -277,7 +278,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _new(self, file_name: Optional[str] = None) -> None:
         doc_model: DocumentModel = self.create_doc_model(file_name=file_name)
-        self._undo_group.addStack(doc_model.undo_stack)
         doc_view: DocumentView = DocumentView(doc_model)
         doc_model.rowsInserted.connect(doc_view.on_model_row_changed)
         doc_model.rowsRemoved.connect(doc_view.on_model_row_changed)
