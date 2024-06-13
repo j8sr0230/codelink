@@ -32,7 +32,8 @@ import PySide2.QtWidgets as QtWidgets
 from codelink.backend.document_model import DocumentModel
 from codelink.frontend.document_scene import DocumentScene
 
-from codelink.frontend.tree_view import TreeView
+# from codelink.frontend.tree_view import TreeView
+from codelink.frontend.node_gr_item import NodeGrItem
 
 
 class DocumentView(QtWidgets.QWidget):
@@ -69,11 +70,14 @@ class DocumentView(QtWidgets.QWidget):
         self._model.is_modified = True
         self.update()
 
-        item_view: TreeView = TreeView()
-        item_view.setModel(self._model)
-        item_view.setRootIndex(self.model.index(first_row, 0, parent))
-        proxy_w: QtWidgets.QGraphicsProxyWidget = self._graphics_view.scene().addWidget(item_view)
-        proxy_w.setPos(0, 0)
+        # item_view: TreeView = TreeView()
+        # item_view.setModel(self._model)
+        # item_view.setRootIndex(self.model.index(first_row, 0, parent))
+        # proxy_w: QtWidgets.QGraphicsProxyWidget = self._graphics_view.scene().addWidget(item_view)
+        # proxy_w.setPos(0, 0)
+
+        node_gr_item: NodeGrItem = NodeGrItem(self.model.index(first_row, 0, parent))
+        self._graphics_view.scene().addItem(node_gr_item)
 
     def update(self) -> None:
         super().update()

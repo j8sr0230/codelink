@@ -22,7 +22,6 @@
 # *                                                                         *
 # ***************************************************************************
 
-from __future__ import annotations
 from typing import Optional
 
 import PySide2.QtCore as QtCore
@@ -36,6 +35,13 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._index: QtCore.QModelIndex = index
 
+        self._name_item = QtWidgets.QGraphicsTextItem(self)
+        self._name_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
+
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        # QtWidgets.QGraphicsItem.ItemIsFocusable)
+
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, 120, 80)
 
@@ -44,21 +50,4 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(QtGui.QColor("red")))
-        painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-
-        # rect: QtCore.QRectF = QtCore.QRectF(0, 0, self._prop_model.properties["Width"], self._header_height)
-        # painter.setBrush(QtGui.QColor(self._prop_model.properties["Color"]))
-        # # painter.drawRoundedRect(rect, self._corner_radius, self._corner_radius)
-        # painter.drawRect(rect)
-        #
-        # painter.setBrush(QtCore.Qt.NoBrush)
-        # if self.isSelected():
-        #     painter.setPen(self._selected_border_pen)
-        # elif self._is_dirty:
-        #     painter.setPen(self._dirty_border_color)
-        # elif self._is_invalid:
-        #     painter.setPen(self._invalid_border_color)
-        # else:
-        #     painter.setPen(self._default_border_pen)
-        # # painter.drawRoundedRect(self.boundingRect(), self._corner_radius, self._corner_radius)
-        # painter.drawRect(self.boundingRect())
+        painter.drawRoundedRect(self.boundingRect(), 5, 5)
