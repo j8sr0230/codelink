@@ -54,10 +54,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._height: int = item_view.visible_row_height()
 
-        proxy_w: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
-        proxy_w.setWidget(item_view)
-        proxy_w.setGeometry(self.boundingRect())
-        proxy_w.setPos(0, 20)
+        proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
+        proxy.setWidget(item_view)
+        proxy.setGeometry(self.boundingRect())
+        proxy.setPos(0, 20)
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
