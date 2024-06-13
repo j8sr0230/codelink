@@ -37,6 +37,16 @@ class TreeView(QtWidgets.QTreeView):
         self.setItemDelegate(TreeViewDelegate())
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
+    def visible_row_height(self) -> int:
+        height: int = 0
+        index: QtCore.QModelIndex = self.rootIndex()
+        while index.isValid():
+            if self.visualRect(index).isValid():
+                height += self.rowHeight(index)
+            index: QtCore.QModelIndex = self.indexBelow(index)
+
+        return height
+
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(event)
 

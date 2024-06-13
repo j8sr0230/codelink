@@ -38,7 +38,6 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._index: QtCore.QModelIndex = index
 
         self._width: int = 100
-        self._height: int = 100
 
         name_item = QtWidgets.QGraphicsTextItem(self)
         name_item.setDefaultTextColor(QtGui.QColor("#E5E5E5"))
@@ -47,24 +46,17 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         item_view: TreeView = TreeView()
         item_view.setIndentation(0)
         item_view.setHeaderHidden(True)
-        # item_view.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        # item_view.header().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        # item_view.header().resizeSection(0, self._width // 2 - item_view.frameWidth())
-        # item_view.header().resizeSection(1, self._width // 2 - item_view.frameWidth())
-
         item_view.setModel(index.model())
         item_view.setRootIndex(index)
         item_view.expandAll()
+        item_view.header().resizeSection(0, self._width // 2 - item_view.frameWidth())
+        item_view.header().resizeSection(1, self._width // 2 - item_view.frameWidth())
+
+        self._height: int = item_view.visible_row_height()
 
         proxy_w: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
         proxy_w.setWidget(item_view)
         proxy_w.setGeometry(self.boundingRect())
-
-        # item_view.header().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
-        # item_view.header().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
-        item_view.header().resizeSection(0, self._width // 2 - item_view.frameWidth())
-        item_view.header().resizeSection(1, self._width // 2 - item_view.frameWidth())
-
         proxy_w.setPos(0, 20)
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
