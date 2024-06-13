@@ -48,11 +48,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__()
 
         self._node_factory: NodeFactory = NodeFactory()
-        self._node_factory.load_nodes(str(Path("../backend/nodes").resolve()))
-
         self._active_doc_model: Optional[DocumentModel] = None
         self._active_doc_view: Optional[DocumentView] = None
-
         self._undo_group: QtWidgets.QUndoGroup = QtWidgets.QUndoGroup()
 
         # UI
@@ -67,7 +64,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
 
         self._mdi_area: TreeView = self.create_mdi_area()
-        self._main_tree_view: TreeView = self.create_main_tree_view()
+        self._doc_tree_view: TreeView = self.create_doc_tree_view()
         self._item_tree_view: TreeView = self.create_item_tree_view()
         self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
 
@@ -125,7 +122,7 @@ class MainWindow(QtWidgets.QMainWindow):
         del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
         self.addAction(del_action)
         edit_menu.addAction(del_action)
-        del_action.triggered.connect(self.delete_selection)
+        del_action.triggered.connect(self.delete)
         del_action.setEnabled(False)
 
         edit_menu.addSeparator()
@@ -139,36 +136,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def create_nodes_menu(self) -> QtWidgets.QMenu:
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
-        self.populate_nodes_menu(nodes_menu)
+        self.load_nodes(node_factory=self._node_factory, nodes_path="../backend/nodes", nodes_menu=nodes_menu)
         nodes_menu.menuAction().setEnabled(False)
-
         return nodes_menu
-
-    def populate_nodes_menu(self, nodes_menu: QtWidgets.QMenu) -> None:
-        def add_node(node_cls: str) -> None:
-            node: NodeItem = self._node_factory.create_node(node_cls)
-            self._active_doc_model.append_node(node)
-
-        for key in self._node_factory.nodes.keys():
-            parent_menu: QtWidgets.QMenu = nodes_menu
-
-            menu_titles: list[str] = key.split(".")[1:]
-            pretty_titles: list[str] = [
-                menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]
-            ]
-            pretty_titles.append(menu_titles[-1])
-
-            for idx, pretty_title in enumerate(pretty_titles):
-                if pretty_title not in [action.text() for action in parent_menu.actions()]:
-                    if idx < len(menu_titles) - 2:
-                        parent_menu: QtWidgets.QMenu = parent_menu.addMenu(pretty_title)
-                    elif idx == len(menu_titles) - 1:
-                        add_action: QtWidgets.QAction = QtWidgets.QAction(pretty_title, self)
-                        add_action.triggered.connect(partial(add_node, key))
-                        parent_menu.addAction(add_action)
-                else:
-                    parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
-                    parent_menu: QtWidgets.QMenu = parent_action.menu()
 
     def create_mdi_area(self) -> QtWidgets.QMdiArea:
         mdi_area: QtWidgets.QMdiArea = QtWidgets.QMdiArea()
@@ -182,13 +152,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setCentralWidget(mdi_area)
         return mdi_area
 
-    def create_main_tree_view(self) -> TreeView:
+    def create_doc_tree_view(self) -> TreeView:
         dock: QtWidgets.QDockWidget = QtWidgets.QDockWidget("Main View", self)
         dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea | QtCore.Qt.RightDockWidgetArea)
-        main_tree_view: TreeView = TreeView()
-        dock.setWidget(main_tree_view)
+        doc_tree_view: TreeView = TreeView()
+        dock.setWidget(doc_tree_view)
         self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, dock)
-        return main_tree_view
+        return doc_tree_view
 
     def create_item_tree_view(self) -> TreeView:
         dock = QtWidgets.QDockWidget("Item View", self)
@@ -206,74 +176,32 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.RightDockWidgetArea, dock)
         return detail_view
 
-    # noinspection PyUnusedLocal
-    def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
-        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+    def load_nodes(self, node_factory: NodeFactory, nodes_path: str, nodes_menu: QtWidgets.QMenu) -> None:
+        def add_node(node_cls: str) -> None:
+            node: NodeItem = node_factory.create_node(node_cls)
+            self._active_doc_model.append_node(node)
 
-        if len(current.indexes()) > 0:
-            index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
-            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-                index: QtCore.QModelIndex = index.model().mapToSource(index)
+        node_factory.load_nodes(str(Path(nodes_path).resolve()))
+        for key in node_factory.nodes.keys():
+            parent_menu: QtWidgets.QMenu = nodes_menu
 
-            tree_item: TreeItem = self._active_doc_model.item_from_index(index)
-            if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
-                proxy_model: Level4ProxyModel = Level4ProxyModel()
-                proxy_model.setSourceModel(self._active_doc_model)
-                self._detail_tree_view.setModel(proxy_model)
-                self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
-                self._detail_tree_view.expandAll()
-                del_act.setEnabled(True)
-            else:
-                self._detail_tree_view.setModel(None)
-                del_act.setEnabled(False)
-        else:
-            self._detail_tree_view.setModel(None)
-            del_act.setEnabled(False)
+            menu_titles: list[str] = key.split(".")[1:]
+            pretty_titles: list[str] = [
+                menu_title.replace("_", " ").title() for menu_title in menu_titles[:-1]
+            ]
+            pretty_titles.append(menu_titles[-1])
 
-    def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
-        save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
-        save_act: QtWidgets.QAction = self._action_dict.get("&Save")
-        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
-        nodes_act: QtWidgets.QAction = self._menu_dict.get("&Nodes")
-
-        del_act.setEnabled(False)
-
-        if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
-            self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
-            self._active_doc_model: DocumentModel = self._active_doc_view.model
-            self._undo_group.setActiveStack(self._active_doc_model.undo_stack)
-
-            self._main_tree_view.setModel(self._active_doc_model)
-            self._main_tree_view.expandAll()
-            self._main_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-
-            proxy_model: Level2ProxyModel = Level2ProxyModel()
-            proxy_model.setSourceModel(self._active_doc_model)
-            self._item_tree_view.setModel(proxy_model)
-            self._item_tree_view.expandAll()
-            self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
-
-            self._detail_tree_view.setModel(None)
-
-            save_as_act.setEnabled(True)
-            save_act.setEnabled(True)
-            nodes_act.setEnabled(True)
-
-            self.statusBar().showMessage(self._active_doc_model.get_pretty_file_name())
-
-        else:
-            self._active_doc_model: Optional[DocumentModel] = None
-            self._active_doc_view: Optional[DocumentView] = None
-
-            self._main_tree_view.setModel(None)
-            self._item_tree_view.setModel(None)
-            self._detail_tree_view.setModel(None)
-
-            save_as_act.setEnabled(False)
-            save_act.setEnabled(False)
-            nodes_act.setEnabled(False)
-
-            self.statusBar().clearMessage()
+            for idx, pretty_title in enumerate(pretty_titles):
+                if pretty_title not in [action.text() for action in parent_menu.actions()]:
+                    if idx < len(menu_titles) - 2:
+                        parent_menu: QtWidgets.QMenu = parent_menu.addMenu(pretty_title)
+                    elif idx == len(menu_titles) - 1:
+                        add_action: QtWidgets.QAction = parent_menu.addAction(pretty_title)
+                        add_action.triggered.connect(partial(add_node, key))
+                        parent_menu.addAction(add_action)
+                else:
+                    parent_action: QtWidgets.QAction = parent_menu.actions()[-1]
+                    parent_menu: QtWidgets.QMenu = parent_action.menu()
 
     def _new(self, file_name: Optional[str] = None) -> None:
         state: Optional[dict[str, Any]] = None
@@ -320,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         try:
-            with open(file_name, "w", encoding="utf-8") as f:
+            with open(str(Path(file_name).resolve()), "w", encoding="utf-8") as f:
                 json.dump(self._active_doc_model.to_dict(), f, ensure_ascii=False, indent=4)
 
             self._active_doc_model.file_name = file_name
@@ -348,7 +276,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.save_as()
 
-    def delete_selection(self) -> None:
+    def delete(self) -> None:
         current_widget: QtWidgets.QWidget = QtWidgets.QApplication.focusWidget()
         if isinstance(QtWidgets.QApplication.focusWidget(), TreeView):
             selected_indexes: list[QtCore.QModelIndex] = current_widget.selectionModel().selectedIndexes()
@@ -364,6 +292,75 @@ class MainWindow(QtWidgets.QMainWindow):
                     if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
                         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                         self._active_doc_model.removeRow(index.row(), index.parent())
+
+    # noinspection PyUnusedLocal
+    def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+
+        if len(current.indexes()) > 0:
+            index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
+            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+                index: QtCore.QModelIndex = index.model().mapToSource(index)
+
+            tree_item: TreeItem = self._active_doc_model.item_from_index(index)
+            if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
+                proxy_model: Level4ProxyModel = Level4ProxyModel()
+                proxy_model.setSourceModel(self._active_doc_model)
+                self._detail_tree_view.setModel(proxy_model)
+                self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
+                self._detail_tree_view.expandAll()
+                del_act.setEnabled(True)
+            else:
+                self._detail_tree_view.setModel(None)
+                del_act.setEnabled(False)
+        else:
+            self._detail_tree_view.setModel(None)
+            del_act.setEnabled(False)
+
+    def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
+        save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
+        save_act: QtWidgets.QAction = self._action_dict.get("&Save")
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        nodes_act: QtWidgets.QAction = self._menu_dict.get("&Nodes")
+
+        del_act.setEnabled(False)
+
+        if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
+            self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
+            self._active_doc_model: DocumentModel = self._active_doc_view.model
+            self._undo_group.setActiveStack(self._active_doc_model.undo_stack)
+
+            self._doc_tree_view.setModel(self._active_doc_model)
+            self._doc_tree_view.expandAll()
+            self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+
+            proxy_model: Level2ProxyModel = Level2ProxyModel()
+            proxy_model.setSourceModel(self._active_doc_model)
+            self._item_tree_view.setModel(proxy_model)
+            self._item_tree_view.expandAll()
+            self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+
+            self._detail_tree_view.setModel(None)
+
+            save_as_act.setEnabled(True)
+            save_act.setEnabled(True)
+            nodes_act.setEnabled(True)
+
+            self.statusBar().showMessage(self._active_doc_model.get_pretty_file_name())
+
+        else:
+            self._active_doc_model: Optional[DocumentModel] = None
+            self._active_doc_view: Optional[DocumentView] = None
+
+            self._doc_tree_view.setModel(None)
+            self._item_tree_view.setModel(None)
+            self._detail_tree_view.setModel(None)
+
+            save_as_act.setEnabled(False)
+            save_act.setEnabled(False)
+            nodes_act.setEnabled(False)
+
+            self.statusBar().clearMessage()
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         self._mdi_area.closeAllSubWindows()
