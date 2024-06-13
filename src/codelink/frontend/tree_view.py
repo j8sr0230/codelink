@@ -36,7 +36,6 @@ class TreeView(QtWidgets.QTreeView):
         self.setAlternatingRowColors(True)
         self.setItemDelegate(TreeViewDelegate())
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         super().keyPressEvent(event)
