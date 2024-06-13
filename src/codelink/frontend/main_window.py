@@ -101,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         exit_action: QtWidgets.QAction = file_menu.addAction("E&xit")
         file_menu.addAction(exit_action)
-        exit_action.triggered.connect(QtWidgets.QApplication.quit)
+        exit_action.triggered.connect(self.close)
 
         return file_menu
 
