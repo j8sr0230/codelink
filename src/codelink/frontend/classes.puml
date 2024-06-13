@@ -86,7 +86,6 @@ codelink.backend.document_model.DocumentModel --* codelink.frontend.main_window.
 codelink.backend.node_factory.NodeFactory --* codelink.frontend.main_window.MainWindow : _node_factory
 codelink.backend.root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
 codelink.frontend.document_view.DocumentView --* codelink.frontend.main_window.MainWindow : _active_doc_view
-codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _mdi_area
 codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _doc_tree_view
 codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _item_tree_view
 codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _detail_tree_view
