@@ -32,6 +32,8 @@ import PySide2.QtWidgets as QtWidgets
 from codelink.backend.document_model import DocumentModel
 from codelink.frontend.document_scene import DocumentScene
 
+from codelink.frontend.tree_view import TreeView
+
 
 class DocumentView(QtWidgets.QWidget):
     def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
@@ -62,11 +64,16 @@ class DocumentView(QtWidgets.QWidget):
         self.update()
 
     # noinspection PyUnusedLocal
-    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: QtCore.QModelIndex,
-                             last_row: QtCore.QModelIndex) -> None:
+    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         print("Inserted/Removed at:", first_row)
         self._model.is_modified = True
         self.update()
+
+        item_view: TreeView = TreeView()
+        item_view.setModel(self._model)
+        item_view.setRootIndex(self.model.index(first_row, 0, parent))
+        proxy_w: QtWidgets.QGraphicsProxyWidget = self._graphics_view.scene().addWidget(item_view)
+        proxy_w.setPos(0, 0)
 
     def update(self) -> None:
         super().update()

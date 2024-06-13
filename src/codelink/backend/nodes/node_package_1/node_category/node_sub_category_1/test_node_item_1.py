@@ -26,6 +26,7 @@ from typing import Optional, Any
 
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
+from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 
 
 class TestNodeItem1(NodeItem):
@@ -36,3 +37,5 @@ class TestNodeItem1(NodeItem):
 
     def setup_children(self) -> None:
         super().setup_children()
+
+        self.children[0].append_child(IntegerPropertyItem(key="X", value=10))
