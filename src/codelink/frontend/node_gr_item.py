@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, cast
+from typing import Optional
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -37,30 +37,30 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._index: QtCore.QModelIndex = index
 
-        self._width: int = 160
-        self._height: int = 40
+        self._width: int = 150
+        self._height: int = 100
 
-        self._name_item = QtWidgets.QGraphicsTextItem(self)
-        self._name_item.setDefaultTextColor(QtGui.QColor("#E5E5E5"))
-        self._name_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
-
-        proxy_w: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+        name_item = QtWidgets.QGraphicsTextItem(self)
+        name_item.setDefaultTextColor(QtGui.QColor("#E5E5E5"))
+        name_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
 
         item_view: TreeView = TreeView()
         item_view.setIndentation(0)
         item_view.setHeaderHidden(True)
+        # item_view.header().setStretchLastSection(False)
 
         item_view.setModel(index.model())
         item_view.setRootIndex(index)
         item_view.expandAll()
-        proxy_w.setWidget(item_view)
 
+        proxy_w: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
+        proxy_w.setWidget(item_view)
         proxy_w.setGeometry(self.boundingRect())
+
         proxy_w.setPos(0, 20)
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-        # QtWidgets.QGraphicsItem.ItemIsFocusable)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
