@@ -22,11 +22,13 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
+
+from codelink.frontend.tree_view import TreeView
 
 
 class NodeGrItem(QtWidgets.QGraphicsItem):
@@ -35,19 +37,37 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._index: QtCore.QModelIndex = index
 
+        self._width: int = 160
+        self._height: int = 40
+
         self._name_item = QtWidgets.QGraphicsTextItem(self)
+        self._name_item.setDefaultTextColor(QtGui.QColor("#E5E5E5"))
         self._name_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
+
+        proxy_w: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self)
+
+        item_view: TreeView = TreeView()
+        item_view.setIndentation(0)
+        item_view.setHeaderHidden(True)
+
+        item_view.setModel(index.model())
+        item_view.setRootIndex(index)
+        item_view.expandAll()
+        proxy_w.setWidget(item_view)
+
+        proxy_w.setGeometry(self.boundingRect())
+        proxy_w.setPos(0, 20)
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         # QtWidgets.QGraphicsItem.ItemIsFocusable)
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, 120, 80)
+        return QtCore.QRectF(0, 0, self._width, self._height)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(QtGui.QColor("red")))
+        painter.setBrush(QtGui.QBrush(QtGui.QColor("303030")))
         painter.drawRoundedRect(self.boundingRect(), 5, 5)
