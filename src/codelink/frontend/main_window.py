@@ -63,7 +63,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._action_dict: dict[str, QtWidgets.QAction] = {act.text(): act for act in self.actions()}
         self._menu_dict: dict[str, QtWidgets.QAction] = {menu.text(): menu for menu in self.menuWidget().actions()}
 
-        self._mdi_area: TreeView = self.create_mdi_area()
+        self._mdi_area: QtWidgets.QMdiArea = self.create_mdi_area()
         self._doc_tree_view: TreeView = self.create_doc_tree_view()
         self._item_tree_view: TreeView = self.create_item_tree_view()
         self._detail_tree_view: TreeView = self.create_detail_tree_view()
