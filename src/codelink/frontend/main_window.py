@@ -66,7 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._mdi_area: TreeView = self.create_mdi_area()
         self._doc_tree_view: TreeView = self.create_doc_tree_view()
         self._item_tree_view: TreeView = self.create_item_tree_view()
-        self._detail_tree_view: QtWidgets.QTreeView = self.create_detail_tree_view()
+        self._detail_tree_view: TreeView = self.create_detail_tree_view()
 
         self.statusBar().showMessage("Ready ...")
 
