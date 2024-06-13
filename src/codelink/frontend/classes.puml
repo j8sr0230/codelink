@@ -51,16 +51,6 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   setData(index: QtCore.QModelIndex, value: Any, role: int) -> bool
   to_dict(parent_index: QtCore.QModelIndex) -> dict[str, Any]
 }
-class "codelink.frontend.delegates.TreeViewDelegate" as codelink.frontend.delegates.TreeViewDelegate {
-  createEditor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
-  paint(painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None
-  setEditorData(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
-  setModelData(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
-  updateEditorGeometry(editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> None
-}
-class "codelink.frontend.document_scene.DocumentScene" as codelink.frontend.document_scene.DocumentScene {
-  drawBackground(painter: QtGui.QPainter, rect: QtCore.QRectF) -> None
-}
 class "codelink.frontend.document_view.DocumentView" as codelink.frontend.document_view.DocumentView {
   model
   closeEvent(event: QtGui.QCloseEvent) -> None
@@ -71,18 +61,18 @@ class "codelink.frontend.document_view.DocumentView" as codelink.frontend.docume
 class "codelink.frontend.main_window.MainWindow" as codelink.frontend.main_window.MainWindow {
   closeEvent(event: QtGui.QCloseEvent) -> None
   create_detail_tree_view() -> TreeView
+  create_doc_tree_view() -> TreeView
   create_edit_menu() -> QtWidgets.QMenu
   create_file_menu() -> QtWidgets.QMenu
   create_item_tree_view() -> TreeView
-  create_main_tree_view() -> TreeView
   create_mdi_area() -> QtWidgets.QMdiArea
   create_nodes_menu() -> QtWidgets.QMenu
-  delete_selection() -> None
+  delete() -> None
+  load_nodes(node_factory: NodeFactory, nodes_path: str, nodes_menu: QtWidgets.QMenu) -> None
   new() -> None
   on_selection_changed(current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None
   on_sub_wnd_changed(sub_wnd: QtWidgets.QMdiSubWindow) -> None
   open() -> None
-  populate_nodes_menu(nodes_menu: QtWidgets.QMenu) -> None
   save() -> None
   save_as() -> None
 }
@@ -97,7 +87,8 @@ codelink.backend.node_factory.NodeFactory --* codelink.frontend.main_window.Main
 codelink.backend.root_item.RootItem --* codelink.backend.tree_model.TreeModel : _root_item
 codelink.frontend.document_view.DocumentView --* codelink.frontend.main_window.MainWindow : _active_doc_view
 codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _mdi_area
-codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _main_tree_view
+codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _doc_tree_view
 codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _item_tree_view
+codelink.frontend.tree_view.TreeView --* codelink.frontend.main_window.MainWindow : _detail_tree_view
 codelink.backend.document_model.DocumentModel --o codelink.frontend.document_view.DocumentView : _model
 @enduml
