@@ -227,6 +227,11 @@ class MainWindow(QtWidgets.QMainWindow):
         sub_wnd: QtWidgets.QMdiSubWindow = self._mdi_area.addSubWindow(doc_view)
         sub_wnd.showMaximized()
 
+        parent_index: QtCore.QModelIndex = doc_model.nodes_index
+        nodes_count: int = doc_model.rowCount(parent_index)
+        for i in range(nodes_count):
+            doc_model.rowsInserted.emit(parent_index, i, i)
+
     def new(self) -> None:
         self._new()
 
