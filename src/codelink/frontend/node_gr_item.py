@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -66,6 +66,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def create_content(self) -> QtWidgets.QGraphicsProxyWidget:
         content_view: TreeView = TreeView()
+        content_view.setUniformRowHeights(True)
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
         content_view.setModel(self._index.model())
@@ -73,8 +74,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.expandAll()
         content_view.header().resizeSection(0, self._width // 2 - content_view.frameWidth())
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
+        content_view.collapsed.connect(self.on_collapsed)
+        content_view.expanded.connect(self.on_collapsed)
 
         self._content_height: int = content_view.visible_row_height()
+        print(self._content_height)
 
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
         proxy_item.setWidget(content_view)
@@ -83,10 +87,19 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         return proxy_item
 
+    # noinspection PyUnusedLocal
+    def on_collapsed(self, index: QtCore.QModelIndex) -> None:
+        self.update_content_height()
+
+    def update_content_height(self) -> None:
+        print(self._content_item.widget().visible_row_height())
+        self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
+        self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
+
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
         super().update()
 
-        print("Update NodeItem")
+        print("Update NodeGrItem")
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)

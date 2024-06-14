@@ -37,6 +37,11 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
+    def sizeHint(self, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> QtCore.QSize:
+        size: QtCore.QSize = super().sizeHint(option, index)
+        size.setHeight(17)
+        return size
+
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
         if isinstance(index.model(), QtCore.QSortFilterProxyModel):
