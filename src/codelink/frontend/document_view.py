@@ -92,9 +92,12 @@ class DocumentView(QtWidgets.QWidget):
                               roles: list[int]) -> None:
         print("Changed at:", top_left.row(), top_left.column(), "to:",
               top_left.data(roles[0]) if len(roles) > 0 else None)
-
         self._model.is_modified = True
         self.update()
+
+        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(top_left)
+        if gr_item:
+            gr_item.update()
 
     def update(self) -> None:
         super().update()

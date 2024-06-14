@@ -83,6 +83,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         return proxy_item
 
+    def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
+        super().update()
+
+        print("Update NodeItem")
+
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
 
