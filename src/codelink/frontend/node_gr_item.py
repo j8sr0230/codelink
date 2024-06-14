@@ -28,6 +28,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.tree_view import TreeView
 
 
@@ -38,26 +39,26 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._index: QtCore.QModelIndex = index
 
         self._width: int = 100
+        self._title_height: int = 20
 
-        name_item = QtWidgets.QGraphicsTextItem(self)
-        name_item.setDefaultTextColor(QtGui.QColor("#E5E5E5"))
-        name_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
+        title_text_item = QtWidgets.QGraphicsTextItem(self)
+        title_text_item.setDefaultTextColor(QtGui.QColor(ColorPalette.WHITE))
+        title_text_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
 
-        item_view: TreeView = TreeView()
-        item_view.setIndentation(0)
-        item_view.setHeaderHidden(True)
-        item_view.setModel(index.model())
-        item_view.setRootIndex(index)
-        item_view.expandAll()
-        item_view.header().resizeSection(0, self._width // 2 - item_view.frameWidth())
-        item_view.header().resizeSection(1, self._width // 2 - item_view.frameWidth())
+        content_view: TreeView = TreeView()
+        content_view.setIndentation(0)
+        content_view.setHeaderHidden(True)
+        content_view.setModel(index.model())
+        content_view.setRootIndex(index)
+        content_view.expandAll()
+        content_view.header().resizeSection(0, self._width // 2 - content_view.frameWidth())
+        content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
 
-        self._height: int = item_view.visible_row_height()
+        self._content_height: int = content_view.visible_row_height()
 
-        proxy: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
-        proxy.setWidget(item_view)
-        proxy.setGeometry(self.boundingRect())
-        proxy.setPos(0, 20)
+        gr_proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
+        gr_proxy_item.setWidget(content_view)
+        gr_proxy_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
@@ -67,11 +68,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         return self._index
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, self._height)
+        return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(QtGui.QColor("303030")))
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(ColorPalette.LIGHTGRAY)))
         painter.drawRect(self.boundingRect())
