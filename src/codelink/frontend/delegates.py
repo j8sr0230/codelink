@@ -33,13 +33,16 @@ from codelink.backend.base_item import BaseItem
 from codelink.backend.seperator_item import SeperatorItem
 
 
+ROW_HEIGHT: int = 17
+
+
 class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def sizeHint(self, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> QtCore.QSize:
         size: QtCore.QSize = super().sizeHint(option, index)
-        size.setHeight(17)
+        size.setHeight(ROW_HEIGHT)
         return size
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,

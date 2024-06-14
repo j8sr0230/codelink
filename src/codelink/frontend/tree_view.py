@@ -45,8 +45,9 @@ class TreeView(QtWidgets.QTreeView):
             if self.isIndexHidden(index):
                 continue
 
+            height += self.rowHeight(index) + 2 * self.frameWidth()
             print(self.rowHeight(index), self.frameWidth())
-            height += self.rowHeight(index) + 1 * self.frameWidth()
+            print(height)
             index: QtCore.QModelIndex = self.indexBelow(index)
 
         return height
