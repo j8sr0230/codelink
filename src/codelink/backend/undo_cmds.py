@@ -126,6 +126,7 @@ class TreeItemInsertCommand(QtWidgets.QUndoCommand):
 
     def undo(self) -> None:
         self._model.beginRemoveRows(self._parent_index, self._row, self._row)
+        self._model.begin_remove_rows.emit(self._parent_index, self._row, self._row)
         self._parent.remove_child(self._row)
         self._model.endRemoveRows()
 
@@ -154,6 +155,6 @@ class TreeItemRemoveCommand(QtWidgets.QUndoCommand):
 
     def redo(self) -> None:
         self._model.beginRemoveRows(self._parent_index, self._row, self._row)
+        self._model.begin_remove_rows.emit(self._parent_index, self._row, self._row)
         self._parent.remove_child(self._row)
         self._model.endRemoveRows()
-

@@ -219,8 +219,8 @@ class MainWindow(QtWidgets.QMainWindow):
         doc_model.file_name = file_name
 
         doc_view: DocumentView = DocumentView(doc_model)
-        doc_model.rowsInserted.connect(doc_view.on_model_row_changed)
-        doc_model.rowsRemoved.connect(doc_view.on_model_row_changed)
+        doc_model.rowsInserted.connect(doc_view.on_model_rows_inserted)
+        cast(QtCore.SignalInstance, doc_model.begin_remove_rows).connect(doc_view.on_model_begin_remove_rows)
         doc_model.dataChanged.connect(doc_view.on_model_data_changed)
         doc_view.update()
 

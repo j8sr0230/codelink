@@ -42,6 +42,8 @@ from codelink.backend.edge_item import EdgeItem
 
 
 class TreeModel(QtCore.QAbstractItemModel):
+    begin_remove_rows: QtCore.Signal = QtCore.Signal(QtCore.QModelIndex, int, int)
+
     def __init__(self, data: Optional[dict[str, Any]] = None, undo_stack: Optional[QtWidgets.QUndoStack] = None,
                  parent: QtCore.QObject = None) -> None:
         super().__init__(parent)

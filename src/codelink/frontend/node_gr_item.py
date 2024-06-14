@@ -62,6 +62,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
+    @property
+    def index(self) -> QtCore.QModelIndex:
+        return self._index
+
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._height)
 

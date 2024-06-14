@@ -29,6 +29,8 @@ import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
+from codelink.backend.tree_item import TreeItem
+from codelink.backend.node_item import NodeItem
 from codelink.backend.document_model import DocumentModel
 from codelink.frontend.document_scene import DocumentScene
 
@@ -55,6 +57,32 @@ class DocumentView(QtWidgets.QWidget):
         return self._model
 
     # noinspection PyUnusedLocal
+    def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
+        print("Inserted at:", first_row)
+        self._model.is_modified = True
+
+        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
+        item: TreeItem = self._model.item_from_index(index)
+        if isinstance(item, NodeItem):
+            node_gr_item: NodeGrItem = NodeGrItem(index)
+            self._graphics_view.scene().addItem(node_gr_item)
+
+    # noinspection PyUnusedLocal
+    def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
+        print("Removed at:", first_row)
+        self._model.is_modified = True
+
+        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
+
+        gr_items: list[QtWidgets.QGraphicsItem] = [
+            gr_item for gr_item in self._graphics_view.scene().items()
+            if hasattr(gr_item, "index") and gr_item.index == index
+        ]
+
+        for gr_item in gr_items:
+            self._graphics_view.scene().removeItem(gr_item)
+
+    # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
                               roles: list[int]) -> None:
         print("Changed at:", top_left.row(), top_left.column(), "to:",
@@ -62,15 +90,6 @@ class DocumentView(QtWidgets.QWidget):
 
         self._model.is_modified = True
         self.update()
-
-    # noinspection PyUnusedLocal
-    def on_model_row_changed(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
-        print("Inserted/Removed at:", first_row)
-        self._model.is_modified = True
-        self.update()
-
-        node_gr_item: NodeGrItem = NodeGrItem(self.model.index(first_row, 0, parent))
-        self._graphics_view.scene().addItem(node_gr_item)
 
     def update(self) -> None:
         super().update()
