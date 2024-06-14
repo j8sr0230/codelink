@@ -59,7 +59,7 @@ class DocumentView(QtWidgets.QWidget):
     def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
         graphics_items: list[QtWidgets.QGraphicsItem] = [
             gr_item for gr_item in self._graphics_view.scene().items()
-            if hasattr(gr_item, "index") and gr_item.index == index
+            if hasattr(gr_item, "index") and (gr_item.index == index or self._model.has_parent_recursively(gr_item.index, index))
         ]
         if len(graphics_items) > 0:
             return graphics_items[0]

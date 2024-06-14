@@ -297,6 +297,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return None
 
+    def has_parent_recursively(self, index, parent):
+        if not index.isValid():
+            return False
+
+        if index.parent() == parent:
+            return True
+
+        return self.has_parent_recursively(index.parent(), parent)
+
     def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         return self.removeRow(row, parent)
 
