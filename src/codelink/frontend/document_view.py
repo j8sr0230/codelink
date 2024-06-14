@@ -56,6 +56,16 @@ class DocumentView(QtWidgets.QWidget):
     def model(self) -> DocumentModel:
         return self._model
 
+    def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
+        graphics_items: list[QtWidgets.QGraphicsItem] = [
+            gr_item for gr_item in self._graphics_view.scene().items()
+            if hasattr(gr_item, "index") and gr_item.index == index
+        ]
+        if len(graphics_items) > 0:
+            return graphics_items[0]
+        else:
+            return None
+
     # noinspection PyUnusedLocal
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         print("Inserted at:", first_row)
@@ -73,13 +83,8 @@ class DocumentView(QtWidgets.QWidget):
         self._model.is_modified = True
 
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
-
-        gr_items: list[QtWidgets.QGraphicsItem] = [
-            gr_item for gr_item in self._graphics_view.scene().items()
-            if hasattr(gr_item, "index") and gr_item.index == index
-        ]
-
-        for gr_item in gr_items:
+        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(index)
+        if gr_item:
             self._graphics_view.scene().removeItem(gr_item)
 
     # noinspection PyUnusedLocal
