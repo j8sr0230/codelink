@@ -42,14 +42,12 @@ class TreeView(QtWidgets.QTreeView):
 
         index: QtCore.QModelIndex = self.rootIndex()
         while index.isValid():
-            if self.isIndexHidden(index):
-                continue
+            if not self.isIndexHidden(index) and self.rowHeight(index) > 0:
+                height += self.rowHeight(index)
 
-            height += self.rowHeight(index) + 2 * self.frameWidth()
-            print(self.rowHeight(index), self.frameWidth())
-            print(height)
             index: QtCore.QModelIndex = self.indexBelow(index)
 
+        height += 2 * self.frameWidth()
         return height
 
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:

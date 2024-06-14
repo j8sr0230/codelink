@@ -78,7 +78,6 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.expanded.connect(self.on_collapsed)
 
         self._content_height: int = content_view.visible_row_height()
-        print(self._content_height)
 
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
         proxy_item.setWidget(content_view)
@@ -92,13 +91,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self.update_content_height()
 
     def update_content_height(self) -> None:
-        print(self._content_item.widget().visible_row_height())
         self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
         self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
         super().update()
-
         print("Update NodeGrItem")
 
     def boundingRect(self) -> QtCore.QRectF:
