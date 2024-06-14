@@ -46,6 +46,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         title_text_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
 
         content_view: TreeView = TreeView()
+        print(content_view.palette().color(QtGui.QPalette.Highlight).name())
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
         content_view.setModel(index.model())
@@ -74,5 +75,5 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
               widget: Optional[QtWidgets.QWidget] = None) -> None:
 
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(QtGui.QColor(ColorPalette.LIGHTGRAY)))
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(ColorPalette.REGULARGRAY)))
         painter.drawRect(self.boundingRect())

@@ -33,3 +33,5 @@ class ColorPalette(StrEnum):
     LIGHTGRAY: str = "#aeadac"
     PALEGRAY: str = "#d7d6d5"
     WHITE: str = "#ffffff"
+
+    HIGHLIGHT: str = "#0078d7"
