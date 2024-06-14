@@ -40,6 +40,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._width: int = 100
         self._title_height: int = 20
+        self._title_padding_right: int = 5
         self._content_height: int = 0
 
         self._node_background_color: QtGui.QColor = QtGui.QColor(ColorPalette.REGULARGRAY)
@@ -58,10 +59,28 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
     def index(self) -> QtCore.QModelIndex:
         return self._index
 
+    @staticmethod
+    def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
+        font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
+        ellipsis_width: int = font_metrics.horizontalAdvance("...")
+        cropped_text: str = ""
+        total_width: int = 0
+
+        for char in text:
+            char_width: int = font_metrics.horizontalAdvance(char)
+            if total_width + char_width + ellipsis_width > width:
+                cropped_text += "..."
+                break
+            else:
+                cropped_text += char
+                total_width += char_width
+
+        return cropped_text
+
     def create_title(self) -> QtWidgets.QGraphicsTextItem:
         text_item = QtWidgets.QGraphicsTextItem(self)
         text_item.setDefaultTextColor(QtGui.QColor(ColorPalette.WHITE))
-        text_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
+        # text_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
         return text_item
 
     def create_content(self) -> QtWidgets.QGraphicsProxyWidget:
@@ -94,9 +113,19 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
         self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
+    def update_title(self) -> None:
+        self._title_item.setPlainText(
+            self.crop_text(
+                self._index.data(int(QtCore.Qt.DisplayRole)),
+                self._width - self._title_padding_right,
+                self.scene().font())
+        )
+
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
         super().update()
-        print("Update NodeGrItem")
+
+        self.update_title()
+        self.update_content_height()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)

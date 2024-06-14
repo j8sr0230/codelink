@@ -78,6 +78,7 @@ class DocumentView(QtWidgets.QWidget):
         if isinstance(item, NodeItem):
             node_gr_item: NodeGrItem = NodeGrItem(index)
             self._graphics_view.scene().addItem(node_gr_item)
+            node_gr_item.update()
 
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
