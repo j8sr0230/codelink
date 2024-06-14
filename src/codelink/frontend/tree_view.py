@@ -42,7 +42,7 @@ class TreeView(QtWidgets.QTreeView):
 
         index: QtCore.QModelIndex = self.rootIndex()
         while index.isValid():
-            if not self.isIndexHidden(index) and self.rowHeight(index) > 0:
+            if not self.isIndexHidden(index) and index != self.rootIndex():
                 height += self.rowHeight(index)
 
             index: QtCore.QModelIndex = self.indexBelow(index)

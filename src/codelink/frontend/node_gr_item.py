@@ -51,7 +51,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
         self._content_item: QtWidgets.QGraphicsProxyWidget = self.create_content()
+        self._base_pins: list[QtWidgets.QGraphicsEllipseItem] = self.create_pins(
+            index.model().index(0, 0, index)
+        )
 
+        self.setZValue(3)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
@@ -80,7 +84,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
     def create_title(self) -> QtWidgets.QGraphicsTextItem:
         text_item = QtWidgets.QGraphicsTextItem(self)
         text_item.setDefaultTextColor(QtGui.QColor(ColorPalette.WHITE))
-        # text_item.setPlainText(self._index.data(int(QtCore.Qt.DisplayRole)))
+        text_item.setZValue(3)
         return text_item
 
     def create_content(self) -> QtWidgets.QGraphicsProxyWidget:
@@ -101,17 +105,23 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
         proxy_item.setWidget(content_view)
         proxy_item.setMinimumHeight(0)
-        proxy_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
-
+        proxy_item.setZValue(3)
         return proxy_item
 
-    # noinspection PyUnusedLocal
-    def on_collapsed(self, index: QtCore.QModelIndex) -> None:
-        self.update_content_height()
+    def create_pins(self, sep_index: QtCore.QModelIndex) -> list[QtWidgets.QGraphicsEllipseItem]:
+        pins: list[QtWidgets.QGraphicsEllipseItem] = []
 
-    def update_content_height(self) -> None:
-        self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
-        self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
+        for i in range(self._index.model().rowCount(sep_index)):
+            pin_index: QtCore.QModelIndex = self._index.model().index(i, 0, sep_index)
+
+            pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
+            pin.setBrush(QtGui.QBrush(QtCore.Qt.darkBlue))
+            pin.setRect(QtCore.QRect(-5, -5, 10, 10))
+            pin.setData(0, pin_index)
+            pin.setZValue(2)
+            pins.append(pin)
+
+        return pins
 
     def update_title(self) -> None:
         self._title_item.setPlainText(
@@ -121,11 +131,40 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                 self.scene().font())
         )
 
+    def update_content_height(self) -> None:
+        self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
+        self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
+
+    def update_pin_pos(self, pins: list[QtWidgets.QGraphicsEllipseItem]):
+        content_view: TreeView = self._content_item.widget()
+
+        for pin in pins:
+            index: QtCore.QModelIndex = pin.data(0)
+            rect: QtCore.QRect = content_view.visualRect(index)
+            if rect.isValid():
+                pos: QtCore.QPoint = QtCore.QPoint(
+                    rect.x(),
+                    rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
+                )
+            else:
+                pos: QtCore.QPoint = QtCore.QPoint(
+                    rect.x(),
+                    rect.y() + self._title_height + content_view.rowHeight(index.parent()) // 2 + content_view.frameWidth()
+                )
+            pin.setPos(pos)
+
+    # noinspection PyUnusedLocal
+    def on_collapsed(self, index: QtCore.QModelIndex) -> None:
+        self.update_content_height()
+        self.update_pin_pos(self._base_pins)
+
+
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
         super().update()
 
         self.update_title()
         self.update_content_height()
+        self.update_pin_pos(self._base_pins)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
