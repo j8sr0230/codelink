@@ -48,10 +48,6 @@ class DocumentScene(QtWidgets.QGraphicsScene):
         self._scene_width: int = 32000
         self.setSceneRect(-self._scene_width // 2, -self._scene_width // 2, self._scene_width, self._scene_width)
 
-        self.addRect(
-            QtCore.QRectF(-100, -50, 200, 50), QtGui.QPen(ColorPalette.MEDIUMGRAY)
-        )
-
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
         self.setBackgroundBrush(self._background_brush)

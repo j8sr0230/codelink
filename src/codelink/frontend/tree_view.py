@@ -39,10 +39,12 @@ class TreeView(QtWidgets.QTreeView):
 
     def visible_row_height(self) -> int:
         height: int = 0
+
         index: QtCore.QModelIndex = self.rootIndex()
         while index.isValid():
-            if self.visualRect(index).isValid():
-                height += self.rowHeight(index)
+            if self.isIndexHidden(index):
+                continue
+            height += self.rowHeight(index) + 2 * self.frameWidth()
             index: QtCore.QModelIndex = self.indexBelow(index)
 
         return height

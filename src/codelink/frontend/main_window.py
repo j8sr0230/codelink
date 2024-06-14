@@ -230,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
         parent_index: QtCore.QModelIndex = doc_model.nodes_index
         nodes_count: int = doc_model.rowCount(parent_index)
         for i in range(nodes_count):
-            doc_model.rowsInserted.emit(parent_index, i, i)
+            doc_view.on_model_rows_inserted(parent_index, i, i)
 
     def new(self) -> None:
         self._new()

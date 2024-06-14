@@ -74,4 +74,4 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(QtCore.Qt.NoPen)
         painter.setBrush(QtGui.QBrush(QtGui.QColor("303030")))
-        painter.drawRoundedRect(self.boundingRect(), 5, 5)
+        painter.drawRect(self.boundingRect())
