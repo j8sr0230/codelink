@@ -75,13 +75,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
 
         self._content_height: int = content_view.visible_row_height()
-        print(self._content_height)
 
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
         proxy_item.setWidget(content_view)
-        proxy_item.minimumHeight()
+        proxy_item.setMinimumHeight(0)
         proxy_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
-        print(proxy_item.geometry())
 
         return proxy_item
 
