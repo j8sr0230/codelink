@@ -77,7 +77,7 @@ class DocumentView(QtWidgets.QWidget):
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         item: TreeItem = self._model.item_from_index(index)
         if isinstance(item, NodeItem):
-            node_gr_item: NodeGrItem = NodeGrItem(index)
+            node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
             self._graphics_view.scene().addItem(node_gr_item)
             node_gr_item.update()
 
