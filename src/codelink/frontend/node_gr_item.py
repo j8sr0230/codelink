@@ -52,9 +52,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
         self._content_item: QtWidgets.QGraphicsProxyWidget = self.create_content()
-        self._base_pins: list[QtWidgets.QGraphicsEllipseItem] = self.create_pins(
-            persistent_index.model().index_from_key("Base", persistent_index)
-        )
+        self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
         self.setZValue(3)
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
@@ -109,7 +107,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         proxy_item.setZValue(3)
         return proxy_item
 
-    def create_pins(self, sep_index: QtCore.QModelIndex) -> list[QtWidgets.QGraphicsEllipseItem]:
+    def create_pins_group(self, sep_index: QtCore.QModelIndex) -> list[QtWidgets.QGraphicsEllipseItem]:
         pins: list[QtWidgets.QGraphicsEllipseItem] = []
 
         for i in range(self._persistent_index.model().rowCount(sep_index)):
@@ -121,6 +119,19 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
             )
             pin.setZValue(2)
             pins.append(pin)
+
+        return pins
+
+    def create_pins(self) -> list[list[QtWidgets.QGraphicsEllipseItem]]:
+        pins: list[list[QtWidgets.QGraphicsEllipseItem]] = []
+
+        sep_indexes: list[QtCore.QModelIndex] = [
+            self._persistent_index.model().index_from_key("Inputs", self._persistent_index),
+            self._persistent_index.model().index_from_key("Outputs", self._persistent_index)
+        ]
+
+        for sep_index in sep_indexes:
+            pins.append(self.create_pins_group(sep_index))
 
         return pins
 
@@ -142,28 +153,28 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
         self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
-    def update_pins(self, pins: list[QtWidgets.QGraphicsEllipseItem]):
+    def update_pins(self, pins: list[list[QtWidgets.QGraphicsEllipseItem]]):
         content_view: TreeView = self._content_item.widget()
 
-        for pin in pins:
-            index: QtCore.QModelIndex = pin.data(0)
-            rect: QtCore.QRect = content_view.visualRect(index)
-            if rect.isValid():
+        for grp_idx, pin_group in enumerate(pins):
+            for pin in pin_group:
+                index: QtCore.QModelIndex = QtCore.QModelIndex(pin.data(0))
+                rect: QtCore.QRect = content_view.visualRect(index)
+
+                if not rect.isValid():
+                    index: QtCore.QModelIndex = index.parent()
+                    rect: QtCore.QRect = content_view.visualRect(index)
+
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x(),
+                    rect.x() + grp_idx * self._width,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-            else:
-                pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x(),
-                    rect.y() + self._title_height + content_view.rowHeight(index.parent()) // 2 + content_view.frameWidth()
-                )
-            pin.setPos(pos)
+                pin.setPos(pos)
 
     # noinspection PyUnusedLocal
     def on_collapsed(self, index: QtCore.QModelIndex) -> None:
         self.update_content_height()
-        self.update_pins(self._base_pins)
+        self.update_pins(self._pins)
 
 
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
@@ -171,7 +182,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self.update_title()
         self.update_content_height()
-        self.update_pins(self._base_pins)
+        self.update_pins(self._pins)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)

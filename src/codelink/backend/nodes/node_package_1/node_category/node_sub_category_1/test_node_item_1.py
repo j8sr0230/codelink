@@ -38,4 +38,10 @@ class TestNodeItem1(NodeItem):
     def setup_children(self) -> None:
         super().setup_children()
 
-        self.children[0].append_child(IntegerPropertyItem(key="X", value=10))
+        self.children[0].append_child(IntegerPropertyItem(key="Mode", value=0))
+
+        self.children[1].append_child(IntegerPropertyItem(key="A", value=1))
+        self.children[1].append_child(IntegerPropertyItem(key="B", value=0))
+        self.children[1].append_child(IntegerPropertyItem(key="C", value=0))
+
+        self.children[2].append_child(IntegerPropertyItem(key="Res", value=100))
