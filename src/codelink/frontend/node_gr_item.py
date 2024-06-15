@@ -171,7 +171,9 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                     rect.x() + grp_idx * self._width,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
+                print(QtCore.QModelIndex(pin.data(0)))
                 pin.setPos(pos)
+
 
     # noinspection PyUnusedLocal
     def on_collapsed(self, index: QtCore.QModelIndex) -> None:
