@@ -40,7 +40,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._persistent_index: QtCore.QPersistentModelIndex = persistent_index
 
-        self._width: int = 150
+        self._width: int = 100
         self._title_height: int = 20
         self._title_padding_right: int = 5
         self._content_height: int = 0
