@@ -28,6 +28,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from codelink.backend.user_roles import UserRoles
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.tree_view import TreeView
 
@@ -111,11 +112,12 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         pins: list[QtWidgets.QGraphicsEllipseItem] = []
 
         for i in range(self._persistent_index.model().rowCount(sep_index)):
+            index: QtCore.QModelIndex = self.persistent_index.model().index(i, 0, sep_index)
             pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
-            pin.setBrush(QtGui.QBrush(QtCore.Qt.darkBlue))
+            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.COLOR))))
             pin.setRect(QtCore.QRect(-5, -5, 10, 10))
             pin.setData(
-                0, QtCore.QPersistentModelIndex(self.persistent_index.model().index(i, 0, sep_index))
+                0, QtCore.QPersistentModelIndex(index)
             )
             pin.setZValue(2)
             pins.append(pin)

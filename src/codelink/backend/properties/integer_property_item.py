@@ -54,3 +54,7 @@ class IntegerPropertyItem(PropertyItem):
         editor.interpretText()
         value: int = editor.value()
         return model.setData(index, value, int(QtCore.Qt.EditRole))
+
+    @staticmethod
+    def color() -> str:
+        return "green"

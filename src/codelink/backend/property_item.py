@@ -32,3 +32,7 @@ class PropertyItem(BaseItem):
     def __init__(self, key: str, value: Any, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
+
+    @staticmethod
+    def color() -> str:
+        return ""

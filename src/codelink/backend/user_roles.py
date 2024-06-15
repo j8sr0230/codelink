@@ -32,6 +32,7 @@ class UserRoles(IntEnum):
     UUID: int = QtCore.Qt.UserRole + 2
     KEY: int = QtCore.Qt.UserRole + 3
     VALUE: int = QtCore.Qt.UserRole + 4
-    POS: int= QtCore.Qt.UserRole + 5
-    SRC: int = QtCore.Qt.UserRole + 6
-    DEST: int = QtCore.Qt.UserRole + 7
+    COLOR: int = QtCore.Qt.UserRole + 5
+    POS: int = QtCore.Qt.UserRole + 6
+    SRC: int = QtCore.Qt.UserRole + 7
+    DEST: int = QtCore.Qt.UserRole + 8

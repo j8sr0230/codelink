@@ -38,6 +38,7 @@ from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item import NodeItem
 from codelink.backend.tree_seperator_item import SeperatorItem, TreeSeperatorItem
+from codelink.backend.property_item import PropertyItem
 from codelink.backend.edge_item import EdgeItem
 
 
@@ -152,6 +153,11 @@ class TreeModel(QtCore.QAbstractItemModel):
             if role == UserRoles.VALUE:
                 return base_item.value
 
+            if isinstance(tree_item, PropertyItem):
+                prop_item: PropertyItem = cast(PropertyItem, tree_item)
+                if role == UserRoles.COLOR:
+                    return prop_item.color()
+
             if isinstance(tree_item, NodeItem):
                 node_item: NodeItem = cast(NodeItem, tree_item)
                 if role == UserRoles.POS:
@@ -189,7 +195,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.rowCount(parent) > 0
 
     def setData(self, index: QtCore.QModelIndex, value: Any, role: int = QtCore.Qt.EditRole) -> bool:
-        if role != QtCore.Qt.EditRole and role != UserRoles.POS and role not in [role for role in UserRoles]:
+        if role != QtCore.Qt.EditRole and role not in [role for role in UserRoles]:
             return False
 
         tree_item: TreeItem = self.item_from_index(index)
