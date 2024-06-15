@@ -52,7 +52,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
         self._content_item: QtWidgets.QGraphicsProxyWidget = self.create_content()
         self._base_pins: list[QtWidgets.QGraphicsEllipseItem] = self.create_pins(
-            index.model().index(0, 0, index)
+            index.model().index_from_key("Base", index)
         )
 
         self.setZValue(3)

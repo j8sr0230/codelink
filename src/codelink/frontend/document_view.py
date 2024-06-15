@@ -72,6 +72,7 @@ class DocumentView(QtWidgets.QWidget):
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         print("Inserted at:", first_row)
         self._model.is_modified = True
+        self.update()
 
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         item: TreeItem = self._model.item_from_index(index)
@@ -84,6 +85,7 @@ class DocumentView(QtWidgets.QWidget):
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         print("Removed at:", first_row)
         self._model.is_modified = True
+        self.update()
 
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(index)
