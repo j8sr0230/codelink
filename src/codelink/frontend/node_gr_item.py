@@ -33,10 +33,11 @@ from codelink.frontend.tree_view import TreeView
 
 
 class NodeGrItem(QtWidgets.QGraphicsItem):
-    def __init__(self, pers_index: QtCore.QPersistentModelIndex, parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
+    def __init__(self, persistent_index: QtCore.QPersistentModelIndex,
+                 parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._pers_index: QtCore.QPersistentModelIndex = pers_index
+        self._persistent_index: QtCore.QPersistentModelIndex = persistent_index
 
         self._width: int = 100
         self._title_height: int = 20
@@ -52,7 +53,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
         self._content_item: QtWidgets.QGraphicsProxyWidget = self.create_content()
         self._base_pins: list[QtWidgets.QGraphicsEllipseItem] = self.create_pins(
-            pers_index.model().index_from_key("Base", pers_index)
+            persistent_index.model().index_from_key("Base", persistent_index)
         )
 
         self.setZValue(3)
@@ -60,8 +61,8 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     @property
-    def index(self) -> QtCore.QModelIndex:
-        return QtCore.QModelIndex(self._pers_index)
+    def persistent_index(self) -> QtCore.QPersistentModelIndex:
+        return self._persistent_index
 
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
@@ -92,8 +93,8 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.setUniformRowHeights(True)
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
-        content_view.setModel(self._pers_index.model())
-        content_view.setRootIndex(self._pers_index)
+        content_view.setModel(self._persistent_index.model())
+        content_view.setRootIndex(self._persistent_index)
         content_view.expandAll()
         content_view.header().resizeSection(0, self._width // 2 - content_view.frameWidth())
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
@@ -111,20 +112,28 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
     def create_pins(self, sep_index: QtCore.QModelIndex) -> list[QtWidgets.QGraphicsEllipseItem]:
         pins: list[QtWidgets.QGraphicsEllipseItem] = []
 
-        for i in range(self._pers_index.model().rowCount(sep_index)):
+        for i in range(self._persistent_index.model().rowCount(sep_index)):
             pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
             pin.setBrush(QtGui.QBrush(QtCore.Qt.darkBlue))
             pin.setRect(QtCore.QRect(-5, -5, 10, 10))
-            pin.setData(0, QtCore.QPersistentModelIndex(self._pers_index.model().index(i, 0, sep_index)))
+            pin.setData(
+                0, QtCore.QPersistentModelIndex(self.persistent_index.model().index(i, 0, sep_index))
+            )
             pin.setZValue(2)
             pins.append(pin)
 
         return pins
 
+    def index(self) -> QtCore.QModelIndex:
+        if not self._persistent_index.isValid():
+            return QtCore.QModelIndex()
+
+        return QtCore.QModelIndex(self._persistent_index)
+
     def update_title(self) -> None:
         self._title_item.setPlainText(
             self.crop_text(
-                self._pers_index.data(int(QtCore.Qt.DisplayRole)),
+                self.persistent_index.data(int(QtCore.Qt.DisplayRole)),
                 self._width - self._title_padding_right,
                 self.scene().font())
         )

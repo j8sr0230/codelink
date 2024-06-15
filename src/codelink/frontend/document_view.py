@@ -60,7 +60,7 @@ class DocumentView(QtWidgets.QWidget):
         graphics_items: list[QtWidgets.QGraphicsItem] = []
         for graphics_item in self._graphics_view.scene().items():
             if hasattr(graphics_item, "index"):
-                if graphics_item.index == index or self._model.has_parent_recursively(index, graphics_item.index):
+                if graphics_item.index() == index or self._model.has_parent_recursively(index, graphics_item.index()):
                     graphics_items.append(graphics_item)
 
         if len(graphics_items) > 0:
