@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, cast
+from typing import Optional, Any, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -155,10 +155,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_height: int = cast(TreeView, self._content_item.widget()).visible_row_height()
         self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
-    def update_pins(self, pins: list[list[QtWidgets.QGraphicsEllipseItem]]):
+    def update_pins(self):
         content_view: TreeView = self._content_item.widget()
 
-        for grp_idx, pin_group in enumerate(pins):
+        for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
                 index: QtCore.QModelIndex = QtCore.QModelIndex(pin.data(0))
                 rect: QtCore.QRect = content_view.visualRect(index)
@@ -171,22 +171,38 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                     rect.x() + grp_idx * self._width,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-                print(QtCore.QModelIndex(pin.data(0)))
                 pin.setPos(pos)
 
+    def update_position(self):
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
+        pos: list[int] = self.persistent_index.data(UserRoles.POS)
+        self.setPos(pos[0], pos[1])
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
 
     # noinspection PyUnusedLocal
     def on_collapsed(self, index: QtCore.QModelIndex) -> None:
         self.update_content_height()
-        self.update_pins(self._pins)
+        self.update_pins()
 
+    def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
+            pos: QtCore.QPoint = value
+            pos: list[int] = [pos.x(), pos.y()]
+            self._persistent_index.model().setData(
+                QtCore.QModelIndex(self._persistent_index), pos, UserRoles.POS
+            )
+            return value
+        else:
+            return super().itemChange(change, value)
 
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
         super().update()
 
         self.update_title()
         self.update_content_height()
-        self.update_pins(self._pins)
+        self.update_pins()
+        self.update_position()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
