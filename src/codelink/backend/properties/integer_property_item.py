@@ -32,7 +32,7 @@ from codelink.backend.property_item import PropertyItem
 
 
 class IntegerPropertyItem(PropertyItem):
-    def __init__(self, key: str, value: int, uuid: Optional[str] = None,
+    def __init__(self, key: str, value: Optional[int] = 0, uuid: Optional[str] = None,
                  parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
 

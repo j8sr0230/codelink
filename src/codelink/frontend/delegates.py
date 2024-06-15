@@ -49,7 +49,8 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 return editor
 
             if index.column() == 1:
-                return tree_item.create_editor(parent, option, index)
+                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                    return tree_item.create_editor(parent, option, index)
 
         return None
 
@@ -64,7 +65,8 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 editor.setText(value)
 
             if index.column() == 1:
-                tree_item.set_editor_data(editor, index)
+                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                    tree_item.set_editor_data(editor, index)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex()) -> bool:
@@ -78,7 +80,8 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 return index.model().setData(index, value, int(QtCore.Qt.EditRole))
 
             if index.column() == 1:
-                return tree_item.set_model_data(editor, index.model(), index)
+                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                    return tree_item.set_model_data(editor, index.model(), index)
 
         return False
 

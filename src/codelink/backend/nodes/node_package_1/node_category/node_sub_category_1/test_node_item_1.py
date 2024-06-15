@@ -44,4 +44,4 @@ class TestNodeItem1(NodeItem):
         self.children[1].append_child(IntegerPropertyItem(key="B", value=0))
         self.children[1].append_child(IntegerPropertyItem(key="C", value=0))
 
-        self.children[2].append_child(IntegerPropertyItem(key="Res", value=100))
+        self.children[2].append_child(IntegerPropertyItem(key="Res", value=None))
