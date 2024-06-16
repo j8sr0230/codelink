@@ -22,7 +22,12 @@
 # *                                                                         *
 # ***************************************************************************
 
+from typing import TYPE_CHECKING, cast
+
 import PySide2.QtCore as QtCore
+
+if TYPE_CHECKING:
+    from codelink.backend.document_model import DocumentModel
 
 
 class Level2ProxyModel(QtCore.QSortFilterProxyModel):
@@ -51,3 +56,20 @@ class Level4ProxyModel(QtCore.QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
         return not source_parent.parent().parent().parent().isValid()
+
+
+class ColumnSwapProxyModel(QtCore.QAbstractProxyModel):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        source_row: int = proxy_index.row()
+        source_col: int = 1 if proxy_index.column() == 0 else 0
+        source_parent: QtCore.QModelIndex = self.mapToSource(proxy_index.parent())
+        return cast(DocumentModel, self.sourceModel).index(source_row, source_col, source_parent)
+
+    def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        proxy_row: int = source_index.row()
+        proxy_col: int = 1 if source_index.column() == 0 else 0
+        proxy_parent: QtCore.QModelIndex = self.mapFromSource(source_index.parent())
+        return self.createIndex(proxy_row, proxy_col, proxy_parent)

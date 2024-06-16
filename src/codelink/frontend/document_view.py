@@ -22,19 +22,20 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
-from codelink.backend.tree_item import TreeItem
-from codelink.backend.node_item import NodeItem
 from codelink.backend.document_model import DocumentModel
+from codelink.backend.node_item import NodeItem
 from codelink.frontend.document_scene import DocumentScene
-
 from codelink.frontend.node_gr_item import NodeGrItem
+
+if TYPE_CHECKING:
+    from codelink.backend.tree_item import TreeItem
 
 
 class DocumentView(QtWidgets.QWidget):
