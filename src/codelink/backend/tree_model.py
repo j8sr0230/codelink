@@ -87,7 +87,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self._undo_stack
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
-        if parent.isValid() and parent.column() != 0:
+        if parent.isValid() and parent.column() not in  [0, 1]:
             return QtCore.QModelIndex()
 
         parent_item: TreeItem = self.item_from_index(parent)
@@ -116,7 +116,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.createIndex(parent_item.row(), 0, parent_item)
 
     def rowCount(self, parent=QtCore.QModelIndex()) -> int:
-        if parent.isValid() and parent.column() > 0:
+        if parent.isValid() and parent.column() > 1:
             return 0
 
         parent_item: TreeItem = self.item_from_index(parent)

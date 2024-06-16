@@ -58,16 +58,17 @@ class ColumnSwapProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
-    def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        source_row: int = proxy_index.row()
-        source_col: int = 1 if proxy_index.column() == 0 else 0
-        source_parent: QtCore.QModelIndex = proxy_index.parent()
-        return self.sourceModel().index(source_row, source_col, source_parent)
-
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        print(source_index.row(), source_index.column())
-        proxy_row: int = source_index.row()
-        proxy_col: int = 1 if source_index.column() == 0 else 0
-        print(proxy_row, proxy_col)
-        proxy_parent: QtCore.QModelIndex = source_index.parent()
-        return self.sourceModel().index(proxy_row, proxy_col, proxy_parent)
+        index: QtCore.QModelIndex = super().mapFromSource(source_index)
+        row: int = index.row()
+        col: int = 1 if index.column() == 0 else 0
+        return self.index(row, col, index.parent())
+
+    def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        index: QtCore.QModelIndex = super().mapToSource(proxy_index)
+        row: int = index.row()
+        col: int = 1 if index.column() == 0 else 0
+        return self.sourceModel().index(row, col, index.parent())
+
+    # def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
+    #     return not source_parent.parent().parent().parent().isValid()
