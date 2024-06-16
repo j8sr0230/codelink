@@ -96,7 +96,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         proxy_model: ColumnSwapProxyModel = ColumnSwapProxyModel()
         proxy_model.setSourceModel(self._persistent_index.model())
         content_view.setModel(proxy_model)
-        content_view.setRootIndex(proxy_model.mapFromSource(QtCore.QModelIndex(self._persistent_index)))
+        content_view.setRootIndex(proxy_model.mapFromSource(self._persistent_index))
         content_view.expandAll()
         content_view.header().resizeSection(0, self._width // 2 - content_view.frameWidth())
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
@@ -160,24 +160,23 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def update_pins(self):
         content_view: TreeView = self._content_item.widget()
+        proxy: ColumnSwapProxyModel = content_view.model()
 
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
 
-                pin_idx: QtCore.QModelIndex = pin.data(0)
-                index: QtCore.QModelIndex = QtCore.QModelIndex(pin_idx)
-                index: QtCore.QModelIndex = self._content_item.widget().model().mapFromSource(index)
-
+                pin_pers_idx: QtCore.QPersistentModelIndex = pin.data(0)
+                index: QtCore.QModelIndex = QtCore.QModelIndex(pin_pers_idx)
+                index: QtCore.QModelIndex = proxy.mapFromSource(index)
                 rect: QtCore.QRect = content_view.visualRect(index)
-                print(index.data())
-                print(rect)
+                print(index.row(), index.column(), index.data(), rect)
 
                 if not rect.isValid():
                     index: QtCore.QModelIndex = index.parent()
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * self._width + 50,
+                    rect.x() + grp_idx * self._width,  # + 50,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
                 print(pos)
