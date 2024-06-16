@@ -29,6 +29,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
+# from codelink.backend.proxy_models import ColumnSwapProxyModel
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.tree_view import TreeView
 
@@ -89,9 +90,12 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def create_content(self) -> QtWidgets.QGraphicsProxyWidget:
         content_view: TreeView = TreeView()
-        content_view.setUniformRowHeights(True)
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
+        # proxy_model: ColumnSwapProxyModel = ColumnSwapProxyModel()
+        # proxy_model.setSourceModel(self._persistent_index.model())
+        # content_view.setModel(proxy_model)
+        # content_view.setRootIndex(proxy_model.mapFromSource(QtCore.QModelIndex(self._persistent_index)))
         content_view.setModel(self._persistent_index.model())
         content_view.setRootIndex(self._persistent_index)
         content_view.expandAll()
