@@ -165,7 +165,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         index: QtCore.QModelIndex = content_view.rootIndex()
         while index.isValid():
-            print(index.data(), index.parent().data())
+            print(index.data(), index.parent().data(), index.column(), index)
             if index != content_view.rootIndex() and not content_view.isIndexHidden(index) and index.parent().data() in ["Inputs", "Outputs"]:
                 pin: QtWidgets.QGraphicsEllipseItem = flatten_pins.pop(0)
 
