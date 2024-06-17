@@ -23,6 +23,7 @@
 # ***************************************************************************
 
 from typing import Optional, Any, cast
+from itertools import chain
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -160,13 +161,13 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def update_pins(self):
         content_view: TreeView = self._content_item.widget()
-        proxy: ColumnSwapProxyModel = content_view.model()
+        flatten_pins: list[QtWidgets.QGraphicsEllipseItem] = list(chain.from_iterable(self._pins))
 
-        for grp_idx, pin_group in enumerate(self._pins):
-            for pin_idx, pin in enumerate(pin_group):
-                index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0)))
-                print(index.parent().data(), "->", index.data(), index)
-                print(proxy.checkIndex(index))
+        index: QtCore.QModelIndex = content_view.rootIndex()
+        while index.isValid():
+            print(index.data(), index.parent().data())
+            if index != content_view.rootIndex() and not content_view.isIndexHidden(index) and index.parent().data() in ["Inputs", "Outputs"]:
+                pin: QtWidgets.QGraphicsEllipseItem = flatten_pins.pop(0)
 
                 rect: QtCore.QRect = content_view.visualRect(index)
                 print(rect)
@@ -176,11 +177,12 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * self._width  + 50,
+                    rect.x() + self._width + 50,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-                print()
                 pin.setPos(pos)
+
+            index: QtCore.QModelIndex = content_view.indexBelow(index)
 
     def update_position(self):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
