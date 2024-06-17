@@ -162,24 +162,36 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view: TreeView = self._content_item.widget()
         proxy: ColumnSwapProxyModel = content_view.model()
 
-        for grp_idx, pin_group in enumerate(self._pins):
-            for pin in pin_group:
+        sep_indexes: list[QtCore.QModelIndex] = [
+            proxy.mapFromSource(self._persistent_index.model().index_from_key("Inputs", QtCore.QModelIndex(self._persistent_index))),
+            proxy.mapFromSource(self._persistent_index.model().index_from_key("Outputs",  QtCore.QModelIndex(self._persistent_index)))
+        ]
+       # print(sep_indexes)
 
-                pin_pers_idx: QtCore.QPersistentModelIndex = pin.data(0)
-                index: QtCore.QModelIndex = QtCore.QModelIndex(pin_pers_idx)
-                index: QtCore.QModelIndex = proxy.mapFromSource(index)
-                rect: QtCore.QRect = content_view.visualRect(index)
-                print(index.row(), index.column(), index.data(), rect)
+        for grp_idx, pin_group in enumerate(self._pins):
+            for pin_idx, pin in enumerate(pin_group):
+                index: QtCore.QModelIndex = proxy.index(pin_idx, 0, sep_indexes[grp_idx])
+                index: QtCore.QModelIndex = proxy.index(pin_idx, 1, sep_indexes[grp_idx])
+                print(index)
+                print(content_view.indexBelow(index.parent()))
+
+
+
+                # pin_pers_idx: QtCore.QPersistentModelIndex = pin.data(0)
+                # index: QtCore.QModelIndex = QtCore.QModelIndex(pin_pers_idx)
+                # index: QtCore.QModelIndex = proxy.mapFromSource(index)
+                rect: QtCore.QRect = content_view.visualRect(content_view.indexBelow(index.parent()))
+                print(rect)
 
                 if not rect.isValid():
                     index: QtCore.QModelIndex = index.parent()
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * self._width,  # + 50,
+                    rect.x() + grp_idx * self._width + 50,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-                print(pos)
+                print()
                 pin.setPos(pos)
 
     def update_position(self):
