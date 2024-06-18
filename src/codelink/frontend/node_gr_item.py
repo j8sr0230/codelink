@@ -106,6 +106,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_height: int = content_view.visible_row_height()
 
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
+        # TODO: proxy_item.setWidgetUpdateMode(QtWidgets.QGraphicsProxyWidget.NoUpdate)
         proxy_item.setWidget(content_view)
         proxy_item.setMinimumHeight(0)
         proxy_item.setZValue(3)

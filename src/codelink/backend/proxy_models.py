@@ -59,23 +59,13 @@ class ColumnSwapProxyModel(Level4ProxyModel):
         super().__init__()
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        parent_data: list[str] = [
-            source_index.parent().siblingAtColumn(0).data(),
-            source_index.parent().siblingAtColumn(1).data()
-        ]
-
-        if "Outputs" in parent_data:
+        if source_index.parent().row() == 2:
             return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
         else:
             return super().mapFromSource(source_index)
 
     def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        parent_data: list[str] = [
-            proxy_index.parent().siblingAtColumn(0).data(),
-            proxy_index.parent().siblingAtColumn(1).data()
-        ]
-
-        if "Outputs" in parent_data:
+        if proxy_index.parent().row() == 2:
             return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
         else:
             return super().mapToSource(proxy_index)

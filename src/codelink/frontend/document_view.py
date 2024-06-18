@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
@@ -45,10 +45,17 @@ class DocumentView(QtWidgets.QWidget):
         self._model: DocumentModel = model
 
         self.setLayout(QtWidgets.QVBoxLayout())
+
         self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        self._graphics_view.setRenderHint(QtGui.QPainter.Antialiasing)
-        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self._graphics_view.setScene(DocumentScene())
+        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
+        #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
+        self._graphics_view.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self._graphics_view.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
+        self._graphics_view.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
+                                                 QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
+
         self.layout().addWidget(self._graphics_view)
         self.layout().setMargin(0)
         self.layout().setSpacing(0)
