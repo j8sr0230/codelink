@@ -23,7 +23,6 @@
 # ***************************************************************************
 
 from typing import Optional, Any, cast
-from itertools import chain
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
