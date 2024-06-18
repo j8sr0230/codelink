@@ -166,7 +166,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
                 index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0)))
-                print("pin", index.data(), index.parent().row(), index.parent().column(), index.parent().data())
+                # print("pin", index.data(), index.parent().row(), index.parent().column(), index.parent().data())
 
                 if index.column() == 1:
                     index: QtCore.QModelIndex = proxy.index(
@@ -175,10 +175,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
                 rect: QtCore.QRect = content_view.visualRect(index)
 
-                view_index: QtCore.QModelIndex = content_view.rootIndex()
-                while view_index.isValid():
-                    print("viw", view_index.data(), view_index.parent().row(), view_index.parent().column(), view_index.parent().data())
-                    view_index: QtCore.QModelIndex = content_view.indexBelow(view_index)
+                # view_index: QtCore.QModelIndex = content_view.rootIndex()
+                # while view_index.isValid():
+                #     print("viw", view_index.data(), view_index.parent().row(), view_index.parent().column(), view_index.parent().data())
+                #     view_index: QtCore.QModelIndex = content_view.indexBelow(view_index)
 
                 if not rect.isValid():
                     index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0))).parent()
