@@ -123,7 +123,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
             pin.setData(
                 0, QtCore.QPersistentModelIndex(index)
             )
-            pin.setZValue(5)
+            pin.setZValue(2)
             pins.append(pin)
 
         return pins
@@ -161,52 +161,36 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def update_pins(self):
         content_view: TreeView = self._content_item.widget()
+        proxy: ColumnSwapProxyModel = content_view.model()
 
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
+                index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0)))
+                print("pin", index.data(), index.parent().row(), index.parent().column(), index.parent().data())
 
-                pin_idx: QtCore.QModelIndex = pin.data(0)
-                index: QtCore.QModelIndex = QtCore.QModelIndex(pin_idx)
-                index: QtCore.QModelIndex = self._content_item.widget().model().mapFromSource(index)
+                if index.column() == 1:
+                    index: QtCore.QModelIndex = proxy.index(
+                        index.row(), 0, index.parent().siblingAtColumn(0)
+                    )
 
                 rect: QtCore.QRect = content_view.visualRect(index)
-                print(index.data())
-                print(rect)
+
+                view_index: QtCore.QModelIndex = content_view.rootIndex()
+                while view_index.isValid():
+                    print("viw", view_index.data(), view_index.parent().row(), view_index.parent().column(), view_index.parent().data())
+                    view_index: QtCore.QModelIndex = content_view.indexBelow(view_index)
 
                 if not rect.isValid():
-                    index: QtCore.QModelIndex = index.parent()
+                    index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0))).parent()
+                    index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent())
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * self._width + 50,
+                    rect.x() + grp_idx * self._width,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-                print(pos)
+                print()
                 pin.setPos(pos)
-
-        # content_view: TreeView = self._content_item.widget()
-        # flatten_pins: list[QtWidgets.QGraphicsEllipseItem] = list(chain.from_iterable(self._pins))
-        #
-        # index: QtCore.QModelIndex = content_view.rootIndex()
-        # while index.isValid():
-        #     if index != content_view.rootIndex() and not content_view.isIndexHidden(index):
-        #         parent: QtCore.QModelIndex = index.parent()
-        #         if not index.parent().data():
-        #             parent: QtCore.QModelIndex = parent.siblingAtColumn(abs(parent.column() - 1))
-        #
-        #         if parent.data() in ["Inputs", "Outputs"]:
-        #             rect: QtCore.QRect = content_view.visualRect(index)
-        #             if not rect.isValid():
-        #                 index: QtCore.QModelIndex = index.parent()
-        #                 rect: QtCore.QRect = content_view.visualRect(index)
-        #
-        #             pos: QtCore.QPoint = QtCore.QPoint(
-        #                 rect.x(),  #  + self._width // 2,
-        #                 rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
-        #             )
-        #             flatten_pins.pop(0).setPos(pos)
-        #
-        #     index: QtCore.QModelIndex = content_view.indexBelow(index)
 
     def update_position(self):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)

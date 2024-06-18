@@ -59,10 +59,10 @@ class ColumnSwapProxyModel(QtCore.QSortFilterProxyModel):
         super().__init__()
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        return super().mapFromSource(source_index)  # .siblingAtColumn(abs(source_index.column() - 1))
+        return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
 
     def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        return super().mapToSource(proxy_index)  # .siblingAtColumn(abs(proxy_index.column() - 1))
+        return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
 
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
         return True  # not source_parent.parent().parent().parent().isValid()
