@@ -96,7 +96,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         proxy_model: ColumnSwapProxyModel = ColumnSwapProxyModel()
         proxy_model.setSourceModel(self._persistent_index.model())
         content_view.setModel(proxy_model)
-        content_view.setRootIndex(proxy_model.mapFromSource(QtCore.QModelIndex(self._persistent_index)))
+        content_view.setRootIndex(proxy_model.mapFromSource(self._persistent_index))
         content_view.expandAll()
         content_view.header().resizeSection(0, self._width // 2 - content_view.frameWidth())
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
@@ -164,31 +164,18 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
-                index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0)))
-                # print("pin", index.data(), index.parent().row(), index.parent().column(), index.parent().data())
-
-                if index.column() == 1:
-                    index: QtCore.QModelIndex = proxy.index(
-                        index.row(), 0, index.parent().siblingAtColumn(0)
-                    )
+                index: QtCore.QModelIndex = proxy.mapFromSource(pin.data(0))
+                index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent().siblingAtColumn(0))
 
                 rect: QtCore.QRect = content_view.visualRect(index)
-
-                # view_index: QtCore.QModelIndex = content_view.rootIndex()
-                # while view_index.isValid():
-                #     print("viw", view_index.data(), view_index.parent().row(), view_index.parent().column(), view_index.parent().data())
-                #     view_index: QtCore.QModelIndex = content_view.indexBelow(view_index)
-
                 if not rect.isValid():
-                    index: QtCore.QModelIndex = proxy.mapFromSource(QtCore.QModelIndex(pin.data(0))).parent()
-                    index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent())
+                    index: QtCore.QModelIndex = index.siblingAtColumn(0).parent()
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
                     rect.x() + grp_idx * self._width,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
-                print()
                 pin.setPos(pos)
 
     def update_position(self):

@@ -113,7 +113,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         if parent_item == self.root_item or not parent_item:
             return QtCore.QModelIndex()
 
-        return self.createIndex(parent_item.row(), index.column(), parent_item)
+        return self.createIndex(parent_item.row(), 0, parent_item)
 
     def rowCount(self, parent=QtCore.QModelIndex()) -> int:
         if parent.isValid() and parent.column() not in (0, 1):

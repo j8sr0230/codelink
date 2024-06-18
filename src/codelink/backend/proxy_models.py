@@ -54,15 +54,29 @@ class Level4ProxyModel(QtCore.QSortFilterProxyModel):
         return not source_parent.parent().parent().parent().isValid()
 
 
-class ColumnSwapProxyModel(QtCore.QSortFilterProxyModel):
+class ColumnSwapProxyModel(Level4ProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
+        parent_data: list[str] = [
+            source_index.parent().siblingAtColumn(0).data(),
+            source_index.parent().siblingAtColumn(1).data()
+        ]
+
+        if "Outputs" in parent_data:
+            return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
+        else:
+            return super().mapFromSource(source_index)
 
     def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
+        parent_data: list[str] = [
+            proxy_index.parent().siblingAtColumn(0).data(),
+            proxy_index.parent().siblingAtColumn(1).data()
+        ]
 
-    def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
-        return True  # not source_parent.parent().parent().parent().isValid()
+        if "Outputs" in parent_data:
+            return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
+        else:
+            return super().mapToSource(proxy_index)
+
