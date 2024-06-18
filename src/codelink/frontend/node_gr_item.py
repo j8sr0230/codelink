@@ -123,7 +123,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
             pin.setData(
                 0, QtCore.QPersistentModelIndex(index)
             )
-            pin.setZValue(2)
+            pin.setZValue(5)
             pins.append(pin)
 
         return pins
@@ -161,15 +161,16 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def update_pins(self):
         content_view: TreeView = self._content_item.widget()
-        flatten_pins: list[QtWidgets.QGraphicsEllipseItem] = list(chain.from_iterable(self._pins))
 
-        index: QtCore.QModelIndex = content_view.rootIndex()
-        while index.isValid():
-            print(index.data(), index.parent().data(), index.column(), index)
-            if index != content_view.rootIndex() and not content_view.isIndexHidden(index) and index.parent().data() in ["Inputs", "Outputs"]:
-                pin: QtWidgets.QGraphicsEllipseItem = flatten_pins.pop(0)
+        for grp_idx, pin_group in enumerate(self._pins):
+            for pin in pin_group:
+
+                pin_idx: QtCore.QModelIndex = pin.data(0)
+                index: QtCore.QModelIndex = QtCore.QModelIndex(pin_idx)
+                index: QtCore.QModelIndex = self._content_item.widget().model().mapFromSource(index)
 
                 rect: QtCore.QRect = content_view.visualRect(index)
+                print(index.data())
                 print(rect)
 
                 if not rect.isValid():
@@ -177,12 +178,35 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + self._width + 50,
+                    rect.x() + grp_idx * self._width + 50,
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
+                print(pos)
                 pin.setPos(pos)
 
-            index: QtCore.QModelIndex = content_view.indexBelow(index)
+        # content_view: TreeView = self._content_item.widget()
+        # flatten_pins: list[QtWidgets.QGraphicsEllipseItem] = list(chain.from_iterable(self._pins))
+        #
+        # index: QtCore.QModelIndex = content_view.rootIndex()
+        # while index.isValid():
+        #     if index != content_view.rootIndex() and not content_view.isIndexHidden(index):
+        #         parent: QtCore.QModelIndex = index.parent()
+        #         if not index.parent().data():
+        #             parent: QtCore.QModelIndex = parent.siblingAtColumn(abs(parent.column() - 1))
+        #
+        #         if parent.data() in ["Inputs", "Outputs"]:
+        #             rect: QtCore.QRect = content_view.visualRect(index)
+        #             if not rect.isValid():
+        #                 index: QtCore.QModelIndex = index.parent()
+        #                 rect: QtCore.QRect = content_view.visualRect(index)
+        #
+        #             pos: QtCore.QPoint = QtCore.QPoint(
+        #                 rect.x(),  #  + self._width // 2,
+        #                 rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
+        #             )
+        #             flatten_pins.pop(0).setPos(pos)
+        #
+        #     index: QtCore.QModelIndex = content_view.indexBelow(index)
 
     def update_position(self):
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable)
