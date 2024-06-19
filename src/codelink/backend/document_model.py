@@ -29,7 +29,7 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.tree_model import TreeModel
-
+from codelink.backend.nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1 import TestNodeItem1
 
 class DocumentModel(TreeModel):
     def __init__(self, data: Optional[dict[str, Any]] = None, undo_stack: Optional[QtWidgets.QUndoStack] = None,
@@ -38,6 +38,9 @@ class DocumentModel(TreeModel):
 
         self._file_name: Optional[str] = None
         self._is_modified: bool = False
+
+        for x in range(10):
+            self.append_node(TestNodeItem1())
 
     @property
     def file_name(self) -> Optional[str]:
