@@ -57,8 +57,12 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
         self.setZValue(3)
-        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
-                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        # self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+        #               QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
+        self.setCacheMode(QtWidgets.QGraphicsItem.ItemCoordinateCache)
+
 
     @property
     def persistent_index(self) -> QtCore.QPersistentModelIndex:
@@ -102,11 +106,15 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
         content_view.collapsed.connect(self.on_collapsed)
         content_view.expanded.connect(self.on_collapsed)
+        content_view.setEnabled(False)
+        # content_view.setVisible(False)
 
         self._content_height: int = content_view.visible_row_height()
 
         proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
-        # TODO: proxy_item.setWidgetUpdateMode(QtWidgets.QGraphicsProxyWidget.NoUpdate)
+        proxy_item.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
+        proxy_item.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
+        proxy_item.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
         proxy_item.setWidget(content_view)
         proxy_item.setMinimumHeight(0)
         proxy_item.setZValue(3)

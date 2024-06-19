@@ -51,7 +51,7 @@ class DocumentView(QtWidgets.QWidget):
         # self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
         #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
-        self._graphics_view.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self._graphics_view.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self._graphics_view.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
         self._graphics_view.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
                                                  QtWidgets.QGraphicsView.DontAdjustForAntialiasing)

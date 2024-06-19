@@ -39,8 +39,11 @@ class DocumentModel(TreeModel):
         self._file_name: Optional[str] = None
         self._is_modified: bool = False
 
-        for x in range(100):
-            self.append_node(TestNodeItem1())
+        for y in range(-600, 600, 200):
+            for x in range(-600, 600, 200):
+                node: TestNodeItem1 = TestNodeItem1()
+                node.pos = [x, y]
+                self.append_node(node)
 
     @property
     def file_name(self) -> Optional[str]:
