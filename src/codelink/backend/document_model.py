@@ -39,7 +39,7 @@ class DocumentModel(TreeModel):
         self._file_name: Optional[str] = None
         self._is_modified: bool = False
 
-        for x in range(10):
+        for x in range(100):
             self.append_node(TestNodeItem1())
 
     @property
