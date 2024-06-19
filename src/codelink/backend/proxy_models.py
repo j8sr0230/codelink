@@ -69,4 +69,3 @@ class ColumnSwapProxyModel(Level4ProxyModel):
             return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
         else:
             return super().mapToSource(proxy_index)
-
