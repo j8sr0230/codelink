@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, cast
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
@@ -31,6 +31,7 @@ import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
+from codelink.frontend.document_gr_view import DocumentGrView
 from codelink.frontend.document_scene import DocumentScene
 from codelink.frontend.node_gr_item import NodeGrItem
 
@@ -39,6 +40,8 @@ if TYPE_CHECKING:
 
 
 class DocumentView(QtWidgets.QWidget):
+    selection_changed: QtCore.Signal = QtCore.Signal(list)
+
     def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -46,13 +49,17 @@ class DocumentView(QtWidgets.QWidget):
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
-        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        self._graphics_view.setScene(DocumentScene())
+        self._document_gr_view: DocumentGrView = DocumentGrView(model)
+        self._document_gr_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
 
-        self.layout().addWidget(self._graphics_view)
+        self._document_scene: DocumentScene = DocumentScene()
+        self._document_gr_view.setScene(self._document_scene)
+
+        self.layout().addWidget(self._document_gr_view)
         self.layout().setMargin(0)
         self.layout().setSpacing(0)
+
+        self._document_scene.selectionChanged.connect(self.on_scene_selection_changed)
 
     @property
     def model(self) -> DocumentModel:
@@ -60,7 +67,7 @@ class DocumentView(QtWidgets.QWidget):
 
     def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
         graphics_items: list[QtWidgets.QGraphicsItem] = []
-        for graphics_item in self._graphics_view.scene().items():
+        for graphics_item in self._document_gr_view.scene().items():
             if hasattr(graphics_item, "index"):
                 if graphics_item.index() == index or self._model.has_parent_recursively(index, graphics_item.index()):
                     graphics_items.append(graphics_item)
@@ -80,7 +87,7 @@ class DocumentView(QtWidgets.QWidget):
         item: TreeItem = self._model.item_from_index(index)
         if isinstance(item, NodeItem):
             node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
-            self._graphics_view.scene().addItem(node_gr_item)
+            self._document_gr_view.scene().addItem(node_gr_item)
             node_gr_item.update()
 
     # noinspection PyUnusedLocal
@@ -92,7 +99,7 @@ class DocumentView(QtWidgets.QWidget):
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(index)
         if gr_item:
-            self._graphics_view.scene().removeItem(gr_item)
+            self._document_gr_view.scene().removeItem(gr_item)
 
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
@@ -106,11 +113,9 @@ class DocumentView(QtWidgets.QWidget):
         if gr_item:
             gr_item.update()
 
-    def update(self) -> None:
-        super().update()
-        file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
-        title: str = file_name + "*" if self._model.is_modified else file_name
-        self.setWindowTitle(title)
+    def on_scene_selection_changed(self):
+        selected_indexes: list[QtCore.QModelIndex] = [item.index() for item in self._document_scene.selectedItems()]
+        cast(QtCore.SignalInstance, self.selection_changed).emit(selected_indexes)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self._model.is_modified:
@@ -124,3 +129,9 @@ class DocumentView(QtWidgets.QWidget):
                 event.accept()
             else:
                 event.ignore()
+
+    def update(self) -> None:
+        super().update()
+        file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
+        title: str = file_name + "*" if self._model.is_modified else file_name
+        self.setWindowTitle(title)

@@ -223,6 +223,8 @@ class MainWindow(QtWidgets.QMainWindow):
         doc_model.file_name = file_name
 
         doc_view: DocumentView = DocumentView(doc_model)
+        cast(QtCore.SignalInstance, doc_view.selection_changed).connect(self.on_scene_selection_changed)
+
         doc_model.rowsInserted.connect(doc_view.on_model_rows_inserted)
         cast(QtCore.SignalInstance, doc_model.begin_remove_rows).connect(doc_view.on_model_begin_remove_rows)
         doc_model.dataChanged.connect(doc_view.on_model_data_changed)
@@ -306,7 +308,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._active_doc_model.add_test_data()
 
     # noinspection PyUnusedLocal
-    def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+    def on_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
 
         if len(current.indexes()) > 0:
@@ -329,6 +331,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self._detail_tree_view.setModel(None)
             del_act.setEnabled(False)
 
+    def on_scene_selection_changed(self, indexes: list[QtCore.QModelIndex]) -> None:
+        if len(indexes) > 0:
+            item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+            item_selection.select(indexes[0], indexes[-1])
+
+            self.on_tree_selection_changed(item_selection, QtCore.QItemSelection())
+            self._doc_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+
+            indexes: list[QtCore.QModelIndex] = [
+                self._item_tree_view.model().mapFromSource(index)for index in indexes
+            ]
+
+            item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+            item_selection.select(indexes[0], indexes[-1])
+
+            self._item_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
         save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
         save_act: QtWidgets.QAction = self._action_dict.get("&Save")
@@ -344,13 +363,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self._doc_tree_view.setModel(self._active_doc_model)
             self._doc_tree_view.expandAll()
-            self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+            self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_tree_selection_changed)
 
             proxy_model: Level2ProxyModel = Level2ProxyModel()
             proxy_model.setSourceModel(self._active_doc_model)
             self._item_tree_view.setModel(proxy_model)
             self._item_tree_view.expandAll()
-            self._item_tree_view.selectionModel().selectionChanged.connect(self.on_selection_changed)
+            self._item_tree_view.selectionModel().selectionChanged.connect(self.on_tree_selection_changed)
 
             self._detail_tree_view.setModel(None)
 
