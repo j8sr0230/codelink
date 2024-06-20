@@ -34,18 +34,18 @@ class CachableGrProxy(QtWidgets.QGraphicsProxyWidget):
                  w_flags: Optional[QtCore.Qt.WindowFlags] = None) -> None:
         super().__init__(parent, w_flags)
 
-        self._is_selected: bool = False
+        self._selected: bool = False
         self._cached_pix_map: Optional[QtGui.QPixmap] = None
 
     @property
-    def is_selected(self) -> bool:
-        return self._is_selected
+    def selected(self) -> bool:
+        return self._selected
 
-    @is_selected.setter
-    def is_selected(self, value: bool) -> None:
+    @selected.setter
+    def selected(self, value: bool) -> None:
         if not value:
             self.update_cache()
-        self._is_selected: bool = value
+        self._selected: bool = value
 
     def update_cache(self) -> None:
         self._cached_pix_map: QtGui.QPixmap = QtGui.QPixmap(QtCore.QSize(self.widget().size()))
@@ -57,7 +57,7 @@ class CachableGrProxy(QtWidgets.QGraphicsProxyWidget):
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: QtWidgets.QWidget) -> None:
-        if self._is_selected:
+        if self._selected:
             super().paint(painter, option, widget)
         else:
             painter.drawPixmap(QtCore.QPoint(0, 0), self._cached_pix_map)

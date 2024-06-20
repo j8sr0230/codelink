@@ -22,13 +22,15 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional
+from typing import Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
+from codelink.frontend.node_gr_item import NodeGrItem
 
 
 class DocumentGrView(QtWidgets.QGraphicsView):
@@ -68,6 +70,14 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = False
             self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
+
+            for item in self.scene().selectedItems():
+                if hasattr(item, "moved") and item.moved:
+                    item: NodeGrItem = cast(NodeGrItem, item)
+                    pos: QtCore.QPoint = item.pos()
+                    pos: list[int] = [pos.x(), pos.y()]
+                    self._model.setData(item.index(), pos, UserRoles.POS)
+                    item.moved = False
 
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = False

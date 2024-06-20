@@ -73,6 +73,14 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
     def persistent_index(self) -> QtCore.QPersistentModelIndex:
         return self._persistent_index
 
+    @property
+    def moved(self) -> bool:
+        return self._moved
+
+    @moved.setter
+    def moved(self, value: bool) -> None:
+        self._moved: bool = value
+
     @staticmethod
     def crop_text(text: str = "Test", width: float = 30, font: QtGui.QFont = QtGui.QFont()) -> str:
         font_metrics: QtGui.QFontMetrics = QtGui.QFontMetrics(font)
@@ -199,8 +207,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
-            if not self._moved and self._lm_pressed:
-                self._moved: bool = True
+            self._moved: bool = True
             return value
         else:
             return super().itemChange(change, value)
@@ -226,13 +233,6 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = False
 
-            if self._moved:
-                pos: QtCore.QPoint = self.pos()
-                pos: list[int] = [pos.x(), pos.y()]
-                self._persistent_index.model().setData(
-                    QtCore.QModelIndex(self._persistent_index), pos, UserRoles.POS
-                )
-
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = False
 
@@ -242,11 +242,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().hoverEnterEvent(event)
-        self._content_item.is_selected = True
+        self._content_item.selected = True
 
     def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
         self._content_item.clearFocus()
-        self._content_item.is_selected = False
+        self._content_item.selected = False
         super().hoverLeaveEvent(event)
 
     def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
