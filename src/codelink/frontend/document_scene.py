@@ -48,9 +48,6 @@ class DocumentScene(QtWidgets.QGraphicsScene):
         self._scene_width: int = 32000
         self.setSceneRect(-self._scene_width // 2, -self._scene_width // 2, self._scene_width, self._scene_width)
 
-        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
-        self.setSortCacheEnabled(False)
-
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
         self.setBackgroundBrush(self._background_brush)
@@ -66,11 +63,6 @@ class DocumentScene(QtWidgets.QGraphicsScene):
         first_left: int = bound_box_left - (bound_box_left % self._grid_spacing)
         first_top: int = bound_box_top - (bound_box_top % self._grid_spacing)
 
-        # points: list[Optional[QtCore.QPoint]] = []
         for x in range(first_left, bound_box_right, self._grid_spacing):
             for y in range(first_top, bound_box_bottom, self._grid_spacing):
-                # points.append(QtCore.QPoint(x, y))
                 painter.drawEllipse(QtCore.QPoint(x, y), self._grid_radius, self._grid_radius)
-
-        # painter.setPen(self._grid_pen)
-        # painter.drawPoints(points)

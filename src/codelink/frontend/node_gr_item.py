@@ -32,7 +32,7 @@ from codelink.backend.user_roles import UserRoles
 from codelink.backend.proxy_models import ColumnSwapProxyModel
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.tree_view import TreeView
-from codelink.frontend.proxy_gr_item import ProxyGrItem
+from codelink.frontend.cachable_gr_proxy import CachableGrProxy
 
 
 class NodeGrItem(QtWidgets.QGraphicsItem):
@@ -46,6 +46,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._title_height: int = 20
         self._title_padding_right: int = 5
         self._content_height: int = 0
+        self._pin_size: int = 10
 
         self._node_background_color: QtGui.QColor = QtGui.QColor(ColorPalette.REGULARGRAY)
         self._selected_border_color: QtGui.QColor = QtGui.QColor(ColorPalette.HIGHLIGHT)
@@ -54,12 +55,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._selected_border_pen.setWidthF(1.5)
 
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
-        self._content_item: ProxyGrItem = self.create_content()
+        self._content_item: CachableGrProxy = self.create_content()
         self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-        self.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
         self.setAcceptHoverEvents(True)
         self.setZValue(3)
 
@@ -91,7 +91,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         text_item.setZValue(3)
         return text_item
 
-    def create_content(self) -> ProxyGrItem:
+    def create_content(self) -> CachableGrProxy:
         content_view: TreeView = TreeView()
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
@@ -108,8 +108,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._content_height: int = content_view.visible_row_height()
 
-        proxy_item: ProxyGrItem = ProxyGrItem(self, QtCore.Qt.Widget | QtCore.Qt.Widget)
-        proxy_item.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+        proxy_item: CachableGrProxy = CachableGrProxy(self, QtCore.Qt.Widget | QtCore.Qt.Widget)
         proxy_item.setWidget(content_view)
         proxy_item.setMinimumHeight(0)
         proxy_item.setZValue(3)
@@ -121,11 +120,9 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         for i in range(self._persistent_index.model().rowCount(sep_index)):
             index: QtCore.QModelIndex = self.persistent_index.model().index(i, 0, sep_index)
             pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
-            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.PIN_COLOR))))
-            pin.setRect(QtCore.QRect(-5, -5, 10, 10))
-            pin.setData(
-                0, QtCore.QPersistentModelIndex(index)
-            )
+            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.COLOR))))
+            pin.setRect(QtCore.QRect(-self._pin_size // 2, -self._pin_size // 2, self._pin_size, self._pin_size))
+            pin.setData(0, QtCore.QPersistentModelIndex(index))
             pin.setZValue(2)
             pins.append(pin)
 

@@ -29,7 +29,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 
-class ProxyGrItem(QtWidgets.QGraphicsProxyWidget):
+class CachableGrProxy(QtWidgets.QGraphicsProxyWidget):
     def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None,
                  w_flags: Optional[QtCore.Qt.WindowFlags] = None) -> None:
         super().__init__(parent, w_flags)
