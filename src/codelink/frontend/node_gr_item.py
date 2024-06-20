@@ -202,14 +202,6 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         else:
             return super().itemChange(change, value)
 
-    def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
-        super().update()
-
-        self.update_title()
-        self.update_content_height()
-        self.update_pins()
-        self.update_position()
-
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().hoverEnterEvent(event)
         self._content_item.is_selected = True
@@ -218,6 +210,14 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_item.clearFocus()
         self._content_item.is_selected = False
         super().hoverLeaveEvent(event)
+
+    def update(self, rect: Optional[QtCore.QRectF] = None) -> None:
+        super().update()
+
+        self.update_title()
+        self.update_content_height()
+        self.update_pins()
+        self.update_position()
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
