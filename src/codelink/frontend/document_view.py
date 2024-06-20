@@ -47,6 +47,7 @@ class DocumentView(QtWidgets.QWidget):
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self._graphics_view: QtWidgets.QGraphicsView = QtWidgets.QGraphicsView()
+        self._graphics_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self._graphics_view.setScene(DocumentScene())
 
         self.layout().addWidget(self._graphics_view)
