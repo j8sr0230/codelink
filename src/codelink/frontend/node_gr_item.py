@@ -239,7 +239,6 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         else:
             self._rm_pressed: bool = False
 
-
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().hoverEnterEvent(event)
         self._content_item.selected = True
