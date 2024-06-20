@@ -59,6 +59,9 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
         self._lm_pressed: bool = False
+        self._mm_pressed: bool = False
+        self._rm_pressed: bool = False
+
         self._moved: bool = False
 
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
@@ -196,14 +199,46 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def itemChange(self, change: QtWidgets.QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         if change == QtWidgets.QGraphicsItem.GraphicsItemChange.ItemPositionChange:
-            pos: QtCore.QPoint = value
-            pos: list[int] = [pos.x(), pos.y()]
-            self._persistent_index.model().setData(
-                QtCore.QModelIndex(self._persistent_index), pos, UserRoles.POS
-            )
+            if not self._moved and self._lm_pressed:
+                self._moved: bool = True
             return value
         else:
             return super().itemChange(change, value)
+
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mousePressEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            self._lm_pressed: bool = True
+
+        elif event.button() == QtCore.Qt.MiddleButton:
+            self._mm_pressed: bool = True
+
+        else:
+            self._rm_pressed: bool = True
+
+    def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+
+        if event.button() == QtCore.Qt.LeftButton:
+            self._lm_pressed: bool = False
+
+            if self._moved:
+                pos: QtCore.QPoint = self.pos()
+                pos: list[int] = [pos.x(), pos.y()]
+                self._persistent_index.model().setData(
+                    QtCore.QModelIndex(self._persistent_index), pos, UserRoles.POS
+                )
+
+        elif event.button() == QtCore.Qt.MiddleButton:
+            self._mm_pressed: bool = False
+
+        else:
+            self._rm_pressed: bool = False
+
 
     def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
         super().hoverEnterEvent(event)
