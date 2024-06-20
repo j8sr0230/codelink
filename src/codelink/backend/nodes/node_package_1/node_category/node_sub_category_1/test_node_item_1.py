@@ -33,7 +33,7 @@ class TestNodeItem1(NodeItem):
     def __init__(self, key: str = "Test Node 1", value: Any = None, pos: Optional[list[int]] = None,
                  uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, pos, uuid, parent)
-        print(self)
+        # print(self)
 
     def setup_children(self) -> None:
         super().setup_children()
@@ -44,4 +44,5 @@ class TestNodeItem1(NodeItem):
         self.children[1].append_child(IntegerPropertyItem(key="B", value=0))
         self.children[1].append_child(IntegerPropertyItem(key="C", value=0))
 
-        self.children[2].append_child(IntegerPropertyItem(key="Res", value=None))
+        self.children[2].append_child(IntegerPropertyItem(key="Res 1", value=None))
+        self.children[2].append_child(IntegerPropertyItem(key="Res 2", value=None))

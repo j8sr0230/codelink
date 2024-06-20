@@ -128,7 +128,6 @@ class MainWindow(QtWidgets.QMainWindow):
         edit_menu.addSeparator()
 
         pref_action: QtWidgets.QAction = edit_menu.addAction("&Preferences")
-        self.addAction(pref_action)
         edit_menu.addAction(pref_action)
         pref_action.triggered.connect(lambda: print("Preferences"))
 
@@ -137,6 +136,11 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_nodes_menu(self) -> QtWidgets.QMenu:
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.load_nodes(node_factory=self._node_factory, nodes_path="../backend/nodes", nodes_menu=nodes_menu)
+
+        add_test_action: QtWidgets.QAction = nodes_menu.addAction("&Test Data")
+        nodes_menu.addAction(add_test_action)
+        add_test_action.triggered.connect(self.add_test_data)
+
         nodes_menu.menuAction().setEnabled(False)
         return nodes_menu
 
@@ -297,6 +301,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
                         index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                         self._active_doc_model.removeRow(index.row(), index.parent())
+
+    def add_test_data(self) -> None:
+        self._active_doc_model.add_test_data()
 
     # noinspection PyUnusedLocal
     def on_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:

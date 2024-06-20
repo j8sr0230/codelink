@@ -71,7 +71,7 @@ class DocumentView(QtWidgets.QWidget):
 
     # noinspection PyUnusedLocal
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
-        print("Inserted at:", first_row)
+        # print("Inserted at:", first_row)
         self._model.is_modified = True
         self.update()
 
@@ -84,7 +84,7 @@ class DocumentView(QtWidgets.QWidget):
 
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
-        print("Removed at:", first_row)
+        # print("Removed at:", first_row)
         self._model.is_modified = True
         self.update()
 
@@ -96,8 +96,8 @@ class DocumentView(QtWidgets.QWidget):
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
                               roles: list[int]) -> None:
-        print("Changed at:", top_left.row(), top_left.column(), "to:",
-              top_left.data(roles[0]) if len(roles) > 0 else None)
+        # print("Changed at:", top_left.row(), top_left.column(), "to:",
+        #       top_left.data(roles[0]) if len(roles) > 0 else None)
         self._model.is_modified = True
         self.update()
 
