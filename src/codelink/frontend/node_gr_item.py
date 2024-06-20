@@ -58,6 +58,9 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_item: CachableGrProxy = self.create_content()
         self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
+        self._lm_pressed: bool = False
+        self._moved: bool = False
+
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)

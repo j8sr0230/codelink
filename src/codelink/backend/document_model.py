@@ -38,7 +38,7 @@ class DocumentModel(TreeModel):
         super().__init__(data, undo_stack, parent)
 
         self._file_name: Optional[str] = None
-        self._is_modified: bool = False
+        self._modified: bool = False
 
         # self.add_test_data()
 
@@ -51,12 +51,12 @@ class DocumentModel(TreeModel):
         self._file_name: Optional[str] = value
 
     @property
-    def is_modified(self) -> bool:
-        return self._is_modified
+    def modified(self) -> bool:
+        return self._modified
 
-    @is_modified.setter
-    def is_modified(self, value: bool) -> None:
-        self._is_modified: bool = value
+    @modified.setter
+    def modified(self, value: bool) -> None:
+        self._modified: bool = value
 
     def get_pretty_file_name(self) -> str:
         title: str = self._file_name if self._file_name else "untitled"

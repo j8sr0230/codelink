@@ -80,7 +80,7 @@ class DocumentView(QtWidgets.QWidget):
     # noinspection PyUnusedLocal
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         # print("Inserted at:", first_row)
-        self._model.is_modified = True
+        self._model.modified = True
         self.update()
 
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
@@ -93,7 +93,7 @@ class DocumentView(QtWidgets.QWidget):
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         # print("Removed at:", first_row)
-        self._model.is_modified = True
+        self._model.modified = True
         self.update()
 
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
@@ -106,7 +106,7 @@ class DocumentView(QtWidgets.QWidget):
                               roles: list[int]) -> None:
         # print("Changed at:", top_left.row(), top_left.column(), "to:",
         #       top_left.data(roles[0]) if len(roles) > 0 else None)
-        self._model.is_modified = True
+        self._model.modified = True
         self.update()
 
         gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(top_left)
@@ -118,7 +118,7 @@ class DocumentView(QtWidgets.QWidget):
         cast(QtCore.SignalInstance, self.selection_changed).emit(selected_indexes)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
-        if self._model.is_modified:
+        if self._model.modified:
             reply: QtWidgets.QMessageBox.StandardButton = QtWidgets.QMessageBox.question(
                 self, "Message", "Are you sure to quit? Any unsaved changes will be lost.",
                 QtWidgets.QMessageBox.Discard | QtWidgets.QMessageBox.Cancel,
@@ -133,5 +133,5 @@ class DocumentView(QtWidgets.QWidget):
     def update(self) -> None:
         super().update()
         file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
-        title: str = file_name + "*" if self._model.is_modified else file_name
+        title: str = file_name + "*" if self._model.modified else file_name
         self.setWindowTitle(title)

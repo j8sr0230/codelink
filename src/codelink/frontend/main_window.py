@@ -263,7 +263,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 json.dump(self._active_doc_model.to_dict(), f, ensure_ascii=False, indent=4)
 
             self._active_doc_model.file_name = file_name
-            self._active_doc_model.is_modified = False
+            self._active_doc_model.modified = False
             self._active_doc_view.update()
 
         except (FileNotFoundError, json.decoder.JSONDecodeError):
