@@ -12,25 +12,49 @@ class "codelink.backend.base_item.BaseItem" as codelink.backend.base_item.BaseIt
 class "codelink.backend.document_model.DocumentModel" as codelink.backend.document_model.DocumentModel {
   file_name
   is_modified
+  add_test_data() -> None
   get_pretty_file_name() -> str
 }
 class "codelink.backend.edge_item.EdgeItem" as codelink.backend.edge_item.EdgeItem {
   destination_uuid
   source_uuid
 }
+class "codelink.backend.node_factory.NodeFactory" as codelink.backend.node_factory.NodeFactory {
+  nodes
+  create_node(name: str) -> Optional[NodeItem]
+  load_nodes(path: str, name_space: str) -> None
+  reset() -> None
+}
 class "codelink.backend.node_item.NodeItem" as codelink.backend.node_item.NodeItem {
   pos
   setup_children() -> None
 }
 class "codelink.backend.nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1" as codelink.backend.nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1 {
+  pos : list
   setup_children() -> None
 }
 class "codelink.backend.properties.integer_property_item.IntegerPropertyItem" as codelink.backend.properties.integer_property_item.IntegerPropertyItem {
+  color() -> str
   create_editor(parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]
   set_editor_data(editor: QtWidgets.QWidget, index: QtCore.QModelIndex()) -> None
   set_model_data(editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex()) -> bool
 }
 class "codelink.backend.property_item.PropertyItem" as codelink.backend.property_item.PropertyItem {
+  color() -> str
+}
+class "codelink.backend.proxy_models.ColumnSwapProxyModel" as codelink.backend.proxy_models.ColumnSwapProxyModel {
+  mapFromSource(source_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  mapToSource(proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+}
+class "codelink.backend.proxy_models.Level2ProxyModel" as codelink.backend.proxy_models.Level2ProxyModel {
+  filterAcceptsRow(source_row: int, source_parent: QtCore.QModelIndex) -> bool
+  mapFromSource(source_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  mapToSource(proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+}
+class "codelink.backend.proxy_models.Level4ProxyModel" as codelink.backend.proxy_models.Level4ProxyModel {
+  filterAcceptsRow(source_row: int, source_parent: QtCore.QModelIndex) -> bool
+  mapFromSource(source_index: QtCore.QModelIndex) -> QtCore.QModelIndex
+  mapToSource(proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex
 }
 class "codelink.backend.root_item.RootItem" as codelink.backend.root_item.RootItem {
 }
@@ -48,6 +72,7 @@ class "codelink.backend.tree_item.TreeItem" as codelink.backend.tree_item.TreeIt
   {abstract}setup_children() -> None
 }
 class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.TreeModel {
+  begin_remove_rows
   edges_index
   frames_index
   nodes_index
@@ -60,6 +85,7 @@ class "codelink.backend.tree_model.TreeModel" as codelink.backend.tree_model.Tre
   flags(index: QtCore.QModelIndex) -> QtCore.Qt.ItemFlags
   from_dict(state: dict[str, Any]) -> TreeItem
   hasChildren(parent: QtCore.QModelIndex) -> bool
+  has_parent_recursively(index, parent)
   headerData(section: int, orientation: QtCore.Qt.Orientation, role) -> Any
   index(row: int, column: int, parent: QtCore.QModelIndex) -> QtCore.QModelIndex
   index_from_key(key: str, parent: QtCore.QModelIndex) -> Optional[QtCore.QModelIndex]
@@ -83,6 +109,7 @@ codelink.backend.node_item.NodeItem --|> codelink.backend.base_item.BaseItem
 codelink.backend.nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1 --|> codelink.backend.node_item.NodeItem
 codelink.backend.properties.integer_property_item.IntegerPropertyItem --|> codelink.backend.property_item.PropertyItem
 codelink.backend.property_item.PropertyItem --|> codelink.backend.base_item.BaseItem
+codelink.backend.proxy_models.ColumnSwapProxyModel --|> codelink.backend.proxy_models.Level4ProxyModel
 codelink.backend.root_item.RootItem --|> codelink.backend.tree_item.TreeItem
 codelink.backend.seperator_item.SeperatorItem --|> codelink.backend.base_item.BaseItem
 codelink.backend.tree_seperator_item.TreeSeperatorItem --|> codelink.backend.seperator_item.SeperatorItem
