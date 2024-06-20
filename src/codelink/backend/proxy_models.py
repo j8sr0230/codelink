@@ -63,7 +63,6 @@ class ColumnSwapProxyModel(Level4ProxyModel):
         else:
             return super().mapFromSource(source_index)
 
-
     def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if proxy_index.parent().row() == 2 and proxy_index.parent().parent().parent().isValid():
             return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))

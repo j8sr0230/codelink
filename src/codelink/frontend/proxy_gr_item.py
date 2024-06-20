@@ -22,17 +22,46 @@
 # *                                                                         *
 # ***************************************************************************
 
-from enum import IntEnum
+from typing import Optional
 
 import PySide2.QtCore as QtCore
+import PySide2.QtWidgets as QtWidgets
+import PySide2.QtGui as QtGui
 
 
-class UserRoles(IntEnum):
-    TYPE: int = QtCore.Qt.UserRole + 1
-    UUID: int = QtCore.Qt.UserRole + 2
-    KEY: int = QtCore.Qt.UserRole + 3
-    VALUE: int = QtCore.Qt.UserRole + 4
-    PIN_COLOR: int = QtCore.Qt.UserRole + 5
-    POS: int = QtCore.Qt.UserRole + 6
-    SRC: int = QtCore.Qt.UserRole + 7
-    DEST: int = QtCore.Qt.UserRole + 8
+class ProxyGrItem(QtWidgets.QGraphicsProxyWidget):
+    def __init__(self, parent: Optional[QtWidgets.QGraphicsItem] = None,
+                 w_flags: Optional[QtCore.Qt.WindowFlags] = None) -> None:
+        super().__init__(parent, w_flags)
+
+        self._is_selected: bool = False
+        self._cached_pix_map: Optional[QtGui.QPixmap] = None
+
+    @property
+    def is_selected(self) -> bool:
+        return self._is_selected
+
+    @is_selected.setter
+    def is_selected(self, value: bool) -> None:
+        if not value:
+            self.update_cache()
+        self._is_selected: bool = value
+
+    def update_cache(self) -> None:
+        self._cached_pix_map: QtGui.QPixmap = QtGui.QPixmap(QtCore.QSize(self.widget().size()))
+        self.widget().render(self._cached_pix_map)
+
+    def setWidget(self, widget: QtWidgets.QWidget) -> None:
+        super().setWidget(widget)
+        self.update_cache()
+
+    def setGeometry(self, rect: QtCore.QRectF) -> None:
+        super().setGeometry(rect)
+        self.update_cache()
+
+    def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
+              widget: QtWidgets.QWidget) -> None:
+        if self._is_selected:
+            super().paint(painter, option, widget)
+        else:
+            painter.drawPixmap(QtCore.QPoint(0, 0), self._cached_pix_map)

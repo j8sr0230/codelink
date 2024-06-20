@@ -32,6 +32,7 @@ from codelink.backend.user_roles import UserRoles
 from codelink.backend.proxy_models import ColumnSwapProxyModel
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.tree_view import TreeView
+from codelink.frontend.proxy_gr_item import ProxyGrItem
 
 
 class NodeGrItem(QtWidgets.QGraphicsItem):
@@ -53,16 +54,14 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._selected_border_pen.setWidthF(1.5)
 
         self._title_item: QtWidgets.QGraphicsTextItem = self.create_title()
-        self._content_item: QtWidgets.QGraphicsProxyWidget = self.create_content()
+        self._content_item: ProxyGrItem = self.create_content()
         self._pins: list[list[QtWidgets.QGraphicsEllipseItem]] = self.create_pins()
 
+        self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
+                      QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
+        self.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
+        self.setAcceptHoverEvents(True)
         self.setZValue(3)
-        # self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
-        #               QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
-        self.setCacheMode(QtWidgets.QGraphicsItem.ItemCoordinateCache)
-
 
     @property
     def persistent_index(self) -> QtCore.QPersistentModelIndex:
@@ -92,7 +91,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         text_item.setZValue(3)
         return text_item
 
-    def create_content(self) -> QtWidgets.QGraphicsProxyWidget:
+    def create_content(self) -> ProxyGrItem:
         content_view: TreeView = TreeView()
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
@@ -106,14 +105,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.header().resizeSection(1, self._width // 2 - content_view.frameWidth())
         content_view.collapsed.connect(self.on_collapsed)
         content_view.expanded.connect(self.on_collapsed)
-        content_view.setEnabled(False)
-        # content_view.setVisible(False)
 
         self._content_height: int = content_view.visible_row_height()
 
-        proxy_item: QtWidgets.QGraphicsProxyWidget = QtWidgets.QGraphicsProxyWidget(self, QtCore.Qt.Widget)
-        proxy_item.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable, False)
-        proxy_item.setFlag(QtWidgets.QGraphicsItem.ItemIsFocusable, False)
+        proxy_item: ProxyGrItem = ProxyGrItem(self, QtCore.Qt.Widget | QtCore.Qt.Widget)
         proxy_item.setCacheMode(QtWidgets.QGraphicsItem.NoCache)
         proxy_item.setWidget(content_view)
         proxy_item.setMinimumHeight(0)
@@ -126,7 +121,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         for i in range(self._persistent_index.model().rowCount(sep_index)):
             index: QtCore.QModelIndex = self.persistent_index.model().index(i, 0, sep_index)
             pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
-            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.COLOR))))
+            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.PIN_COLOR))))
             pin.setRect(QtCore.QRect(-5, -5, 10, 10))
             pin.setData(
                 0, QtCore.QPersistentModelIndex(index)
@@ -217,6 +212,15 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self.update_content_height()
         self.update_pins()
         self.update_position()
+
+    def hoverEnterEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
+        super().hoverEnterEvent(event)
+        self._content_item.is_selected = True
+
+    def hoverLeaveEvent(self, event: QtWidgets.QGraphicsSceneHoverEvent) -> None:
+        self._content_item.clearFocus()
+        self._content_item.is_selected = False
+        super().hoverLeaveEvent(event)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)

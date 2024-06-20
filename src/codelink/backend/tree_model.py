@@ -155,7 +155,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             if isinstance(tree_item, PropertyItem):
                 prop_item: PropertyItem = cast(PropertyItem, tree_item)
-                if role == UserRoles.COLOR:
+                if role == UserRoles.PIN_COLOR:
                     return prop_item.color()
 
             if isinstance(tree_item, NodeItem):
