@@ -51,10 +51,6 @@ class CachableGrProxy(QtWidgets.QGraphicsProxyWidget):
         self._cached_pix_map: QtGui.QPixmap = QtGui.QPixmap(QtCore.QSize(self.widget().size()))
         self.widget().render(self._cached_pix_map)
 
-    def setWidget(self, widget: QtWidgets.QWidget) -> None:
-        super().setWidget(widget)
-        self.update_cache()
-
     def setGeometry(self, rect: QtCore.QRectF) -> None:
         super().setGeometry(rect)
         self.update_cache()
