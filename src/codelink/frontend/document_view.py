@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 
 
 class DocumentView(QtWidgets.QWidget):
-    selection_changed: QtCore.Signal = QtCore.Signal(list)
+    selection_changed: QtCore.Signal = QtCore.Signal(QtCore.QItemSelection)
 
     def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
@@ -59,7 +59,7 @@ class DocumentView(QtWidgets.QWidget):
         self.layout().setMargin(0)
         self.layout().setSpacing(0)
 
-        self._document_scene.selectionChanged.connect(self.on_scene_selection_changed)
+        self._document_scene.selectionChanged.connect(self.on_selection_changed)
 
     @property
     def model(self) -> DocumentModel:
@@ -76,6 +76,13 @@ class DocumentView(QtWidgets.QWidget):
             return graphics_items[0]
         else:
             return None
+
+    def select(self, item_selection: QtCore.QItemSelection):
+        self._document_scene.clearSelection()
+        for index in item_selection.indexes():
+            gr_item: QtWidgets.QGraphicsItem = self.graphics_item_from_index(cast(QtCore.QModelIndex, index))
+            if gr_item:
+                gr_item.setSelected(True)
 
     # noinspection PyUnusedLocal
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
@@ -113,9 +120,13 @@ class DocumentView(QtWidgets.QWidget):
         if gr_item:
             gr_item.update()
 
-    def on_scene_selection_changed(self):
+    def on_selection_changed(self):
         selected_indexes: list[QtCore.QModelIndex] = [item.index() for item in self._document_scene.selectedItems()]
-        cast(QtCore.SignalInstance, self.selection_changed).emit(selected_indexes)
+
+        item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        for index in selected_indexes:
+            item_selection.select(index, index)
+        cast(QtCore.SignalInstance, self.selection_changed).emit(item_selection)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self._model.modified:

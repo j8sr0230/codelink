@@ -313,40 +313,55 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if len(current.indexes()) > 0:
             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, current.indexes()[0])
-            if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-                index: QtCore.QModelIndex = index.model().mapToSource(index)
+            print("here")
 
-            tree_item: TreeItem = self._active_doc_model.item_from_index(index)
-            if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
-                proxy_model: Level4ProxyModel = Level4ProxyModel()
-                proxy_model.setSourceModel(self._active_doc_model)
-                self._detail_tree_view.setModel(proxy_model)
-                self._detail_tree_view.setRootIndex(proxy_model.mapFromSource(index))
-                self._detail_tree_view.expandAll()
-                del_act.setEnabled(True)
-            else:
-                self._detail_tree_view.setModel(None)
-                del_act.setEnabled(False)
+            # if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+            #     proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, index.model())
+            #     index: QtCore.QModelIndex = proxy.mapToSource(index)
+            #     item_selection: QtCore.QItemSelection = proxy.mapSelectionToSource(current)
+            #     self._doc_tree_view.blockSignals(True)
+            #     self._active_doc_view.blockSignals(True)
+            #     self._doc_tree_view.selectionModel().select(current, QtCore.QItemSelectionModel.ClearAndSelect)
+            #     self._active_doc_view.select(item_selection)
+            #     self._doc_tree_view.blockSignals(False)
+            #     self._active_doc_view.blockSignals(False)
+            # else:
+            #     self._item_tree_view.blockSignals(True)
+            #     self._active_doc_view.blockSignals(True)
+            #     self._active_doc_view.select(current)
+            #     proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
+            #     item_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(current)
+            #     self._item_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+            #     self._item_tree_view.blockSignals(False)
+            #     self._active_doc_view.blockSignals(False)
+
+            # tree_item: TreeItem = self._active_doc_model.item_from_index(index)
+            # if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
+            #     proxy: Level4ProxyModel = Level4ProxyModel()
+            #     proxy.setSourceModel(self._active_doc_model)
+            #     self._detail_tree_view.setModel(proxy)
+            #     self._detail_tree_view.setRootIndex(proxy.mapFromSource(index))
+            #     self._detail_tree_view.expandAll()
+            #     del_act.setEnabled(True)
+            # else:
+            #     self._detail_tree_view.setModel(None)
+            #     del_act.setEnabled(False)
         else:
             self._detail_tree_view.setModel(None)
             del_act.setEnabled(False)
 
-    def on_scene_selection_changed(self, indexes: list[QtCore.QModelIndex]) -> None:
-        if len(indexes) > 0:
-            item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
-            item_selection.select(indexes[0], indexes[-1])
+    def on_scene_selection_changed(self, item_selection: QtCore.QItemSelection) -> None:
+        self._doc_tree_view.blockSignals(True)
+        self._doc_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._doc_tree_view.update()
+        self._doc_tree_view.blockSignals(False)
 
-            self.on_tree_selection_changed(item_selection, QtCore.QItemSelection())
-            self._doc_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-
-            indexes: list[QtCore.QModelIndex] = [
-                self._item_tree_view.model().mapFromSource(index)for index in indexes
-            ]
-
-            item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
-            item_selection.select(indexes[0], indexes[-1])
-
-            self._item_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
+        item_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(item_selection)
+        self._item_tree_view.blockSignals(True)
+        self._item_tree_view.selectionModel().select(item_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._item_tree_view.selectionModel().update()
+        self._item_tree_view.blockSignals(False)
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
         save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
