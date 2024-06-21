@@ -188,7 +188,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * self._width,
+                    rect.x() + grp_idx * (self._width - content_view.frameWidth()),
                     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
                 )
                 pin.setPos(pos)
