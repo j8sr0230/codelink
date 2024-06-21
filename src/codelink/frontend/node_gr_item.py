@@ -180,11 +180,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
                 index: QtCore.QModelIndex = proxy.mapFromSource(pin.data(0))
-                index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent().siblingAtColumn(0))
+                index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent())
 
                 rect: QtCore.QRect = content_view.visualRect(index)
                 if not rect.isValid():
-                    index: QtCore.QModelIndex = index.siblingAtColumn(0).parent()
+                    index: QtCore.QModelIndex = index.parent()
                     rect: QtCore.QRect = content_view.visualRect(index)
 
                 pos: QtCore.QPoint = QtCore.QPoint(

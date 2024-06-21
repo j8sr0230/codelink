@@ -64,6 +64,15 @@ class DocumentGrView(QtWidgets.QGraphicsView):
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
+        # if isinstance(self.itemAt(event.pos()), QtWidgets.QGraphicsProxyWidget):
+        #     gr_proxy_widget: QtWidgets.QGraphicsProxyWidget = cast(
+        #         QtWidgets.QGraphicsProxyWidget, self.itemAt(event.pos())
+        #     )
+        #     tree_view: QtWidgets.QTreeView = gr_proxy_widget.widget()
+        #
+        #     pos: QtCore.QPoint = self.mapToScene(event.pos()) - gr_proxy_widget.pos()
+        #     print(tree_view.indexAt(QtCore.QPoint(pos.x(), pos.y())))
+
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
