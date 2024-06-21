@@ -297,32 +297,36 @@ class MainWindow(QtWidgets.QMainWindow):
             self.save_as()
 
     def delete(self) -> None:
-        current_widget: QtWidgets.QWidget = QtWidgets.QApplication.focusWidget()
-        if isinstance(QtWidgets.QApplication.focusWidget(), TreeView):
-            selected_indexes: list[QtCore.QModelIndex] = current_widget.selectionModel().selectedIndexes()
+        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
-            while selected_indexes:
-                selected_index: QtCore.QModelIndex = selected_indexes.pop()
+        proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        for index in self._item_tree_view.selectedIndexes():
+            index: QtCore.QModelIndex = index
+            proxy_selection.select(index, index)
 
-                if isinstance(selected_index.model(), QtCore.QSortFilterProxyModel):
-                    selected_index: QtCore.QModelIndex = selected_index.model().mapToSource(selected_index)
+        selected_indexes: list[QtCore.QModelIndex] = proxy.mapSelectionToSource(proxy_selection).indexes()
 
-                if selected_index.column() == 0:
-                    tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
-                    if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
-                        index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                        self._active_doc_model.removeRow(index.row(), index.parent())
+        while selected_indexes:
+            selected_index: QtCore.QModelIndex = selected_indexes.pop()
+            if selected_index.column() == 0:
+                tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
+                if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
+                    index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
+                    self._active_doc_model.removeRow(index.row(), index.parent())
 
     def add_test_data(self) -> None:
         self._active_doc_model.add_test_data()
 
     # noinspection PyUnusedLocal
     def on_doc_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
         source_selection: QtCore.QItemSelection = QtCore.QItemSelection()
         for index in self._doc_tree_view.selectedIndexes():
-            del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+            del_act.setEnabled(True)
             index: QtCore.QModelIndex = index
             source_selection.select(index, index)
 
@@ -342,10 +346,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # noinspection PyUnusedLocal
     def on_item_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
         proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
         for index in self._item_tree_view.selectedIndexes():
+            del_act.setEnabled(True)
             del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
             index: QtCore.QModelIndex = index
             proxy_selection.select(index, index)
@@ -365,6 +373,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
 
     def on_doc_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
         self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
         self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
 
@@ -377,6 +388,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
 
         if len(source_selection.indexes()) > 0:
+            del_act.setEnabled(True)
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
