@@ -299,15 +299,13 @@ class MainWindow(QtWidgets.QMainWindow):
     def delete(self) -> None:
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
-        proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        source_indexes: list[QtCore.QPersistentModelIndex] = []
         for index in self._item_tree_view.selectedIndexes():
             index: QtCore.QModelIndex = index
-            proxy_selection.select(index, index)
+            source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
 
-        selected_indexes: list[QtCore.QModelIndex] = proxy.mapSelectionToSource(proxy_selection).indexes()
-
-        while selected_indexes:
-            selected_index: QtCore.QModelIndex = selected_indexes.pop()
+        while source_indexes:
+            selected_index: QtCore.QModelIndex = QtCore.QModelIndex(source_indexes.pop())
             if selected_index.column() == 0:
                 tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
                 if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
