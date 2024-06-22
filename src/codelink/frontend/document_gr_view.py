@@ -102,9 +102,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
     def setScene(self, scene: QtWidgets.QGraphicsScene) -> None:
         super().setScene(scene)
-
         scene.selectionChanged.connect(self.on_selection_changed)
-
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)
