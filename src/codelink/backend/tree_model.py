@@ -303,7 +303,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return None
 
-    def has_parent_recursively(self, index, parent):
+    def has_parent_recursively(self, index: QtCore.QModelIndex, parent: QtCore.QModelIndex) -> bool:
         if not index.isValid():
             return False
 
