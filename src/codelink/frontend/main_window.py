@@ -425,9 +425,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.statusBar().showMessage(self._active_doc_model.get_pretty_file_name())
 
         else:
-            self._active_doc_model: Optional[DocumentModel] = None
-            self._active_doc_view: Optional[DocumentView] = None
-
             self._doc_tree_view.setModel(None)
             self._item_tree_view.setModel(None)
             self._detail_tree_view.setModel(None)

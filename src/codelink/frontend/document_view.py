@@ -90,7 +90,6 @@ class DocumentView(QtWidgets.QWidget):
             )
 
             if reply == QtWidgets.QMessageBox.Discard:
-                self._document_scene.clearSelection()
                 event.accept()
             else:
                 event.ignore()
