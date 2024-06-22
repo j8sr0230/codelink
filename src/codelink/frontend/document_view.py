@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import TYPE_CHECKING, Optional, cast
+from typing import Optional
 from pathlib import Path
 
 import PySide2.QtCore as QtCore
@@ -30,18 +30,11 @@ import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.document_model import DocumentModel
-from codelink.backend.node_item import NodeItem
 from codelink.frontend.document_gr_view import DocumentGrView
 from codelink.frontend.document_scene import DocumentScene
-from codelink.frontend.node_gr_item import NodeGrItem
-
-if TYPE_CHECKING:
-    from codelink.backend.tree_item import TreeItem
 
 
 class DocumentView(QtWidgets.QWidget):
-    selection_changed: QtCore.Signal = QtCore.Signal(QtCore.QItemSelection)
-
     def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -51,7 +44,6 @@ class DocumentView(QtWidgets.QWidget):
 
         self._document_gr_view: DocumentGrView = DocumentGrView(model)
         self._document_gr_view.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-
         self._document_scene: DocumentScene = DocumentScene()
         self._document_gr_view.setScene(self._document_scene)
 
@@ -59,74 +51,35 @@ class DocumentView(QtWidgets.QWidget):
         self.layout().setMargin(0)
         self.layout().setSpacing(0)
 
-        self._document_scene.selectionChanged.connect(self.on_selection_changed)
-
     @property
     def model(self) -> DocumentModel:
         return self._model
 
-    def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
-        graphics_items: list[QtWidgets.QGraphicsItem] = []
-        for graphics_item in self._document_gr_view.scene().items():
-            if hasattr(graphics_item, "index"):
-                if graphics_item.index() == index or self._model.has_parent_recursively(index, graphics_item.index()):
-                    graphics_items.append(graphics_item)
-
-        if len(graphics_items) > 0:
-            return graphics_items[0]
-        else:
-            return None
-
-    def select(self, item_selection: QtCore.QItemSelection):
-        self._document_scene.clearSelection()
-        for index in item_selection.indexes():
-            gr_item: QtWidgets.QGraphicsItem = self.graphics_item_from_index(cast(QtCore.QModelIndex, index))
-            if gr_item:
-                gr_item.setSelected(True)
+    @property
+    def document_gr_view(self) -> DocumentGrView:
+        return self._document_gr_view
 
     # noinspection PyUnusedLocal
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
-        # print("Inserted at:", first_row)
         self._model.modified = True
         self.update()
 
-        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
-        item: TreeItem = self._model.item_from_index(index)
-        if isinstance(item, NodeItem):
-            node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
-            self._document_gr_view.scene().addItem(node_gr_item)
-            node_gr_item.update()
+        self._document_gr_view.on_model_rows_inserted(parent, first_row, last_row)
 
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
-        # print("Removed at:", first_row)
         self._model.modified = True
         self.update()
 
-        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
-        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(index)
-        if gr_item:
-            self._document_gr_view.scene().removeItem(gr_item)
+        self._document_gr_view.on_model_begin_remove_rows(parent, first_row, last_row)
 
     # noinspection PyUnusedLocal
     def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
                               roles: list[int]) -> None:
-        # print("Changed at:", top_left.row(), top_left.column(), "to:",
-        #       top_left.data(roles[0]) if len(roles) > 0 else None)
         self._model.modified = True
         self.update()
 
-        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(top_left)
-        if gr_item:
-            gr_item.update()
-
-    def on_selection_changed(self):
-        selected_indexes: list[QtCore.QModelIndex] = [item.index() for item in self._document_scene.selectedItems()]
-
-        item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
-        for index in selected_indexes:
-            item_selection.select(index, index)
-        cast(QtCore.SignalInstance, self.selection_changed).emit(item_selection)
+        self._document_gr_view.on_model_data_changed(top_left, bottom_right, roles)
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self._model.modified:
@@ -137,6 +90,7 @@ class DocumentView(QtWidgets.QWidget):
             )
 
             if reply == QtWidgets.QMessageBox.Discard:
+                self._document_scene.clearSelection()
                 event.accept()
             else:
                 event.ignore()

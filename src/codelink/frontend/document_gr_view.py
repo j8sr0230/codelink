@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import Optional, cast
+from typing import TYPE_CHECKING, Optional, cast
 
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
@@ -30,10 +30,15 @@ import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
+from codelink.backend.node_item import NodeItem
 from codelink.frontend.node_gr_item import NodeGrItem
 
+if TYPE_CHECKING:
+    from codelink.backend.tree_item import TreeItem
 
 class DocumentGrView(QtWidgets.QGraphicsView):
+    selection_changed: QtCore.Signal = QtCore.Signal(QtCore.QItemSelection)
+
     def __init__(self, model: DocumentModel, parent: Optional[QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
@@ -44,6 +49,62 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         self._rm_pressed: bool = False
 
         self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
+
+    def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
+        graphics_items: list[QtWidgets.QGraphicsItem] = []
+        for graphics_item in self.scene().items():
+            if hasattr(graphics_item, "index"):
+                if graphics_item.index() == index or self._model.has_parent_recursively(index, graphics_item.index()):
+                    graphics_items.append(graphics_item)
+
+        if len(graphics_items) > 0:
+            return graphics_items[0]
+        else:
+            return None
+
+    def select(self, item_selection: QtCore.QItemSelection):
+        self.scene().clearSelection()
+        for index in item_selection.indexes():
+            gr_item: QtWidgets.QGraphicsItem = self.graphics_item_from_index(cast(QtCore.QModelIndex, index))
+            if gr_item:
+                gr_item.setSelected(True)
+
+    # noinspection PyUnusedLocal
+    def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
+        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
+        item: TreeItem = self._model.item_from_index(index)
+        if isinstance(item, NodeItem):
+            node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
+            self.scene().addItem(node_gr_item)
+            node_gr_item.update()
+
+    # noinspection PyUnusedLocal
+    def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
+        index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
+        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(index)
+        if gr_item:
+            self.scene().removeItem(gr_item)
+
+    # noinspection PyUnusedLocal
+    def on_model_data_changed(self, top_left: QtCore.QModelIndex, bottom_right: QtCore.QModelIndex,
+                              roles: list[int]) -> None:
+        gr_item: Optional[QtWidgets.QGraphicsItem] = self.graphics_item_from_index(top_left)
+        if gr_item:
+            gr_item.update()
+
+    def on_selection_changed(self):
+        selected_indexes: list[QtCore.QModelIndex] = [item.index() for item in self.scene().selectedItems()]
+
+        item_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        for index in selected_indexes:
+            item_selection.select(index, index)
+        cast(QtCore.SignalInstance, self.selection_changed).emit(item_selection)
+
+    def setScene(self, scene: QtWidgets.QGraphicsScene) -> None:
+        super().setScene(scene)
+
+        scene.selectionChanged.connect(self.on_selection_changed)
+
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mousePressEvent(event)

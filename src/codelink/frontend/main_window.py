@@ -334,10 +334,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
 
         # noinspection PyUnresolvedReferences
-        self._active_doc_view.selection_changed.disconnect(self.on_doc_view_selection_changed)
-        self._active_doc_view.select(source_selection)
+        self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        self._active_doc_view.document_gr_view.select(source_selection)
         # noinspection PyUnresolvedReferences
-        self._active_doc_view.selection_changed.connect(self.on_doc_view_selection_changed)
+        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
 
         if len(source_selection.indexes()) > 0:
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
@@ -362,20 +362,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
 
         # noinspection PyUnresolvedReferences
-        self._active_doc_view.selection_changed.disconnect(self.on_doc_view_selection_changed)
-        self._active_doc_view.select(source_selection)
+        self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        self._active_doc_view.document_gr_view.select(source_selection)
         # noinspection PyUnresolvedReferences
-        self._active_doc_view.selection_changed.connect(self.on_doc_view_selection_changed)
+        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
 
         if len(source_selection.indexes()) > 0:
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
 
-    def on_doc_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
+    def on_doc_gr_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
         del_act.setEnabled(False)
 
-        self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
         self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
+        self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
 
         self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
         proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
@@ -399,8 +399,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
-            cast(QtCore.SignalInstance, self._active_doc_view.selection_changed).connect(
-                self.on_doc_view_selection_changed
+            cast(QtCore.SignalInstance, self._active_doc_view.document_gr_view.selection_changed).connect(
+                self.on_doc_gr_view_selection_changed
             )
 
             self._active_doc_model: DocumentModel = self._active_doc_view.model
