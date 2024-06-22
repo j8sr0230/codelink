@@ -40,8 +40,6 @@ class DocumentModel(TreeModel):
         self._file_name: Optional[str] = None
         self._modified: bool = False
 
-        # self.add_test_data()
-
     @property
     def file_name(self) -> Optional[str]:
         return self._file_name

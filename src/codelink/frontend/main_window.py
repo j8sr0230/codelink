@@ -107,26 +107,26 @@ class MainWindow(QtWidgets.QMainWindow):
         new_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.New))
         self.addAction(new_action)
         file_menu.addAction(new_action)
-        new_action.triggered.connect(self.new)
+        new_action.triggered.connect(self.on_new)
 
         open_action: QtWidgets.QAction = file_menu.addAction("&Open")
         open_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Open))
         self.addAction(open_action)
         file_menu.addAction(open_action)
-        open_action.triggered.connect(self.open)
+        open_action.triggered.connect(self.on_open)
 
         save_as_action: QtWidgets.QAction = file_menu.addAction("Save &As")
         save_as_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.SaveAs))
         self.addAction(save_as_action)
         file_menu.addAction(save_as_action)
-        save_as_action.triggered.connect(self.save_as)
+        save_as_action.triggered.connect(self.on_save_as)
         save_as_action.setEnabled(False)
 
         save_action: QtWidgets.QAction = file_menu.addAction("&Save")
         save_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Save))
         self.addAction(save_action)
         file_menu.addAction(save_action)
-        save_action.triggered.connect(self.save)
+        save_action.triggered.connect(self.on_save)
         save_action.setEnabled(False)
 
         exit_action: QtWidgets.QAction = file_menu.addAction("E&xit")
@@ -152,7 +152,7 @@ class MainWindow(QtWidgets.QMainWindow):
         del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
         self.addAction(del_action)
         edit_menu.addAction(del_action)
-        del_action.triggered.connect(self.delete)
+        del_action.triggered.connect(self.on_delete)
         del_action.setEnabled(False)
 
         edit_menu.addSeparator()
@@ -167,9 +167,9 @@ class MainWindow(QtWidgets.QMainWindow):
         nodes_menu: QtWidgets.QMenu = self.menuBar().addMenu("&Nodes")
         self.load_nodes(node_factory=self._node_factory, nodes_path="../backend/nodes", nodes_menu=nodes_menu)
 
-        add_test_action: QtWidgets.QAction = nodes_menu.addAction("&Test Data")
-        nodes_menu.addAction(add_test_action)
-        add_test_action.triggered.connect(self.add_test_data)
+        test_action: QtWidgets.QAction = nodes_menu.addAction("&Test Data")
+        nodes_menu.addAction(test_action)
+        test_action.triggered.connect(self.on_test_data)
 
         nodes_menu.menuAction().setEnabled(False)
         return nodes_menu
@@ -248,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self._detail_tree_view.setModel(None)
 
-    def _new(self, file_name: Optional[str] = None) -> None:
+    def _on_new(self, file_name: Optional[str] = None) -> None:
         state: Optional[dict[str, Any]] = None
         if file_name:
             try:
@@ -277,10 +277,13 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(nodes_count):
             doc_view.on_model_rows_inserted(parent_index, i, i)
 
-    def new(self) -> None:
-        self._new()
+        doc_view.model.modified = False
+        doc_view.update()
 
-    def open(self) -> None:
+    def on_new(self) -> None:
+        self._on_new()
+
+    def on_open(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open file", "./", "Json files (*.json);;All files (*.*)"
         )
@@ -288,13 +291,13 @@ class MainWindow(QtWidgets.QMainWindow):
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         if file_name[0]:
-            self._new(file_name=file_name[0])
+            self._on_new(file_name=file_name[0])
         else:
             print("No file selected")
 
         QtGui.QGuiApplication.restoreOverrideCursor()
 
-    def _save(self, file_name: str) -> None:
+    def _on_save(self, file_name: str) -> None:
         QtGui.QGuiApplication.setOverrideCursor(QtGui.QCursor(QtCore.Qt.WaitCursor))
 
         try:
@@ -310,23 +313,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         QtGui.QGuiApplication.restoreOverrideCursor()
 
-    def save_as(self) -> None:
+    def on_save_as(self) -> None:
         file_name: tuple[str, str] = QtWidgets.QFileDialog.getSaveFileName(
             self, "Save file", "./", "Json files (*.json);;All files (*.*)"
         )
 
         if file_name[0]:
-            self._save(file_name[0])
+            self._on_save(file_name[0])
         else:
             print("No file selected")
 
-    def save(self) -> None:
+    def on_save(self) -> None:
         if self._active_doc_model.file_name:
-            self._save(self._active_doc_model.file_name)
+            self._on_save(self._active_doc_model.file_name)
         else:
-            self.save_as()
+            self.on_save_as()
 
-    def delete(self) -> None:
+    def on_delete(self) -> None:
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
         source_indexes: list[QtCore.QPersistentModelIndex] = []
@@ -342,7 +345,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                     self._active_doc_model.removeRow(index.row(), index.parent())
 
-    def add_test_data(self) -> None:
+    def on_test_data(self) -> None:
         self._active_doc_model.add_test_data()
 
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
