@@ -81,6 +81,12 @@ class DocumentView(QtWidgets.QWidget):
 
         self._document_gr_view.on_model_data_changed(top_left, bottom_right, roles)
 
+    def update(self) -> None:
+        super().update()
+        file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
+        title: str = file_name + "*" if self._model.modified else file_name
+        self.setWindowTitle(title)
+
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         if self._model.modified:
             reply: QtWidgets.QMessageBox.StandardButton = QtWidgets.QMessageBox.question(
@@ -93,9 +99,3 @@ class DocumentView(QtWidgets.QWidget):
                 event.accept()
             else:
                 event.ignore()
-
-    def update(self) -> None:
-        super().update()
-        file_name: Optional[str] = Path(self._model.get_pretty_file_name()).name
-        title: str = file_name + "*" if self._model.modified else file_name
-        self.setWindowTitle(title)

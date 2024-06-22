@@ -70,6 +70,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.statusBar().showMessage("Ready ...")
 
+    @staticmethod
+    def get_signal(sender: QtCore.QObject, signal_name: str) -> Optional[QtCore.QMetaMethod]:
+        meta_obj = sender.metaObject()
+        for i in range(meta_obj.methodCount()):
+            meta_method = meta_obj.method(i)
+            if not meta_method.isValid():
+                continue
+            if meta_method.methodType() == QtCore.QMetaMethod.Signal and meta_method.name() == signal_name:
+                return meta_method
+
+        return None
+
     def create_file_menu(self) -> QtWidgets.QMenu:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
 
@@ -315,80 +327,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def add_test_data(self) -> None:
         self._active_doc_model.add_test_data()
 
-    # noinspection PyUnusedLocal
-    def on_doc_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
-        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
-        del_act.setEnabled(False)
-
-        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
-
-        source_selection: QtCore.QItemSelection = QtCore.QItemSelection()
-        for index in self._doc_tree_view.selectedIndexes():
-            del_act.setEnabled(True)
-            index: QtCore.QModelIndex = index
-            source_selection.select(index, index)
-
-        proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
-        self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
-        self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
-
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
-        self._active_doc_view.document_gr_view.select(source_selection)
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
-
-        if len(source_selection.indexes()) > 0:
-            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
-
-    # noinspection PyUnusedLocal
-    def on_item_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
-        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
-        del_act.setEnabled(False)
-
-        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
-
-        proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
-        for index in self._item_tree_view.selectedIndexes():
-            del_act.setEnabled(True)
-            del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
-            index: QtCore.QModelIndex = index
-            proxy_selection.select(index, index)
-
-        source_selection: QtCore.QItemSelection = proxy.mapSelectionToSource(proxy_selection)
-        self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
-        self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
-
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
-        self._active_doc_view.document_gr_view.select(source_selection)
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
-
-        if len(source_selection.indexes()) > 0:
-            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
-
-    def on_doc_gr_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
-        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
-        del_act.setEnabled(False)
-
-        self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
-        self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
-
-        self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
-        proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
-        self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-
-        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
-
-        if len(source_selection.indexes()) > 0:
-            del_act.setEnabled(True)
-            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
-
     def on_sub_wnd_changed(self, sub_wnd: QtWidgets.QMdiSubWindow) -> None:
         save_as_act: QtWidgets.QAction = self._action_dict.get("Save &As")
         save_act: QtWidgets.QAction = self._action_dict.get("&Save")
@@ -434,6 +372,91 @@ class MainWindow(QtWidgets.QMainWindow):
             nodes_act.setEnabled(False)
 
             self.statusBar().clearMessage()
+
+    # noinspection PyUnusedLocal
+    def on_doc_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
+        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
+
+        source_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        for index in self._doc_tree_view.selectedIndexes():
+            del_act.setEnabled(True)
+            index: QtCore.QModelIndex = index
+            source_selection.select(index, index)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._item_tree_view.selectionModel(), "selectionChanged")
+        if self._item_tree_view.selectionModel().isSignalConnected(sig):
+            self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
+        proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
+        self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._active_doc_view.document_gr_view, "selection_changed")
+        if self._active_doc_view.document_gr_view.isSignalConnected(sig):
+            # noinspection PyUnresolvedReferences
+            self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        self._active_doc_view.document_gr_view.select(source_selection)
+        # noinspection PyUnresolvedReferences
+        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
+
+        if len(source_selection.indexes()) > 0:
+            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
+
+    # noinspection PyUnusedLocal
+    def on_item_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
+        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
+
+        proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
+        for index in self._item_tree_view.selectedIndexes():
+            del_act.setEnabled(True)
+            del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+            index: QtCore.QModelIndex = index
+            proxy_selection.select(index, index)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._doc_tree_view.selectionModel(), "selectionChanged")
+        if self._doc_tree_view.selectionModel().isSignalConnected(sig):
+            self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
+        source_selection: QtCore.QItemSelection = proxy.mapSelectionToSource(proxy_selection)
+        self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._active_doc_view.document_gr_view, "selection_changed")
+        if self._active_doc_view.document_gr_view.isSignalConnected(sig):
+            # noinspection PyUnresolvedReferences
+            self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        self._active_doc_view.document_gr_view.select(source_selection)
+        # noinspection PyUnresolvedReferences
+        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
+
+        if len(source_selection.indexes()) > 0:
+            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
+
+    def on_doc_gr_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
+        del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+        del_act.setEnabled(False)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._doc_tree_view.selectionModel(), "selectionChanged")
+        if self._doc_tree_view.selectionModel().isSignalConnected(sig):
+            self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
+        self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
+
+        sig: QtCore.QMetaMethod = self.get_signal(self._item_tree_view.selectionModel(), "selectionChanged")
+        if self._item_tree_view.selectionModel().isSignalConnected(sig):
+            self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
+        proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
+        proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
+        self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
+        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
+
+        if len(source_selection.indexes()) > 0:
+            del_act.setEnabled(True)
+            self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:
         self._mdi_area.closeAllSubWindows()
