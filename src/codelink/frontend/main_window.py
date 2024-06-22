@@ -22,7 +22,7 @@
 # *                                                                         *
 # ***************************************************************************
 
-from typing import cast, Optional, Any
+from typing import cast, Optional, Union, Callable, Any
 import sys
 from pathlib import Path
 import json
@@ -71,16 +71,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage("Ready ...")
 
     @staticmethod
-    def get_signal(sender: QtCore.QObject, signal_name: str) -> Optional[QtCore.QMetaMethod]:
-        meta_obj = sender.metaObject()
-        for i in range(meta_obj.methodCount()):
-            meta_method = meta_obj.method(i)
-            if not meta_method.isValid():
-                continue
-            if meta_method.methodType() == QtCore.QMetaMethod.Signal and meta_method.name() == signal_name:
-                return meta_method
+    def connect_item_selection(sender: Union[QtWidgets.QTreeView, QtWidgets.QGraphicsView],
+                               slot: Callable, enabled: bool = True) -> None:
 
-        return None
+        def get_signal(sender_obj: QtCore.QObject, signal_name: str) -> Optional[QtCore.QMetaMethod]:
+            meta_obj = sender_obj.metaObject()
+            for i in range(meta_obj.methodCount()):
+                meta_method = meta_obj.method(i)
+                if not meta_method.isValid():
+                    continue
+                if meta_method.methodType() == QtCore.QMetaMethod.Signal and meta_method.name() == signal_name:
+                    return meta_method
+            return None
+
+        if isinstance(sender, QtWidgets.QTreeView):
+            sig: QtCore.QMetaMethod = get_signal(sender.selectionModel(), "selectionChanged")
+            if sig and not enabled:
+                if sender.selectionModel().isSignalConnected(sig):
+                    sender.selectionModel().selectionChanged.disconnect(slot)
+            else:
+                sender.selectionModel().selectionChanged.connect(slot)
+
+        if isinstance(sender, QtWidgets.QGraphicsView):
+            sig: QtCore.QMetaMethod = get_signal(sender, "selection_changed")
+            if sig and not enabled:
+                if sender.isSignalConnected(sig):
+                    sender.selection_changed.disconnect(slot)
+            else:
+                sender.selection_changed.connect(slot)
 
     def create_file_menu(self) -> QtWidgets.QMenu:
         file_menu: QtWidgets.QMenu = self.menuBar().addMenu("&File")
@@ -337,9 +355,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if len(self._mdi_area.subWindowList()) > 0 and sub_wnd:
             self._active_doc_view: DocumentView = cast(DocumentView, sub_wnd.widget())
-            cast(QtCore.SignalInstance, self._active_doc_view.document_gr_view.selection_changed).connect(
-                self.on_doc_gr_view_selection_changed
-            )
+            doc_gr_view: QtWidgets.QGraphicsView = self._active_doc_view.document_gr_view
+            cast(QtCore.SignalInstance, doc_gr_view.selection_changed).connect(self.on_doc_gr_view_selection_changed)
 
             self._active_doc_model: DocumentModel = self._active_doc_view.model
             self._undo_group.setActiveStack(self._active_doc_model.undo_stack)
@@ -386,20 +403,15 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             source_selection.select(index, index)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._item_tree_view.selectionModel(), "selectionChanged")
-        if self._item_tree_view.selectionModel().isSignalConnected(sig):
-            self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
+        self.connect_item_selection(self._item_tree_view, self.on_item_tree_selection_changed, False)
         proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
         self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
+        self.connect_item_selection(self._item_tree_view, self.on_item_tree_selection_changed, True)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._active_doc_view.document_gr_view, "selection_changed")
-        if self._active_doc_view.document_gr_view.isSignalConnected(sig):
-            # noinspection PyUnresolvedReferences
-            self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        doc_gr_view: QtWidgets.QGraphicsView = self._active_doc_view.document_gr_view
+        self.connect_item_selection(doc_gr_view, self.on_doc_gr_view_selection_changed, False)
         self._active_doc_view.document_gr_view.select(source_selection)
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
+        self.connect_item_selection(doc_gr_view, self.on_doc_gr_view_selection_changed, True)
 
         if len(source_selection.indexes()) > 0:
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
@@ -418,20 +430,15 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             proxy_selection.select(index, index)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._doc_tree_view.selectionModel(), "selectionChanged")
-        if self._doc_tree_view.selectionModel().isSignalConnected(sig):
-            self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
+        self.connect_item_selection(self._doc_tree_view, self.on_doc_tree_selection_changed, False)
         source_selection: QtCore.QItemSelection = proxy.mapSelectionToSource(proxy_selection)
         self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
+        self.connect_item_selection(self._doc_tree_view, self.on_doc_tree_selection_changed, True)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._active_doc_view.document_gr_view, "selection_changed")
-        if self._active_doc_view.document_gr_view.isSignalConnected(sig):
-            # noinspection PyUnresolvedReferences
-            self._active_doc_view.document_gr_view.selection_changed.disconnect(self.on_doc_gr_view_selection_changed)
+        doc_gr_view: QtWidgets.QGraphicsView = self._active_doc_view.document_gr_view
+        self.connect_item_selection(doc_gr_view, self.on_doc_gr_view_selection_changed, False)
         self._active_doc_view.document_gr_view.select(source_selection)
-        # noinspection PyUnresolvedReferences
-        self._active_doc_view.document_gr_view.selection_changed.connect(self.on_doc_gr_view_selection_changed)
+        self.connect_item_selection(doc_gr_view, self.on_doc_gr_view_selection_changed, True)
 
         if len(source_selection.indexes()) > 0:
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
@@ -440,19 +447,15 @@ class MainWindow(QtWidgets.QMainWindow):
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
         del_act.setEnabled(False)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._doc_tree_view.selectionModel(), "selectionChanged")
-        if self._doc_tree_view.selectionModel().isSignalConnected(sig):
-            self._doc_tree_view.selectionModel().selectionChanged.disconnect(self.on_doc_tree_selection_changed)
+        self.connect_item_selection(self._doc_tree_view, self.on_doc_tree_selection_changed, False)
         self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
+        self.connect_item_selection(self._doc_tree_view, self.on_doc_tree_selection_changed, True)
 
-        sig: QtCore.QMetaMethod = self.get_signal(self._item_tree_view.selectionModel(), "selectionChanged")
-        if self._item_tree_view.selectionModel().isSignalConnected(sig):
-            self._item_tree_view.selectionModel().selectionChanged.disconnect(self.on_item_tree_selection_changed)
+        self.connect_item_selection(self._item_tree_view, self.on_item_tree_selection_changed, False)
         proxy: QtCore.QSortFilterProxyModel = cast(QtCore.QSortFilterProxyModel, self._item_tree_view.model())
         proxy_selection: QtCore.QItemSelection = proxy.mapSelectionFromSource(source_selection)
         self._item_tree_view.selectionModel().select(proxy_selection, QtCore.QItemSelectionModel.ClearAndSelect)
-        self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
+        self.connect_item_selection(self._item_tree_view, self.on_item_tree_selection_changed, True)
 
         if len(source_selection.indexes()) > 0:
             del_act.setEnabled(True)
