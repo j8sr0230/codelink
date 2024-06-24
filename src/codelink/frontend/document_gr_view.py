@@ -31,6 +31,7 @@ import PySide2.QtGui as QtGui
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
+from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.node_gr_item import NodeGrItem
 
 if TYPE_CHECKING:
@@ -49,6 +50,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         self._rm_pressed: bool = False
 
         self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
+        self._temp_edge: Optional[QtWidgets.QGraphicsLineItem] = None
 
     def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
         graphics_items: list[QtWidgets.QGraphicsItem] = []
@@ -105,7 +107,6 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         scene.selectionChanged.connect(self.on_selection_changed)
 
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
-        super().mousePressEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = True
@@ -114,6 +115,18 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 self._pressed_pin: QtWidgets.QGraphicsEllipseItem = self.itemAt(event.pos())
                 print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
 
+                temp_edge_pen_pen: QtGui.QPen = QtGui.QPen(QtGui.QColor(ColorPalette.REGULARGRAY))
+                temp_edge_pen_pen.setWidthF(3)
+                self._temp_edge: QtWidgets.QGraphicsLineItem = QtWidgets.QGraphicsLineItem(
+                    QtCore.QLineF(self._pressed_pin.pos() , self._pressed_pin.pos())
+                )
+                self._temp_edge.setPen(temp_edge_pen_pen)
+                self._temp_edge.setZValue(0)
+                self.scene().addItem(self._temp_edge)
+
+            else:
+                super().mousePressEvent(event)
+
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = True
 
@@ -121,7 +134,15 @@ class DocumentGrView(QtWidgets.QGraphicsView):
             self._rm_pressed: bool = True
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
-        super().mouseMoveEvent(event)
+
+        if self._pressed_pin and self._temp_edge:
+            temp_line: QtCore.QLineF = QtCore.QLineF(
+                self._pressed_pin.pos(), QtCore.QPointF(self.mapToScene(event.pos()))
+            )
+            self._temp_edge.setLine(temp_line)
+
+        else:
+            super().mouseMoveEvent(event)
 
         # if isinstance(self.itemAt(event.pos()), QtWidgets.QGraphicsProxyWidget):
         #     gr_proxy_widget: QtWidgets.QGraphicsProxyWidget = cast(
