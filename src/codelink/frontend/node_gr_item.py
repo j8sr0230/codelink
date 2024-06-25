@@ -31,6 +31,7 @@ import PySide2.QtGui as QtGui
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.proxy_models import ColumnSwapProxyModel
 from codelink.frontend.color_palette import ColorPalette
+from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.cachable_gr_proxy import CachableGrProxy
 
@@ -128,22 +129,19 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         proxy_item.setZValue(3)
         return proxy_item
 
-    def create_pins_group(self, sep_index: QtCore.QModelIndex) -> list[QtWidgets.QGraphicsEllipseItem]:
-        pins: list[QtWidgets.QGraphicsEllipseItem] = []
+    def create_pins_group(self, sep_index: QtCore.QModelIndex) -> list[PinGrItem]:
+        pins: list[PinGrItem] = []
 
         for i in range(self._persistent_index.model().rowCount(sep_index)):
             index: QtCore.QModelIndex = self.persistent_index.model().index(i, 0, sep_index)
-            pin: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(self)
-            pin.setBrush(QtGui.QBrush(QtGui.QColor(index.data(UserRoles.COLOR))))
-            pin.setRect(QtCore.QRect(-self._pin_size // 2, -self._pin_size // 2, self._pin_size, self._pin_size))
+            pin: PinGrItem = PinGrItem(index.data(UserRoles.COLOR), self)
             pin.setData(0, QtCore.QPersistentModelIndex(index))
-            pin.setZValue(2)
             pins.append(pin)
 
         return pins
 
-    def create_pins(self) -> list[list[QtWidgets.QGraphicsEllipseItem]]:
-        pins: list[list[QtWidgets.QGraphicsEllipseItem]] = []
+    def create_pins(self) -> list[list[PinGrItem]]:
+        pins: list[list[PinGrItem]] = []
 
         sep_indexes: list[QtCore.QModelIndex] = [
             self._persistent_index.model().index_from_key("Inputs", self._persistent_index),

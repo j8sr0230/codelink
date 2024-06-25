@@ -32,6 +32,7 @@ from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
 from codelink.frontend.node_gr_item import NodeGrItem
+from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.edge_gr_item import EdgeGrItem
 
 if TYPE_CHECKING:
@@ -112,9 +113,9 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         if event.button() == QtCore.Qt.LeftButton:
             self._lm_pressed: bool = True
 
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsEllipseItem:
-                self._pressed_pin: QtWidgets.QGraphicsEllipseItem = self.itemAt(event.pos())
-                # print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
+            if type(self.itemAt(event.pos())) == PinGrItem:
+                self._pressed_pin: PinGrItem = self.itemAt(event.pos())
+                print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
                 self._temp_edge: EdgeGrItem = EdgeGrItem(self._pressed_pin, self._pressed_pin)
                 self.scene().addItem(self._temp_edge)
 
@@ -133,8 +134,13 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
         if self._pressed_pin and self._temp_edge:
             temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(QtCore.QRect(-1, -1, 2, 2))
-            temp_target.setPos(self.mapToScene(event.pos()))
             self._temp_edge.end = temp_target
+            temp_target.setPos(self.mapToScene(event.pos()))
+
+            if type(self.itemAt(event.pos())) == PinGrItem:
+                pin_gr_item: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
+                # TODO: Add validated edge to model and update graphics view on model update
+                temp_target.setPos(pin_gr_item.parentItem().mapToScene(pin_gr_item.pos().toPoint()))
 
         else:
             super().mouseMoveEvent(event)
@@ -163,7 +169,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                     self._model.setData(item.index(), pos, UserRoles.POS)
                     item.moved = False
 
-            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsEllipseItem:
+            if type(self.itemAt(event.pos())) == PinGrItem:
                 # TODO: Add validated edge to model and update graphics view on model update
                 self._temp_edge.end = self.itemAt(event.pos())
             else:
