@@ -31,11 +31,12 @@ import PySide2.QtGui as QtGui
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
-from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.node_gr_item import NodeGrItem
+from codelink.frontend.edge_gr_item import EdgeGrItem
 
 if TYPE_CHECKING:
     from codelink.backend.tree_item import TreeItem
+
 
 class DocumentGrView(QtWidgets.QGraphicsView):
     selection_changed: QtCore.Signal = QtCore.Signal(QtCore.QItemSelection)
@@ -50,7 +51,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         self._rm_pressed: bool = False
 
         self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
-        self._temp_edge: Optional[QtWidgets.QGraphicsLineItem] = None
+        self._temp_edge: Optional[EdgeGrItem] = None
 
     def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
         graphics_items: list[QtWidgets.QGraphicsItem] = []
@@ -113,33 +114,27 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
             if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsEllipseItem:
                 self._pressed_pin: QtWidgets.QGraphicsEllipseItem = self.itemAt(event.pos())
-                print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
-
-                temp_edge_pen_pen: QtGui.QPen = QtGui.QPen(QtGui.QColor(ColorPalette.REGULARGRAY))
-                temp_edge_pen_pen.setWidthF(3)
-                self._temp_edge: QtWidgets.QGraphicsLineItem = QtWidgets.QGraphicsLineItem(
-                    QtCore.QLineF(self._pressed_pin.pos() , self._pressed_pin.pos())
-                )
-                self._temp_edge.setPen(temp_edge_pen_pen)
-                self._temp_edge.setZValue(0)
+                # print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
+                self._temp_edge: EdgeGrItem = EdgeGrItem(self._pressed_pin, self._pressed_pin)
                 self.scene().addItem(self._temp_edge)
 
             else:
                 super().mousePressEvent(event)
 
         elif event.button() == QtCore.Qt.MiddleButton:
+            super().mousePressEvent(event)
             self._mm_pressed: bool = True
 
         else:
+            super().mousePressEvent(event)
             self._rm_pressed: bool = True
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
 
         if self._pressed_pin and self._temp_edge:
-            temp_line: QtCore.QLineF = QtCore.QLineF(
-                self._pressed_pin.pos(), QtCore.QPointF(self.mapToScene(event.pos()))
-            )
-            self._temp_edge.setLine(temp_line)
+            temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(QtCore.QRect(-1, -1, 2, 2))
+            temp_target.setPos(self.mapToScene(event.pos()))
+            self._temp_edge.end = temp_target
 
         else:
             super().mouseMoveEvent(event)
@@ -167,6 +162,13 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                     pos: list[int] = [pos.x(), pos.y()]
                     self._model.setData(item.index(), pos, UserRoles.POS)
                     item.moved = False
+
+            if type(self.itemAt(event.pos())) == QtWidgets.QGraphicsEllipseItem:
+                # TODO: Add validated edge to model and update graphics view on model update
+                self._temp_edge.end = self.itemAt(event.pos())
+            else:
+                self.scene().removeItem(self._temp_edge)
+            self._temp_edge: Optional[EdgeGrItem] = None
 
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = False
