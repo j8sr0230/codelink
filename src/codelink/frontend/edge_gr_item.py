@@ -33,11 +33,11 @@ from codelink.frontend.color_palette import ColorPalette
 
 class EdgeGrItem(QtWidgets.QGraphicsPathItem):
     def __init__(self, source: QtWidgets.QGraphicsItem, destination: QtWidgets.QGraphicsItem,
-                 persistent_index: Optional[QtCore.QPersistentModelIndex] = None,
+                 persistent_index: QtCore.QPersistentModelIndex = QtCore.QPersistentModelIndex(),
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._persistent_index: QtCore.QPersistentModelIndex = persistent_index
+        self._persistent_index: Optional[QtCore.QPersistentModelIndex] = persistent_index
         self._source: QtWidgets.QGraphicsEllipseItem = source
         self._destination: QtWidgets.QGraphicsEllipseItem = destination
 

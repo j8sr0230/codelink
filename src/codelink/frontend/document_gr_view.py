@@ -85,18 +85,23 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
         elif type(item) == EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, item)
-
             source_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.source_uuid)
+            destination_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.destination_uuid)
+
+            if self._model.is_input(source_index) and self._model.is_output(destination_index):
+                temp_index: QtCore.QModelIndex = destination_index
+                destination_index: QtCore.QModelIndex = source_index
+                source_index: QtCore.QModelIndex = temp_index
+
             source_node_index: QtCore.QModelIndex = source_index.parent().parent()
             source_node_gr_item: NodeGrItem = self.graphics_item_from_index(source_node_index)
             source_pin: PinGrItem = source_node_gr_item.pins[1][source_index.row()]
 
-            destination_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.destination_uuid)
             destination_node_index: QtCore.QModelIndex = destination_index.parent().parent()
             destination_node_gr_item: NodeGrItem = self.graphics_item_from_index(destination_node_index)
             destination_pin: PinGrItem = destination_node_gr_item.pins[0][destination_index.row()]
 
-            self.scene().addItem(EdgeGrItem(source_pin, destination_pin, index))
+            self.scene().addItem(EdgeGrItem(source_pin, destination_pin, QtCore.QPersistentModelIndex(index)))
 
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:

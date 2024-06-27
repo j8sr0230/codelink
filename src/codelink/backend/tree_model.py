@@ -315,6 +315,18 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return self.has_parent_recursively(index.parent(), parent)
 
+    def is_input(self, index: QtCore.QModelIndex) -> bool:
+        if self.data(index, int(QtCore.Qt.DisplayRole)) ==  "Inputs":
+            return True
+
+        return False
+
+    def is_output(self, index: QtCore.QModelIndex) -> bool:
+        if self.data(index, int(QtCore.Qt.DisplayRole)) == "Outputs":
+            return True
+
+        return False
+
     def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         return self.removeRow(row, parent)
 
