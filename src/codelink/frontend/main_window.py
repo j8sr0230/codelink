@@ -277,6 +277,11 @@ class MainWindow(QtWidgets.QMainWindow):
         for i in range(nodes_count):
             doc_view.on_model_rows_inserted(parent_index, i, i)
 
+        parent_index: QtCore.QModelIndex = doc_model.edges_index
+        edges_count: int = doc_model.rowCount(parent_index)
+        for i in range(edges_count):
+            doc_view.on_model_rows_inserted(parent_index, i, i)
+
         doc_view.model.modified = False
         doc_view.update()
 
@@ -337,11 +342,19 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
 
-        while source_indexes:
-            selected_index: QtCore.QModelIndex = QtCore.QModelIndex(source_indexes.pop())
+        for selected_index in source_indexes:
+            selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
             if selected_index.column() == 0:
                 tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
-                if isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem):
+                if isinstance(tree_item, EdgeItem):
+                    index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
+                    self._active_doc_model.removeRow(index.row(), index.parent())
+
+        for selected_index in source_indexes:
+            selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
+            if selected_index.column() == 0:
+                tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
+                if isinstance(tree_item, NodeItem):
                     index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                     self._active_doc_model.removeRow(index.row(), index.parent())
 
