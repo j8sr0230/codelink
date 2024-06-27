@@ -96,7 +96,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
             destination_node_gr_item: NodeGrItem = self.graphics_item_from_index(destination_node_index)
             destination_pin: PinGrItem = destination_node_gr_item.pins[0][destination_index.row()]
 
-            self.scene().addItem(EdgeGrItem(source_pin, destination_pin))
+            self.scene().addItem(EdgeGrItem(source_pin, destination_pin, index))
 
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
