@@ -31,6 +31,7 @@ import PySide2.QtGui as QtGui
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
+from codelink.backend.edge_item import EdgeItem
 from codelink.frontend.node_gr_item import NodeGrItem
 from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.edge_gr_item import EdgeGrItem
@@ -82,6 +83,21 @@ class DocumentGrView(QtWidgets.QGraphicsView):
             self.scene().addItem(node_gr_item)
             node_gr_item.update()
 
+        elif type(item) == EdgeItem:
+            edge_item: EdgeItem = cast(EdgeItem, item)
+
+            source_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.source_uuid)
+            source_node_index: QtCore.QModelIndex = source_index.parent().parent()
+            source_node_gr_item: NodeGrItem = self.graphics_item_from_index(source_node_index)
+            source_pin: PinGrItem = source_node_gr_item.pins[1][source_index.row()]
+
+            destination_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.destination_uuid)
+            destination_node_index: QtCore.QModelIndex = destination_index.parent().parent()
+            destination_node_gr_item: NodeGrItem = self.graphics_item_from_index(destination_node_index)
+            destination_pin: PinGrItem = destination_node_gr_item.pins[0][destination_index.row()]
+
+            self.scene().addItem(EdgeGrItem(source_pin, destination_pin))
+
     # noinspection PyUnusedLocal
     def on_model_begin_remove_rows(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
@@ -115,7 +131,6 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
             if type(self.itemAt(event.pos())) == PinGrItem:
                 self._pressed_pin: PinGrItem = self.itemAt(event.pos())
-                print("Pin ModelIndex:", QtCore.QModelIndex(self._pressed_pin.data(0)))
                 self._temp_edge: EdgeGrItem = EdgeGrItem(self._pressed_pin, self._pressed_pin)
                 self.scene().addItem(self._temp_edge)
 
@@ -132,35 +147,23 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
     def mouseMoveEvent(self, event: QtGui.QMouseEvent) -> None:
 
-        if self._pressed_pin and self._temp_edge:
+        if self._lm_pressed and self._pressed_pin and self._temp_edge:
             temp_target: QtWidgets.QGraphicsEllipseItem = QtWidgets.QGraphicsEllipseItem(QtCore.QRect(-1, -1, 2, 2))
-            self._temp_edge.end = temp_target
+            self._temp_edge.destination = temp_target
             temp_target.setPos(self.mapToScene(event.pos()))
 
             if type(self.itemAt(event.pos())) == PinGrItem:
                 pin_gr_item: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
-                # TODO: Add validated edge to model and update graphics view on model update
+                # TODO: Add EdgeValidator class on the base of NetworkX
                 temp_target.setPos(pin_gr_item.parentItem().mapToScene(pin_gr_item.pos().toPoint()))
 
         else:
             super().mouseMoveEvent(event)
 
-        # if isinstance(self.itemAt(event.pos()), QtWidgets.QGraphicsProxyWidget):
-        #     gr_proxy_widget: QtWidgets.QGraphicsProxyWidget = cast(
-        #         QtWidgets.QGraphicsProxyWidget, self.itemAt(event.pos())
-        #     )
-        #     tree_view: QtWidgets.QTreeView = gr_proxy_widget.widget()
-        #
-        #     pos: QtCore.QPoint = self.mapToScene(event.pos()) - gr_proxy_widget.pos()
-        #     print(tree_view.indexAt(QtCore.QPoint(pos.x(), pos.y())))
-
     def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
         super().mouseReleaseEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton:
-            self._lm_pressed: bool = False
-            self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
-
             for item in self.scene().selectedItems():
                 if hasattr(item, "moved") and item.moved:
                     item: NodeGrItem = cast(NodeGrItem, item)
@@ -170,11 +173,19 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                     item.moved = False
 
             if type(self.itemAt(event.pos())) == PinGrItem:
-                # TODO: Add validated edge to model and update graphics view on model update
-                self._temp_edge.end = self.itemAt(event.pos())
-            else:
-                self.scene().removeItem(self._temp_edge)
+                pressed_index: QtCore.QModelIndex = QtCore.QModelIndex(self._pressed_pin.data(0))
+                pressed_uuid: str = self._model.data(pressed_index, UserRoles.UUID)
+
+                released_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
+                released_index: QtCore.QModelIndex = QtCore.QModelIndex(released_pin.data(0))
+                released_uuid: str = self._model.data(released_index, UserRoles.UUID)
+
+                self._model.append_edge(pressed_uuid, released_uuid)
+
+            self.scene().removeItem(self._temp_edge)
             self._temp_edge: Optional[EdgeGrItem] = None
+            self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
+            self._lm_pressed: bool = False
 
         elif event.button() == QtCore.Qt.MiddleButton:
             self._mm_pressed: bool = False

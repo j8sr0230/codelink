@@ -75,6 +75,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         return self._persistent_index
 
     @property
+    def pins(self) -> list[list[QtWidgets.QGraphicsEllipseItem]]:
+        return self._pins
+
+    @property
     def moved(self) -> bool:
         return self._moved
 

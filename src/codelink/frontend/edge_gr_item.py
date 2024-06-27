@@ -32,12 +32,14 @@ from codelink.frontend.color_palette import ColorPalette
 
 
 class EdgeGrItem(QtWidgets.QGraphicsPathItem):
-    def __init__(self, start: QtWidgets.QGraphicsItem, end: QtWidgets.QGraphicsItem,
+    def __init__(self, source: QtWidgets.QGraphicsItem, destination: QtWidgets.QGraphicsItem,
+                 persistent_index: Optional[QtCore.QPersistentModelIndex] = None,
                  parent: Optional[QtWidgets.QGraphicsItem] = None) -> None:
         super().__init__(parent)
 
-        self._start: QtWidgets.QGraphicsEllipseItem = start
-        self._end: QtWidgets.QGraphicsEllipseItem = end
+        self._persistent_index: QtCore.QPersistentModelIndex = persistent_index
+        self._source: QtWidgets.QGraphicsEllipseItem = source
+        self._destination: QtWidgets.QGraphicsEllipseItem = destination
 
         self._default_color: QtGui.QColor = QtGui.QColor(ColorPalette.REGULARGRAY)
         self._selected_color: QtGui.QColor = QtGui.QColor(ColorPalette.HIGHLIGHT)
@@ -48,29 +50,39 @@ class EdgeGrItem(QtWidgets.QGraphicsPathItem):
         self.setZValue(1)
 
     @property
-    def start(self) -> QtWidgets.QGraphicsItem:
-        return self._start
-
-    @start.setter
-    def start(self, value: QtWidgets.QGraphicsItem) -> None:
-        self._start: QtWidgets.QGraphicsItem = value
+    def persistent_index(self) -> QtCore.QPersistentModelIndex:
+        return self._persistent_index
 
     @property
-    def end(self) -> QtWidgets.QGraphicsItem:
-        return self._end
+    def source(self) -> QtWidgets.QGraphicsItem:
+        return self._source
 
-    @end.setter
-    def end(self, value: QtWidgets.QGraphicsItem) -> None:
-        self._end: QtWidgets.QGraphicsItem = value
+    @source.setter
+    def source(self, value: QtWidgets.QGraphicsItem) -> None:
+        self._source: QtWidgets.QGraphicsItem = value
+
+    @property
+    def destination(self) -> QtWidgets.QGraphicsItem:
+        return self._destination
+
+    @destination.setter
+    def destination(self, value: QtWidgets.QGraphicsItem) -> None:
+        self._destination: QtWidgets.QGraphicsItem = value
+
+    def index(self) -> QtCore.QModelIndex:
+        if not self._persistent_index.isValid():
+            return QtCore.QModelIndex()
+
+        return QtCore.QModelIndex(self._persistent_index)
 
     def path(self) -> QtGui.QPainterPath:
-        start_point: QtCore.QPointF = self.mapToScene(self._start.pos())
-        if self._start.parentItem():
-            start_point: QtCore.QPointF = self._start.parentItem().mapToScene(self._start.pos())
+        start_point: QtCore.QPointF = self.mapToScene(self._source.pos())
+        if self._source.parentItem():
+            start_point: QtCore.QPointF = self._source.parentItem().mapToScene(self._source.pos())
 
-        end_point: QtCore.QPointF = self.mapToScene(self._end.pos())
-        if self._end.parentItem():
-            end_point: QtCore.QPointF = self._end.parentItem().mapToScene(self._end.pos())
+        end_point: QtCore.QPointF = self.mapToScene(self._destination.pos())
+        if self._destination.parentItem():
+            end_point: QtCore.QPointF = self._destination.parentItem().mapToScene(self._destination.pos())
 
         path: QtGui.QPainterPath = QtGui.QPainterPath(start_point)
         path.lineTo(end_point)
