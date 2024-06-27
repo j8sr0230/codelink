@@ -166,10 +166,10 @@ class TreeModel(QtCore.QAbstractItemModel):
         if type(tree_item) is EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, tree_item)
             if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-                if index.column() == 0:
-                    return "Edge"
+                # if index.column() == 0:
+                #     return "Edge"
 
-                if index.column() == 1:
+                if index.column() == 0:
                     source: TreeItem = self.item_from_uuid(edge_item.source_uuid)
                     destination: TreeItem = self.item_from_uuid(edge_item.destination_uuid)
                     if hasattr(source, "key") and hasattr(destination, "key"):
