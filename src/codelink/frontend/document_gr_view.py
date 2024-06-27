@@ -174,7 +174,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                     self._model.setData(item.index(), pos, UserRoles.POS)
                     item.moved = False
 
-            if type(self.itemAt(event.pos())) == PinGrItem:
+            if type(self.itemAt(event.pos())) == PinGrItem and self._pressed_pin:
                 pressed_index: QtCore.QModelIndex = QtCore.QModelIndex(self._pressed_pin.data(0))
                 pressed_uuid: str = self._model.data(pressed_index, UserRoles.UUID)
 
