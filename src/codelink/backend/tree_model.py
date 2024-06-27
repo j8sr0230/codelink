@@ -173,7 +173,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                     source: TreeItem = self.item_from_uuid(edge_item.source_uuid)
                     destination: TreeItem = self.item_from_uuid(edge_item.destination_uuid)
                     if hasattr(source, "key") and hasattr(destination, "key"):
-                        return source.key + "->" + destination.key
+                        return source.key + " -> " + destination.key
 
             if role == UserRoles.SRC:
                 return self.item_from_uuid(edge_item.source_uuid)
@@ -316,7 +316,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.has_parent_recursively(index.parent(), parent)
 
     def is_input(self, index: QtCore.QModelIndex) -> bool:
-        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) ==  "Inputs":
+        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) == "Inputs":
             return True
 
         return False
