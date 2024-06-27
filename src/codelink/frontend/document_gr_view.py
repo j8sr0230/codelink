@@ -85,20 +85,17 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
         elif type(item) == EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, item)
+
             source_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.source_uuid)
-            destination_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.destination_uuid)
-
-            if self._model.is_input(source_index) and self._model.is_output(destination_index):
-                temp_index: QtCore.QModelIndex = destination_index
-                destination_index: QtCore.QModelIndex = source_index
-                source_index: QtCore.QModelIndex = temp_index
-
             source_node_index: QtCore.QModelIndex = source_index.parent().parent()
             source_node_gr_item: NodeGrItem = self.graphics_item_from_index(source_node_index)
+            source_pin_row: int = source_index.parent().row() - 1
             source_pin: PinGrItem = source_node_gr_item.pins[1][source_index.row()]
 
+            destination_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.destination_uuid)
             destination_node_index: QtCore.QModelIndex = destination_index.parent().parent()
             destination_node_gr_item: NodeGrItem = self.graphics_item_from_index(destination_node_index)
+            destination_pin_row: int = destination_index.parent().row() - 1
             destination_pin: PinGrItem = destination_node_gr_item.pins[0][destination_index.row()]
 
             self.scene().addItem(EdgeGrItem(source_pin, destination_pin, QtCore.QPersistentModelIndex(index)))
@@ -184,6 +181,11 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 released_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
                 released_index: QtCore.QModelIndex = QtCore.QModelIndex(released_pin.data(0))
                 released_uuid: str = self._model.data(released_index, UserRoles.UUID)
+
+                if self._model.is_input(pressed_index) and self._model.is_output(released_index):
+                    temp_uuid: str = released_uuid
+                    released_uuid: str = pressed_uuid
+                    pressed_uuid: str = temp_uuid
 
                 self._model.append_edge(pressed_uuid, released_uuid)
 

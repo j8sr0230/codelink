@@ -316,13 +316,13 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.has_parent_recursively(index.parent(), parent)
 
     def is_input(self, index: QtCore.QModelIndex) -> bool:
-        if self.data(index, int(QtCore.Qt.DisplayRole)) ==  "Inputs":
+        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) ==  "Inputs":
             return True
 
         return False
 
     def is_output(self, index: QtCore.QModelIndex) -> bool:
-        if self.data(index, int(QtCore.Qt.DisplayRole)) == "Outputs":
+        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) == "Outputs":
             return True
 
         return False
