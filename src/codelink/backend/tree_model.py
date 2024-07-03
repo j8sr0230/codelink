@@ -184,7 +184,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             if role == UserRoles.DEST:
                 return edge_item.destination_uuid
 
-        if type(tree_item) is SeperatorItem:  # or type(tree_item) is TreeSeperatorItem:
+        if isinstance(tree_item, SeperatorItem):
             if role == QtCore.Qt.BackgroundColorRole:
                 return QtGui.QColor(ColorPalette.PALEGRAY)
 
