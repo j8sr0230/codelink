@@ -25,36 +25,10 @@
 from typing import Optional, Any
 
 from codelink.backend.tree_item import TreeItem
-from codelink.backend.base_item import BaseItem
 from codelink.backend.seperator_item import SeperatorItem
-from codelink.backend.inputs_seperator_item import InputsSeperatorItem
-from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
 
 
-class NodeItem(BaseItem):
-    def __init__(self, key: str, value: Any = None, pos: Optional[list[int]] = None,
-                 uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
+class InputsSeperatorItem(SeperatorItem):
+    def __init__(self, key: str, value: Any = None, uuid: Optional[str] = None,
+                 parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, uuid, parent)
-
-        if pos is None:
-            pos: list[int] = [0, 0]
-
-        self._pos: list[int] = pos
-
-    @property
-    def pos(self) -> list[int]:
-        return self._pos
-
-    @pos.setter
-    def pos(self, value: list[int]) -> None:
-        self._pos: list[int] = value
-
-    def setup_children(self) -> None:
-        self.append_child(SeperatorItem("Base"))
-        self.append_child(InputsSeperatorItem("Inputs"))
-        self.append_child(OutputsSeperatorItem("Outputs"))
-
-    def __getstate__(self) -> dict[str, Any]:
-        state: dict[str, Any] = super().__getstate__()
-        state["pos"] = self._pos
-        return state

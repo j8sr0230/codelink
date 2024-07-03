@@ -37,7 +37,10 @@ from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.tree_seperator_item import SeperatorItem, TreeSeperatorItem
+from codelink.backend.seperator_item import SeperatorItem
+from codelink.backend.tree_seperator_item import TreeSeperatorItem
+from codelink.backend.inputs_seperator_item import InputsSeperatorItem
+from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
 from codelink.backend.property_item import PropertyItem
 from codelink.backend.edge_item import EdgeItem
 
@@ -176,10 +179,10 @@ class TreeModel(QtCore.QAbstractItemModel):
                         return source.key + " -> " + destination.key
 
             if role == UserRoles.SRC:
-                return self.item_from_uuid(edge_item.source_uuid)
+                return edge_item.source_uuid
 
             if role == UserRoles.DEST:
-                return self.item_from_uuid(edge_item.destination_uuid)
+                return edge_item.destination_uuid
 
         if type(tree_item) is SeperatorItem:  # or type(tree_item) is TreeSeperatorItem:
             if role == QtCore.Qt.BackgroundColorRole:
@@ -316,16 +319,47 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.has_parent_recursively(index.parent(), parent)
 
     def is_input(self, index: QtCore.QModelIndex) -> bool:
-        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) == "Inputs":
+        if self.data(index.parent(), UserRoles.TYPE) == InputsSeperatorItem:
             return True
 
         return False
 
     def is_output(self, index: QtCore.QModelIndex) -> bool:
-        if self.data(index.parent(), int(QtCore.Qt.DisplayRole)) == "Outputs":
+        if self.data(index.parent(), UserRoles.TYPE) == OutputsSeperatorItem:
             return True
 
         return False
+
+    def connected_edges(self, index: QtCore.QModelIndex) -> list[QtCore.QModelIndex]:
+        uuid: str = index.data(UserRoles.UUID)
+
+        src_list: list[int] = self.match(
+            self.index(0, 0, self._edges_index), UserRoles.SRC, uuid, -1,
+            QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
+        )
+
+        dest_list: list[int] = self.match(
+            self.index(0, 0, self._edges_index), UserRoles.DEST, uuid, -1,
+            QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
+        )
+
+        return cast(list[QtCore.QModelIndex], src_list + dest_list)
+
+    def edge_sibling(self, edge_index: QtCore.QModelIndex, src_dest_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        if edge_index.data(UserRoles.TYPE) == EdgeItem:
+
+            if self.data(edge_index, UserRoles.SRC) == src_dest_index.data(UserRoles.UUID):
+                return self.index_from_uuid(edge_index.data(UserRoles.DEST))
+
+            elif self.data(edge_index, UserRoles.DEST) == src_dest_index.data(UserRoles.UUID):
+                return self.index_from_uuid(edge_index.data(UserRoles.SRC))
+
+            else:
+                return QtCore.QModelIndex()
+
+        else:
+            return QtCore.QModelIndex()
+
 
     def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
         return self.removeRow(row, parent)

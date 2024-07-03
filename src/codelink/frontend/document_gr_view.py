@@ -159,6 +159,15 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 # TODO: Add EdgeValidator class on the base of NetworkX
                 temp_target.setPos(pin_gr_item.parentItem().mapToScene(pin_gr_item.pos().toPoint()))
 
+        elif type(self.itemAt(event.pos())) == PinGrItem:
+            hoovered_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
+            hoovered_index: QtCore.QModelIndex = QtCore.QModelIndex(hoovered_pin.data(0))
+            print(
+                "Connected nodes",
+                [self._model.edge_sibling(idx, hoovered_index).parent().parent().data(UserRoles.KEY)
+                 for idx in self._model.connected_edges(hoovered_index)]
+            )
+
         else:
             super().mouseMoveEvent(event)
 
