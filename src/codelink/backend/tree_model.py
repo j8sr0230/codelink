@@ -345,14 +345,14 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return cast(list[QtCore.QModelIndex], src_list + dest_list)
 
-    def edge_sibling(self, edge_index: QtCore.QModelIndex, src_dest_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
-        if edge_index.data(UserRoles.TYPE) == EdgeItem:
+    def edge_sibling(self, index: QtCore.QModelIndex, src_dest_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
+        if index.data(UserRoles.TYPE) == EdgeItem:
 
-            if self.data(edge_index, UserRoles.SRC) == src_dest_index.data(UserRoles.UUID):
-                return self.index_from_uuid(edge_index.data(UserRoles.DEST))
+            if self.data(index, UserRoles.SRC) == src_dest_index.data(UserRoles.UUID):
+                return self.index_from_uuid(index.data(UserRoles.DEST))
 
-            elif self.data(edge_index, UserRoles.DEST) == src_dest_index.data(UserRoles.UUID):
-                return self.index_from_uuid(edge_index.data(UserRoles.SRC))
+            elif self.data(index, UserRoles.DEST) == src_dest_index.data(UserRoles.UUID):
+                return self.index_from_uuid(index.data(UserRoles.SRC))
 
             else:
                 return QtCore.QModelIndex()
