@@ -272,9 +272,9 @@ class TreeModel(QtCore.QAbstractItemModel):
     def append_edge(self, source_uuid: str, destination_uuid: str) -> QtCore.QModelIndex:
         return self.append_item(EdgeItem(source_uuid, destination_uuid), self._edges_index)
 
-    def index_from_uuid(self, uuid: str, column: int = 1) -> Optional[QtCore.QModelIndex]:
+    def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
         index_list: list[int] = self.match(
-            self.index(0, column, QtCore.QModelIndex()), UserRoles.UUID, uuid, 1,
+            self.index(0, 0, QtCore.QModelIndex()), UserRoles.UUID, uuid, 1,
             QtCore.Qt.MatchContains | QtCore.Qt.MatchRecursive | QtCore.Qt.MatchWrap
         )
         if len(index_list) > 0:
