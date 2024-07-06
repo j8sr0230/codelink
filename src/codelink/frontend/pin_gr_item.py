@@ -45,7 +45,7 @@ class PinGrItem(QtWidgets.QGraphicsItem):
         self._pen: QtGui.QPen = QtGui.QPen(self._border_color)
 
         self._size: int = 10
-        self._snap_factor: int = 3
+        self._snap_factor: int = 5
 
         self.setZValue(2)
 
@@ -61,3 +61,4 @@ class PinGrItem(QtWidgets.QGraphicsItem):
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
         painter.drawEllipse(-self._size // 2, -self._size // 2, self._size, self._size)
+        # painter.drawRect(self.boundingRect())
