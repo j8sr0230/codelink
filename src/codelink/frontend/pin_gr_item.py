@@ -47,12 +47,12 @@ class PinGrItem(QtWidgets.QGraphicsItem):
         self._size: int = 10
         self._snap_factor: int = 3
 
-        self.setZValue(3)
+        self.setZValue(2)
 
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(
-            -self._snap_factor * (self._size // 2), -self._snap_factor * (self._size // 2),
-            self._snap_factor * self._size, self._snap_factor * self._size
+            -self._snap_factor * (self._size // 2), -self._size // 2,
+            self._snap_factor * self._size, self._size
         )
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
