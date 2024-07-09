@@ -188,6 +188,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
                 if not rect.isValid():
                     index: QtCore.QModelIndex = index.parent()
                     rect: QtCore.QRect = content_view.visualRect(index)
+                pin.snap_height = rect.height()
 
                 pos: QtCore.QPoint = QtCore.QPoint(
                     rect.x() + grp_idx * (self._width - content_view.frameWidth()),

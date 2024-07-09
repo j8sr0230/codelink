@@ -45,14 +45,22 @@ class PinGrItem(QtWidgets.QGraphicsItem):
         self._pen: QtGui.QPen = QtGui.QPen(self._border_color)
 
         self._size: int = 10
-        self._snap_factor: int = 5
+        self._snap_width: int = 50
+        self._snap_height: int = self._size
 
         self.setZValue(2)
 
+    @property
+    def snap_height(self) -> int:
+        return self._snap_height
+
+    @snap_height.setter
+    def snap_height(self, value: int) -> None:
+        self._snap_height: int = value
+
     def boundingRect(self) -> QtCore.QRectF:
         return QtCore.QRectF(
-            -self._snap_factor * (self._size // 2), -self._size // 2,
-            self._snap_factor * self._size, self._size
+            -self._snap_width // 2, -self._snap_height // 2, self._snap_width, self._snap_height
         )
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
@@ -60,5 +68,5 @@ class PinGrItem(QtWidgets.QGraphicsItem):
 
         painter.setPen(self._pen)
         painter.setBrush(self._brush)
-        painter.drawEllipse(-self._size // 2, -self._size // 2, self._size, self._size)
         # painter.drawRect(self.boundingRect())
+        painter.drawEllipse(-self._size // 2, -self._size // 2, self._size, self._size)
