@@ -24,6 +24,9 @@
 
 from typing import TYPE_CHECKING, Optional, cast
 
+import networkx as nx
+import matplotlib.pyplot as plt
+
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
@@ -197,6 +200,13 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                     pressed_uuid: str = temp_uuid
 
                 self._model.append_edge(pressed_uuid, released_uuid)
+
+                di_graph: nx.DiGraph = self._model.to_nx()
+                nx.draw(
+                    di_graph, nx.spring_layout(di_graph, seed=225),
+                    labels={uuid: self._model.index_from_uuid(uuid).data() for uuid in di_graph.nodes()}
+                )
+                plt.show()
 
             self.scene().removeItem(self._temp_edge)
             self._temp_edge: Optional[EdgeGrItem] = None
