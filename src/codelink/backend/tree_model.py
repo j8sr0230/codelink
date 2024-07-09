@@ -26,6 +26,9 @@ from __future__ import annotations
 from typing import cast, Any, Optional
 import importlib
 
+import matplotlib.pyplot as plt
+import networkx as nx
+
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
 import PySide2.QtWidgets as QtWidgets
@@ -64,6 +67,8 @@ class TreeModel(QtCore.QAbstractItemModel):
             self._frames_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Frames"), QtCore.QModelIndex())
 
         self._undo_stack: QtWidgets.QUndoStack = undo_stack if undo_stack else QtWidgets.QUndoStack()
+
+        self._di_graph: nx.DiGraph = nx.DiGraph()
 
     @property
     def root_item(self) -> RootItem:
@@ -270,6 +275,17 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.append_item(node_item, self._nodes_index)
 
     def append_edge(self, source_uuid: str, destination_uuid: str) -> QtCore.QModelIndex:
+        source_node_idx: QtCore.QModelIndex = self.index_from_uuid(source_uuid).parent().parent()
+        destination_node_idx: QtCore.QModelIndex = self.index_from_uuid(destination_uuid).parent().parent()
+
+        self._di_graph.add_edge(source_node_idx.data(UserRoles.UUID), destination_node_idx.data(UserRoles.UUID))
+
+        nx.draw(
+            self._di_graph, nx.spring_layout(self._di_graph, seed=225),
+            labels={uuid: self.index_from_uuid(uuid).data() for uuid in self._di_graph.nodes()}
+        )
+        plt.show()
+
         return self.append_item(EdgeItem(source_uuid, destination_uuid), self._edges_index)
 
     def index_from_uuid(self, uuid: str) -> Optional[QtCore.QModelIndex]:
