@@ -49,14 +49,14 @@ class EdgeValidator:
         if self._model.is_output(source) and self._model.is_output(destination):
             return False
 
-        di_graph.add_edge(source.data(UserRoles.UUID), destination.data(UserRoles.UUID))
-        if nx.find_cycle(di_graph):
+        di_graph.add_edge(
+            source.parent().parent().data(UserRoles.UUID),
+            destination.parent().parent().data(UserRoles.UUID)
+        )
+
+        try:
+            nx.find_cycle(di_graph)
+        except nx.exception.NetworkXNoCycle:
+            return True
+        else:
             return False
-
-        # self._model.to_nx().remove_edge(source.data(UserRoles.UUID), destination.data(UserRoles.UUID))
-
-        # except nx.exception.NetworkXNoCycle:
-        #     return True
-
-        # else:
-        #     return True
