@@ -362,9 +362,23 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             return QtCore.QModelIndex()
 
+    def remove_index(self, index=QtCore.QModelIndex()) -> bool:
+        if issubclass(index.data(UserRoles.TYPE), NodeItem):
+            invalid_edges: list[QtCore.QPersistentModelIndex] = []
 
-    def remove_item(self, row: int, parent=QtCore.QModelIndex()) -> bool:
-        return self.removeRow(row, parent)
+            for row in [1, 2]:
+                sep_index: QtCore.QModelIndex = self.index(row, 0, index)
+                for i in range(self.rowCount(sep_index)):
+                    prop_index: QtCore.QModelIndex = self.index(i, 0, sep_index)
+                    invalid_edges.extend(
+                        [QtCore.QPersistentModelIndex(edge_idx) for edge_idx in self.connected_edges(prop_index)]
+                    )
+
+            for invalid_edge in invalid_edges:
+                invalid_index: QtCore.QModelIndex = QtCore.QModelIndex(invalid_edge)
+                self.remove_index(invalid_index)
+
+        return self.removeRow(index.row(), index.parent())
 
     def to_nx(self) -> nx.DiGraph:
         di_graph: nx.DiGraph = nx.DiGraph()

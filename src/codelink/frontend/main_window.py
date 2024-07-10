@@ -348,7 +348,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
                 if isinstance(tree_item, EdgeItem):
                     index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                    self._active_doc_model.removeRow(index.row(), index.parent())
+                    self._active_doc_model.remove_index(index)
 
         for selected_index in source_indexes:
             selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
@@ -356,7 +356,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
                 if isinstance(tree_item, NodeItem):
                     index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                    self._active_doc_model.removeRow(index.row(), index.parent())
+                    self._active_doc_model.remove_index(index)
 
     def on_test_data(self) -> None:
         self._active_doc_model.add_test_data()

@@ -27,3 +27,6 @@ class EdgeValidator:
     def __init__(self) -> None:
         pass
 
+    @staticmethod
+    def can_connect(source_uuid: str, target_uuid: str) -> bool:
+        return True
