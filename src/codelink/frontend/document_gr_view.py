@@ -167,7 +167,8 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
                 temp_target.setPos(hoovered_gr_pin.parentItem().mapToScene(hoovered_gr_pin.pos().toPoint()))
 
-                print("Can connect:", self._edge_validator.can_connect(pressed_index, hoovered_index))
+                if not self._edge_validator.can_connect(pressed_index, hoovered_index):
+                    self._temp_edge.is_invalid = True
 
                 # print(
                 #     "Connected nodes",

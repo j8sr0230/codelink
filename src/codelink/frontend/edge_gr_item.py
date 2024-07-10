@@ -41,8 +41,11 @@ class EdgeGrItem(QtWidgets.QGraphicsPathItem):
         self._source: QtWidgets.QGraphicsEllipseItem = source
         self._destination: QtWidgets.QGraphicsEllipseItem = destination
 
+        self._is_invalid: bool = False
+
         self._default_color: QtGui.QColor = QtGui.QColor(ColorPalette.REGULARGRAY)
         self._selected_color: QtGui.QColor = QtGui.QColor(ColorPalette.HIGHLIGHT)
+        self._invalid_color: QtGui.QColor = QtGui.QColor("red")
         self._pen: QtGui.QPen = QtGui.QPen(self._default_color)
         self._pen.setWidthF(2.0)
 
@@ -68,6 +71,14 @@ class EdgeGrItem(QtWidgets.QGraphicsPathItem):
     @destination.setter
     def destination(self, value: QtWidgets.QGraphicsItem) -> None:
         self._destination: QtWidgets.QGraphicsItem = value
+
+    @property
+    def is_invalid(self) -> bool:
+        return self._is_invalid
+
+    @is_invalid.setter
+    def is_invalid(self, value: bool) -> None:
+        self._is_invalid: bool = value
 
     def index(self) -> QtCore.QModelIndex:
         if not self._persistent_index.isValid():
@@ -102,6 +113,9 @@ class EdgeGrItem(QtWidgets.QGraphicsPathItem):
         self._pen.setColor(self._default_color)
         if self.isSelected():
             self._pen.setColor(self._selected_color)
+
+        elif self._is_invalid:
+            self._pen.setColor(self._invalid_color)
 
         painter.setPen(self._pen)
         painter.drawPath(self.path())
