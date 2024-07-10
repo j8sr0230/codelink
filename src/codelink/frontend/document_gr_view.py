@@ -33,6 +33,7 @@ import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
+from codelink.backend.edge_validator import EdgeValidator
 from codelink.backend.node_item import NodeItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.frontend.node_gr_item import NodeGrItem
@@ -50,6 +51,8 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         super().__init__(parent)
 
         self._model: DocumentModel = model
+
+        self._edge_validator: EdgeValidator = EdgeValidator(model)
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
@@ -158,18 +161,19 @@ class DocumentGrView(QtWidgets.QGraphicsView):
             temp_target.setPos(self.mapToScene(event.pos()))
 
             if type(self.itemAt(event.pos())) == PinGrItem:
-                pin_gr_item: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
-                # TODO: Add EdgeValidator class on the base of NetworkX
-                temp_target.setPos(pin_gr_item.parentItem().mapToScene(pin_gr_item.pos().toPoint()))
+                pressed_index: QtCore.QModelIndex = QtCore.QModelIndex(self._pressed_pin.data(0))
+                hoovered_gr_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
+                hoovered_index: QtCore.QModelIndex = QtCore.QModelIndex(hoovered_gr_pin.data(0))
 
-        elif type(self.itemAt(event.pos())) == PinGrItem:
-            hoovered_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
-            hoovered_index: QtCore.QModelIndex = QtCore.QModelIndex(hoovered_pin.data(0))
-            print(
-                "Connected nodes",
-                [self._model.edge_sibling(idx, hoovered_index).parent().parent().data(UserRoles.KEY)
-                 for idx in self._model.connected_edges(hoovered_index)]
-            )
+                temp_target.setPos(hoovered_gr_pin.parentItem().mapToScene(hoovered_gr_pin.pos().toPoint()))
+
+                print("Can connect:", self._edge_validator.can_connect(pressed_index, hoovered_index))
+
+                # print(
+                #     "Connected nodes",
+                #     [self._model.edge_sibling(idx, hoovered_index).parent().parent().data(UserRoles.KEY)
+                #      for idx in self._model.connected_edges(hoovered_index)]
+                # )
 
         else:
             super().mouseMoveEvent(event)
