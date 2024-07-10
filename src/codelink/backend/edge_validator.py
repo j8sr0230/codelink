@@ -32,4 +32,15 @@ class EdgeValidator:
         self._model: TreeModel = model
 
     def can_connect(self, source: QtCore.QModelIndex, destination: QtCore.QModelIndex) -> bool:
-        return True
+
+        if source == destination:
+            return False
+
+        if self._model.is_input(source) and self._model.is_input(destination):
+            return False
+
+        if self._model.is_output(source) and self._model.is_output(destination):
+            return False
+
+        else:
+            return True
