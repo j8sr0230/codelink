@@ -22,10 +22,12 @@
 # *                                                                         *
 # ***************************************************************************
 
+from codelink.backend.tree_model import TreeModel
+
 
 class EdgeValidator:
-    def __init__(self) -> None:
-        pass
+    def __init__(self, model: TreeModel) -> None:
+        self._model: TreeModel = model
 
     @staticmethod
     def can_connect(source_uuid: str, target_uuid: str) -> bool:
