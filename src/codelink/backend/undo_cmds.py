@@ -159,6 +159,25 @@ class TreeItemRemoveCommand(QtWidgets.QUndoCommand):
 
         self._parent: Any = self._model.item_from_index(self._parent_index)
 
+    @property
+    def model(self) -> QtCore.QAbstractItemModel:
+        return self._model
+
+    @property
+    def parent_index(self) -> QtCore.QModelIndex:
+        return self._parent_index
+
+    @property
+    def item(self) -> Any:
+        return self._item
+
+    @property
+    def row(self) -> int:
+        return self._row
+
+    def id(self) -> int:
+        return 20
+
     def undo(self) -> None:
         self._model.beginInsertRows(self._parent_index, self._row, self._row)
         self._parent.insert_child(self._row, self._item)
@@ -169,3 +188,15 @@ class TreeItemRemoveCommand(QtWidgets.QUndoCommand):
         self._model.begin_remove_rows.emit(self._parent_index, self._row, self._row)
         self._parent.remove_child(self._row)
         self._model.endRemoveRows()
+
+    # def mergeWith(self, other: QtWidgets.QUndoCommand) -> bool:
+    #     if other.model != self._model:
+    #         return False
+    #
+    #     if other.id() == self.id():
+    #         self._parent_index: QtCore.QModelIndex = other.parent_index
+    #         self._item: Any = other.item
+    #         self._row: int = other.row
+    #         return True
+    #
+    #     return False
