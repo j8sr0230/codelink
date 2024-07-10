@@ -25,6 +25,8 @@
 from __future__ import annotations
 from typing import Optional, Any
 
+# from codelink.backend.edge_validator import EdgeValidator
+
 import PySide2.QtCore as QtCore
 
 
