@@ -22,8 +22,11 @@
 # *                                                                         *
 # ***************************************************************************
 
+import networkx as nx
+
 import PySide2.QtCore as QtCore
 
+from codelink.backend.user_roles import UserRoles
 from codelink.backend.tree_model import TreeModel
 
 
@@ -32,6 +35,10 @@ class EdgeValidator:
         self._model: TreeModel = model
 
     def can_connect(self, source: QtCore.QModelIndex, destination: QtCore.QModelIndex) -> bool:
+        di_graph: nx.DiGraph = self._model.to_nx()
+
+        if source.parent().parent() == destination.parent().parent():
+            return False
 
         if source == destination:
             return False
@@ -42,5 +49,14 @@ class EdgeValidator:
         if self._model.is_output(source) and self._model.is_output(destination):
             return False
 
-        else:
-            return True
+        di_graph.add_edge(source.data(UserRoles.UUID), destination.data(UserRoles.UUID))
+        if nx.find_cycle(di_graph):
+            return False
+
+        # self._model.to_nx().remove_edge(source.data(UserRoles.UUID), destination.data(UserRoles.UUID))
+
+        # except nx.exception.NetworkXNoCycle:
+        #     return True
+
+        # else:
+        #     return True
