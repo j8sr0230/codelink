@@ -170,11 +170,21 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 if not self._edge_validator.can_connect(pressed_index, hoovered_index):
                     self._temp_edge.is_invalid = True
 
-                # print(
-                #     "Connected nodes",
-                #     [self._model.edge_sibling(idx, hoovered_index).parent().parent().data(UserRoles.KEY)
-                #      for idx in self._model.connected_edges(hoovered_index)]
-                # )
+                else:
+                    self._temp_edge.is_invalid = False
+
+            else:
+                self._temp_edge.is_invalid = False
+
+        elif type(self.itemAt(event.pos())) == PinGrItem:
+            hoovered_gr_pin: PinGrItem = cast(PinGrItem, self.itemAt(event.pos()))
+            hoovered_index: QtCore.QModelIndex = QtCore.QModelIndex(hoovered_gr_pin.data(0))
+
+            print(
+                "Connected nodes",
+                [self._model.edge_sibling(idx, hoovered_index).parent().parent().data(UserRoles.KEY)
+                 for idx in self._model.connected_edges(hoovered_index)]
+            )
 
         else:
             super().mouseMoveEvent(event)
@@ -199,19 +209,21 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 released_index: QtCore.QModelIndex = QtCore.QModelIndex(released_pin.data(0))
                 released_uuid: str = self._model.data(released_index, UserRoles.UUID)
 
-                if self._model.is_input(pressed_index) and self._model.is_output(released_index):
-                    temp_uuid: str = released_uuid
-                    released_uuid: str = pressed_uuid
-                    pressed_uuid: str = temp_uuid
+                if self._edge_validator.can_connect(pressed_index, released_index):
 
-                self._model.append_edge(pressed_uuid, released_uuid)
+                    if self._model.is_input(pressed_index) and self._model.is_output(released_index):
+                        temp_uuid: str = released_uuid
+                        released_uuid: str = pressed_uuid
+                        pressed_uuid: str = temp_uuid
 
-                di_graph: nx.DiGraph = self._model.to_nx()
-                nx.draw(
-                    di_graph, nx.spring_layout(di_graph, seed=225),
-                    labels={uuid: self._model.index_from_uuid(uuid).data() for uuid in di_graph.nodes()}
-                )
-                plt.show()
+                    self._model.append_edge(pressed_uuid, released_uuid)
+
+                    di_graph: nx.DiGraph = self._model.to_nx()
+                    nx.draw(
+                        di_graph, nx.spring_layout(di_graph, seed=225),
+                        labels={uuid: self._model.index_from_uuid(uuid).data() for uuid in di_graph.nodes()}
+                    )
+                    plt.show()
 
             self.scene().removeItem(self._temp_edge)
             self._temp_edge: Optional[EdgeGrItem] = None

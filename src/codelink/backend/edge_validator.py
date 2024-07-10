@@ -37,6 +37,11 @@ class EdgeValidator:
     def can_connect(self, source: QtCore.QModelIndex, destination: QtCore.QModelIndex) -> bool:
         di_graph: nx.DiGraph = self._model.to_nx()
 
+        if self._model.is_input(source) and self._model.is_output(destination):
+            temp: QtCore.QModelIndex = destination
+            destination: QtCore.QModelIndex = source
+            source: QtCore.QModelIndex = temp
+
         if source.parent().parent() == destination.parent().parent():
             return False
 
