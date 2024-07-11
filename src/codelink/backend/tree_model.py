@@ -34,7 +34,9 @@ import PySide2.QtWidgets as QtWidgets
 
 from codelink.backend.user_roles import UserRoles
 from codelink.frontend.color_palette import ColorPalette
-from codelink.backend.undo_cmds import BaseItemEditCommand, TreeItemInsertCommand, TreeItemRemoveCommand
+from codelink.backend.undo_cmds import (
+    BaseItemEditCommand, TreeItemInsertCommand, TreeItemRemoveCommand, TreeItemMassRemoveCommand
+)
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
@@ -222,7 +224,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsEnabled
 
-    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role=QtCore.Qt.DisplayRole) -> Any:
+    def headerData(self, section: int, orientation: QtCore.Qt.Orientation, role: int = QtCore.Qt.DisplayRole) -> Any:
         if orientation == QtCore.Qt.Horizontal:
             if section == 0:
                 if role == QtCore.Qt.DisplayRole:
@@ -235,7 +237,7 @@ class TreeModel(QtCore.QAbstractItemModel):
                 if role == QtCore.Qt.ToolTipRole:
                     return "The value of the property"
 
-    def removeRow(self, row: int, parent=QtCore.QModelIndex()) -> bool:
+    def removeRow(self, row: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
         parent_item: TreeItem = self.item_from_index(parent)
         if not parent_item:
             return False
@@ -243,6 +245,18 @@ class TreeModel(QtCore.QAbstractItemModel):
         child_item: Optional[TreeItem] = parent_item.child(row)
         if child_item:
             self._undo_stack.push(TreeItemRemoveCommand(self, parent, child_item, row))
+            return True
+
+        return False
+
+    def removeRows(self, position: int, rows: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> bool:
+        parent_item: TreeItem = self.item_from_index(parent)
+        if not parent_item:
+            return False
+
+        child_items: list[TreeItem] = [parent_item.child(i) for i in range(position, position + rows)]
+        if len(child_items) > 0:
+            self._undo_stack.push(TreeItemMassRemoveCommand(self, parent, child_items, position, rows))
             return True
 
         return False
