@@ -375,6 +375,16 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return cast(list[QtCore.QModelIndex], src_list + dest_list)
 
+    def has_edge(self, source_uuid: str, destination_uuid: str) -> bool:
+        for i in range(self.rowCount(self._edges_index)):
+            edge_index: QtCore.QModelIndex = self.index(i, 0, self._edges_index)
+            connected_uuids: list[str] = [edge_index.data(UserRoles.SRC), edge_index.data(UserRoles.DEST)]
+
+            if source_uuid in connected_uuids and destination_uuid in connected_uuids:
+                return True
+
+        return False
+
     def edge_sibling(self, index: QtCore.QModelIndex, src_dest_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if index.data(UserRoles.TYPE) == EdgeItem:
 

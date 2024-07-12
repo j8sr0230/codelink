@@ -41,6 +41,9 @@ class EdgeValidator:
             destination: QtCore.QModelIndex = source
             source: QtCore.QModelIndex = temp
 
+        if self._model.has_edge(source.data(UserRoles.UUID), destination.data(UserRoles.UUID)):
+            return False
+
         if source.parent().parent() == destination.parent().parent():
             return False
 
