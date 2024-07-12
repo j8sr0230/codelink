@@ -27,6 +27,7 @@ from typing import cast, Any, Optional
 import importlib
 
 import networkx as nx
+import matplotlib.pyplot as plt
 
 import PySide2.QtCore as QtCore
 import PySide2.QtGui as QtGui
@@ -45,6 +46,7 @@ from codelink.backend.inputs_seperator_item import InputsSeperatorItem
 from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
 from codelink.backend.property_item import PropertyItem
 from codelink.backend.edge_item import EdgeItem
+from codelink.backend.edge_validator import EdgeValidator
 
 
 class TreeModel(QtCore.QAbstractItemModel):
@@ -66,6 +68,7 @@ class TreeModel(QtCore.QAbstractItemModel):
             self._frames_index: QtCore.QModelIndex = self.append_item(TreeSeperatorItem("Frames"), QtCore.QModelIndex())
 
         self._undo_stack: QtWidgets.QUndoStack = undo_stack if undo_stack else QtWidgets.QUndoStack()
+        self._edge_validator: EdgeValidator = EdgeValidator(self)
 
     @property
     def root_item(self) -> RootItem:
@@ -90,6 +93,10 @@ class TreeModel(QtCore.QAbstractItemModel):
     @property
     def undo_stack(self) -> QtWidgets.QUndoStack:
         return self._undo_stack
+
+    @property
+    def edge_validator(self) -> EdgeValidator:
+        return self._edge_validator
 
     def index(self, row: int, column: int, parent: QtCore.QModelIndex = QtCore.QModelIndex()) -> QtCore.QModelIndex:
         if parent.isValid() and parent.column() != 0:
@@ -272,7 +279,26 @@ class TreeModel(QtCore.QAbstractItemModel):
         return self.append_item(node_item, self._nodes_index)
 
     def append_edge(self, source_uuid: str, destination_uuid: str) -> QtCore.QModelIndex:
-        return self.append_item(EdgeItem(source_uuid, destination_uuid), self._edges_index)
+        source_index: QtCore.QModelIndex = self.index_from_uuid(source_uuid)
+        destination_index: QtCore.QModelIndex = self.index_from_uuid(destination_uuid)
+
+        if self._edge_validator.can_connect(source_index, destination_index):
+
+            if self.is_input(source_index) and self.is_output(destination_index):
+                temp_uuid: str = destination_uuid
+                destination_uuid: str = source_uuid
+                source_uuid: str = temp_uuid
+
+            edge_idx: QtCore.QModelIndex = self.append_item(EdgeItem(source_uuid, destination_uuid), self._edges_index)
+
+            di_graph: nx.DiGraph = self.to_nx()
+            nx.draw(
+                di_graph, nx.spring_layout(di_graph, seed=225),
+                labels={uuid: self.index_from_uuid(uuid).data() for uuid in di_graph.nodes()}
+            )
+            plt.show()
+
+            return edge_idx
 
     def index_from_uuid(
             self, uuid: str, parent: QtCore.QModelIndex = QtCore.QModelIndex()

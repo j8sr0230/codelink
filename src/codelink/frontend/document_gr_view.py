@@ -24,16 +24,12 @@
 
 from typing import TYPE_CHECKING, Optional, cast
 
-import networkx as nx
-import matplotlib.pyplot as plt
-
 import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
-from codelink.backend.edge_validator import EdgeValidator
 from codelink.backend.node_item import NodeItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.frontend.node_gr_item import NodeGrItem
@@ -51,8 +47,6 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         super().__init__(parent)
 
         self._model: DocumentModel = model
-
-        self._edge_validator: EdgeValidator = EdgeValidator(model)
 
         self._lm_pressed: bool = False
         self._mm_pressed: bool = False
@@ -167,7 +161,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
                 temp_target.setPos(hoovered_gr_pin.parentItem().mapToScene(hoovered_gr_pin.pos().toPoint()))
 
-                if not self._edge_validator.can_connect(pressed_index, hoovered_index):
+                if not self._model.edge_validator.can_connect(pressed_index, hoovered_index):
                     self._temp_edge.is_invalid = True
 
                 else:
@@ -209,21 +203,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
                 released_index: QtCore.QModelIndex = QtCore.QModelIndex(released_pin.data(0))
                 released_uuid: str = self._model.data(released_index, UserRoles.UUID)
 
-                if self._edge_validator.can_connect(pressed_index, released_index):
-
-                    if self._model.is_input(pressed_index) and self._model.is_output(released_index):
-                        temp_uuid: str = released_uuid
-                        released_uuid: str = pressed_uuid
-                        pressed_uuid: str = temp_uuid
-
-                    self._model.append_edge(pressed_uuid, released_uuid)
-
-                    di_graph: nx.DiGraph = self._model.to_nx()
-                    nx.draw(
-                        di_graph, nx.spring_layout(di_graph, seed=225),
-                        labels={uuid: self._model.index_from_uuid(uuid).data() for uuid in di_graph.nodes()}
-                    )
-                    plt.show()
+                self._model.append_edge(pressed_uuid, released_uuid)
 
             self.scene().removeItem(self._temp_edge)
             self._temp_edge: Optional[EdgeGrItem] = None
