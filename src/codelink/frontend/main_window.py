@@ -342,6 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
 
+        self._active_doc_model.undo_stack.beginMacro("Mass Delete")
         for selected_index in source_indexes:
             selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
             if selected_index.column() == 0:
@@ -357,6 +358,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 if isinstance(tree_item, NodeItem):
                     index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
                     self._active_doc_model.remove_index(index)
+
+        self._active_doc_model.undo_stack.endMacro()
+
 
     def on_test_data(self) -> None:
         self._active_doc_model.add_test_data()

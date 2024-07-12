@@ -159,25 +159,6 @@ class TreeItemRemoveCommand(QtWidgets.QUndoCommand):
 
         self._parent: Any = self._model.item_from_index(self._parent_index)
 
-    @property
-    def model(self) -> QtCore.QAbstractItemModel:
-        return self._model
-
-    @property
-    def parent_index(self) -> QtCore.QModelIndex:
-        return self._parent_index
-
-    @property
-    def item(self) -> Any:
-        return self._item
-
-    @property
-    def row(self) -> int:
-        return self._row
-
-    def id(self) -> int:
-        return 20
-
     def undo(self) -> None:
         self._model.beginInsertRows(self._parent_index, self._row, self._row)
         self._parent.insert_child(self._row, self._item)
@@ -188,30 +169,3 @@ class TreeItemRemoveCommand(QtWidgets.QUndoCommand):
         self._model.begin_remove_rows.emit(self._parent_index, self._row, self._row)
         self._parent.remove_child(self._row)
         self._model.endRemoveRows()
-
-
-class TreeItemMassRemoveCommand(QtWidgets.QUndoCommand):
-    def __init__(self, model: QtCore.QAbstractItemModel, parent_index: QtCore.QModelIndex, items: Any, position: int,
-                 rows: int, parent: Optional[QtWidgets.QUndoCommand] = None) -> None:
-        super().__init__(parent)
-
-        self._model: QtCore.QAbstractItemModel = model
-        self._parent_index: QtCore.QModelIndex = parent_index
-        self._items: Any = items
-        self._position: int = position
-        self._rows: int = rows
-
-        self._parent: Any = self._model.item_from_index(self._parent_index)
-
-    def undo(self) -> None:
-        pass
-        # self._model.beginInsertRows(self._parent_index, self._row, self._row)
-        # self._parent.insert_child(self._row, self._item)
-        # self._model.endInsertRows()
-
-    def redo(self) -> None:
-        pass
-        # self._model.beginRemoveRows(self._parent_index, self._row, self._row)
-        # self._model.begin_remove_rows.emit(self._parent_index, self._row, self._row)
-        # self._parent.remove_child(self._row)
-        # self._model.endRemoveRows()
