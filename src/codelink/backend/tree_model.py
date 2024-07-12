@@ -421,6 +421,15 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return self.removeRow(index.row(), index.parent())
 
+    def open_ends(self) -> list[QtCore.QModelIndex]:
+        ends: list[QtCore.QModelIndex] = []
+
+        for i in range(self.rowCount(self._nodes_index)):
+            pass
+
+        return ends
+
+
     def to_nx(self) -> nx.DiGraph:
         di_graph: nx.DiGraph = nx.DiGraph()
 
