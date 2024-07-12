@@ -342,7 +342,7 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
 
-        self._active_doc_model.undo_stack.beginMacro("Mass Delete")
+        self._active_doc_model.undo_stack.beginMacro("mass delete")
 
         for selected_index in source_indexes:
             selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
