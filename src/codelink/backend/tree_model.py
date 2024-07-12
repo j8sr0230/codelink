@@ -300,6 +300,9 @@ class TreeModel(QtCore.QAbstractItemModel):
 
             return edge_idx
 
+        else:
+            return QtCore.QModelIndex()
+
     def index_from_uuid(
             self, uuid: str, parent: QtCore.QModelIndex = QtCore.QModelIndex()
     ) -> Optional[QtCore.QModelIndex]:
