@@ -25,7 +25,7 @@
 from typing import Optional, Any
 
 from codelink.backend.tree_item import TreeItem
-from codelink.backend.tree_seperator_item import TreeSeperatorItem
+from codelink.backend.seperator_item import SeperatorItem
 from codelink.backend.node_item import NodeItem
 
 
@@ -35,6 +35,8 @@ class GroupItem(NodeItem):
         super().__init__(key, value, pos, uuid, parent)
 
     def setup_children(self) -> None:
-        self.append_child(TreeSeperatorItem("Nodes"))
-        self.append_child(TreeSeperatorItem("Edges"))
-        self.append_child(TreeSeperatorItem("Frames"))
+        super().setup_children()
+
+        self.append_child(SeperatorItem("Nodes"))
+        self.append_child(SeperatorItem("Edges"))
+        self.append_child(SeperatorItem("Frames"))

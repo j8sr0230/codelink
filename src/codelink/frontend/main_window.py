@@ -418,7 +418,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self._doc_tree_view.setModel(self._active_doc_model)
             self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
-            self._doc_tree_view.expandToDepth(0)
+            self._doc_tree_view.expandToDepth(1)
 
             proxy_model: Level2ProxyModel = Level2ProxyModel()
             proxy_model.setSourceModel(self._active_doc_model)

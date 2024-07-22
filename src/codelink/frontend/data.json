@@ -1,262 +1,292 @@
 {
     "type": "codelink.backend.root_item.RootItem",
-    "uuid": "{8501f5a5-e76f-4d1c-8835-9b9c25f81658}",
+    "uuid": "{a4382b52-a6b8-4a58-9ee0-1df320680067}",
     "children": [
         {
-            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
-            "uuid": "{81f6c49d-e8b8-4c3b-a178-0f197cc47e41}",
-            "key": "Nodes",
+            "type": "codelink.backend.group_item.GroupItem",
+            "uuid": "{14cf055f-6a99-4d96-840e-a4a13269dc1e}",
+            "key": "Main",
             "value": null,
+            "pos": [
+                0,
+                0
+            ],
             "children": [
                 {
-                    "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
-                    "uuid": "{7a208584-1f7a-4de5-a1a8-b7c684288137}",
-                    "key": "Test Node 1",
+                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                    "uuid": "{540f9571-9e57-48d2-95e9-a4dcb63621bc}",
+                    "key": "Base",
+                    "value": null
+                },
+                {
+                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                    "uuid": "{bc19b6c3-a65e-4312-b62a-59f7ef688682}",
+                    "key": "Inputs",
+                    "value": null
+                },
+                {
+                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                    "uuid": "{b66ef699-17f4-40a7-a7a7-86e1e37f0bd6}",
+                    "key": "Outputs",
+                    "value": null
+                },
+                {
+                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                    "uuid": "{7b63e534-bf0a-46a2-b7ff-7a6328eef2aa}",
+                    "key": "Nodes",
                     "value": null,
-                    "pos": [
-                        -231.0,
-                        -212.0
-                    ],
                     "children": [
                         {
-                            "type": "codelink.backend.seperator_item.SeperatorItem",
-                            "uuid": "{e0b1c8b7-03d8-4094-a747-072cabc41340}",
-                            "key": "Base",
+                            "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
+                            "uuid": "{720c6ec8-aad5-4207-a5f8-00e73be4a2f8}",
+                            "key": "Test Node 1",
                             "value": null,
+                            "pos": [
+                                -214.0,
+                                -289.0
+                            ],
                             "children": [
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{9c23908e-b237-4475-b98e-955bbdfa7630}",
-                                    "key": "Mode",
-                                    "value": 0
+                                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                                    "uuid": "{349070b1-4cff-4913-945c-43f6940c2d02}",
+                                    "key": "Base",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{f6d4695c-7cc1-4b5b-b13b-a4511603a34e}",
+                                            "key": "Mode",
+                                            "value": 0
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                                    "uuid": "{8b0f5cbd-4b6f-478e-b13f-289c89f3faef}",
+                                    "key": "Inputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{8dc5faf7-5d60-4472-b977-73dbd53a0c09}",
+                                            "key": "A1",
+                                            "value": 1
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{7e4c1d6c-aabd-4b7b-a974-c62304761dfe}",
+                                            "key": "B1",
+                                            "value": 0
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{464972fe-267b-4c62-9056-a13dc5b9f9b6}",
+                                            "key": "C1",
+                                            "value": 0
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                                    "uuid": "{3605cf1a-0533-4fdd-84fe-c9cc0463072f}",
+                                    "key": "Outputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{3cc7dfbe-1ffa-4b69-998c-f81f273be232}",
+                                            "key": "Res 1",
+                                            "value": null
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{8824772e-d594-4bb7-9005-707f6e1e9176}",
+                                            "key": "Res 2",
+                                            "value": null
+                                        }
+                                    ]
                                 }
                             ]
                         },
                         {
-                            "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
-                            "uuid": "{b66c319a-5353-4fee-b8e3-c1c9072fab95}",
-                            "key": "Inputs",
+                            "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
+                            "uuid": "{6a191464-0095-4f4a-9c2f-8817817a9308}",
+                            "key": "Test Node 2",
                             "value": null,
+                            "pos": [
+                                -29.0,
+                                -7.0
+                            ],
                             "children": [
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{468835e2-568e-4bb6-b1f6-62dda0f0899a}",
-                                    "key": "A",
-                                    "value": 1
+                                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                                    "uuid": "{e7b1334c-9b60-40ac-ace5-091f82a08f34}",
+                                    "key": "Base",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{f3a603d3-7424-4086-8b8b-6571ad4eee68}",
+                                            "key": "Mode",
+                                            "value": 1
+                                        }
+                                    ]
                                 },
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{00bca843-bde8-4573-b5c9-988bacd7c3c5}",
-                                    "key": "B",
-                                    "value": 0
+                                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                                    "uuid": "{263f2feb-d540-4a4c-92b4-93cec7f46210}",
+                                    "key": "Inputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{05bf779e-d7f2-4d83-bb55-f0cebda183c7}",
+                                            "key": "A2",
+                                            "value": 1
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{4dde95d8-061c-44db-bec9-070adc018171}",
+                                            "key": "B2",
+                                            "value": 0
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{181d5c4b-7f4f-4c55-8c79-2ee67bb5dc52}",
+                                            "key": "C2",
+                                            "value": 0
+                                        }
+                                    ]
                                 },
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{c0a0efc0-33fb-46d7-a4f1-295366da34df}",
-                                    "key": "C",
-                                    "value": 0
+                                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                                    "uuid": "{6a2d8ee3-fb09-4457-a077-44833cf8256b}",
+                                    "key": "Outputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{b3a82e13-cefe-4d30-aadb-16f715f37e6a}",
+                                            "key": "Res 1",
+                                            "value": null
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{950a5ee2-9381-4ab7-90b0-09306faafdd3}",
+                                            "key": "Res 2",
+                                            "value": null
+                                        }
+                                    ]
                                 }
                             ]
                         },
                         {
-                            "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
-                            "uuid": "{7ce78b9a-3dff-4461-a49b-91b5c7b61213}",
-                            "key": "Outputs",
+                            "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
+                            "uuid": "{0427ee98-7005-4540-8447-e3bd4fe805e2}",
+                            "key": "Test Node 3",
                             "value": null,
+                            "pos": [
+                                155.0,
+                                -210.0
+                            ],
                             "children": [
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{19cb3d69-89fb-4729-9eee-ed7a0b55d59e}",
-                                    "key": "Res 1",
-                                    "value": null
+                                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                                    "uuid": "{83dd6741-5f53-44e0-bc93-86a3778447f6}",
+                                    "key": "Base",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{e85c87df-5326-46c5-9930-d91f90597913}",
+                                            "key": "Mode",
+                                            "value": 1
+                                        }
+                                    ]
                                 },
                                 {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{f8fcf455-2407-441b-bc08-80a434aebf9a}",
-                                    "key": "Res 2",
-                                    "value": null
+                                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                                    "uuid": "{386979b3-1fae-4022-8066-aaf462538cec}",
+                                    "key": "Inputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{b233b140-39f0-41bd-9311-75394fca7eb3}",
+                                            "key": "A3",
+                                            "value": 1
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{438790bd-2481-48d0-bc1d-c04d8be1da0d}",
+                                            "key": "B3",
+                                            "value": 1
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{f291a4a7-3881-4974-86ad-bd1d40523468}",
+                                            "key": "C3",
+                                            "value": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                                    "uuid": "{3fe6db8b-a201-4248-bff6-912185650493}",
+                                    "key": "Outputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{461a7299-222a-47b5-adfe-501df91964bd}",
+                                            "key": "Sum 1",
+                                            "value": null
+                                        },
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{af4409cb-7405-49c7-8e4d-c6b1fb782f4a}",
+                                            "key": "Sum 2",
+                                            "value": null
+                                        }
+                                    ]
                                 }
                             ]
                         }
                     ]
                 },
                 {
-                    "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
-                    "uuid": "{f2240047-b387-410f-8a90-816e1f5fedf4}",
-                    "key": "Test Node 2",
+                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                    "uuid": "{d75ee93d-4e57-4bea-92d4-a6739d2bcf40}",
+                    "key": "Edges",
                     "value": null,
-                    "pos": [
-                        114.0,
-                        -120.0
-                    ],
                     "children": [
                         {
-                            "type": "codelink.backend.seperator_item.SeperatorItem",
-                            "uuid": "{285b6f82-cff7-45f2-8ae4-4f5d9657dd79}",
-                            "key": "Base",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{7162d7b7-bdb3-4ee5-8dbf-68415061f60b}",
-                                    "key": "Mode",
-                                    "value": 0
-                                }
-                            ]
+                            "type": "codelink.backend.edge_item.EdgeItem",
+                            "uuid": "{cdd5ecbc-0afb-4dd6-a8b0-06737ce67807}",
+                            "source": "{3cc7dfbe-1ffa-4b69-998c-f81f273be232}",
+                            "destination": "{b233b140-39f0-41bd-9311-75394fca7eb3}"
                         },
                         {
-                            "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
-                            "uuid": "{f60386be-0e4a-475f-9314-ce53a020107a}",
-                            "key": "Inputs",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{aa945062-ddea-48ad-82c1-5091030bac62}",
-                                    "key": "A",
-                                    "value": 1
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{c3481c82-1e63-4063-a334-32218609c3d6}",
-                                    "key": "B",
-                                    "value": 0
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{7ea74ba5-18c5-4668-826f-f9fda55a4b78}",
-                                    "key": "C",
-                                    "value": 0
-                                }
-                            ]
+                            "type": "codelink.backend.edge_item.EdgeItem",
+                            "uuid": "{ed3a3d92-c403-4a60-aaff-bd8ebe777184}",
+                            "source": "{8824772e-d594-4bb7-9005-707f6e1e9176}",
+                            "destination": "{05bf779e-d7f2-4d83-bb55-f0cebda183c7}"
                         },
                         {
-                            "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
-                            "uuid": "{b0bf4499-22f8-4d7c-a8cc-2350a8bff5dc}",
-                            "key": "Outputs",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{679d0fce-3eab-4999-9a88-6ee5115da2f3}",
-                                    "key": "Res 1",
-                                    "value": null
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{22167917-dbf0-40fd-acc0-412e0ac88eff}",
-                                    "key": "Res 2",
-                                    "value": null
-                                }
-                            ]
+                            "type": "codelink.backend.edge_item.EdgeItem",
+                            "uuid": "{cba689b5-87b6-4921-aacd-d5ea897a2231}",
+                            "source": "{b3a82e13-cefe-4d30-aadb-16f715f37e6a}",
+                            "destination": "{438790bd-2481-48d0-bc1d-c04d8be1da0d}"
                         }
                     ]
                 },
                 {
-                    "type": "my_nodes.node_package_1.node_category.node_sub_category_1.test_node_item_1.TestNodeItem1",
-                    "uuid": "{90291adf-f0c2-4d6e-86c4-d916d4a5c3b1}",
-                    "key": "Test Node 3",
-                    "value": null,
-                    "pos": [
-                        -59.0,
-                        -5.0
-                    ],
-                    "children": [
-                        {
-                            "type": "codelink.backend.seperator_item.SeperatorItem",
-                            "uuid": "{5b1633ec-addc-45bd-856d-d9a013753061}",
-                            "key": "Base",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{2f8a76c9-6a76-4945-8365-05237bbf2e32}",
-                                    "key": "Mode",
-                                    "value": 0
-                                }
-                            ]
-                        },
-                        {
-                            "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
-                            "uuid": "{71d9e637-1b39-4147-8e3e-8bed6147a356}",
-                            "key": "Inputs",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{daddf310-870a-433c-b3c4-9c299b285f07}",
-                                    "key": "A",
-                                    "value": 1
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{56199fe2-0f1f-46d2-b07d-408925214aa6}",
-                                    "key": "B",
-                                    "value": 0
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{d75c11d7-65b4-4e3b-a409-a889059cd900}",
-                                    "key": "C",
-                                    "value": 0
-                                }
-                            ]
-                        },
-                        {
-                            "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
-                            "uuid": "{3002bb28-3185-4536-a479-67622eb99269}",
-                            "key": "Outputs",
-                            "value": null,
-                            "children": [
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{3d86014b-7d34-4943-a491-e8997a83c8fe}",
-                                    "key": "Res 1",
-                                    "value": null
-                                },
-                                {
-                                    "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                    "uuid": "{943642dc-b03a-4cb9-a94f-258f670ba93f}",
-                                    "key": "Res 2",
-                                    "value": null
-                                }
-                            ]
-                        }
-                    ]
+                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                    "uuid": "{ec8bf728-4aef-4cb7-afd1-6b60e3f85d6f}",
+                    "key": "Frames",
+                    "value": null
                 }
             ]
-        },
-        {
-            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
-            "uuid": "{8ec348b3-20db-48af-bef9-0e3da3348cae}",
-            "key": "Edges",
-            "value": null,
-            "children": [
-                {
-                    "type": "codelink.backend.edge_item.EdgeItem",
-                    "uuid": "{86ad6e6d-cd44-4eb4-9491-f719bfffe8bf}",
-                    "source": "{19cb3d69-89fb-4729-9eee-ed7a0b55d59e}",
-                    "destination": "{aa945062-ddea-48ad-82c1-5091030bac62}"
-                },
-                {
-                    "type": "codelink.backend.edge_item.EdgeItem",
-                    "uuid": "{21c0345e-bdd8-4dfd-8d00-deb0ff5faf04}",
-                    "source": "{f8fcf455-2407-441b-bc08-80a434aebf9a}",
-                    "destination": "{daddf310-870a-433c-b3c4-9c299b285f07}"
-                },
-                {
-                    "type": "codelink.backend.edge_item.EdgeItem",
-                    "uuid": "{7fc239f9-0dc7-4a20-9320-4941b9fafffb}",
-                    "source": "{943642dc-b03a-4cb9-a94f-258f670ba93f}",
-                    "destination": "{aa945062-ddea-48ad-82c1-5091030bac62}"
-                }
-            ]
-        },
-        {
-            "type": "codelink.backend.tree_seperator_item.TreeSeperatorItem",
-            "uuid": "{aee3ebf8-9999-4b44-a7cb-57de01119eca}",
-            "key": "Frames",
-            "value": null
         }
     ]
 }
