@@ -36,6 +36,7 @@ from codelink.backend.node_factory import NodeFactory
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
+from codelink.backend.group_item import GroupItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
 
@@ -147,6 +148,18 @@ class MainWindow(QtWidgets.QMainWindow):
         redo_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Redo))
         self.addAction(redo_action)
         edit_menu.addAction(redo_action)
+
+        group_action: QtWidgets.QAction = edit_menu.addAction("&Group")
+        self.addAction(group_action)
+        edit_menu.addAction(group_action)
+        group_action.triggered.connect(self.on_group)
+        group_action.setEnabled(False)
+
+        ungroup_action: QtWidgets.QAction = edit_menu.addAction("&Ungroup")
+        self.addAction(ungroup_action)
+        edit_menu.addAction(ungroup_action)
+        ungroup_action.triggered.connect(self.on_ungroup)
+        ungroup_action.setEnabled(False)
 
         del_action: QtWidgets.QAction = edit_menu.addAction("&Delete")
         del_action.setShortcuts(QtGui.QKeySequence.keyBindings(QtGui.QKeySequence.Delete))
@@ -334,6 +347,28 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.on_save_as()
 
+    def on_group(self) -> None:
+        proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
+
+        source_indexes: list[QtCore.QPersistentModelIndex] = []
+        for index in self._item_tree_view.selectedIndexes():
+            index: QtCore.QModelIndex = index
+            source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
+
+        print(source_indexes)
+
+        group_item: GroupItem = GroupItem("Test Group 1")
+        group_item.setup_children()
+        self._active_doc_model.insert_item(0, group_item, QtCore.QModelIndex())
+
+        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.nodes_index))
+        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.edges_index))
+        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.frames_index))
+
+    @staticmethod
+    def on_ungroup() -> None:
+        print("Ungroup")
+
     def on_delete(self) -> None:
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
@@ -414,12 +449,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_doc_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
         del_act.setEnabled(False)
+        group_act: QtWidgets.QAction = self._action_dict.get("&Group")
+        group_act.setEnabled(False)
+        ungroup_act: QtWidgets.QAction = self._action_dict.get("&Ungroup")
+        ungroup_act.setEnabled(False)
 
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
         source_selection: QtCore.QItemSelection = QtCore.QItemSelection()
         for index in self._doc_tree_view.selectedIndexes():
             del_act.setEnabled(True)
+            group_act.setEnabled(True)
             index: QtCore.QModelIndex = index
             source_selection.select(index, index)
 
@@ -440,13 +480,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_item_tree_selection_changed(self, current: QtCore.QItemSelection, previous: QtCore.QItemSelection) -> None:
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
         del_act.setEnabled(False)
+        group_act: QtWidgets.QAction = self._action_dict.get("&Group")
+        group_act.setEnabled(False)
+        ungroup_act: QtWidgets.QAction = self._action_dict.get("&Ungroup")
+        ungroup_act.setEnabled(False)
 
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
         proxy_selection: QtCore.QItemSelection = QtCore.QItemSelection()
         for index in self._item_tree_view.selectedIndexes():
             del_act.setEnabled(True)
-            del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
+            group_act.setEnabled(True)
             index: QtCore.QModelIndex = index
             proxy_selection.select(index, index)
 
@@ -466,6 +510,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_doc_gr_view_selection_changed(self, source_selection: QtCore.QItemSelection) -> None:
         del_act: QtWidgets.QAction = self._action_dict.get("&Delete")
         del_act.setEnabled(False)
+        group_act: QtWidgets.QAction = self._action_dict.get("&Group")
+        group_act.setEnabled(False)
+        ungroup_act: QtWidgets.QAction = self._action_dict.get("&Ungroup")
+        ungroup_act.setEnabled(False)
 
         self.connect_item_selection(self._doc_tree_view, self.on_doc_tree_selection_changed, False)
         self._doc_tree_view.selectionModel().select(source_selection, QtCore.QItemSelectionModel.ClearAndSelect)
@@ -479,6 +527,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if len(source_selection.indexes()) > 0:
             del_act.setEnabled(True)
+            group_act.setEnabled(True)
             self.update_detail_tree_view(cast(QtCore.QModelIndex, source_selection.indexes()[0]))
 
     def closeEvent(self, event: QtGui.QCloseEvent) -> None:

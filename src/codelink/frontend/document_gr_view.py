@@ -31,6 +31,7 @@ import PySide2.QtGui as QtGui
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
+from codelink.backend.group_item import GroupItem
 from codelink.backend.edge_item import EdgeItem
 from codelink.frontend.node_gr_item import NodeGrItem
 from codelink.frontend.pin_gr_item import PinGrItem
@@ -78,7 +79,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         item: TreeItem = self._model.item_from_index(index)
-        if isinstance(item, NodeItem):
+        if isinstance(item, NodeItem) and not type(item) is GroupItem:
             node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
             self.scene().addItem(node_gr_item)
             node_gr_item.update()
