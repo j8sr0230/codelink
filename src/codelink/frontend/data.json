@@ -95,13 +95,13 @@
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{3cc7dfbe-1ffa-4b69-998c-f81f273be232}",
-                                            "key": "Res 1",
+                                            "key": "Res 1-1",
                                             "value": null
                                         },
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{8824772e-d594-4bb7-9005-707f6e1e9176}",
-                                            "key": "Res 2",
+                                            "key": "Res 1-2",
                                             "value": null
                                         }
                                     ]
@@ -148,7 +148,7 @@
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{4dde95d8-061c-44db-bec9-070adc018171}",
                                             "key": "B2",
-                                            "value": 0
+                                            "value": 1
                                         },
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
@@ -167,13 +167,13 @@
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{b3a82e13-cefe-4d30-aadb-16f715f37e6a}",
-                                            "key": "Res 1",
+                                            "key": "Res 2-1",
                                             "value": null
                                         },
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{950a5ee2-9381-4ab7-90b0-09306faafdd3}",
-                                            "key": "Res 2",
+                                            "key": "Res 2-2",
                                             "value": null
                                         }
                                     ]
@@ -186,8 +186,8 @@
                             "key": "Test Node 3",
                             "value": null,
                             "pos": [
-                                155.0,
-                                -210.0
+                                195.0,
+                                -217.0
                             ],
                             "children": [
                                 {
@@ -200,7 +200,7 @@
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{e85c87df-5326-46c5-9930-d91f90597913}",
                                             "key": "Mode",
-                                            "value": 1
+                                            "value": 2
                                         }
                                     ]
                                 },
@@ -239,13 +239,13 @@
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{461a7299-222a-47b5-adfe-501df91964bd}",
-                                            "key": "Sum 1",
+                                            "key": "Res 3-1",
                                             "value": null
                                         },
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
                                             "uuid": "{af4409cb-7405-49c7-8e4d-c6b1fb782f4a}",
-                                            "key": "Sum 2",
+                                            "key": "Res 3-2",
                                             "value": null
                                         }
                                     ]

@@ -36,6 +36,7 @@ class TreeView(QtWidgets.QTreeView):
         self.setAlternatingRowColors(True)
         self.setItemDelegate(TreeViewDelegate())
         self.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.header().setSectionResizeMode(QtWidgets.QHeaderView.ResizeToContents)
 
     def visible_row_height(self) -> int:
         height: int = 0
