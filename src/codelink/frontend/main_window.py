@@ -56,7 +56,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # UI
         self.setWindowTitle("CodeLink")
         self.resize(1280, 800)
-        
+
         self.create_file_menu()
         self.create_edit_menu()
         self.create_nodes_menu()
