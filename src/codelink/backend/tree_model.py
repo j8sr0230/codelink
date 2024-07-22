@@ -65,7 +65,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         else:
             self._root_item: RootItem = RootItem()
-            main_group_item: GroupItem = GroupItem("Main")
+            main_group_item: GroupItem = GroupItem()
             main_group_item.setup_children()
             self._group_index: QtCore.QModelIndex = self.append_item(main_group_item, QtCore.QModelIndex())
             self._nodes_index: QtCore.QModelIndex = self.index(3, 0, self._group_index)
@@ -492,7 +492,7 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         except (IndexError, ValueError, AttributeError, Exception):
             root_item: RootItem = RootItem()
-            main_group_item: GroupItem = GroupItem("Main")
+            main_group_item: GroupItem = GroupItem()
             main_group_item.setup_children()
             root_item.append_child(main_group_item)
             return root_item

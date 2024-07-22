@@ -252,7 +252,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_detail_tree_view(self, index: QtCore.QModelIndex) -> None:
         tree_item: TreeItem = self._active_doc_model.item_from_index(index)
-        if tree_item and (isinstance(tree_item, NodeItem) or isinstance(tree_item, EdgeItem)):
+        if tree_item and (
+                isinstance(tree_item, NodeItem) and type(tree_item) is not GroupItem
+        ):
             proxy: Level4ProxyModel = Level4ProxyModel()
             proxy.setSourceModel(self._active_doc_model)
             self._detail_tree_view.setModel(proxy)

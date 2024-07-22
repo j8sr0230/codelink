@@ -30,7 +30,7 @@ from codelink.backend.node_item import NodeItem
 
 
 class GroupItem(NodeItem):
-    def __init__(self, key: str, value: Any = None, pos: Optional[list[int]] = None,
+    def __init__(self, key: str = "Main Group", value: Any = None, pos: Optional[list[int]] = None,
                  uuid: Optional[str] = None, parent: Optional[TreeItem] = None) -> None:
         super().__init__(key, value, pos, uuid, parent)
 
