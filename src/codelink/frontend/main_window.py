@@ -352,16 +352,24 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_group(self) -> None:
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
-        source_indexes: list[QtCore.QPersistentModelIndex] = []
+        selected_items: list[TreeItem] = []
         for index in self._item_tree_view.selectedIndexes():
             index: QtCore.QModelIndex = index
-            source_indexes.append(QtCore.QPersistentModelIndex(proxy.mapToSource(index)))
+            selected_items.append(self._active_doc_model.item_from_index(proxy.mapToSource(index)))
 
-        print(source_indexes)
+        group_item: GroupItem = GroupItem("Custom Group")
+        self._active_doc_model.append_node(group_item)
+        group_nodes: list[TreeItem] = group_item.child(3).children
 
-        group_item: GroupItem = GroupItem("Test Group 1")
-        group_item.setup_children()
-        self._active_doc_model.insert_item(0, group_item, QtCore.QModelIndex())
+        for item in selected_items:
+            if isinstance(item, NodeItem):
+                parent: TreeItem = item.parent
+                parent.children.remove(item)
+                group_nodes.append(item)
+                # self._active_doc_view.document_gr_view.scene().removeItem(
+                #     self._active_doc_view.document_gr_view.graphics_item_from_index(index)
+                # )
+                #parent_item.remove_child(node_item.row())
 
         # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.nodes_index))
         # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.edges_index))
