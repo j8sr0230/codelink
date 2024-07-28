@@ -357,6 +357,8 @@ class MainWindow(QtWidgets.QMainWindow):
             index: QtCore.QModelIndex = index
             selected_items.append(self._active_doc_model.item_from_index(proxy.mapToSource(index)))
 
+        print(selected_items)
+
         group_item: GroupItem = GroupItem("Custom Group")
         self._active_doc_model.append_node(group_item)
         group_nodes: list[TreeItem] = group_item.child(3).children
