@@ -50,7 +50,7 @@ class Level4ProxyModel(QtCore.QSortFilterProxyModel):
         return super().mapToSource(proxy_index)
 
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
-        return not source_parent.parent().parent().parent().parent().isValid()
+        return not source_parent.parent().parent().parent().parent().parent().parent().isValid()
 
 
 class ColumnSwapProxyModel(Level4ProxyModel):

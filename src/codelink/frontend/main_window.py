@@ -352,30 +352,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def on_group(self) -> None:
         proxy: QtCore.QSortFilterProxyModel = self._item_tree_view.model()
 
-        selected_items: list[TreeItem] = []
+        selected_indexes: list[QtCore.QModelIndex] = []
         for index in self._item_tree_view.selectedIndexes():
             index: QtCore.QModelIndex = index
-            selected_items.append(self._active_doc_model.item_from_index(proxy.mapToSource(index)))
+            selected_indexes.append(proxy.mapToSource(index))
 
-        print(selected_items)
+        self.on_delete()
 
         group_item: GroupItem = GroupItem("Custom Group")
-        self._active_doc_model.append_node(group_item)
-        group_nodes: list[TreeItem] = group_item.child(3).children
+        group_index: QtCore.QModelIndex = self._active_doc_model.append_node(group_item)
+
+        selected_items: list[TreeItem] = [self._active_doc_model.item_from_index(index) for index in selected_indexes]
 
         for item in selected_items:
             if isinstance(item, NodeItem):
-                parent: TreeItem = item.parent
-                parent.children.remove(item)
-                group_nodes.append(item)
-                # self._active_doc_view.document_gr_view.scene().removeItem(
-                #     self._active_doc_view.document_gr_view.graphics_item_from_index(index)
-                # )
-                #parent_item.remove_child(node_item.row())
+                self._active_doc_model.append_item(item, self._active_doc_model.index(3, 0, group_index))
 
-        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.nodes_index))
-        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.edges_index))
-        # group_item.append_child(self._active_doc_model.item_from_index(self._active_doc_model.frames_index))
+        for item in selected_items:
+            if isinstance(item, EdgeItem):
+                print(item.source_uuid)
+                self._active_doc_model.append_item(item, self._active_doc_model.index(4, 0, group_index))
 
     @staticmethod
     def on_ungroup() -> None:
