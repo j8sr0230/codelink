@@ -37,8 +37,10 @@ from codelink.backend.document_model import DocumentModel
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.node_item import NodeItem
 from codelink.backend.group_item import GroupItem
+from codelink.backend.grp_interface_item import GrpInterfaceItem
+from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 from codelink.backend.edge_item import EdgeItem
-from codelink.backend.proxy_models import Level2ProxyModel, Level4ProxyModel
+from codelink.backend.proxy_models import Level2ProxyModel, NodeLevelProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.document_view import DocumentView
@@ -252,10 +254,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def update_detail_tree_view(self, index: QtCore.QModelIndex) -> None:
         tree_item: TreeItem = self._active_doc_model.item_from_index(index)
-        if tree_item and (
-                isinstance(tree_item, NodeItem) and type(tree_item) is not GroupItem
-        ):
-            proxy: Level4ProxyModel = Level4ProxyModel()
+        if tree_item and isinstance(tree_item, NodeItem):
+            proxy: NodeLevelProxyModel = NodeLevelProxyModel()
             proxy.setSourceModel(self._active_doc_model)
             self._detail_tree_view.setModel(proxy)
             self._detail_tree_view.setRootIndex(proxy.mapFromSource(index))
@@ -360,18 +360,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.on_delete()
 
         group_item: GroupItem = GroupItem("Custom Group")
-        group_index: QtCore.QModelIndex = self._active_doc_model.append_node(group_item)
+        group_item.setup_children()
 
         selected_items: list[TreeItem] = [self._active_doc_model.item_from_index(index) for index in selected_indexes]
 
         for item in selected_items:
             if isinstance(item, NodeItem):
-                self._active_doc_model.append_item(item, self._active_doc_model.index(3, 0, group_index))
+                group_item.child(3).append_child(item)
 
         for item in selected_items:
             if isinstance(item, EdgeItem):
-                print(item.source_uuid)
-                self._active_doc_model.append_item(item, self._active_doc_model.index(4, 0, group_index))
+                group_item.child(4).append_child(item)
+
+        for item in selected_items:
+            if isinstance(item, GrpInterfaceItem):
+                if len(item.child(1).children) == 1:
+                    group_item.child(1).append_child(IntegerPropertyItem(key="In", value=None))
+
+                if len(item.child(2).children) == 1:
+                    group_item.child(2).append_child(IntegerPropertyItem(key="Out", value=None))
+
+        self._active_doc_model.append_item(group_item, self._active_doc_model.nodes_index)
 
     @staticmethod
     def on_ungroup() -> None:

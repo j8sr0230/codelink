@@ -39,7 +39,7 @@ class Level2ProxyModel(QtCore.QSortFilterProxyModel):
         return not source_parent.parent().parent().isValid()
 
 
-class Level4ProxyModel(QtCore.QSortFilterProxyModel):
+class NodeLevelProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
@@ -50,10 +50,18 @@ class Level4ProxyModel(QtCore.QSortFilterProxyModel):
         return super().mapToSource(proxy_index)
 
     def filterAcceptsRow(self, source_row: int, source_parent: QtCore.QModelIndex) -> bool:
-        return not source_parent.parent().parent().parent().parent().parent().parent().isValid()
+        accepts: bool = True
+
+        if source_parent.parent().parent().isValid():
+            index: QtCore.QModelIndex = self.sourceModel().index(source_row, 0, source_parent)
+
+            if index.data() in ["Nodes", "Edges", "Frames"]:
+                accepts: bool = False
+
+        return accepts
 
 
-class ColumnSwapProxyModel(Level4ProxyModel):
+class ColumnSwapProxyModel(NodeLevelProxyModel):
     def __init__(self) -> None:
         super().__init__()
 

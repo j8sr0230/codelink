@@ -42,8 +42,8 @@
                             "key": "Test Node 1",
                             "value": null,
                             "pos": [
-                                -214.0,
-                                -289.0
+                                -184.0,
+                                -187.0
                             ],
                             "children": [
                                 {
@@ -114,8 +114,8 @@
                             "key": "Test Node 2",
                             "value": null,
                             "pos": [
-                                -29.0,
-                                -7.0
+                                -73.0,
+                                -19.0
                             ],
                             "children": [
                                 {
@@ -186,8 +186,8 @@
                             "key": "Test Node 3",
                             "value": null,
                             "pos": [
-                                195.0,
-                                -217.0
+                                68.0,
+                                -156.0
                             ],
                             "children": [
                                 {
@@ -251,6 +251,82 @@
                                     ]
                                 }
                             ]
+                        },
+                        {
+                            "type": "my_nodes.node_package_1.group.inputs.int_grp_input.IntGroupIn",
+                            "uuid": "{7745e271-09e7-48c4-969f-bf08ab62b136}",
+                            "key": "Int Group Input",
+                            "value": null,
+                            "pos": [
+                                -330.0,
+                                -106.0
+                            ],
+                            "children": [
+                                {
+                                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                                    "uuid": "{c1f57317-cbe7-4dd2-95f9-059127f91efb}",
+                                    "key": "Base",
+                                    "value": null
+                                },
+                                {
+                                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                                    "uuid": "{03aa9e04-8575-4251-a96d-dcfb9364d53f}",
+                                    "key": "Inputs",
+                                    "value": null
+                                },
+                                {
+                                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                                    "uuid": "{ba8f6bb6-b8a4-4933-9727-c2ae1712fb6b}",
+                                    "key": "Outputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{44cc8003-c571-4f91-ac95-99e31b7c7eb9}",
+                                            "key": "Value",
+                                            "value": null
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "type": "my_nodes.node_package_1.group.outputs.int_grp_output.IntGroupOut",
+                            "uuid": "{a3c05698-43cf-4644-a5ab-44ec3b7042f5}",
+                            "key": "Int Group Output",
+                            "value": null,
+                            "pos": [
+                                222.0,
+                                -49.0
+                            ],
+                            "children": [
+                                {
+                                    "type": "codelink.backend.seperator_item.SeperatorItem",
+                                    "uuid": "{01ceb3d6-71e1-44bc-a6a0-2971d4b842e4}",
+                                    "key": "Base",
+                                    "value": null
+                                },
+                                {
+                                    "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
+                                    "uuid": "{ae07b754-034c-4af5-a1ab-37f640fac58b}",
+                                    "key": "Inputs",
+                                    "value": null,
+                                    "children": [
+                                        {
+                                            "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
+                                            "uuid": "{58350d1e-5c7c-408c-8be9-26a84d410bad}",
+                                            "key": "Value",
+                                            "value": null
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
+                                    "uuid": "{7af028da-26f9-4989-b6f5-5df7ca517da0}",
+                                    "key": "Outputs",
+                                    "value": null
+                                }
+                            ]
                         }
                     ]
                 },
@@ -277,6 +353,18 @@
                             "uuid": "{cba689b5-87b6-4921-aacd-d5ea897a2231}",
                             "source": "{b3a82e13-cefe-4d30-aadb-16f715f37e6a}",
                             "destination": "{438790bd-2481-48d0-bc1d-c04d8be1da0d}"
+                        },
+                        {
+                            "type": "codelink.backend.edge_item.EdgeItem",
+                            "uuid": "{214e21b8-9192-4668-a10e-dba995464c01}",
+                            "source": "{44cc8003-c571-4f91-ac95-99e31b7c7eb9}",
+                            "destination": "{8dc5faf7-5d60-4472-b977-73dbd53a0c09}"
+                        },
+                        {
+                            "type": "codelink.backend.edge_item.EdgeItem",
+                            "uuid": "{ebcd5eba-1e57-42d2-a778-bd0739b1f612}",
+                            "source": "{461a7299-222a-47b5-adfe-501df91964bd}",
+                            "destination": "{58350d1e-5c7c-408c-8be9-26a84d410bad}"
                         }
                     ]
                 },
