@@ -38,4 +38,4 @@ class IntGroupOut(GrpInterfaceItem):
     def setup_children(self) -> None:
         super().setup_children()
 
-        self.children[1].append_child(IntegerPropertyItem(key="Value", value=None))
+        self.children[1].append_child(IntegerPropertyItem(key="Out", value=None))

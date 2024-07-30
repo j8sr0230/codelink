@@ -37,4 +37,4 @@ class IntGroupIn(GrpInterfaceItem):
     def setup_children(self) -> None:
         super().setup_children()
 
-        self.children[2].append_child(IntegerPropertyItem(key="Value", value=None))
+        self.children[2].append_child(IntegerPropertyItem(key="In", value=None))

@@ -374,11 +374,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         for item in selected_items:
             if isinstance(item, GrpInterfaceItem):
-                if len(item.child(1).children) == 1:
-                    group_item.child(1).append_child(IntegerPropertyItem(key="In", value=None))
-
                 if len(item.child(2).children) == 1:
-                    group_item.child(2).append_child(IntegerPropertyItem(key="Out", value=None))
+                    prop_item: IntegerPropertyItem = cast(IntegerPropertyItem, item.child(2).children[0])
+                    group_item.child(1).append_child(IntegerPropertyItem(key=prop_item.key, value=None))
+
+                elif len(item.child(1).children) == 1:
+                    prop_item: IntegerPropertyItem = cast(IntegerPropertyItem, item.child(1).children[0])
+                    group_item.child(2).append_child(IntegerPropertyItem(key=prop_item.key, value=None))
 
         self._active_doc_model.append_item(group_item, self._active_doc_model.nodes_index)
 

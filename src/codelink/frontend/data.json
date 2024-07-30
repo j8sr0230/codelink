@@ -254,36 +254,36 @@
                         },
                         {
                             "type": "my_nodes.node_package_1.group.inputs.int_grp_input.IntGroupIn",
-                            "uuid": "{7745e271-09e7-48c4-969f-bf08ab62b136}",
+                            "uuid": "{ff6ceae6-2b61-4eaf-8876-674552a0585f}",
                             "key": "Int Group Input",
                             "value": null,
                             "pos": [
-                                -330.0,
-                                -106.0
+                                -332.0,
+                                -65.0
                             ],
                             "children": [
                                 {
                                     "type": "codelink.backend.seperator_item.SeperatorItem",
-                                    "uuid": "{c1f57317-cbe7-4dd2-95f9-059127f91efb}",
+                                    "uuid": "{a958781b-55ae-4179-af6d-4e1a41b806fb}",
                                     "key": "Base",
                                     "value": null
                                 },
                                 {
                                     "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
-                                    "uuid": "{03aa9e04-8575-4251-a96d-dcfb9364d53f}",
+                                    "uuid": "{654e7b1e-0212-4e2e-bde7-b10d082e9dd9}",
                                     "key": "Inputs",
                                     "value": null
                                 },
                                 {
                                     "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
-                                    "uuid": "{ba8f6bb6-b8a4-4933-9727-c2ae1712fb6b}",
+                                    "uuid": "{403157af-ea6b-4d03-ae6a-f5d0b83e33e3}",
                                     "key": "Outputs",
                                     "value": null,
                                     "children": [
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                            "uuid": "{44cc8003-c571-4f91-ac95-99e31b7c7eb9}",
-                                            "key": "Value",
+                                            "uuid": "{71b3baab-eccd-4f42-86a9-06ca3e7e8c75}",
+                                            "key": "In",
                                             "value": null
                                         }
                                     ]
@@ -292,37 +292,37 @@
                         },
                         {
                             "type": "my_nodes.node_package_1.group.outputs.int_grp_output.IntGroupOut",
-                            "uuid": "{a3c05698-43cf-4644-a5ab-44ec3b7042f5}",
+                            "uuid": "{68b7576c-ee29-4836-9591-75829ff95920}",
                             "key": "Int Group Output",
                             "value": null,
                             "pos": [
-                                222.0,
-                                -49.0
+                                218.0,
+                                -76.0
                             ],
                             "children": [
                                 {
                                     "type": "codelink.backend.seperator_item.SeperatorItem",
-                                    "uuid": "{01ceb3d6-71e1-44bc-a6a0-2971d4b842e4}",
+                                    "uuid": "{ae182c88-2388-4957-9af2-abe624f59322}",
                                     "key": "Base",
                                     "value": null
                                 },
                                 {
                                     "type": "codelink.backend.inputs_seperator_item.InputsSeperatorItem",
-                                    "uuid": "{ae07b754-034c-4af5-a1ab-37f640fac58b}",
+                                    "uuid": "{02adadf2-dd15-4fd9-8954-28a081b1f365}",
                                     "key": "Inputs",
                                     "value": null,
                                     "children": [
                                         {
                                             "type": "codelink.backend.properties.integer_property_item.IntegerPropertyItem",
-                                            "uuid": "{58350d1e-5c7c-408c-8be9-26a84d410bad}",
-                                            "key": "Value",
+                                            "uuid": "{cc0bf780-1c7d-41e3-9716-3e801a260ab1}",
+                                            "key": "Out",
                                             "value": null
                                         }
                                     ]
                                 },
                                 {
                                     "type": "codelink.backend.outputs_seperator_item.OutputsSeperatorItem",
-                                    "uuid": "{7af028da-26f9-4989-b6f5-5df7ca517da0}",
+                                    "uuid": "{8a66e2b6-eb9c-4e68-a407-3c43dbfb6e71}",
                                     "key": "Outputs",
                                     "value": null
                                 }
@@ -356,15 +356,15 @@
                         },
                         {
                             "type": "codelink.backend.edge_item.EdgeItem",
-                            "uuid": "{214e21b8-9192-4668-a10e-dba995464c01}",
-                            "source": "{44cc8003-c571-4f91-ac95-99e31b7c7eb9}",
-                            "destination": "{8dc5faf7-5d60-4472-b977-73dbd53a0c09}"
+                            "uuid": "{080164cc-06fb-443f-9c33-052730b47e6c}",
+                            "source": "{461a7299-222a-47b5-adfe-501df91964bd}",
+                            "destination": "{cc0bf780-1c7d-41e3-9716-3e801a260ab1}"
                         },
                         {
                             "type": "codelink.backend.edge_item.EdgeItem",
-                            "uuid": "{ebcd5eba-1e57-42d2-a778-bd0739b1f612}",
-                            "source": "{461a7299-222a-47b5-adfe-501df91964bd}",
-                            "destination": "{58350d1e-5c7c-408c-8be9-26a84d410bad}"
+                            "uuid": "{5db27624-2209-4c81-934d-ab01e0f59a7f}",
+                            "source": "{71b3baab-eccd-4f42-86a9-06ca3e7e8c75}",
+                            "destination": "{8dc5faf7-5d60-4472-b977-73dbd53a0c09}"
                         }
                     ]
                 },
