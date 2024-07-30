@@ -438,7 +438,6 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         return ends
 
-
     def to_nx(self) -> nx.DiGraph:
         di_graph: nx.DiGraph = nx.DiGraph()
 

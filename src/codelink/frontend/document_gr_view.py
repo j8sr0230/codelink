@@ -79,12 +79,12 @@ class DocumentGrView(QtWidgets.QGraphicsView):
     def on_model_rows_inserted(self, parent: QtCore.QModelIndex, first_row: int, last_row: int) -> None:
         index: QtCore.QModelIndex = self._model.index(first_row, 0, parent)
         item: TreeItem = self._model.item_from_index(index)
-        if isinstance(item, NodeItem) and not type(item) is GroupItem:
+        if isinstance(item, NodeItem) and not type(item) is GroupItem:  # and not type(item.parent.parent) is GroupItem:
             node_gr_item: NodeGrItem = NodeGrItem(QtCore.QPersistentModelIndex(index))
             self.scene().addItem(node_gr_item)
             node_gr_item.update()
 
-        elif type(item) == EdgeItem:
+        elif type(item) == EdgeItem:  # and not type(item.parent.parent) is GroupItem:
             edge_item: EdgeItem = cast(EdgeItem, item)
 
             source_index: QtCore.QModelIndex = self._model.index_from_uuid(edge_item.source_uuid)
