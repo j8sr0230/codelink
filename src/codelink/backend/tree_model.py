@@ -40,7 +40,6 @@ from codelink.backend.tree_item import TreeItem
 from codelink.backend.root_item import RootItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.node_item import NodeItem
-from codelink.backend.group_item import GroupItem
 from codelink.backend.seperator_item import SeperatorItem
 from codelink.backend.inputs_seperator_item import InputsSeperatorItem
 from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
@@ -56,23 +55,20 @@ class TreeModel(QtCore.QAbstractItemModel):
                  parent: QtCore.QObject = None) -> None:
         super().__init__(parent)
 
+        self._undo_stack: QtWidgets.QUndoStack = undo_stack if undo_stack else QtWidgets.QUndoStack()
+
         if data:
             self._root_item: RootItem = cast(RootItem, self.from_dict(data))
-            self._group_index: QtCore.QModelIndex = self.index(0, 0, QtCore.QModelIndex())
-            self._nodes_index: QtCore.QModelIndex = self.index(3, 0, self._group_index)
-            self._edges_index: QtCore.QModelIndex = self.index(4, 0, self._group_index)
-            self._frames_index: QtCore.QModelIndex = self.index(5, 0, self._group_index)
+            self._nodes_index: QtCore.QModelIndex = self.index_from_key("Nodes")
+            self._edges_index: QtCore.QModelIndex = self.index_from_key("Edges")
+            self._frames_index: QtCore.QModelIndex = self.index_from_key("Frames")
 
         else:
             self._root_item: RootItem = RootItem()
-            main_group_item: GroupItem = GroupItem()
-            main_group_item.setup_children()
-            self._group_index: QtCore.QModelIndex = self.append_item(main_group_item, QtCore.QModelIndex())
-            self._nodes_index: QtCore.QModelIndex = self.index(3, 0, self._group_index)
-            self._edges_index: QtCore.QModelIndex = self.index(4, 0, self._group_index)
-            self._frames_index: QtCore.QModelIndex = self.index(5, 0, self._group_index)
+            self._nodes_index: QtCore.QModelIndex = self.append_item(SeperatorItem("Nodes"), QtCore.QModelIndex())
+            self._edges_index: QtCore.QModelIndex = self.append_item(SeperatorItem("Edges"), QtCore.QModelIndex())
+            self._frames_index: QtCore.QModelIndex = self.append_item(SeperatorItem("Frames"), QtCore.QModelIndex())
 
-        self._undo_stack: QtWidgets.QUndoStack = undo_stack if undo_stack else QtWidgets.QUndoStack()
         self._edge_validator: EdgeValidator = EdgeValidator(self)
 
     @property
@@ -82,10 +78,6 @@ class TreeModel(QtCore.QAbstractItemModel):
     @root_item.setter
     def root_item(self, value: RootItem) -> None:
         self._root_item: RootItem = value
-
-    @property
-    def group_index(self) -> QtCore.QModelIndex:
-        return self._group_index
 
     @property
     def nodes_index(self) -> QtCore.QModelIndex:
@@ -187,8 +179,6 @@ class TreeModel(QtCore.QAbstractItemModel):
         if type(tree_item) is EdgeItem:
             edge_item: EdgeItem = cast(EdgeItem, tree_item)
             if role == QtCore.Qt.DisplayRole or role == QtCore.Qt.EditRole:
-                # if index.column() == 0:
-                #     return "Edge"
 
                 if index.column() == 0:
                     source: TreeItem = self.item_from_uuid(edge_item.source_uuid)
@@ -271,7 +261,7 @@ class TreeModel(QtCore.QAbstractItemModel):
         else:
             parent_index: QtCore.QModelIndex = parent
 
-        if type(tree_item) is GroupItem:  # isinstance(tree_item, SeperatorItem):
+        if isinstance(tree_item, SeperatorItem):
             self.beginInsertRows(parent_index, row, row)
             parent_item.insert_child(row, tree_item)
             self.endInsertRows()
@@ -491,9 +481,9 @@ class TreeModel(QtCore.QAbstractItemModel):
 
         except (IndexError, ValueError, AttributeError, Exception):
             root_item: RootItem = RootItem()
-            main_group_item: GroupItem = GroupItem()
-            main_group_item.setup_children()
-            root_item.append_child(main_group_item)
+            root_item.append_child(SeperatorItem("Nodes"))
+            root_item.append_child(SeperatorItem("Edges"))
+            root_item.append_child(SeperatorItem("Frames"))
             return root_item
 
     def _repr_recursion(self, tree_item: TreeItem, indent: int = 0) -> str:
