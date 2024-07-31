@@ -29,7 +29,7 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
-from codelink.backend.proxy_models import ColumnSwapProxyModel
+from codelink.backend.proxy_models import OutputColumnSwapProxyModel
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.tree_view import TreeView
@@ -115,7 +115,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
 
-        proxy_model: ColumnSwapProxyModel = ColumnSwapProxyModel()
+        proxy_model: OutputColumnSwapProxyModel = OutputColumnSwapProxyModel()
         proxy_model.setSourceModel(self._persistent_index.model())
         content_view.setModel(proxy_model)
         content_view.setRootIndex(proxy_model.mapFromSource(self._persistent_index))
@@ -177,7 +177,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
     def update_pins(self):
         content_view: TreeView = self._content_item.widget()
-        proxy: ColumnSwapProxyModel = content_view.model()
+        proxy: OutputColumnSwapProxyModel = content_view.model()
 
         for grp_idx, pin_group in enumerate(self._pins):
             for pin in pin_group:
