@@ -24,6 +24,9 @@
 
 import PySide2.QtCore as QtCore
 
+from codelink.backend.user_roles import UserRoles
+from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
+
 
 class ItemViewProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
@@ -67,7 +70,7 @@ class NodeViewProxyModel(DetailViewProxyModel):
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if source_index.parent().isValid():
-            if source_index.parent().data() == "Outputs":
+            if source_index.parent().data(role=UserRoles.TYPE) == OutputsSeperatorItem:
                 return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
             else:
                 return super().mapFromSource(source_index)
@@ -77,10 +80,9 @@ class NodeViewProxyModel(DetailViewProxyModel):
 
     def mapToSource(self, proxy_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if proxy_index.parent().isValid():
-            if super().mapToSource(proxy_index).parent().data() == "Outputs":
+            if super().mapToSource(proxy_index).parent().data(role=UserRoles.TYPE) == OutputsSeperatorItem:
                 return super().mapToSource(proxy_index).siblingAtColumn(abs(proxy_index.column() - 1))
             else:
                 return super().mapToSource(proxy_index)
-
         else:
-            return super().mapFromSource(proxy_index)
+            return super().mapToSource(proxy_index)

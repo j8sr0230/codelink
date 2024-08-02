@@ -398,13 +398,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self._active_doc_model.undo_stack.beginMacro("mass delete")
 
-        for selected_index in source_indexes:
-            selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
-            if selected_index.column() == 0:
-                tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
-                if isinstance(tree_item, EdgeItem):
-                    index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
-                    self._active_doc_model.remove_index(index)
+        # for selected_index in source_indexes:
+        #     selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
+        #     if selected_index.column() == 0:
+        #         tree_item: Optional[TreeItem] = self._active_doc_model.item_from_index(selected_index)
+        #         if isinstance(tree_item, EdgeItem):
+        #             index: QtCore.QModelIndex = cast(QtCore.QModelIndex, selected_index)
+        #             self._active_doc_model.remove_index(index)
 
         for selected_index in source_indexes:
             selected_index: QtCore.QModelIndex = QtCore.QModelIndex(selected_index)
