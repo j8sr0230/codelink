@@ -77,6 +77,14 @@ class NodeViewProxyModel(DetailViewProxyModel):
         if issubclass(self.mapToSource(index).data(UserRoles.TYPE), SeperatorItem) and role == QtCore.Qt.SizeHintRole:
             return QtCore.QSize(0, 0)
 
+        if index.parent().isValid():
+            if (self.mapToSource(index).parent().data(UserRoles.TYPE) == OutputsSeperatorItem and
+                    index.column() == 1 and role == QtCore.Qt.TextAlignmentRole):
+                return QtCore.Qt.AlignRight
+
+        # if index.column() == 1 and role == QtCore.Qt.TextAlignmentRole:
+        #     return QtCore.Qt.AlignRight
+
         if role == QtCore.Qt.BackgroundColorRole:
             return QtGui.QColor(ColorPalette.PALEGRAY)
 
