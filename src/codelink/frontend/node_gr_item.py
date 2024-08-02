@@ -65,6 +65,10 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self._moved: bool = False
 
+        self._effect: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        self._effect.setBlurRadius(25)
+        self.setGraphicsEffect(self._effect)
+
         self.setFlags(QtWidgets.QGraphicsItem.ItemIsSelectable | QtWidgets.QGraphicsItem.ItemIsMovable |
                       QtWidgets.QGraphicsItem.ItemSendsScenePositionChanges)
         self.setAcceptHoverEvents(True)
@@ -115,6 +119,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
         content_view.setAlternatingRowColors(False)
+        content_view.header().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
         proxy_model: NodeViewProxyModel = NodeViewProxyModel()
         proxy_model.setSourceModel(self._persistent_index.model())
