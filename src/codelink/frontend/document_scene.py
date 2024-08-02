@@ -48,6 +48,10 @@ class DocumentScene(QtWidgets.QGraphicsScene):
         self._scene_width: int = 32000
         self.setSceneRect(-self._scene_width // 2, -self._scene_width // 2, self._scene_width, self._scene_width)
 
+        self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
+        self.setSortCacheEnabled(False)
+        self.setStickyFocus(False)
+
     def drawBackground(self, painter: QtGui.QPainter, rect: QtCore.QRectF) -> None:
         super().drawBackground(painter, rect)
         self.setBackgroundBrush(self._background_brush)

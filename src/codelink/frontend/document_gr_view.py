@@ -55,6 +55,13 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
         self._temp_edge: Optional[EdgeGrItem] = None
 
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
+        self.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
+                                  QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
+        # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
+        #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
+
     def graphics_item_from_index(self, index: QtCore.QModelIndex) -> Optional[QtWidgets.QGraphicsItem]:
         graphics_items: list[QtWidgets.QGraphicsItem] = []
         for graphics_item in self.scene().items():
