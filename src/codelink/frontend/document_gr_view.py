@@ -194,13 +194,17 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         super().mouseReleaseEvent(event)
 
         if event.button() == QtCore.Qt.LeftButton:
-            for item in self.scene().selectedItems():
-                if hasattr(item, "moved") and item.moved:
-                    item: NodeGrItem = cast(NodeGrItem, item)
-                    pos: QtCore.QPoint = item.pos()
-                    pos: list[int] = [pos.x(), pos.y()]
-                    self._model.setData(item.index(), pos, UserRoles.POS)
-                    item.moved = False
+
+            if any([item.moved for item in self.scene().selectedItems() if hasattr(item, "moved")]):
+                self._model.undo_stack.beginMacro("mass move")
+                for item in self.scene().selectedItems():
+                    if hasattr(item, "moved") and item.moved:
+                        item: NodeGrItem = cast(NodeGrItem, item)
+                        pos: QtCore.QPoint = item.pos()
+                        pos: list[int] = [pos.x(), pos.y()]
+                        self._model.setData(item.index(), pos, UserRoles.POS)
+                        item.moved = False
+                self._model.undo_stack.endMacro()
 
             if type(self.itemAt(event.pos())) == PinGrItem and self._pressed_pin:
                 pressed_index: QtCore.QModelIndex = QtCore.QModelIndex(self._pressed_pin.data(0))
