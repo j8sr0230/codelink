@@ -25,7 +25,7 @@
 import PySide2.QtCore as QtCore
 
 
-class Level2ProxyModel(QtCore.QSortFilterProxyModel):
+class ItemViewProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
@@ -39,7 +39,7 @@ class Level2ProxyModel(QtCore.QSortFilterProxyModel):
         return not source_parent.parent().isValid()
 
 
-class NodeLevelProxyModel(QtCore.QSortFilterProxyModel):
+class DetailViewProxyModel(QtCore.QSortFilterProxyModel):
     def __init__(self) -> None:
         super().__init__()
 
@@ -61,7 +61,7 @@ class NodeLevelProxyModel(QtCore.QSortFilterProxyModel):
         return accepts
 
 
-class OutputColumnSwapProxyModel(NodeLevelProxyModel):
+class NodeViewProxyModel(DetailViewProxyModel):
     def __init__(self) -> None:
         super().__init__()
 

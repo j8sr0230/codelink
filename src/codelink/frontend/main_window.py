@@ -40,7 +40,7 @@ from codelink.backend.group_item import GroupItem
 from codelink.backend.grp_interface_item import GrpInterfaceItem
 from codelink.backend.properties.integer_property_item import IntegerPropertyItem
 from codelink.backend.edge_item import EdgeItem
-from codelink.backend.proxy_models import Level2ProxyModel, NodeLevelProxyModel
+from codelink.backend.proxy_models import ItemViewProxyModel, DetailViewProxyModel
 
 from codelink.frontend.tree_view import TreeView
 from codelink.frontend.document_view import DocumentView
@@ -255,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_detail_tree_view(self, index: QtCore.QModelIndex) -> None:
         tree_item: TreeItem = self._active_doc_model.item_from_index(index)
         if tree_item and isinstance(tree_item, NodeItem):
-            proxy: NodeLevelProxyModel = NodeLevelProxyModel()
+            proxy: DetailViewProxyModel = DetailViewProxyModel()
             proxy.setSourceModel(self._active_doc_model)
             self._detail_tree_view.setModel(proxy)
             self._detail_tree_view.setRootIndex(proxy.mapFromSource(index))
@@ -439,7 +439,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._doc_tree_view.selectionModel().selectionChanged.connect(self.on_doc_tree_selection_changed)
             self._doc_tree_view.expandToDepth(1)
 
-            proxy_model: Level2ProxyModel = Level2ProxyModel()
+            proxy_model: ItemViewProxyModel = ItemViewProxyModel()
             proxy_model.setSourceModel(self._active_doc_model)
             self._item_tree_view.setModel(proxy_model)
             self._item_tree_view.selectionModel().selectionChanged.connect(self.on_item_tree_selection_changed)
