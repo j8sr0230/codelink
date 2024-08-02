@@ -57,8 +57,8 @@ class DocumentGrView(QtWidgets.QGraphicsView):
 
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
-        self.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
-                                  QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
+        # self.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
+        #                           QtWidgets.QGraphicsView.DontAdjustForAntialiasing)
         # self.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.HighQualityAntialiasing |
         #                     QtGui.QPainter.TextAntialiasing | QtGui.QPainter.SmoothPixmapTransform)
 

@@ -114,6 +114,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view: TreeView = TreeView()
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
+        content_view.setAlternatingRowColors(False)
 
         proxy_model: NodeViewProxyModel = NodeViewProxyModel()
         proxy_model.setSourceModel(self._persistent_index.model())

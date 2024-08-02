@@ -50,7 +50,7 @@ class NodeItem(BaseItem):
         self._pos: list[int] = value
 
     def setup_children(self) -> None:
-        self.append_child(SeperatorItem("Base"))
+        self.append_child(SeperatorItem("Options"))
         self.append_child(InputsSeperatorItem("Inputs"))
         self.append_child(OutputsSeperatorItem("Outputs"))
 

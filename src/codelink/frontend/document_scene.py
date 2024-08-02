@@ -35,7 +35,7 @@ class DocumentScene(QtWidgets.QGraphicsScene):
     def __init__(self) -> None:
         super().__init__()
 
-        self._background_color: QtGui.QColor = QtGui.QColor(ColorPalette.PALEGRAY)
+        self._background_color: QtGui.QColor = QtGui.QColor(ColorPalette.WHITE)
         self._background_brush: QtGui.QBrush = QtGui.QBrush(self._background_color)
 
         self._grid_color: QtGui.QColor = QtGui.QColor(ColorPalette.LIGHTGRAY)

@@ -90,11 +90,11 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-            index: QtCore.QModelIndex = index.model().mapToSource(index)
-
-        tree_item: TreeItem = index.model().item_from_index(index)
-        if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
-            tree_item.paint(painter, option, index)
+        # if isinstance(index.model(), QtCore.QSortFilterProxyModel):
+        #     index: QtCore.QModelIndex = index.model().mapToSource(index)
+        #
+        # tree_item: TreeItem = index.model().item_from_index(index)
+        # if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
+        #     tree_item.paint(painter, option, index)
 
         super().paint(painter, option, index)

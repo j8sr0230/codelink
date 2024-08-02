@@ -25,10 +25,12 @@
 from typing import Any
 
 import PySide2.QtCore as QtCore
+import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
 from codelink.backend.seperator_item import SeperatorItem
 from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
+from codelink.frontend.color_palette import ColorPalette
 
 
 class ItemViewProxyModel(QtCore.QSortFilterProxyModel):
@@ -72,10 +74,16 @@ class NodeViewProxyModel(DetailViewProxyModel):
         super().__init__()
 
     def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
-        if isinstance(index.data(UserRoles.TYPE), SeperatorItem) and role == QtCore.Qt.SizeHintRole:
-            return QtCore.QSize(5, 5)
-        else:
-            return super().data(index, role)
+        if issubclass(self.mapToSource(index).data(UserRoles.TYPE), SeperatorItem) and role == QtCore.Qt.SizeHintRole:
+            return QtCore.QSize(0, 0)
+
+        if role == QtCore.Qt.BackgroundColorRole:
+            return QtGui.QColor(ColorPalette.PALEGRAY)
+
+        if role == QtCore.Qt.ForegroundRole:
+            return QtGui.QColor(ColorPalette.DARKGRAY)
+
+        return super().data(index, role)
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if source_index.parent().isValid():
@@ -83,7 +91,6 @@ class NodeViewProxyModel(DetailViewProxyModel):
                 return super().mapFromSource(source_index).siblingAtColumn(abs(source_index.column() - 1))
             else:
                 return super().mapFromSource(source_index)
-
         else:
             return super().mapFromSource(source_index)
 
