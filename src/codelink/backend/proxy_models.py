@@ -22,9 +22,12 @@
 # *                                                                         *
 # ***************************************************************************
 
+from typing import Any
+
 import PySide2.QtCore as QtCore
 
 from codelink.backend.user_roles import UserRoles
+from codelink.backend.seperator_item import SeperatorItem
 from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
 
 
@@ -67,6 +70,12 @@ class DetailViewProxyModel(QtCore.QSortFilterProxyModel):
 class NodeViewProxyModel(DetailViewProxyModel):
     def __init__(self) -> None:
         super().__init__()
+
+    def data(self, index: QtCore.QModelIndex, role: int = QtCore.Qt.DisplayRole) -> Any:
+        if isinstance(index.data(UserRoles.TYPE), SeperatorItem) and role == QtCore.Qt.SizeHintRole:
+            return QtCore.QSize(5, 5)
+        else:
+            return super().data(index, role)
 
     def mapFromSource(self, source_index: QtCore.QModelIndex) -> QtCore.QModelIndex:
         if source_index.parent().isValid():
