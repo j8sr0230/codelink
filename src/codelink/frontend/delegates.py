@@ -110,6 +110,6 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
 
         if type(index.model()) == NodeViewProxyModel:
             if not issubclass(index.data(role=UserRoles.TYPE), SeperatorItem):
-                return size + QtCore.QSize(self._padding, 50)
+                return size + QtCore.QSize(self._padding, self._padding)
 
         return size
