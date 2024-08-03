@@ -66,3 +66,8 @@ class TreeView(QtWidgets.QTreeView):
         self.setCurrentIndex(next_index)
         self.edit(next_index)
         return True
+
+    # def paintEvent(self, event: QtGui.QPaintEvent) -> None:
+    #     painter: QtGui.QPainter = QtGui.QPainter(self.viewport())
+    #     painter.fillRect(self.rect(), QtGui.QColor(255, 255, 0))
+    #     super().paintEvent(event)

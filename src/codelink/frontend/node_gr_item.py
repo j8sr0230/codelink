@@ -119,6 +119,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         content_view.setIndentation(0)
         content_view.setHeaderHidden(True)
         content_view.setAlternatingRowColors(False)
+        content_view.setStyleSheet("QTreeView {background-color: " + ColorPalette.LIGHTGRAY + ";}")
         content_view.header().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
         proxy_model: NodeViewProxyModel = NodeViewProxyModel()
