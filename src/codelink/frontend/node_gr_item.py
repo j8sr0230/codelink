@@ -66,6 +66,7 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._moved: bool = False
 
         self._effect: QtWidgets.QGraphicsDropShadowEffect = QtWidgets.QGraphicsDropShadowEffect()
+        self._effect.setOffset(5, 5)
         self._effect.setBlurRadius(25)
         self.setGraphicsEffect(self._effect)
 
