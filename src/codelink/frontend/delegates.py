@@ -92,6 +92,14 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
 
     def updateEditorGeometry(self, editor: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                              index: QtCore.QModelIndex()) -> None:
+        if type(index.model()) == NodeViewProxyModel:
+            if not issubclass(index.data(role=UserRoles.TYPE), SeperatorItem):
+                if index.column() == 0:
+                    option.rect = option.rect.adjusted(self._padding, self._padding // 2, 0, -self._padding // 2)
+
+                if index.column() == 1:
+                    option.rect = option.rect.adjusted(0, self._padding // 2, -self._padding, -self._padding // 2)
+
         editor.setGeometry(option.rect)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
