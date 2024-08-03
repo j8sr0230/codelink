@@ -80,10 +80,7 @@ class NodeViewProxyModel(DetailViewProxyModel):
         if index.parent().isValid():
             if (self.mapToSource(index).parent().data(UserRoles.TYPE) == OutputsSeperatorItem and
                     index.column() == 1 and role == QtCore.Qt.TextAlignmentRole):
-                return QtCore.Qt.AlignRight
-
-        # if index.column() == 1 and role == QtCore.Qt.TextAlignmentRole:
-        #     return QtCore.Qt.AlignRight
+                return int(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
 
         if role == QtCore.Qt.BackgroundColorRole:
             return QtGui.QColor(ColorPalette.PALEGRAY)

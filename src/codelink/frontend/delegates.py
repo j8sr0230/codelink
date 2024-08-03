@@ -28,14 +28,19 @@ import PySide2.QtCore as QtCore
 import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
+from codelink.backend.user_roles import UserRoles
 from codelink.backend.tree_item import TreeItem
 from codelink.backend.base_item import BaseItem
 from codelink.backend.seperator_item import SeperatorItem
+from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
+from codelink.backend.proxy_models import NodeViewProxyModel
 
 
 class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None) -> None:
+    def __init__(self, padding: int = 4, parent=None) -> None:
         super().__init__(parent)
+
+        self._padding: int = padding
 
     def createEditor(self, parent: QtWidgets.QWidget, option: QtWidgets.QStyleOptionViewItem,
                      index: QtCore.QModelIndex()) -> Optional[QtWidgets.QWidget]:
@@ -49,7 +54,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 return editor
 
             if index.column() == 1:
-                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                if index.parent().data(UserRoles.TYPE) != OutputsSeperatorItem:
                     return tree_item.create_editor(parent, option, index)
 
         return None
@@ -65,7 +70,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 editor.setText(value)
 
             if index.column() == 1:
-                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                if index.parent().data(UserRoles.TYPE) != OutputsSeperatorItem:
                     tree_item.set_editor_data(editor, index)
 
     def setModelData(self, editor: QtWidgets.QWidget, model: QtCore.QAbstractItemModel,
@@ -80,7 +85,7 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
                 return index.model().setData(index, value, int(QtCore.Qt.EditRole))
 
             if index.column() == 1:
-                if index.parent().data(QtCore.Qt.DisplayRole) != "Outputs":
+                if index.parent().data(UserRoles.TYPE) != OutputsSeperatorItem:
                     return tree_item.set_model_data(editor, index.model(), index)
 
         return False
@@ -90,11 +95,21 @@ class TreeViewDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> None:
-        # if isinstance(index.model(), QtCore.QSortFilterProxyModel):
-        #     index: QtCore.QModelIndex = index.model().mapToSource(index)
-        #
-        # tree_item: TreeItem = index.model().item_from_index(index)
-        # if isinstance(tree_item, BaseItem) and not isinstance(tree_item, SeperatorItem):
-        #     tree_item.paint(painter, option, index)
+        if type(index.model()) == NodeViewProxyModel:
+            if not issubclass(index.data(role=UserRoles.TYPE), SeperatorItem):
+                if index.column() == 0:
+                    option.rect = option.rect.adjusted(self._padding, self._padding // 2, 0, -self._padding // 2)
+
+                if index.column() == 1:
+                    option.rect = option.rect.adjusted(0, self._padding // 2, -self._padding, -self._padding // 2)
 
         super().paint(painter, option, index)
+
+    def sizeHint(self, option: QtWidgets.QStyleOptionViewItem, index: QtCore.QModelIndex) -> QtCore.QSize:
+        size: QtCore.QSize = super().sizeHint(option, index)
+
+        if type(index.model()) == NodeViewProxyModel:
+            if not issubclass(index.data(role=UserRoles.TYPE), SeperatorItem):
+                return size + QtCore.QSize(self._padding, 50)
+
+        return size
