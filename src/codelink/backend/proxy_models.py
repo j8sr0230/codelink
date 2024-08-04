@@ -83,6 +83,9 @@ class NodeViewProxyModel(DetailViewProxyModel):
                 return int(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignRight)
 
         if role == QtCore.Qt.BackgroundColorRole:
+            if self.mapToSource(index).parent().data(UserRoles.TYPE) == OutputsSeperatorItem:
+                return QtGui.QColor(ColorPalette.LIGHTGRAY)
+
             return QtGui.QColor(ColorPalette.PALEGRAY)
 
         if role == QtCore.Qt.ForegroundRole:

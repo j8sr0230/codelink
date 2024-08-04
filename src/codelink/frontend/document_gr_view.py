@@ -55,6 +55,7 @@ class DocumentGrView(QtWidgets.QGraphicsView):
         self._pressed_pin: Optional[QtWidgets.QGraphicsEllipseItem] = None
         self._temp_edge: Optional[EdgeGrItem] = None
 
+        # self.setViewport(QtWidgets.QOpenGLWidget())
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setCacheMode(cast(QtWidgets.QGraphicsView.CacheMode, QtWidgets.QGraphicsView.CacheNone))
         # self.setOptimizationFlags(QtWidgets.QGraphicsView.DontSavePainterState |
