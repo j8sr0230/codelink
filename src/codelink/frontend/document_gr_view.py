@@ -32,7 +32,8 @@ from codelink.backend.user_roles import UserRoles
 from codelink.backend.document_model import DocumentModel
 from codelink.backend.node_item import NodeItem
 from codelink.backend.edge_item import EdgeItem
-from codelink.frontend.node_gr_item import NodeGrItem
+# from codelink.frontend.node_gr_item import NodeGrItem
+from codelink.frontend.node_gr_item_lite import NodeGrItem
 from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.edge_gr_item import EdgeGrItem
 
