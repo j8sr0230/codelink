@@ -29,7 +29,8 @@ import PySide2.QtWidgets as QtWidgets
 import PySide2.QtGui as QtGui
 
 from codelink.backend.user_roles import UserRoles
-from codelink.backend.proxy_models import NodeViewProxyModel
+# from codelink.backend.proxy_models import NodeViewProxyModel
+from codelink.backend.outputs_seperator_item import OutputsSeperatorItem
 from codelink.frontend.color_palette import ColorPalette
 from codelink.frontend.pin_gr_item import PinGrItem
 from codelink.frontend.tree_view import TreeView
@@ -111,6 +112,8 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
     def create_title(self) -> QtWidgets.QGraphicsTextItem:
         text_item = QtWidgets.QGraphicsTextItem(self)
         text_item.setDefaultTextColor(QtGui.QColor(ColorPalette.WHITE))
+        # text_item.setTextInteractionFlags(QtCore.Qt.TextEditable)
+        # text_item.setTextWidth(self._width)
         text_item.setZValue(3)
         return text_item
 
@@ -125,6 +128,18 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
             pin: PinGrItem = PinGrItem(index.data(UserRoles.COLOR), self)
             pin.setData(0, QtCore.QPersistentModelIndex(index))
             pins.append(pin)
+
+            pin_label: QtWidgets.QGraphicsTextItem = QtWidgets.QGraphicsTextItem(pin)
+            pin_label.setDefaultTextColor(QtGui.QColor(ColorPalette.WHITE))
+            pin_label.setPlainText(index.data(int(QtCore.Qt.DisplayRole)))
+            pin_label.setZValue(3)
+            # pin_label.setTextWidth(self._width)
+            if sep_index.data(UserRoles.TYPE) == OutputsSeperatorItem:
+                text_options: QtGui.QTextOption = pin_label.document().defaultTextOption()
+                text_options.setAlignment(QtCore.Qt.AlignRight)
+                pin_label.document().setDefaultTextOption(
+                    text_options
+                )
 
         return pins
 
@@ -160,24 +175,30 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
         self._content_item.setGeometry(QtCore.QRect(0, self._title_height, self._width, self._content_height))
 
     def update_pins(self):
-        content_view: TreeView = self._content_item.widget()
-        proxy: NodeViewProxyModel = content_view.model()
+        # content_view: TreeView = self._content_item.widget()
+        # proxy: NodeViewProxyModel = content_view.model()
 
         for grp_idx, pin_group in enumerate(self._pins):
-            for pin in pin_group:
-                index: QtCore.QModelIndex = proxy.mapFromSource(pin.data(0))
-                index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent())
+            for pin_idx, pin in enumerate(pin_group):
+                # index: QtCore.QModelIndex = proxy.mapFromSource(pin.data(0))
+                # index: QtCore.QModelIndex = proxy.index(index.row(), 0, index.parent())
+                #
+                # rect: QtCore.QRect = content_view.visualRect(index)
+                # if not rect.isValid():
+                #     index: QtCore.QModelIndex = index.parent()
+                #     rect: QtCore.QRect = content_view.visualRect(index)
+                # pin.snap_height = rect.height()
 
-                rect: QtCore.QRect = content_view.visualRect(index)
-                if not rect.isValid():
-                    index: QtCore.QModelIndex = index.parent()
-                    rect: QtCore.QRect = content_view.visualRect(index)
-                pin.snap_height = rect.height()
+                # pos: QtCore.QPoint = QtCore.QPoint(
+                #     rect.x() + grp_idx * (self._width - content_view.frameWidth()),
+                #     rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
+                # )
 
                 pos: QtCore.QPoint = QtCore.QPoint(
-                    rect.x() + grp_idx * (self._width - content_view.frameWidth()),
-                    rect.y() + self._title_height + content_view.rowHeight(index) // 2 + content_view.frameWidth()
+                    grp_idx * self._width,
+                    self._title_height + (grp_idx + 1) * (pin_idx + 1) * 12
                 )
+
                 pin.setPos(pos)
 
     def update_position(self):
@@ -240,11 +261,11 @@ class NodeGrItem(QtWidgets.QGraphicsItem):
 
         self.update_title()
         # self.update_content_height()
-        # self.update_pins()
+        self.update_pins()
         self.update_position()
 
     def boundingRect(self) -> QtCore.QRectF:
-        return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height)
+        return QtCore.QRectF(0, 0, self._width, self._content_height + self._title_height + 80)
 
     def paint(self, painter: QtGui.QPainter, option: QtWidgets.QStyleOptionGraphicsItem,
               widget: Optional[QtWidgets.QWidget] = None) -> None:
